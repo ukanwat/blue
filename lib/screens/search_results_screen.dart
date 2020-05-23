@@ -1,3 +1,4 @@
+import 'package:blue/widgets/post.dart' as p;
 import 'package:flutter/material.dart';
 
 import '../widgets/activity_feed_item.dart';
@@ -7,26 +8,114 @@ import '../widgets/progress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-FutureBuilder searchResultsScreen(Future<QuerySnapshot> searchResultsFuture) {
+FutureBuilder peopleResultsScreen(Future<QuerySnapshot> peopleResultsFuture) {
   return FutureBuilder(
-    future: searchResultsFuture,
+    future: peopleResultsFuture,
     builder: (context, snapshot) {
       if (!snapshot.hasData) {
         return circularProgress();
       }
-      List<UserResult> searchResults = [];
-      snapshot.data.documents.forEach(
-        (doc) {
-          User user = User.fromDocument(doc);
-          UserResult searchResult = UserResult(user);
-          searchResults.add(searchResult);
-          
-        }
-      );
-      return ListView(
-        children: searchResults,
+      List<UserResult> peopleResults = [];
+      snapshot.data.documents.forEach((doc) {
+        User user = User.fromDocument(doc);
+        UserResult peopleResult = UserResult(user);
+        peopleResults.add(peopleResult);
+      });
+      return Column(
+        //shrinkWrap: true,
+        //physics: ClampingScrollPhysics(),
+        mainAxisSize: MainAxisSize.min,
+        children: peopleResults,
       );
     },
+  );
+}
+
+FutureBuilder postsResultsScreen(Future<QuerySnapshot> postsResultsFuture) {
+  return FutureBuilder(
+    future: postsResultsFuture,
+    builder: (context, snapshot) {
+      if (!snapshot.hasData) {
+        return circularProgress();
+      }
+      List<p.Post> postsResults = [];
+      snapshot.data.documents.forEach((doc) {
+        p.Post post = p.Post.fromDocument(doc);
+        postsResults.add(post);
+      });
+      return ListView(
+        physics: NeverScrollableScrollPhysics(),
+        children: postsResults,
+      );
+    },
+  );
+}
+
+CustomScrollView searchResultsScreen(Future<QuerySnapshot> peopleResultsFuture,
+    Future<QuerySnapshot> postsResultsFuture) {
+  return CustomScrollView(
+    slivers: <Widget>[
+      SliverToBoxAdapter(
+        child: Container(
+          padding: EdgeInsets.only(top: 12, left: 14, bottom: 0,right: 14),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text(
+                'People',
+                style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 18),
+              ),
+              SizedBox(height: 24,width: 55,
+                              child: RawMaterialButton(
+                  onPressed: null,
+                  child: Text(
+                    'More',
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black),
+                  ),
+                  fillColor: Colors.grey[300],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+      SliverList(
+        delegate: SliverChildListDelegate(
+            [Container(child: peopleResultsScreen(peopleResultsFuture))]),
+      ),
+       SliverToBoxAdapter(
+        child: Container(
+          padding: EdgeInsets.only(top: 12, left: 14, bottom: 0,right: 14),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text(
+                'Posts',
+                style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 18),
+              ),
+            SizedBox(
+              height: 32,width: 38,
+              child: IconButton(icon: Icon(Icons.view_stream,size: 21,), onPressed: null))
+            ],
+          ),
+        ),
+      ),
+      SliverFillRemaining(
+        child: postsResultsScreen(postsResultsFuture),
+      )
+    ],
   );
 }
 
@@ -35,12 +124,11 @@ class UserResult extends StatelessWidget {
   UserResult(this.user);
   @override
   Widget build(BuildContext context) {
-    
     return Container(
       child: Column(
         children: <Widget>[
           GestureDetector(
-            onTap: () => showProfile(context,profileId: user.id),
+            onTap: () => showProfile(context, profileId: user.id),
             child: ListTile(
               leading: CircleAvatar(
                 backgroundImage: CachedNetworkImageProvider(user.photoUrl),

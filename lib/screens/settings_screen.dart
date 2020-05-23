@@ -10,13 +10,11 @@ import 'package:blue/screens/settings/general/drafts_screen.dart';
 import 'package:blue/screens/settings/general/personalize_screen.dart';
 import 'package:blue/screens/settings/notification/email_notifications_screen.dart';
 import 'package:blue/screens/settings/notification/push_notifications_screen.dart';
-import 'package:blue/screens/settings/notification/sound_screen.dart';
 import 'package:blue/screens/settings/privacy/activity_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'package:blue/widgets/header.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -54,7 +52,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               EmailNotificationsScreen.routeName),
           settingsPageNavigationTile(
               context, 'Push Notifications', PushNotificationsScreen.routeName),
-          settingsPageNavigationTile(context, 'Sound', SoundScreen.routeName),
           settingsSectionTitle(
             icon: Icon(Icons.category),
             title: 'Advanced Settings',
@@ -62,7 +59,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           settingsPageNavigationTile(
               context, 'Autoplay', AutoplayScreen.routeName),
           settingsPageNavigationTile(
-              context, 'ContentCache', ContentCacheScreen.routeName),
+              context, 'Content Cache', ContentCacheScreen.routeName),
           settingsPageNavigationTile(
               context, 'Gestures', GesturesScreen.routeName),
           settingsSectionTitle(
@@ -90,7 +87,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               context, 'Acknowledgements', AcknowledgementsScreen.routeName),
               Container(
                 width: double.infinity,
-                height: 40, child: Center(child: Text('Build v1.1')),)
+                height: 40, child: Center(child: Text('Build v1.1'),),)
         ],
       )),
     );

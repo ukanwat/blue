@@ -14,7 +14,7 @@ class _ContentCacheScreenState extends State<ContentCacheScreen> {
       appBar: settingsHeader(context, 'Content Cache'),
       body: ListView(
         children: <Widget>[
-          
+          settingsActionTile(context, 'Clear Content Cache', (){}),
         ],
       ),
     );

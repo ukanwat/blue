@@ -17,8 +17,8 @@ class ExploreScreen extends StatefulWidget {
 class _ExploreScreenState extends State<ExploreScreen> {
   List<Post> posts = [];
   bool horizontalListViewIsLoading;
-  int noOfTopicCards = 0;
-  List<TopicCard> topics = [];
+  int noOfFollowedTopicCards = 0;
+  List<TopicCard> followedTopics = [];
   @override
   void initState() {
     getFollowedTopics();
@@ -30,19 +30,20 @@ class _ExploreScreenState extends State<ExploreScreen> {
     setState(() {
       horizontalListViewIsLoading = true;
     });
-    QuerySnapshot snapshot = await topicsRef.getDocuments();
-
-    //followedTopicsRef
-    // .document(currentUser.id)
-    // .collection('userFollowedTopics')
-    // .getDocuments();
+    QuerySnapshot snapshot = await followedTopicsRef.document('${currentUser.id}').collection('userFollowedTopics').getDocuments();
+    print('ff');
+    print(snapshot.documents.length);
     setState(() {
-      horizontalListViewIsLoading = false;
-      noOfTopicCards = snapshot.documents.length;
+      print('AAW');
+      noOfFollowedTopicCards = snapshot.documents.length;
+      print('AD');
       snapshot.documents.forEach((doc) {
-        topics.add(
+        print(doc.data);
+        followedTopics.add(
           TopicCard(doc['name'], doc['imageUrl'], doc['id'], doc['info'], 100),
         );
+         print('AK');
+         horizontalListViewIsLoading = false;
       });
     });
   }
@@ -84,12 +85,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   ),
             if (!horizontalListViewIsLoading)
               Container(
-                height: 100.0,
+                height: MediaQuery.of(context).size.width/4.3,
                 child: ListView(
                   physics: ClampingScrollPhysics(),
                   shrinkWrap: true,
                   scrollDirection: Axis.horizontal,
-                  children: topics,
+                  children: followedTopics,
                 ),
               ),
             if (!horizontalListViewIsLoading)

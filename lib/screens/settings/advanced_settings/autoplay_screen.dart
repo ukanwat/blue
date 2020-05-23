@@ -8,13 +8,17 @@ class AutoplayScreen extends StatefulWidget {
 }
 
 class _AutoplayScreenState extends State<AutoplayScreen> {
+  bool feedbackEmailsEnabled;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: settingsHeader(context, 'Autoplay'),
       body: ListView(
         children: <Widget>[
-          
+          settingsSwitchListTile(
+              'Autoplay Videos', feedbackEmailsEnabled, () {}),
+              settingsSwitchListTile(
+              'Autoplay GIFs', feedbackEmailsEnabled, () {}),
         ],
       ),
     );

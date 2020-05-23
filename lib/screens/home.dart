@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -22,6 +23,11 @@ final timelineRef = Firestore.instance.collection('timeline');
 final communitiesRef = Firestore.instance.collection('communities');
 final followedTopicsRef = Firestore.instance.collection('followed-topics');
 final topicsRef = Firestore.instance.collection('topics');
+final postsCollectionGroupRef = Firestore.instance.collectionGroup('userPosts');
+final topicPostsRef = Firestore.instance.collection('topic-posts');
+final usersDatabase = FirebaseDatabase.instance.reference().child('users');
+final topicPostsDatabase = FirebaseDatabase.instance.reference().child('topic-posts');
+//final usersDatabase = FirebaseDatabase.instance.reference().child('users');
 //final popularPostsRef = Firestore.instance.collection('popularPosts');
 //final communityPostsRef = Firestore.instance.collection('communityPosts');
 

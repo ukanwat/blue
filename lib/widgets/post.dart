@@ -1,9 +1,13 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:blue/screens/profile_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
-import './custom_image.dart';                                                               
+import './custom_image.dart';
 import '../screens/home.dart';
 import '../widgets/progress.dart';
 import '../models/user.dart';
@@ -16,7 +20,10 @@ class Post extends StatefulWidget {
   final String ownerId;
   final String username;
   final String title;
+  final String topicName;
+  final String topicId;
   final Map contents;
+  final Map contentsInfo;
   final dynamic upvotes;
 
   Post({
@@ -24,7 +31,10 @@ class Post extends StatefulWidget {
     this.ownerId,
     this.username,
     this.title,
+    this.topicName,
+    this.topicId,
     this.contents,
+    this.contentsInfo,
     this.upvotes,
   });
 
@@ -34,7 +44,10 @@ class Post extends StatefulWidget {
       ownerId: doc['ownerId'],
       username: doc['username'],
       title: doc['title'],
+      topicName: doc['topicName'],
+      topicId: doc['topicId'],
       contents: doc['contents'],
+      contentsInfo: doc['contentsInfo'],
       upvotes: doc['upvotes'],
     );
   }
@@ -57,39 +70,51 @@ class Post extends StatefulWidget {
       ownerId: this.ownerId,
       username: this.username,
       title: this.title,
+      topicName: this.topicName,
+      topicId: this.topicId,
       contents: this.contents,
+      contentsInfo: this.contentsInfo,
       upvotes: this.upvotes,
       upvoteCount: getUpVoteCount(this.upvotes));
 }
 
 class _PostState extends State<Post> {
+  double topEdgeHeight;
+  double bottomEdgeHeight;
+
+  final GlobalKey trackKey = GlobalKey();
   Widget playbackButton = Container();
   VideoPlayerController _controller;
   Future<void> _initializeVideoPlayerFuture;
   bool isSaved = false;
   List<Widget> contentsViewList = [];
-  ListView ddfdf;
   final String currentUserId = currentUser?.id;
   final String postId;
   final String ownerId;
   final String username;
   final String title;
+  final String topicName;
+  final String topicId;
   final Map contents;
+  final Map contentsInfo;
   int upvoteCount;
   Map upvotes;
   bool isUpvoted;
+  double screenWidth;
   _PostState(
       {this.postId,
       this.ownerId,
       this.username,
       this.title,
+      this.topicName,
+      this.topicId,
       this.contents,
+      this.contentsInfo,
       this.upvotes,
       this.upvoteCount});
-  
 
   buildPostHeader() {
-    return FutureBuilder(
+    return FutureBuilder(                                    //TODO can set userdata on post
         future: usersRef.document(ownerId).get(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -184,7 +209,7 @@ class _PostState extends State<Post> {
                             ),
                           ),
                         ),
-                      ),
+                      ), FlatButton(onPressed: null, child: Text(widget.topicName,style: TextStyle(fontSize: 12,color: Colors.blue),),),
                       isSaved
                           ? SizedBox(
                               height: 40,
@@ -363,32 +388,118 @@ class _PostState extends State<Post> {
       });
     }
   }
+  bool persistentCallbackAdded = false;
+  Timer timer;
+  @override
+  void didChangeDependencies() {
+
+     if(this.mounted && persistentCallbackAdded == false){
+      //timer =  Timer.periodic(Duration(milliseconds: 100), (Timer t){WidgetsBinding.instance.addPostFrameCallback(_afterLayout);} );
+    
+    persistentCallbackAdded = true;
+    }
+
+    super.didChangeDependencies();
+  }
 
   @override
   void initState() {
     print(contents);
     for (int i = 1; i <= contents.length; i++) {
       print(contents['$i']);
-      if (contents['$i'].contains('.jpg?alt=media')) {
-        contentsViewList.add(imageContentContainer(contents['$i']));
-      } else if (contents['$i'].contains('.mp4?alt=media')) {
+      if (contentsInfo['$i']['type'] == 'image') {
+        contentsViewList.add(imageContentContainer(
+            contents['$i'], contentsInfo['$i']['aspectRatio']));
+      } else if (contentsInfo['$i']['type'] == 'video') {
         _controller = VideoPlayerController.network(
           contents['$i'],
         );
         _initializeVideoPlayerFuture = _controller.initialize();
 
-        contentsViewList.add(videoContentContainer(contents['$i']));
+        contentsViewList.add(videoContentContainer(
+            contents['$i'], contentsInfo['$i']['aspectRatio']));
       } else {
         contentsViewList.add(textContentContainer(contents['$i']));
       }
     }
+    usersDatabase.child('$currentUserId').child('post-views').child('$postId').set({
+      'postId': postId,
+      'ownerId': ownerId,
+      'viewed': true,
+      'upvoted': false,
+      'commented': false,
+      'shared': false,
+      'saved': false,
+      'time': ServerValue.timestamp
+    });
+   
     super.initState();
   }
+   
 
-  Widget imageContentContainer(String url) {
+
+  RenderBox box;
+  Offset position;
+  double y;
+  double height;
+  
+  _afterLayout(_) {
+    if(trackKey != null){
+    box = trackKey.currentContext?.findRenderObject();// TODO use scrollconntroller
+    if(box == null)
+{
+}  else{  position = box.localToGlobal(Offset.zero);
+    y = position.dy;
+    height = box.size.height;
+  trackView();}}else
+  timer.cancel();
+  timer  = null;
+  }
+
+  double scrollableHeight;
+  DateTime viewStartTime;
+  DateTime viewEndTime;
+ 
+  void trackView() {
+    double _y = 0;
+    if (y != null && height != null) {
+      topEdgeHeight =
+          MediaQuery.of(context).padding.top +
+          50;
+      bottomEdgeHeight =MediaQuery.of(context).size.height -
+          MediaQuery.of(context).padding.bottom; // check for iphones in future
+      scrollableHeight = bottomEdgeHeight- topEdgeHeight ;
+      position = box.localToGlobal(Offset.zero);
+      y = position.dy;
+      // TODO: decide if we need to consider post bottom
+      if (y + height  < bottomEdgeHeight - scrollableHeight/2 &&
+          viewEndTime == null &&
+          viewStartTime != null) {
+        viewEndTime = DateTime.now();
+        print('$title');
+        print(viewEndTime);
+          var viewTime = viewEndTime.difference(viewStartTime).inMilliseconds;
+          print('$title');
+          print(viewTime);
+      }
+
+      if (y  > topEdgeHeight + scrollableHeight * 0.5 && _y < y ) {
+            _y = y;
+        viewStartTime = DateTime.now();
+        print('$title');
+        print(viewStartTime);
+
+      }
+    }
+  }
+
+  Widget imageContentContainer(String url, double aspectRatio) {
     return Stack(
-        alignment: Alignment.center,
-        children: <Widget>[(cachedNetworkImage(url))]);
+      alignment: Alignment.center,
+      children: <Widget>[
+        (cachedNetworkImage(context,url,aspectRatio : aspectRatio)),
+      ],
+    );
   }
 
   playOrPauseVideo() {
@@ -402,8 +513,8 @@ class _PostState extends State<Post> {
         _controller.play();
       });
   }
-
-  Widget videoContentContainer(String url) {
+   
+  Widget videoContentContainer(String url, double aspectRatio) {
     bool videoMuted = false;
     return FutureBuilder(
       future: _initializeVideoPlayerFuture,
@@ -427,18 +538,18 @@ class _PostState extends State<Post> {
                       child: Container(),
                     ),
                     IconButton(
-                      icon:videoMuted? Icon(Icons.surround_sound): Icon(Icons.volume_mute),
+                      icon: videoMuted
+                          ? Icon(Icons.surround_sound)
+                          : Icon(Icons.volume_mute),
                       onPressed: () {
                         setState(() {
-                         if (videoMuted) {
-                          _controller.setVolume(1);
-                        }else{
-                           _controller.setVolume(0);
-
-                        }
-                        videoMuted = !videoMuted; 
+                          if (videoMuted) {
+                            _controller.setVolume(1);
+                          } else {
+                            _controller.setVolume(0);
+                          }
+                          videoMuted = !videoMuted;
                         });
-                        
                       },
                     )
                   ],
@@ -447,7 +558,10 @@ class _PostState extends State<Post> {
             ],
           );
         } else {
-          return Center(child: CircularProgressIndicator());
+          return Container(
+            color: Colors.amber,
+            height: screenWidth / aspectRatio,
+          );
         }
       },
     );
@@ -525,20 +639,24 @@ class _PostState extends State<Post> {
 
   @override
   Widget build(BuildContext context) {
+    screenWidth = MediaQuery.of(context).size.width;
     isUpvoted = (upvotes[currentUserId] == true);
     return Column(
+      key: trackKey,
       children: <Widget>[
         buildPostHeader(),
-      //  Column(children: contentsViewList),
-     ListView.builder(
-       shrinkWrap: true,physics: NeverScrollableScrollPhysics() ,
-       itemBuilder: (_,i){
-       return contentsViewList[i];
-     },itemCount: contents.length,),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemBuilder: (_, i) {
+            return contentsViewList[i];
+          },
+          itemCount: contents.length,
+        ),
         Padding(
           padding: EdgeInsets.only(top: 10),
         ),
-        buildPostFooter()
+        buildPostFooter(),
       ],
     );
   }

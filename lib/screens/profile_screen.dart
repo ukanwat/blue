@@ -7,7 +7,7 @@ import '../widgets/header.dart';
 import '../widgets/progress.dart';
 import './home.dart';
 import './edit_profile_screen.dart';
-import './setttings_screen.dart';
+import './settings_screen.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -28,24 +28,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int followerCount = 0;
   int followingCount = 0;
   List<Post> posts = [];
+  ScrollController _scrollController = ScrollController();
+bool hasMore = true; // flag for more products available or not  
+int documentLimit = 10; // documents to be fetched per request  
+  
+DocumentSnapshot lastDocument;
+
   @override
   void initState() {
     super.initState();
-    getProfilePosts();
+     getProfilePosts();  
+    _scrollController = ScrollController()..addListener(() {  
+     double maxScroll = _scrollController.position.maxScrollExtent;  
+     double currentScroll = _scrollController.position.pixels;  
+     double delta = MediaQuery.of(context).size.height * 0.2;  
+     WidgetsBinding.instance.addPersistentFrameCallback((timeStamp) { print(delta);});
+     if (maxScroll - currentScroll <= delta) {  
+
+       setState(() {
+       getProfilePosts();  
+         
+       });
+     }  
+   }); 
     getFollowers();
     getFollowing();
     checkIfFollowing();
   }
 
   checkIfFollowing() async {
-   if(currentUserId != widget.profileId) { DocumentSnapshot doc = await followersRef
-        .document(widget.profileId)
-        .collection('userFollowers')
-        .document(currentUserId)
-        .get();
-    setState(() {
-      isFollowing = doc.exists;
-    });}
+    if (currentUserId != widget.profileId) {
+      DocumentSnapshot doc = await followersRef
+          .document(widget.profileId)
+          .collection('userFollowers')
+          .document(currentUserId)
+          .get();
+      setState(() {
+        isFollowing = doc.exists;
+      });
+    }
   }
 
   getFollowers() async {
@@ -69,21 +90,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   getProfilePosts() async {
+    if (!hasMore) {  
+     print('No More posts');  
+     return;  
+   }  
+    if (isLoading) {  
+     return;  
+   }  
     setState(() {
       isLoading = true;
     });
-    QuerySnapshot snapshot = await postsRef
+    QuerySnapshot snapshot;
+    if (lastDocument == null) { 
+      snapshot = await postsRef
         .document(widget.profileId)
         .collection('userPosts')
         .orderBy('timeStamp', descending: true)
+        .limit(documentLimit) 
         .getDocuments();
+    }  else {
+     snapshot = await postsRef
+        .document(widget.profileId)
+        .collection('userPosts')
+        .orderBy('timeStamp', descending: true)
+        .startAfterDocument(lastDocument) 
+        .limit(documentLimit) 
+        .getDocuments();
+    }
+     if (snapshot.documents.length < documentLimit) {            // TODO: check if length and limit is exactly equal (0 length next time)
+     hasMore = false;  
+   }  
+          lastDocument = snapshot.documents[snapshot.documents.length - 1];
     setState(() {
-      isLoading = false;                                
+      isLoading = false;
       postCount = snapshot.documents.length;
-      posts = snapshot.documents.map((doc) => Post.fromDocument(doc)).toList();
+      posts = posts + snapshot.documents.map((doc) => Post.fromDocument(doc)).toList();
     });
   }
-
+  
   editProfile() {
     Navigator.pushNamed(context, EditProfileScreen.routeName,
         arguments: {'currentUserId': currentUserId});
@@ -270,12 +314,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               width: MediaQuery.of(context).size.width,
               child: Padding(
-                padding: EdgeInsets.only(top: 20.0, left: 26.0,right: 26.0,bottom: 10),
+                padding: EdgeInsets.only(
+                    top: 20.0, left: 26.0, right: 26.0, bottom: 10),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
+                  children: <Widget>[      
                     CircleAvatar(
-                      radius: 50.0,
+                      radius: 45.0,
                       backgroundColor: Colors.grey,
                       backgroundImage:
                           CachedNetworkImageProvider(user.photoUrl),
@@ -292,8 +337,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
-                            SizedBox(
-                              height: 5,
+                            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisSize: MainAxisSize.max,
+                              children: <Widget>[
+                                Text(
+                                  username,
+                                  style: TextStyle(
+                                      color: Theme.of(context).primaryColor,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                                SizedBox(height: 32,width: 35,
+                                                                  child: IconButton(
+                                      icon: Icon(
+                                        Icons.settings,
+                                        color: Theme.of(context).primaryColor,
+                                        size: 20,
+                                      ),
+                                      onPressed: () {
+                                        Navigator.pushNamed(
+                                            context, SettingsScreen.routeName);
+                                      }),
+                                ),
+                              ],
                             ),
                             Text(
                               user.displayName,
@@ -303,7 +369,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   fontSize: 25,
                                   fontWeight: FontWeight.w600),
                             ),
-                            SizedBox(height: 5,),
+                            SizedBox(
+                              height: 5,
+                            ),
                             Expanded(
                               child: Text(
                                 user.bio,
@@ -344,7 +412,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  
                   SizedBox(
                     height: 10,
                   ),
@@ -386,26 +453,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   buildProfilePosts() {
-    if (isLoading) {
-      return circularProgress();
+    if (posts.length == 0) {
+      return Container();
     }
-    return Column(
-      children: posts,
+    return ListView.builder(
+      controller: _scrollController,
+      shrinkWrap: true,
+      itemBuilder: (ctx,i){
+                  return posts[i];
+      },
+     itemCount: posts.length,
     );
   }
 
   PreferredSize profileBar() {
-    return PreferredSize(preferredSize: Size.fromHeight(50.0),
-          child: AppBar(centerTitle: true,leading: IconButton(icon: Icon(Icons.arrow_back_ios), onPressed: null),
-        backgroundColor: Colors.white,elevation: 1,
+    return PreferredSize(
+      preferredSize: Size.fromHeight(50.0),
+      child: AppBar(
+        centerTitle: true,
+        leading: IconButton(icon: Icon(Icons.arrow_back_ios), onPressed: null),
+        backgroundColor: Colors.white,
+        elevation: 1,
         title: FlatButton(
           onPressed: null,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           child: Text(
             username,
             style: TextStyle(
                 color: Theme.of(context).primaryColor,
-                fontSize: 20,
+                fontSize: 16,
                 fontWeight: FontWeight.w500),
           ),
         ),
@@ -415,7 +492,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Icons.settings,
                 color: Theme.of(context).primaryColor,
               ),
-              onPressed: (){Navigator.pushNamed(context,SettingsScreen.routeName);})
+              onPressed: () {
+                Navigator.pushNamed(context, SettingsScreen.routeName);
+              })
         ],
       ),
     );
@@ -424,13 +503,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: profileBar(),
-      body: ListView(
-        children: <Widget>[
-          buildProfileHeader(),
-          Divider(),
-          buildProfilePosts()
-        ],
+      body: SafeArea(
+        child: ListView(
+          children: <Widget>[
+            buildProfileHeader(),
+            Divider(),
+            buildProfilePosts(),
+           Container(
+             padding: EdgeInsets.symmetric(vertical: 5),
+             child: isLoading?circularProgress(): Container(),)
+          ],
+        ),
       ),
     );
   }

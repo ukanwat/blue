@@ -8,13 +8,16 @@ class GesturesScreen extends StatefulWidget {
 }
 
 class _GesturesScreenState extends State<GesturesScreen> {
+  bool feedbackEmailsEnabled;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: settingsHeader(context, 'Gestures'),
       body: ListView(
         children: <Widget>[
-          
+          settingsSwitchListTile(
+              'Double Tap to Like', feedbackEmailsEnabled, () {}),
+             
         ],
       ),
     );
