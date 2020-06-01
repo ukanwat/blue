@@ -4,7 +4,10 @@ import 'package:blue/screens/home.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+import 'package:giphy_client/giphy_client.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../widgets/header.dart';
@@ -12,6 +15,8 @@ import '../models/user.dart';
 import '../widgets/send_button.dart';
 import '../widgets/progress.dart';
 import '../widgets/message.dart';
+import './chat_info_screen.dart';
+import './gifs_screen.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image/image.dart' as Im;
@@ -47,7 +52,8 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     setState(() {
       chatMessagesFuture = messagesRef
           .document(groupChatId)
-          .collection(groupChatId)
+          .collection(groupChatId).orderBy('timestamp',descending: false)
+          
           .getDocuments();
     });
   }
@@ -62,6 +68,22 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     });
     messageController.clear();
     getChatMessagesFuture();
+  }
+  sendGIF() async{
+      Navigator.of(context).pushNamed(GIFsScreen.routeName).then((value){
+      messagesRef.document(groupChatId).collection(groupChatId).add({
+      
+      'idFrom': currentUser.id,
+      'idTo': peerUser.id,
+      'timestamp': DateTime.now(),
+      'message': value,
+      'type': 'image'
+    }).then((_){
+       getChatMessagesFuture();
+    });
+
+      });
+     
   }
   sendMedia() async {
     File image;
@@ -92,16 +114,11 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: header(context,
-            leadingButton: IconButton(
-                icon: Icon(
-                  Icons.arrow_back,
-                  color: Colors.black,
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                }),
+            leadingButton: CupertinoNavigationBarBackButton(),
             actionButton:
-                IconButton(icon: Icon(Icons.more_vert), onPressed: null),
+                IconButton(icon: Icon(Icons.info_outline,color: Colors.black,), onPressed: (){
+                  Navigator.of(context).pushNamed(ChatInfoScreen.routeName,arguments: {'peerId':peerUser.id});
+                }),
             title: Row(
               children: <Widget>[
                 Padding(
@@ -130,7 +147,13 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                       margin:
                           EdgeInsets.only(top: 0, bottom: 4, right: 2, left: 2),
                       child:
-                          IconButton(icon: Icon(Icons.image), onPressed: sendMedia)),
+                          IconButton(icon: Icon(Icons.image), onPressed: sendMedia),),
+                          Container(
+                      height: 45,
+                      margin:
+                          EdgeInsets.only(top: 0, bottom: 4, right: 2, left: 2),
+                      child:
+                          IconButton(icon: Icon(FlutterIcons.gif_mco), onPressed: sendGIF),),
                   Expanded(
                     child: Container(
                       height: 45,

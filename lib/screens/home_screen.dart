@@ -1,7 +1,7 @@
-
 import 'package:flutter/material.dart';
 
 import 'package:blue/screens/search_results_screen.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import './search_screen.dart';
 import '../widgets/header.dart';
 import './post_screen.dart';
@@ -126,21 +126,26 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(context) {
     return Scaffold(
+        backgroundColor: Colors.white,
         appBar: header(
-        context,
-        actionButton: IconButton(
-          icon: Icon(
-            Icons.search,
-            color: Theme.of(context).primaryColor,
+          context,title: Text('Home',style: TextStyle(
+            fontFamily: 'Techna Sans Regular',
+            color: Colors.black
+          ),),
+          centerTitle: true,
+          leadingButton: SizedBox(child: Image.asset('assets/icons/appbar_appicon_inverted.png',
+          
+              height: MediaQuery.of(context).viewPadding.top,),),
+          actionButton: IconButton(
+            icon: Icon(
+              FlutterIcons.more_horiz_mdi,
+              color: Theme.of(context).primaryColor,
+            ),
+            onPressed: () {
+             
+            },
           ),
-          onPressed: () {
-            Navigator.of(context).pushNamed(SearchScreen.routeName);
-          },
         ),
-        leadingButton:  IconButton(icon: Icon(Icons.create,color: Theme.of(context).primaryColor,), onPressed: (){
-          Navigator.of(context).pushNamed(PostScreen.routeName);
-        })
-      ),
         body: RefreshIndicator(
             onRefresh: () => getTimeline(), child: buildTimeline()));
   }

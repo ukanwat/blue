@@ -1,6 +1,7 @@
 import 'package:blue/models/topic_list_tile.dart';
 import 'package:blue/widgets/custom_image.dart';
 import 'package:blue/widgets/progress.dart';
+import 'package:blue/widgets/show_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -15,21 +16,26 @@ class SelectTopicScreen extends StatefulWidget {
 
 class _SelectTopicScreenState extends State<SelectTopicScreen> {
   String contentCategoryValue;
-   bool isSwitched = false;
-   bool isLoading = false;
-   int noOfFollowedTopicListTiles;
-   List<TopicListTile> followedTopicsListTile = [];
-   bool topicSelected = false;
-   @override
+  bool isSwitched = false;
+  bool isLoading = false;
+  int noOfFollowedTopicListTiles;
+  List<TopicListTile> followedTopicsListTile = [];
+  bool topicSelected = false;
+  bool postSubmitting = false;
+  @override
   void initState() {
     getFollowedTopics();
     super.initState();
   }
+
   getFollowedTopics() async {
     setState(() {
       isLoading = true;
     });
-    QuerySnapshot snapshot = await followedTopicsRef.document('${currentUser.id}').collection('userFollowedTopics').getDocuments();
+    QuerySnapshot snapshot = await followedTopicsRef
+        .document('${currentUser.id}')
+        .collection('userFollowedTopics')
+        .getDocuments();
 
     setState(() {
       isLoading = false;
@@ -41,29 +47,37 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
       });
     });
   }
- 
+
   TopicListTile selectedTopicTile;
   @override
   Widget build(BuildContext context) {
-    final postData = ModalRoute.of(context).settings.arguments as Map<String,dynamic>;
+    final postData =
+        ModalRoute.of(context).settings.arguments as Map<String, dynamic>;
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(50),
         child: AppBar(
           elevation: 0,
           centerTitle: true,
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).primaryColor,
           title: Text(
             'Select Topic',
-            style: TextStyle(color: Colors.black),
+            style: TextStyle(color: Colors.white),
           ),
-          leading: IconButton(
-            icon:Icon(Icons.arrow_back_ios), onPressed: (){
-            Navigator.pop(context);
-            },
-            color: Colors.grey,
+          leading: Container(
+            margin: EdgeInsets.all(5),
+            decoration:
+                BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+            child: IconButton(
+              icon: Icon(Icons.arrow_back_ios,
+                  color: Theme.of(context).primaryColor),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              color: Colors.grey,
+            ),
           ),
-          actions: <Widget>[ 
+          actions: <Widget>[
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -72,19 +86,62 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
               margin: EdgeInsets.all(5),
               alignment: Alignment.center,
               child: FlatButton(
-                onPressed: (){
-                  if(selectedTopicTile!=null){
-
-                   print(selectedTopicTile.name);
-                  postData['post-function'](selectedTopicTile.name,selectedTopicTile.id); 
+                onPressed: () {
+                  if (selectedTopicTile != null) {
+                      setState(() {
+                      showDialog(
+                        barrierDismissible: false,
+                        // useRootNavigator: false,
+                        context: context,
+                        builder: (BuildContext context) => WillPopScope(
+                          onWillPop: () async {
+        return false;
+      }, 
+      child: Dialog( shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            elevation: 0.0,
+                            backgroundColor: Colors.transparent,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 40, horizontal: 20),
+                              decoration: new BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.rectangle,
+                                borderRadius: BorderRadius.circular(15),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 10.0,
+                                    offset: const Offset(0.0, 10.0),
+                                  ),
+                                ],
+                              ),
+                              child: Column( mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  circularProgress(),
+                                  SizedBox(height: 15),
+                                  Text('Submitting...')
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    });
+                    postData['post-function'](
+                        selectedTopicTile.name, selectedTopicTile.id);
+                  
                   }
-                  },
+                },
                 child: Text(
                   'Post',
                   style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
-                      color: selectedTopicTile==null?Colors.grey: Theme.of(context).primaryColor),
+                      color: selectedTopicTile == null
+                          ? Colors.grey
+                          : Theme.of(context).primaryColor),
                 ),
               ),
             ),
@@ -96,37 +153,41 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
           SizedBox(
             height: 10,
           ),
-          isLoading? circularProgress():
-          ListView.builder(
-            shrinkWrap: true,
-            itemBuilder: (_,i){
-        return    ListTile(
-      enabled: true,
-      leading: ClipRRect(
-        borderRadius: BorderRadius.circular(5),
-        child: cachedNetworkImage(context,followedTopicsListTile[i].imageUrl ),),
-        title: Text(followedTopicsListTile[i].name,style: TextStyle(color: Colors.black,fontSize: 20),
-        
-        ),
-        trailing: selectedTopicTile == followedTopicsListTile[i]? Icon(Icons.check,color: Colors.blue,): null,
-        onTap: (){
-          setState(() {
-            if(selectedTopicTile == followedTopicsListTile[i]){
-              selectedTopicTile = null;
-
-            }else {
-              
-              selectedTopicTile = followedTopicsListTile[i];
-            }
-          });
-         },
-      
-    );
-
-          },
-          itemCount: followedTopicsListTile.length,
-          )
-        
+          isLoading
+              ? circularProgress()
+              : ListView.builder(
+                  shrinkWrap: true,
+                  itemBuilder: (_, i) {
+                    return ListTile(
+                      enabled: true,
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(5),
+                        child: cachedNetworkImage(
+                            context, followedTopicsListTile[i].imageUrl),
+                      ),
+                      title: Text(
+                        followedTopicsListTile[i].name,
+                        style: TextStyle(color: Colors.black, fontSize: 20),
+                      ),
+                      trailing: selectedTopicTile == followedTopicsListTile[i]
+                          ? Icon(
+                              Icons.check,
+                              color: Colors.blue,
+                            )
+                          : null,
+                      onTap: () {
+                        setState(() {
+                          if (selectedTopicTile == followedTopicsListTile[i]) {
+                            selectedTopicTile = null;
+                          } else {
+                            selectedTopicTile = followedTopicsListTile[i];
+                          }
+                        });
+                      },
+                    );
+                  },
+                  itemCount: followedTopicsListTile.length,
+                )
         ],
       ),
     );

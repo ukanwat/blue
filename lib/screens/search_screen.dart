@@ -1,3 +1,5 @@
+import 'package:blue/widgets/progress.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 import './home.dart';
@@ -16,6 +18,7 @@ class _SearchScreenState extends State<SearchScreen> {
   TextEditingController searchController = TextEditingController();
   Future<QuerySnapshot> peopleResultsFuture;
   Future<QuerySnapshot> postsResultsFuture;
+  bool recentSearchesLoading = false;
   handleSearch(String query) {
     Future<QuerySnapshot> people = usersRef
         .where('displayName', isGreaterThanOrEqualTo: query)
@@ -24,13 +27,64 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       peopleResultsFuture = people;
     });
- Future<QuerySnapshot> posts = postsCollectionGroupRef
+    Future<QuerySnapshot> posts = postsCollectionGroupRef
         .where('title', isGreaterThanOrEqualTo: query)
         .getDocuments();
     setState(() {
       postsResultsFuture = posts;
     });
+    usersDatabase
+        .child(currentUser.id)
+        .child('recent-searches')
+        .child(searchController.text)
+        .set({'text': searchController.text,
+        'time': ServerValue.timestamp
+        });
+  }
+ List items = [];
+ 
+ Widget getRecentSearches(){
+    var recentSearches = usersDatabase
+        .child(currentUser.id)
+        .child('recent-searches')
+        .limitToFirst(10);
+   return FutureBuilder(
+        future: recentSearches.once(),
+        builder: (context, snapshot) {
+           if (snapshot.hasData) {
+        items.clear();
+        Map<dynamic, dynamic> values = snapshot.data.value;
+       if(values == null){
+         return Container();
+       }
+        values.forEach((key, values) {
+            items.add(values);
+        });
+        return new ListView.builder(
+            shrinkWrap: true,
+            itemCount: items.length,
+            itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                    key: UniqueKey(),
+                title: Text(items[index]['text'],
+                
+                ),trailing: IconButton(icon: Icon(Icons.clear),
+                onPressed: (){
+                  setState(() {
+                usersDatabase
+        .child(currentUser.id)
+        .child('recent-searches').child(items[index]['text']).remove();
+             items.removeAt(index);       
+                  });
+                },
+                ),
+                );
+            });
+        }
+        return CircularProgressIndicator();
 
+ 
+        });
   }
 
   clearSearch() {
@@ -112,7 +166,6 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Container recentSearches() {
-    List<String> recentSearches = [];
     return Container(
       child: Column(
         children: <Widget>[
@@ -133,22 +186,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ],
           ),
-          ListView.builder(
-            shrinkWrap: true,
-            itemBuilder: (_, i) => Row(
-              children: <Widget>[
-                SizedBox(
-                  height: 15,
-                  child: Text(recentSearches[i]),
-                ),
-                IconButton(
-                  icon: Icon(Icons.cancel),
-                  onPressed: () => {},
-                )
-              ],
-            ),
-            itemCount: recentSearches.length,
-          )
+         getRecentSearches()
         ],
       ),
     );
@@ -163,7 +201,8 @@ class _SearchScreenState extends State<SearchScreen> {
           :
           //  Column(
           //   children: <Widget>[
-          searchResultsScreen(peopleResultsFuture,postsResultsFuture),
+          searchResultsScreen(
+              peopleResultsFuture, postsResultsFuture, searchController),
 
       // ],),
     );

@@ -1,4 +1,6 @@
 
+import 'package:blue/models/post_interaction.dart';
+import 'package:blue/providers/post_interactions.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:flutter/material.dart';
 
@@ -7,9 +9,9 @@ import '../widgets/comment.dart';
 
 class CommentsScreen extends StatefulWidget {
   static const routeName = '/comments';
-
   @override
-  _CommentsScreenState createState() => _CommentsScreenState();
+  _CommentsScreenState createState() => _CommentsScreenState(
+    );
 }
 
 class _CommentsScreenState extends State<CommentsScreen> {
@@ -50,9 +52,10 @@ class _CommentsScreenState extends State<CommentsScreen> {
       'avatarUrl': currentUser.photoUrl,
       'userId': currentUser.id
     });
-    bool isNotPostOwner = currentUser.id != data[data['postOwnerId']];
+      // TODO data['postInteractions'].postInteractions[data['postId']] = PostInteraction( data['ownerId'], false, true, false, false);
+    bool isNotPostOwner = currentUser.id != data['ownerId'];
     if(isNotPostOwner){
-    activityFeedRef.document(data['postOwnerId']).
+    activityFeedRef.document(data['ownerId']).
     collection('feedItems').add(
       {
         'type': 'comment',

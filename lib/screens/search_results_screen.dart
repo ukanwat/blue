@@ -8,7 +8,7 @@ import '../widgets/progress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-FutureBuilder peopleResultsScreen(Future<QuerySnapshot> peopleResultsFuture) {
+FutureBuilder peopleResultsScreen(Future<QuerySnapshot> peopleResultsFuture,TextEditingController searchController) {
   return FutureBuilder(
     future: peopleResultsFuture,
     builder: (context, snapshot) {
@@ -21,17 +21,32 @@ FutureBuilder peopleResultsScreen(Future<QuerySnapshot> peopleResultsFuture) {
         UserResult peopleResult = UserResult(user);
         peopleResults.add(peopleResult);
       });
+      if(peopleResults.length != 0)
+      {
       return Column(
         //shrinkWrap: true,
         //physics: ClampingScrollPhysics(),
         mainAxisSize: MainAxisSize.min,
         children: peopleResults,
+      );}
+      return Container(width: double.infinity,
+        height: 100,
+        child: Center(
+          child: Text(
+            'No Results Found for "${searchController.text}"',
+            style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+
+            ),
+          ),
+        ),
       );
     },
   );
 }
 
-FutureBuilder postsResultsScreen(Future<QuerySnapshot> postsResultsFuture) {
+FutureBuilder postsResultsScreen(Future<QuerySnapshot> postsResultsFuture,TextEditingController searchController) {
   return FutureBuilder(
     future: postsResultsFuture,
     builder: (context, snapshot) {
@@ -43,16 +58,32 @@ FutureBuilder postsResultsScreen(Future<QuerySnapshot> postsResultsFuture) {
         p.Post post = p.Post.fromDocument(doc);
         postsResults.add(post);
       });
+      if(postsResults.length != 0)
+      {
       return ListView(
         physics: NeverScrollableScrollPhysics(),
         children: postsResults,
       );
-    },
+    }
+    return Container(width: double.infinity,
+        height: 100,
+        child: Center(
+          child: Text(
+            'No Posts Found for "${searchController.text}"',
+            style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            
+            ),
+          ),
+        ),
+      );
+    }
   );
 }
 
 CustomScrollView searchResultsScreen(Future<QuerySnapshot> peopleResultsFuture,
-    Future<QuerySnapshot> postsResultsFuture) {
+    Future<QuerySnapshot> postsResultsFuture,TextEditingController searchController) {
   return CustomScrollView(
     slivers: <Widget>[
       SliverToBoxAdapter(
@@ -90,7 +121,7 @@ CustomScrollView searchResultsScreen(Future<QuerySnapshot> peopleResultsFuture,
       ),
       SliverList(
         delegate: SliverChildListDelegate(
-            [Container(child: peopleResultsScreen(peopleResultsFuture))]),
+            [Container(child: peopleResultsScreen(peopleResultsFuture,searchController),),],),
       ),
        SliverToBoxAdapter(
         child: Container(
@@ -107,13 +138,13 @@ CustomScrollView searchResultsScreen(Future<QuerySnapshot> peopleResultsFuture,
               ),
             SizedBox(
               height: 32,width: 38,
-              child: IconButton(icon: Icon(Icons.view_stream,size: 21,), onPressed: null))
+              child: IconButton(icon: Icon(Icons.view_stream,size: 21,), onPressed: null),),
             ],
           ),
         ),
       ),
       SliverFillRemaining(
-        child: postsResultsScreen(postsResultsFuture),
+        child: postsResultsScreen(postsResultsFuture,searchController),
       )
     ],
   );

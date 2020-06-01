@@ -32,12 +32,14 @@ Container settingsSectionTitle({String title, Icon icon}) {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
         
-        ],        ));
+        ],        ),);
 }
 
 SwitchListTile settingsSwitchListTile(
+
     String title,bool currentValue, Function updateValue, {String description} ) {
   return SwitchListTile(
+    activeColor: Colors.blue,
     value: currentValue,
     onChanged: updateValue,
     title: Text(title),
@@ -65,7 +67,7 @@ GestureDetector settingsActionTile(
     BuildContext context, String title, Function function) {
   return GestureDetector(
     onTap: function,
-    child: Container(
+    child: Container(alignment: Alignment.centerLeft,
       padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: 
           Text(

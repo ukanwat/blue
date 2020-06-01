@@ -10,6 +10,7 @@ class CollectionsScreen extends StatefulWidget {
 }
 
 class _CollectionsScreenState extends State<CollectionsScreen> {
+  List<String> collectionNames = [];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,20 +30,35 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
                 Navigator.pop(context);
               },
             ),
-            actions: <Widget>[FlatButton(onPressed: (){
-              Navigator.of(context).pushNamed(CreateCollectionScreen.routeName);
-              }, child: Text(
-                'New',
-                style: TextStyle(
-                  color: Colors.blue,
+            actions: <Widget>[
+              FlatButton(
+                onPressed: () {
+                  Navigator.of(context).pushNamed(
+                      CreateCollectionScreen.routeName,
+                      arguments: {'collectionNames': collectionNames});
+                },
+                child: Text(
+                  'New',
+                  style: TextStyle(
+                    color: Colors.blue,
+                  ),
                 ),
-              ))
-              
+              )
             ],
           )),
-      body: GridView.count(
-        crossAxisCount: 2,
-        children: <Widget>[],
+      body: GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: MediaQuery.of(context).size.width / 2,
+        ),
+        itemBuilder: (_, i) {
+          return Card(
+            child: Text(collectionNames[i]),
+            color: Colors.grey[200],
+            margin: EdgeInsets.all(5),
+          );
+        },
+        itemCount: collectionNames.length,
       ),
     );
   }

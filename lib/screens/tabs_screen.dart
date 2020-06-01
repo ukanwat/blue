@@ -1,6 +1,7 @@
 import 'package:blue/screens/communication_tabbar_screen.dart';
 import 'package:blue/screens/post_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'home_screen.dart';
 import './explore_screen.dart';
 import './chats_screen.dart';
@@ -51,27 +52,28 @@ class _TabsScreenState extends State<TabsScreen> {
           items: <BottomNavigationBarItem>[
             BottomNavigationBarItem(
               icon: Icon(
-                Icons.home,
+               FlutterIcons.home_mco
               ),
               title: Container(height: 0.0),
             ),
 
             BottomNavigationBarItem(
               icon: Icon(
-                Icons.explore,
+                // FontAwesome.compass,
+              FlutterIcons.ios_compass_ion
               ),
               title: Container(height: 0.0),
             ),
 
             BottomNavigationBarItem(
               icon: Icon(
-                Icons.add_circle_outline,
+               FlutterIcons.add_box_mdi
               ),
               title: Container(height: 0.0),
             ),
 
             BottomNavigationBarItem(
-              icon: Icon(Icons.chat),
+              icon: Icon(FlutterIcons.chat_processing_mco),
               title: Container(height: 0.0),
             ),
 

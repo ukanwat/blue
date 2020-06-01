@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:blue/functions/upload_post_interaction.dart';
+import 'package:blue/models/post_interaction.dart';
+import 'package:blue/providers/post_interactions.dart';
 import 'package:blue/screens/profile_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -25,6 +28,7 @@ class Post extends StatefulWidget {
   final Map contents;
   final Map contentsInfo;
   final dynamic upvotes;
+  // final PostInteractions postInteractions;
 
   Post({
     this.postId,
@@ -36,6 +40,7 @@ class Post extends StatefulWidget {
     this.contents,
     this.contentsInfo,
     this.upvotes,
+    // this.postInteractions
   });
 
   factory Post.fromDocument(DocumentSnapshot doc) {
@@ -75,10 +80,13 @@ class Post extends StatefulWidget {
       contents: this.contents,
       contentsInfo: this.contentsInfo,
       upvotes: this.upvotes,
-      upvoteCount: getUpVoteCount(this.upvotes));
+      upvoteCount: getUpVoteCount(this.upvotes),
+      // postInteractions: this.postInteractions,
+      );
 }
 
 class _PostState extends State<Post> {
+  
   double topEdgeHeight;
   double bottomEdgeHeight;
 
@@ -97,6 +105,7 @@ class _PostState extends State<Post> {
   final String topicId;
   final Map contents;
   final Map contentsInfo;
+  // final PostInteractions postInteractions;
   int upvoteCount;
   Map upvotes;
   bool isUpvoted;
@@ -111,8 +120,10 @@ class _PostState extends State<Post> {
       this.contents,
       this.contentsInfo,
       this.upvotes,
-      this.upvoteCount});
-
+      this.upvoteCount,
+      // this.postInteractions
+      });
+  
   buildPostHeader() {
     return FutureBuilder(                                    //TODO can set userdata on post
         future: usersRef.document(ownerId).get(),
@@ -259,7 +270,7 @@ class _PostState extends State<Post> {
                               ),
                             )
                     ],
-                  )),
+                  ),),
             ],
           );
         });
@@ -340,6 +351,7 @@ class _PostState extends State<Post> {
         isUpvoted = false;
         upvotes[currentUserId] = false;
       });
+       postInteractions[postId] = PostInteraction( ownerId, false, false, false, false);
     } else if (!_isUpvoted) {
       postsRef
           .document(ownerId)
@@ -352,6 +364,7 @@ class _PostState extends State<Post> {
         isUpvoted = true;
         upvotes[currentUserId] = true;
       });
+       postInteractions[postId] = PostInteraction( ownerId, true, false, false, false);
     }
   }
 
@@ -422,77 +435,9 @@ class _PostState extends State<Post> {
         contentsViewList.add(textContentContainer(contents['$i']));
       }
     }
-    usersDatabase.child('$currentUserId').child('post-views').child('$postId').set({
-      'postId': postId,
-      'ownerId': ownerId,
-      'viewed': true,
-      'upvoted': false,
-      'commented': false,
-      'shared': false,
-      'saved': false,
-      'time': ServerValue.timestamp
-    });
-   
+  // postInteractions.postInteractions[postId] = PostInteraction( ownerId, false, false, false, false);
     super.initState();
   }
-   
-
-
-  RenderBox box;
-  Offset position;
-  double y;
-  double height;
-  
-  _afterLayout(_) {
-    if(trackKey != null){
-    box = trackKey.currentContext?.findRenderObject();// TODO use scrollconntroller
-    if(box == null)
-{
-}  else{  position = box.localToGlobal(Offset.zero);
-    y = position.dy;
-    height = box.size.height;
-  trackView();}}else
-  timer.cancel();
-  timer  = null;
-  }
-
-  double scrollableHeight;
-  DateTime viewStartTime;
-  DateTime viewEndTime;
- 
-  void trackView() {
-    double _y = 0;
-    if (y != null && height != null) {
-      topEdgeHeight =
-          MediaQuery.of(context).padding.top +
-          50;
-      bottomEdgeHeight =MediaQuery.of(context).size.height -
-          MediaQuery.of(context).padding.bottom; // check for iphones in future
-      scrollableHeight = bottomEdgeHeight- topEdgeHeight ;
-      position = box.localToGlobal(Offset.zero);
-      y = position.dy;
-      // TODO: decide if we need to consider post bottom
-      if (y + height  < bottomEdgeHeight - scrollableHeight/2 &&
-          viewEndTime == null &&
-          viewStartTime != null) {
-        viewEndTime = DateTime.now();
-        print('$title');
-        print(viewEndTime);
-          var viewTime = viewEndTime.difference(viewStartTime).inMilliseconds;
-          print('$title');
-          print(viewTime);
-      }
-
-      if (y  > topEdgeHeight + scrollableHeight * 0.5 && _y < y ) {
-            _y = y;
-        viewStartTime = DateTime.now();
-        print('$title');
-        print(viewStartTime);
-
-      }
-    }
-  }
-
   Widget imageContentContainer(String url, double aspectRatio) {
     return Stack(
       alignment: Alignment.center,
@@ -598,6 +543,7 @@ class _PostState extends State<Post> {
                   postId: postId,
                   ownerId: ownerId,
                   contents: contents,
+                  postInteractions: postInteractions,
                 ),
                 child: Icon(
                   Icons.comment,
@@ -645,7 +591,7 @@ class _PostState extends State<Post> {
       key: trackKey,
       children: <Widget>[
         buildPostHeader(),
-        ListView.builder(
+        ListView.builder(padding: EdgeInsets.all(0),
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
           itemBuilder: (_, i) {
@@ -653,9 +599,7 @@ class _PostState extends State<Post> {
           },
           itemCount: contents.length,
         ),
-        Padding(
-          padding: EdgeInsets.only(top: 10),
-        ),
+        SizedBox(height: 10,),
         buildPostFooter(),
       ],
     );
@@ -663,9 +607,9 @@ class _PostState extends State<Post> {
 }
 
 showComments(BuildContext context,
-    {String postId, String ownerId, Map contents}) {
+    {String postId, String ownerId, Map contents,Map<String,PostInteraction> postInteractions}) {
   Navigator.pushNamed(context, CommentsScreen.routeName,
-      arguments: {'postId': postId, 'ownerId': ownerId, 'contents': contents});
+      arguments: {'postId': postId, 'ownerId': ownerId, 'contents': contents,'postIneractions': postInteractions});
 }
 
 showProfile(BuildContext context, {String profileId}) {

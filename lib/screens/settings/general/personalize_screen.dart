@@ -8,13 +8,28 @@ class PersonalizeScreen extends StatefulWidget {
 }
 
 class _PersonalizeScreenState extends State<PersonalizeScreen> {
+  bool darkMode = false;
+   bool  amoledDarkTheme  = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: settingsHeader(context, 'Personalize'),
       body: ListView(
         children: <Widget>[
-          
+          settingsSwitchListTile('Dark Mode', darkMode, (newValue){
+            setState(() {
+              
+            darkMode = newValue;
+            });
+
+          }),
+             settingsSwitchListTile('AMOLED Dark Theme', darkMode, (newValue){
+            setState(() {
+              
+           amoledDarkTheme  = newValue;
+            });
+
+          })
         ],
       ),
     );

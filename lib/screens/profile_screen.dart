@@ -1,5 +1,9 @@
+import 'package:blue/functions/upload_post_interaction.dart';
+import 'package:blue/models/post_interaction.dart';
+import 'package:blue/providers/post_interactions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../widgets/post.dart';
 import '../models/user.dart';
@@ -14,12 +18,20 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String profileId;
-  ProfileScreen({this.profileId});
+//  final PostInteractions postInteractions;
+  ProfileScreen({this.profileId, 
+  // this.postInteractions
+  });
+
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  _ProfileScreenState createState() => _ProfileScreenState(
+    // postInteractions
+    );
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  // final PostInteractions postInteractions;
+  // _ProfileScreenState(this.postInteractions);
   String username = '';
   bool isFollowing = false;
   final String currentUserId = currentUser?.id;
@@ -28,29 +40,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int followerCount = 0;
   int followingCount = 0;
   List<Post> posts = [];
-  ScrollController _scrollController = ScrollController();
-bool hasMore = true; // flag for more products available or not  
-int documentLimit = 10; // documents to be fetched per request  
-  
-DocumentSnapshot lastDocument;
+  // ScrollController _scrollController = ScrollController();
+  bool hasMore = true; // flag for more products available or not
+  int documentLimit = 10; // documents to be fetched per request
+  final ItemPositionsListener itemPositionsListener =
+      ItemPositionsListener.create();
+  DocumentSnapshot lastDocument;
+  int view;
+  int lastView = -1;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
 
   @override
   void initState() {
     super.initState();
-     getProfilePosts();  
-    _scrollController = ScrollController()..addListener(() {  
-     double maxScroll = _scrollController.position.maxScrollExtent;  
-     double currentScroll = _scrollController.position.pixels;  
-     double delta = MediaQuery.of(context).size.height * 0.2;  
-     WidgetsBinding.instance.addPersistentFrameCallback((timeStamp) { print(delta);});
-     if (maxScroll - currentScroll <= delta) {  
+    getProfilePosts();
 
-       setState(() {
-       getProfilePosts();  
-         
-       });
-     }  
-   }); 
+    // _scrollController = ScrollController()..addListener(() {
+    //  double maxScroll = _scrollController.position.maxScrollExtent;
+    //  double currentScroll = _scrollController.position.pixels;
+    //  double delta = MediaQuery.of(context).size.height * 0.2;
+    //  WidgetsBinding.instance.addPersistentFrameCallback((timeStamp) { print(delta);});
+    //    if (maxScroll - currentScroll <= delta) {
+
+    //  setState(() {
+    //  getProfilePosts();
+
+    //   });
+    // }
+    //  });
     getFollowers();
     getFollowing();
     checkIfFollowing();
@@ -90,44 +110,83 @@ DocumentSnapshot lastDocument;
   }
 
   getProfilePosts() async {
-    if (!hasMore) {  
-     print('No More posts');  
-     return;  
-   }  
-    if (isLoading) {  
-     return;  
-   }  
+    if (!hasMore) {
+      print('No More posts');
+      return;
+    }
+    if (isLoading) {
+      return;
+    }
     setState(() {
       isLoading = true;
     });
     QuerySnapshot snapshot;
-    if (lastDocument == null) { 
+    if (lastDocument == null) {
       snapshot = await postsRef
-        .document(widget.profileId)
-        .collection('userPosts')
-        .orderBy('timeStamp', descending: true)
-        .limit(documentLimit) 
-        .getDocuments();
-    }  else {
-     snapshot = await postsRef
-        .document(widget.profileId)
-        .collection('userPosts')
-        .orderBy('timeStamp', descending: true)
-        .startAfterDocument(lastDocument) 
-        .limit(documentLimit) 
-        .getDocuments();
+          .document(widget.profileId)
+          .collection('userPosts')
+          .orderBy('timeStamp', descending: true)
+          .limit(documentLimit)
+          .getDocuments();
+    } else {
+      snapshot = await postsRef
+          .document(widget.profileId)
+          .collection('userPosts')
+          .orderBy('timeStamp', descending: true)
+          .startAfterDocument(lastDocument)
+          .limit(documentLimit)
+          .getDocuments();
     }
-     if (snapshot.documents.length < documentLimit) {            // TODO: check if length and limit is exactly equal (0 length next time)
-     hasMore = false;  
-   }  
-          lastDocument = snapshot.documents[snapshot.documents.length - 1];
+    if (snapshot.documents.length < documentLimit) {
+      // TODO: check if length and limit is exactly equal (0 length next time)
+      hasMore = false;
+    }
+    lastDocument = snapshot.documents[snapshot.documents.length - 1];
     setState(() {
       isLoading = false;
       postCount = snapshot.documents.length;
-      posts = posts + snapshot.documents.map((doc) => Post.fromDocument(doc)).toList();
+      posts = posts +
+          snapshot.documents.map((doc) => Post.fromDocument(doc)).toList();
+    });
+
+    itemPositionsListener.itemPositions.addListener(() {
+      if (itemPositionsListener.itemPositions.value.isEmpty == false) {
+        // Determine the first visible item by finding the item with the
+        // smallest trailing edge that is greater than 0.  i.e. the first
+        // item whose trailing edge in visible in the viewport.
+        view = itemPositionsListener.itemPositions.value
+            .where((ItemPosition position) => position.itemTrailingEdge > 0.7)
+            .reduce((ItemPosition view, ItemPosition position) =>
+                position.itemTrailingEdge < view.itemTrailingEdge
+                    ? position
+                    : view)
+            .index;
+        if (postInteractions.length > 0 && lastView != view) {
+          print('${snapshot.documents.length}jhgfghjkjhgf');
+          print(lastView);
+          print(view);
+          if(true){
+          PostInteraction interaction =
+              postInteractions[posts[view].postId];
+              print(postInteractions.toString());
+              print('asdfghjk');
+          uploadPostInteraction(
+            posts[view].postId,
+            interaction.ownerId,
+            true,
+            interaction.upvoted,
+            interaction.commented,
+            interaction.shared,
+            interaction.saved,
+          );
+          }
+
+          lastView = view;
+        }
+      }
     });
   }
-  
+
   editProfile() {
     Navigator.pushNamed(context, EditProfileScreen.routeName,
         arguments: {'currentUserId': currentUserId});
@@ -301,154 +360,162 @@ DocumentSnapshot lastDocument;
   }
 
   buildProfileHeader() {
-    return FutureBuilder(
-      future: usersRef.document(widget.profileId).get(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return circularProgress();
-        }
-        User user = User.fromDocument(snapshot.data);
-        username = user.username;
-        return Column(
-          children: <Widget>[
-            Container(
-              width: MediaQuery.of(context).size.width,
-              child: Padding(
-                padding: EdgeInsets.only(
-                    top: 20.0, left: 26.0, right: 26.0, bottom: 10),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[      
-                    CircleAvatar(
-                      radius: 45.0,
-                      backgroundColor: Colors.grey,
-                      backgroundImage:
-                          CachedNetworkImageProvider(user.photoUrl),
-                    ),
-                    SizedBox(
-                      width: 20,
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        height: 104,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              mainAxisSize: MainAxisSize.max,
-                              children: <Widget>[
-                                Text(
-                                  username,
-                                  style: TextStyle(
-                                      color: Theme.of(context).primaryColor,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                                SizedBox(height: 32,width: 35,
-                                                                  child: IconButton(
-                                      icon: Icon(
-                                        Icons.settings,
+    return SliverToBoxAdapter(
+      
+      child: FutureBuilder(
+        future: usersRef.document(widget.profileId).get(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return circularProgress();
+          }
+          User user = User.fromDocument(snapshot.data);
+          username = user.username;
+          return Column(
+            children: <Widget>[
+              Container(
+                width: MediaQuery.of(context).size.width,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                      top: 20.0, left: 26.0, right: 26.0, bottom: 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      CircleAvatar(
+                        radius: 45.0,
+                        backgroundColor: Colors.grey,
+                        backgroundImage:
+                            CachedNetworkImageProvider(user.photoUrl),
+                      ),
+                      SizedBox(
+                        width: 20,
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Container(
+                          height: 104,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: <Widget>[
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                mainAxisSize: MainAxisSize.max,
+                                children: <Widget>[
+                                  Text(
+                                    username,
+                                    style: TextStyle(
                                         color: Theme.of(context).primaryColor,
-                                        size: 20,
-                                      ),
-                                      onPressed: () {
-                                        Navigator.pushNamed(
-                                            context, SettingsScreen.routeName);
-                                      }),
-                                ),
-                              ],
-                            ),
-                            Text(
-                              user.displayName,
-                              textAlign: TextAlign.start,
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.w600),
-                            ),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            Expanded(
-                              child: Text(
-                                user.bio,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                  SizedBox(
+                                    height: 32,
+                                    width: 35,
+                                    child: IconButton(
+                                        icon: Icon(
+                                          Icons.settings,
+                                          color: Theme.of(context).primaryColor,
+                                          size: 20,
+                                        ),
+                                        onPressed: () {
+                                          Navigator.pushNamed(context,
+                                              SettingsScreen.routeName);
+                                        }),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                user.displayName,
                                 textAlign: TextAlign.start,
                                 style: TextStyle(
                                     color: Colors.black,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w400),
+                                    fontSize: 25,
+                                    fontWeight: FontWeight.w600),
                               ),
-                            ),
-                            SizedBox(
-                              height: 5,
-                            )
-                          ],
+                              SizedBox(
+                                height: 5,
+                              ),
+                              Expanded(
+                                child: Text(
+                                  user.bio,
+                                  textAlign: TextAlign.start,
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w400),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 5,
+                              )
+                            ],
+                          ),
                         ),
                       ),
+                    ],
+                  ),
+                ),
+              ),
+              Container(
+                width: MediaQuery.of(context).size.width,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    SizedBox(
+                      width: 26,
+                    ),
+                    buildProfileButton(),
+                    SizedBox(width: 16),
+                    buildProfileIconButton()
+                  ],
+                ),
+              ),
+              Padding(
+                padding:
+                    EdgeInsets.only(left: 15, top: 5, right: 15, bottom: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Container(
+                      child: Column(children: <Widget>[
+                        Row(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            buildCountColumn("post", postCount),
+                            SizedBox(width: 4),
+                            Container(
+                              height: 6,
+                              width: 6,
+                              child: SvgPicture.asset(
+                                  'assets/icons/seperation_dot_icon.svg'),
+                            ),
+                            SizedBox(width: 4),
+                            buildCountColumn("followers", followerCount),
+                            SizedBox(width: 5),
+                            Container(
+                                height: 6,
+                                width: 6,
+                                child: SvgPicture.asset(
+                                    'assets/icons/seperation_dot_icon.svg')), // make svg visible
+                            SizedBox(width: 4),
+                            buildCountColumn("following", followingCount),
+                          ],
+                        ),
+                      ]),
                     ),
                   ],
                 ),
               ),
-            ),
-            Container(
-              width: MediaQuery.of(context).size.width,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  SizedBox(
-                    width: 26,
-                  ),
-                  buildProfileButton(),
-                  SizedBox(width: 16),
-                  buildProfileIconButton()
-                ],
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.only(left: 15, top: 5, right: 15, bottom: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Container(
-                    child: Column(children: <Widget>[
-                      Row(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          buildCountColumn("post", postCount),
-                          SizedBox(width: 4),
-                          Container(
-                            height: 6,
-                            width: 6,
-                            child: SvgPicture.asset(
-                                'assets/icons/seperation_dot_icon.svg'),
-                          ),
-                          SizedBox(width: 4),
-                          buildCountColumn("followers", followerCount),
-                          SizedBox(width: 5),
-                          Container(
-                              height: 6,
-                              width: 6,
-                              child: SvgPicture.asset(
-                                  'assets/icons/seperation_dot_icon.svg')), // make svg visible
-                          SizedBox(width: 4),
-                          buildCountColumn("following", followingCount),
-                        ],
-                      ),
-                    ]),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -456,13 +523,14 @@ DocumentSnapshot lastDocument;
     if (posts.length == 0) {
       return Container();
     }
-    return ListView.builder(
-      controller: _scrollController,
-      shrinkWrap: true,
-      itemBuilder: (ctx,i){
-                  return posts[i];
+    return ScrollablePositionedList.builder(
+      // controller: _scrollController,
+      // shrinkWrap: true,
+      itemPositionsListener: itemPositionsListener,
+      itemBuilder: (ctx, i) {
+        return posts[i];
       },
-     itemCount: posts.length,
+      itemCount: posts.length,
     );
   }
 
@@ -500,20 +568,73 @@ DocumentSnapshot lastDocument;
     );
   }
 
+  //  Widget get positionsView => ValueListenableBuilder<Iterable<ItemPosition>>(
+  //       valueListenable: itemPositionsListener.itemPositions,
+  //       builder: (context, positions, child) {
+  //         int view;
+  //         if (positions.isNotEmpty) {
+  //           // Determine the first visible item by finding the item with the
+  //           // smallest trailing edge that is greater than 0.  i.e. the first
+  //           // item whose trailing edge in visible in the viewport.
+  //           view = positions
+  //               .where((ItemPosition position) => position.itemTrailingEdge > 0)
+  //               .reduce((ItemPosition view, ItemPosition position) =>
+  //                   position.itemTrailingEdge < view.itemTrailingEdge
+  //                       ? position
+  //                       : view)
+  //               .index;
+
+  //         }
+  //         return Row(
+  //           children: <Widget>[
+  //             Expanded(child: Text('First Item: ${min ?? ''}')),
+  //             Expanded(child: Text('Last Item: ${max ?? ''}')),
+  //             const Text('Reversed: '),
+  //             Checkbox(
+  //                 value: reversed,
+  //                 onChanged: (bool value) => setState(() {
+  //                       reversed = value;
+  //                     }))
+  //           ],
+  //         );
+  //       },
+  //     );
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: ListView(
-          children: <Widget>[
-            buildProfileHeader(),
-            Divider(),
-            buildProfilePosts(),
-           Container(
-             padding: EdgeInsets.symmetric(vertical: 5),
-             child: isLoading?circularProgress(): Container(),)
-          ],
-        ),
+      body:NestedScrollView(
+          headerSliverBuilder: (context, value){
+             return[
+               SliverAppBar(
+                expandedHeight: 60,
+                pinned: true,
+                   floating: true,
+
+                   
+              titleSpacing: 0.0,
+                flexibleSpace: FlexibleSpaceBar(
+                  
+                
+collapseMode: CollapseMode.pin,
+centerTitle: true,
+                  title: 
+                      Text(
+                      'name',
+                        style: TextStyle(
+                            fontSize: 20,
+                            color: Theme.of(context).primaryColor),
+                      ),
+                    
+                ),
+                automaticallyImplyLeading: false,
+                elevation: 0,
+                backgroundColor: Colors.white,
+              ),
+               buildProfileHeader(),];
+          },
+     // child: isLoading?circularProgress(): Container(),)
+      body: buildProfilePosts(),
+
       ),
     );
   }

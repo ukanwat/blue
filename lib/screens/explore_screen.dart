@@ -1,4 +1,5 @@
 import 'package:blue/screens/all_topics_screen.dart';
+import 'package:blue/screens/search_screen.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/topic_card.dart';
 import 'package:blue/widgets/post.dart';
@@ -6,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:blue/widgets/header.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 
 import 'home.dart';
 
@@ -61,18 +63,26 @@ class _ExploreScreenState extends State<ExploreScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: header(
-        context,title: Text('Explore',style: TextStyle(color: Theme.of(context).primaryColor),),
+        context,title: Text('Explore',style: TextStyle(color: Theme.of(context).primaryColor,
+        fontFamily: 'Techna Sans Regular',
+
+        ),),
         leadingButton: IconButton(
-            icon: Icon(Icons.grid_on, color: Theme.of(context).primaryColor),
+            icon: Icon(FlutterIcons.grid_on_mdi, color: Theme.of(context).primaryColor),
             onPressed: () {
               Navigator.pushNamed(context, AllTopicsScreen.routeName);
             }),
-        actionButton: IconButton(
-          icon: Icon(
-            Icons.search,
-            color: Theme.of(context).primaryColor,
-          ),
-          onPressed: null,
+        actionButton:
+            IconButton(
+              icon: IconButton(
+                icon: Icon(FlutterIcons.search_oct),
+                onPressed: (){
+                   Navigator.of(context).pushNamed(SearchScreen.routeName);
+                },
+                color: Theme.of(context).primaryColor,
+              ),
+              onPressed: null,
+            
         ),
       ),
       body: SingleChildScrollView(

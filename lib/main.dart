@@ -1,3 +1,4 @@
+import 'package:blue/providers/post_interactions.dart';
 import 'package:blue/screens/all_topics_screen.dart';
 import 'package:blue/screens/select_topic_screen.dart';
 import 'package:blue/screens/settings/about/acknowledgements_screen.dart';
@@ -23,6 +24,8 @@ import 'package:blue/screens/settings/privacy/safety_screens/blocked_accounts_sc
 import 'package:blue/screens/settings/privacy/safety_screens/muted_accounts_screen.dart';
 import 'package:blue/screens/topic_posts_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:blue/screens/chat_info_screen.dart';
+import 'package:blue/screens/gifs_screen.dart';
 
 import 'package:blue/screens/chat_messages_screen.dart';
 import './screens/search_screen.dart';
@@ -62,7 +65,9 @@ class MyApp extends StatelessWidget {
           TopicPostsScreen.routeName: (ctx) => TopicPostsScreen(),
           AllTopicsScreen.routeName: (ctx) => AllTopicsScreen(),
           SettingsScreen.routeName: (ctx) => SettingsScreen(),
-          
+          ChatInfoScreen.routeName: (ctx) => ChatInfoScreen(),
+          GIFsScreen.routeName: (ctx) => GIFsScreen(),
+
           AccountScreen.routeName: (ctx) => AccountScreen(),
           PersonalizeScreen.routeName: (ctx) => PersonalizeScreen(),
           CollectionsScreen.routeName: (ctx) => CollectionsScreen(),
