@@ -107,11 +107,3 @@ gifCollection = await client.trending(limit: 50,
     );
   }
 }
-class GIFCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      
-    );
-  }
-}

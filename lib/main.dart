@@ -1,5 +1,7 @@
 import 'package:blue/providers/post_interactions.dart';
 import 'package:blue/screens/all_topics_screen.dart';
+import 'package:blue/screens/profile_image_crop_screen.dart';
+import 'package:blue/screens/search_tag_screen.dart';
 import 'package:blue/screens/select_topic_screen.dart';
 import 'package:blue/screens/settings/about/acknowledgements_screen.dart';
 import 'package:blue/screens/settings/advanced_settings/autoplay_screen.dart';
@@ -67,6 +69,8 @@ class MyApp extends StatelessWidget {
           SettingsScreen.routeName: (ctx) => SettingsScreen(),
           ChatInfoScreen.routeName: (ctx) => ChatInfoScreen(),
           GIFsScreen.routeName: (ctx) => GIFsScreen(),
+          ProfileImageCropScreen.routeName: (ctx)=> ProfileImageCropScreen(),
+          SearchTagScreen.routeName: (ctx)=> SearchTagScreen(),
 
           AccountScreen.routeName: (ctx) => AccountScreen(),
           PersonalizeScreen.routeName: (ctx) => PersonalizeScreen(),

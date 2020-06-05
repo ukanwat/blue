@@ -29,11 +29,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     
     return Scaffold(
-      appBar: settingsHeader(context, 'Settings'),
+      appBar: settingsHeader(context, 'Settings',
+      
+      ),
       body: SingleChildScrollView(
           child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          Divider(thickness: 4,
+          height: 4,
+          ),
           Container(
             height: 5,
           ),
@@ -46,12 +51,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
           settingsPageNavigationTile(
               context, 'Collection', CollectionsScreen.routeName),
           settingsPageNavigationTile(context, 'Drafts', DraftsScreen.routeName),
+          Divider(thickness: 4,
+          height: 4,
+          ),
           settingsSectionTitle(
               icon: Icon(Icons.notifications_active), title: 'Notifications'),
           settingsPageNavigationTile(context, 'Email Notifications',
               EmailNotificationsScreen.routeName),
           settingsPageNavigationTile(
               context, 'Push Notifications', PushNotificationsScreen.routeName),
+              Divider(thickness: 4,
+          height: 14,
+          ),
           settingsSectionTitle(
             icon: Icon(Icons.category),
             title: 'Advanced Settings',
@@ -62,6 +73,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               context, 'Content Cache', ContentCacheScreen.routeName),
           settingsPageNavigationTile(
               context, 'Gestures', GesturesScreen.routeName),
+              Divider(thickness: 4,
+          height: 14,
+          ),
           settingsSectionTitle(
             icon: Icon(Icons.person_outline),
             title: 'Privacy',
@@ -69,6 +83,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           settingsPageNavigationTile(context, 'Safety', SafetyScreen.routeName),
           settingsPageNavigationTile(
               context, 'Activity', ActivityScreen.routeName),
+              Divider(thickness: 4,
+          height: 14,
+          ),
           settingsSectionTitle(
             icon: Icon(Icons.feedback),
             title: 'Feedback',
@@ -77,6 +94,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               context, 'Give a Suggestion', GiveASuggestionScreen.routeName),
           settingsPageNavigationTile(
               context, 'Report a Bug', ReportABugScreen.routeName),
+              Divider(thickness: 4,
+          height: 14,
+          ),
           settingsSectionTitle(
             icon: Icon(Icons.info_outline),
             title: 'About',

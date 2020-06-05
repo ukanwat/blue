@@ -90,12 +90,13 @@ class ActivityFeedItem extends StatelessWidget {
   }
 }
 
-showProfile(BuildContext context, {String profileId}) {
+showProfile(BuildContext context, {String profileId,String username}) {
   Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => ProfileScreen(
         profileId: profileId,
+        profileUsername: username,
       ),
     ),
   );

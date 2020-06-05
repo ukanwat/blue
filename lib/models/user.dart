@@ -7,14 +7,15 @@ final String email;
 final String photoUrl;
 final String displayName;
 final String bio;
-
+final String website;
 User({
   this.id,
   this.username,
   this.email,
   this.photoUrl,
   this.displayName,
-  this.bio
+  this.bio,
+  this.website
 });
 
 factory User.fromDocument(DocumentSnapshot doc){
@@ -25,6 +26,7 @@ factory User.fromDocument(DocumentSnapshot doc){
     photoUrl: doc['photoUrl'],
     displayName: doc['displayName'],
     bio: doc['bio'],
+    website: doc['website'],
   );
 }
 

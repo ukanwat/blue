@@ -6,7 +6,7 @@ PreferredSize settingsHeader(BuildContext context, String title) {
       preferredSize: Size.fromHeight(50),
       child: AppBar(
         backgroundColor: Colors.white,
-
+centerTitle: true,
         elevation: 0,
         title: Text(title,style: TextStyle(color: Theme.of(context).primaryColor),),
         automaticallyImplyLeading: false,

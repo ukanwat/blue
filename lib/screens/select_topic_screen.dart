@@ -1,4 +1,5 @@
 import 'package:blue/models/topic_list_tile.dart';
+import 'package:blue/screens/search_tag_screen.dart';
 import 'package:blue/widgets/custom_image.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/show_dialog.dart';
@@ -22,12 +23,25 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
   List<TopicListTile> followedTopicsListTile = [];
   bool topicSelected = false;
   bool postSubmitting = false;
+  List<Widget> tagChips = [];
+  List<String> tags = [];
   @override
   void initState() {
     getFollowedTopics();
     super.initState();
   }
-
+  addTag()async{
+   Navigator.of(context).pushNamed(SearchTagScreen.routeName)
+   .then((value){
+     setState(() {
+      tags.add(value);
+       tagChips.add(Chip(
+         label: Text(value),
+       ));
+     });
+   })
+   ;
+  }
   getFollowedTopics() async {
     setState(() {
       isLoading = true;
@@ -130,7 +144,9 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                       );
                     });
                     postData['post-function'](
-                        selectedTopicTile.name, selectedTopicTile.id);
+                        selectedTopicTile.name, selectedTopicTile.id,
+                        tags
+                        );
                   
                   }
                 },
@@ -148,9 +164,60 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
           ],
         ),
       ),
-      body: Column(
-        children: <Widget>[
+      body: Column(crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[ SizedBox(
+            height: 8,
+          ),
+          Row(
+            children: <Widget>[
+              SizedBox(width: 16,),
+              Text('Add Tags',
+              style: TextStyle(
+               fontSize: 16
+             ),
+              ),
+              SizedBox(width: 5,),
+              Transform.scale(
+                scale: 1.8,
+                              child: Container(
+                                height: 30,
+                                width: 30,
+                                child: IconButton(icon: Icon(Icons.add
+                ,size: 12,
+                ), onPressed: addTag,
+                iconSize: 12,
+                ),
+                              ),
+              )
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16
+            ),
+            child: Wrap(
+              runSpacing: 6,
+              spacing: 6,
+                     children: 
+                           tagChips
+                     ,
+            ),
+          ),
           SizedBox(
+            height: 10,
+          ),
+           Padding(
+             padding: const EdgeInsets.only(
+               left: 16
+             ),
+             child: Text('Select Topic'
+             ,style: TextStyle(
+               fontSize: 16
+             ),
+             ),
+           ),
+             
+              SizedBox(
             height: 10,
           ),
           isLoading

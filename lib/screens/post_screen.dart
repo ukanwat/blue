@@ -251,6 +251,7 @@ class _PostScreenState extends State<PostScreen> {
     Map<String, Map> contentsInfo,
     String topicName,
     String topicId,
+    List<String> tags
   }) {
     postsRef
         .document(currentUser?.id)
@@ -266,7 +267,8 @@ class _PostScreenState extends State<PostScreen> {
       'timeStamp': timestamp,
       'upvotes': {},                     // TODO: Remove
       'topicId': topicId,
-      'topicName': topicName
+      'topicName': topicName,
+      'tags': tags,
     }); // TODO: check if successful
     topicPostsRef
         .document(topicId)
@@ -283,6 +285,7 @@ class _PostScreenState extends State<PostScreen> {
       'upvotes': {},                          // TODO: Remove
       'topicId': topicId,
       'topicName': topicName,
+      'tags': tags
     });
   }
 
@@ -301,7 +304,7 @@ class _PostScreenState extends State<PostScreen> {
     });
   }
 
-  handleSubmit(String topicName, String topicId) async {
+  handleSubmit(String topicName, String topicId,List<String> tags) async {
     setState(() {
       isUploading = true;
     });
@@ -336,7 +339,8 @@ class _PostScreenState extends State<PostScreen> {
         title: titleController.text,
         contentsInfo: firestoreContentsInfo,
         topicName: topicName,
-        topicId: topicId);
+        topicId: topicId,
+        tags: tags);
     await createPostInRealtimeDatabase(topicId);
     titleController.clear();
     textControllers = [];

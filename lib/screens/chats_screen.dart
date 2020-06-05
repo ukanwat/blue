@@ -55,7 +55,7 @@ class ChatUserListTile extends StatelessWidget {
   ChatUserListTile(this.user);
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Container(color: Colors.white,
       child: Column(
         children: <Widget>[
           GestureDetector(

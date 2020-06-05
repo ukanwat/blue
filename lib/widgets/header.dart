@@ -20,7 +20,7 @@ PreferredSize header(context,
               'assets/icons/appbar_appicon_inverted.png',
               height: MediaQuery.of(context).viewPadding.top,
             ),
-      elevation: 1,
+      elevation: 0,
       centerTitle: centerTitleExists ? centerTitle : true,
     ),
   );

@@ -70,7 +70,10 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     getChatMessagesFuture();
   }
   sendGIF() async{
-      Navigator.of(context).pushNamed(GIFsScreen.routeName).then((value){
+      Navigator.of(context).pushNamed(GIFsScreen.routeName).catchError((e){
+      
+      }).
+      then((value){
       messagesRef.document(groupChatId).collection(groupChatId).add({
       
       'idFrom': currentUser.id,

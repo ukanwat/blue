@@ -3,7 +3,10 @@ import 'package:blue/models/post_interaction.dart';
 import 'package:blue/providers/post_interactions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../widgets/post.dart';
 import '../models/user.dart';
@@ -18,15 +21,16 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String profileId;
+  final String profileUsername;
 //  final PostInteractions postInteractions;
-  ProfileScreen({this.profileId, 
-  // this.postInteractions
-  });
+  ProfileScreen({this.profileId, this.profileUsername
+      // this.postInteractions
+      });
 
   @override
   _ProfileScreenState createState() => _ProfileScreenState(
-    // postInteractions
-    );
+      // postInteractions
+      );
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
@@ -48,6 +52,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   DocumentSnapshot lastDocument;
   int view;
   int lastView = -1;
+  int top;
+  ScrollPhysics profilePostPhysics = ScrollPhysics();
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -74,6 +80,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     getFollowers();
     getFollowing();
     checkIfFollowing();
+
+    //  WidgetsBinding.instance
+    //       .addPostFrameCallback((_){
+    //          RenderBox box = postKey.currentContext.findRenderObject();
+    //  double yPosition = box.localToGlobal(Offset.zero).dy;
+    //       });
   }
 
   checkIfFollowing() async {
@@ -154,6 +166,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // Determine the first visible item by finding the item with the
         // smallest trailing edge that is greater than 0.  i.e. the first
         // item whose trailing edge in visible in the viewport.
+        top = itemPositionsListener.itemPositions.value
+            .where((ItemPosition position) => position.itemLeadingEdge > 1)
+            .reduce((ItemPosition view, ItemPosition position) =>
+                position.itemLeadingEdge > view.itemLeadingEdge
+                    ? position
+                    : view)
+            .index;
+        if (top == 0) {
+          setState(() {
+            profilePostPhysics = NeverScrollableScrollPhysics();
+          });
+        } else {
+          profilePostPhysics = AlwaysScrollableScrollPhysics();
+        }
         view = itemPositionsListener.itemPositions.value
             .where((ItemPosition position) => position.itemTrailingEdge > 0.7)
             .reduce((ItemPosition view, ItemPosition position) =>
@@ -165,20 +191,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
           print('${snapshot.documents.length}jhgfghjkjhgf');
           print(lastView);
           print(view);
-          if(true){
-          PostInteraction interaction =
-              postInteractions[posts[view].postId];
-              print(postInteractions.toString());
-              print('asdfghjk');
-          uploadPostInteraction(
-            posts[view].postId,
-            interaction.ownerId,
-            true,
-            interaction.upvoted,
-            interaction.commented,
-            interaction.shared,
-            interaction.saved,
-          );
+          if (true) {
+            PostInteraction interaction = postInteractions[posts[view].postId];
+            print(postInteractions.toString());
+            print('asdfghjk');
+            uploadPostInteraction(
+              posts[view].postId,
+              interaction.ownerId,
+              true,
+              interaction.upvoted,
+              interaction.commented,
+              interaction.shared,
+              interaction.saved,
+            );
           }
 
           lastView = view;
@@ -192,28 +217,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
         arguments: {'currentUserId': currentUserId});
   }
 
-  Row buildCountColumn(String label, int count) {
-    return Row(
+  Column buildCountColumn(String label, int count) {
+    return Column(
       mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         Container(
-          margin: EdgeInsets.only(top: 4.0),
           child: Text(
             count.toString(),
-            style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
           ),
         ),
-        SizedBox(
-          width: 1.5,
-        ),
         Container(
-          margin: EdgeInsets.only(top: 4.0),
           child: Text(
             label,
             style: TextStyle(
               color: Colors.grey,
-              fontSize: 18.0,
+              fontSize: 13.0,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -224,12 +243,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   buildButton({String text, Function function}) {
     return Container(
-      height: 35,
+      height: 25,
       child: FlatButton(
         padding: EdgeInsets.all(0),
         onPressed: function,
         child: Container(
-          width: 100,
+          width: 130,
           height: 33,
           child: Text(
             text,
@@ -251,18 +270,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   buildButtonCircular({Icon icon, Function function}) {
     return Container(
-      height: 33,
-      width: 33,
+      height: 25,
+      width: 25,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           color: Colors.blue,
           border: Border.all(color: Colors.blue)),
-      child: IconButton(
-        icon: icon,
-        onPressed: function,
-        color: Colors.white,
-        iconSize: 18,
-        alignment: Alignment.topLeft,
+      child: Transform.scale(
+        scale: 2.5,
+        child: IconButton(
+          icon: icon,
+          onPressed: function,
+          color: Colors.white,
+          iconSize: 18,
+          alignment: Alignment.topLeft,
+        ),
       ),
     );
   }
@@ -346,13 +368,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     bool isProfileOwner = currentUserId == widget.profileId;
     if (isProfileOwner) {
       return buildButtonCircular(
-          icon: Icon(Icons.more_horiz),
+          icon: Icon(
+            FlutterIcons.more_horiz_mdi,
+            size: 7,
+          ),
           function: () {
             print('adddddd');
           });
     } else {
       return buildButtonCircular(
-          icon: Icon(Icons.more_horiz),
+          icon: Icon(
+            Icons.chat_bubble,
+            size: 7,
+          ),
           function: () {
             print('adddddd');
           });
@@ -360,173 +388,130 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   buildProfileHeader() {
-    return SliverToBoxAdapter(
-      
-      child: FutureBuilder(
-        future: usersRef.document(widget.profileId).get(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return circularProgress();
-          }
-          User user = User.fromDocument(snapshot.data);
-          username = user.username;
-          return Column(
-            children: <Widget>[
-              Container(
-                width: MediaQuery.of(context).size.width,
-                child: Padding(
-                  padding: EdgeInsets.only(
-                      top: 20.0, left: 26.0, right: 26.0, bottom: 10),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      CircleAvatar(
-                        radius: 45.0,
-                        backgroundColor: Colors.grey,
-                        backgroundImage:
-                            CachedNetworkImageProvider(user.photoUrl),
-                      ),
-                      SizedBox(
-                        width: 20,
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                          height: 104,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                mainAxisSize: MainAxisSize.max,
+    return FutureBuilder(
+      future: usersRef.document(widget.profileId).get(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return circularProgress();
+        }
+        User user = User.fromDocument(snapshot.data);
+        username = user.username;
+        return Column(
+          children: <Widget>[Divider(
+            height: 1,
+            color: Colors.grey,
+          ),
+            Container(
+              width: MediaQuery.of(context).size.width,
+              child: Padding(
+                padding: EdgeInsets.only(
+                    top: 10.0, left: 15.0, right: 15.0, bottom: 0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    CircleAvatar(
+                      radius: 55.0,
+                      backgroundColor: Colors.grey,
+                      backgroundImage:
+                          CachedNetworkImageProvider(user.photoUrl),
+                    ),
+                    SizedBox(
+                      width: 20,
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        height: 110,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[ Text(
+                    user.displayName,
+                    textAlign: TextAlign.start,
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600),
+                  ),
+                            Row(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                buildCountColumn("Posts", postCount),
+                                SizedBox(width: 14,),
+                                buildCountColumn("Followers", followerCount),
+                                  SizedBox(width: 10,),
+                                buildCountColumn("Following", followingCount),
+                              ],
+                            ), Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: <Widget>[
-                                  Text(
-                                    username,
-                                    style: TextStyle(
-                                        color: Theme.of(context).primaryColor,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w500),
-                                  ),
-                                  SizedBox(
-                                    height: 32,
-                                    width: 35,
-                                    child: IconButton(
-                                        icon: Icon(
-                                          Icons.settings,
-                                          color: Theme.of(context).primaryColor,
-                                          size: 20,
-                                        ),
-                                        onPressed: () {
-                                          Navigator.pushNamed(context,
-                                              SettingsScreen.routeName);
-                                        }),
-                                  ),
+                                  buildProfileButton(),
+                                  SizedBox(width: 16),
+                                  buildProfileIconButton(),
                                 ],
                               ),
-                              Text(
-                                user.displayName,
-                                textAlign: TextAlign.start,
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 25,
-                                    fontWeight: FontWeight.w600),
-                              ),
-                              SizedBox(
-                                height: 5,
-                              ),
-                              Expanded(
-                                child: Text(
-                                  user.bio,
-                                  textAlign: TextAlign.start,
-                                  style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w400),
-                                ),
-                              ),
-                              SizedBox(
-                                height: 5,
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Container(
-                width: MediaQuery.of(context).size.width,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    SizedBox(
-                      width: 26,
-                    ),
-                    buildProfileButton(),
-                    SizedBox(width: 16),
-                    buildProfileIconButton()
-                  ],
-                ),
-              ),
-              Padding(
-                padding:
-                    EdgeInsets.only(left: 15, top: 5, right: 15, bottom: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Container(
-                      child: Column(children: <Widget>[
-                        Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            buildCountColumn("post", postCount),
-                            SizedBox(width: 4),
-                            Container(
-                              height: 6,
-                              width: 6,
-                              child: SvgPicture.asset(
-                                  'assets/icons/seperation_dot_icon.svg'),
-                            ),
-                            SizedBox(width: 4),
-                            buildCountColumn("followers", followerCount),
-                            SizedBox(width: 5),
-                            Container(
-                                height: 6,
-                                width: 6,
-                                child: SvgPicture.asset(
-                                    'assets/icons/seperation_dot_icon.svg')), // make svg visible
-                            SizedBox(width: 4),
-                            buildCountColumn("following", followingCount),
+                            
                           ],
                         ),
-                      ]),
+                      ),
                     ),
                   ],
                 ),
               ),
-            ],
-          );
-        },
-      ),
+            ),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.only(left: 15, top: 8, right: 15, bottom: 2),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  if(user.website != null)
+                  
+                      Linkify(text: user.website,
+                      
+                      linkStyle: TextStyle(
+                        fontSize: 15,
+                        
+                            color: Colors.blue,
+                            decoration: TextDecoration.none,
+                      ),onOpen: (link){ launchWebsite(user.website);},
+                      overflow: TextOverflow.ellipsis,
+                      
+                      ),
+                    
+                   Text(
+                    user.bio,
+                    textAlign: TextAlign.start,
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
-
+launchWebsite(String url)async {
+ if (await canLaunch(url)) {
+    await launch(url, forceWebView: true,
+    enableJavaScript: true,
+    ); 
+  } else {
+    throw 'Could not launch $url';
+  }
+}
   buildProfilePosts() {
-    if (posts.length == 0) {
-      return Container();
-    }
-    return ScrollablePositionedList.builder(
+    return ListView.builder(
+      scrollDirection: Axis.vertical,
+      physics: profilePostPhysics,
       // controller: _scrollController,
-      // shrinkWrap: true,
-      itemPositionsListener: itemPositionsListener,
+      // shrinkWrap: true
       itemBuilder: (ctx, i) {
         return posts[i];
       },
@@ -599,43 +584,107 @@ class _ProfileScreenState extends State<ProfileScreen> {
   //         );
   //       },
   //     );
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body:NestedScrollView(
-          headerSliverBuilder: (context, value){
-             return[
-               SliverAppBar(
-                expandedHeight: 60,
-                pinned: true,
-                   floating: true,
-
-                   
-              titleSpacing: 0.0,
-                flexibleSpace: FlexibleSpaceBar(
-                  
-                
-collapseMode: CollapseMode.pin,
-centerTitle: true,
-                  title: 
-                      Text(
-                      'name',
-                        style: TextStyle(
-                            fontSize: 20,
-                            color: Theme.of(context).primaryColor),
-                      ),
-                    
-                ),
-                automaticallyImplyLeading: false,
-                elevation: 0,
-                backgroundColor: Colors.white,
+    return Scaffold(backgroundColor: Colors.white,
+      // Persistent AppBar that never scrolls
+      appBar: header(
+        context,centerTitle: false,
+        title: widget.profileUsername != null
+            ? Text(
+                widget.profileUsername,
+                style: TextStyle(color: Colors.black),
+              )
+            : Text(
+                currentUser.username,
+                style: TextStyle(color: Colors.black),
               ),
-               buildProfileHeader(),];
+        actionButton: IconButton(
+            icon: Icon(
+              Icons.settings,
+              color: Theme.of(context).primaryColor,
+              size: 20,
+            ),
+            onPressed: () {
+              Navigator.pushNamed(context, SettingsScreen.routeName);
+            }),
+      ),
+      body: DefaultTabController(
+        length: 2,
+        child: NestedScrollView(
+          // allows you to build a list of elements that would be scrolled away till the body reached the top
+          headerSliverBuilder: (context, _) {
+            return [
+              SliverToBoxAdapter(
+                // delegate: SliverChildListDelegate(
+                child: buildProfileHeader(),
+                //),
+              ),
+            ];
           },
-     // child: isLoading?circularProgress(): Container(),)
-      body: buildProfilePosts(),
-
+          // You tab view goes here
+          body: Column(
+            children: <Widget>[
+              TabBar(
+                indicatorColor: Theme.of(context).primaryColor,
+                labelColor: Theme.of(context).primaryColor,
+                tabs: [
+                  Tab(text: 'All'),
+                  Tab(text: 'Shares'),
+                ],
+              ),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    buildProfilePosts(),
+                    ListView(
+                      padding: EdgeInsets.zero,
+                      children: Colors.primaries.map((color) {
+                        return Container(color: color, height: 150.0);
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
+//     return Scaffold(
+//       body:NestedScrollView(
+//           headerSliverBuilder: (context, value){
+//              return[
+//                SliverAppBar(
+//                 expandedHeight: 60,
+//                 pinned: true,
+//                    floating: true,
+
+//               titleSpacing: 0.0,
+//                 flexibleSpace: FlexibleSpaceBar(
+
+// collapseMode: CollapseMode.pin,
+// centerTitle: true,
+//                   title:
+//                       Text(
+//                       'name',
+//                         style: TextStyle(
+//                             fontSize: 20,
+//                             color: Theme.of(context).primaryColor),
+//                       ),
+
+//                 ),
+//                 automaticallyImplyLeading: false,
+//                 elevation: 0,
+//                 backgroundColor: Colors.white,
+//               ),
+//                buildProfileHeader(),];
+//           },
+//      // child: isLoading?circularProgress(): Container(),)
+//       body: buildProfilePosts(),
+
+//       ),
+//     );
   }
 }

@@ -21,7 +21,7 @@ class _CommunicationTabbarScreenState extends State<CommunicationTabbarScreen> {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
-      child: Scaffold(
+      child: Scaffold(backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 1,
@@ -65,7 +65,7 @@ class _CommunicationTabbarScreenState extends State<CommunicationTabbarScreen> {
           ),
           bottom: TabBar(
             //indicator: BoxDecoration(shape: BoxShape.rectangle),
-            indicatorWeight: 3, indicatorSize: TabBarIndicatorSize.label,
+            indicatorWeight: 3, indicatorSize: TabBarIndicatorSize.tab,
             labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             labelColor: Theme.of(context).primaryColor,
             tabs: <Widget>[
