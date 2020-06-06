@@ -5,6 +5,7 @@ import 'package:blue/functions/upload_post_interaction.dart';
 import 'package:blue/models/post_interaction.dart';
 import 'package:blue/providers/post_interactions.dart';
 import 'package:blue/screens/profile_screen.dart';
+import 'package:blue/widgets/repost_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +29,7 @@ class Post extends StatefulWidget {
   final Map contents;
   final Map contentsInfo;
   final dynamic upvotes;
+  final List<dynamic> tags;
   // final PostInteractions postInteractions;
 
   Post({
@@ -40,6 +42,7 @@ class Post extends StatefulWidget {
     this.contents,
     this.contentsInfo,
     this.upvotes,
+    this.tags
     // this.postInteractions
   });
 
@@ -54,6 +57,7 @@ class Post extends StatefulWidget {
       contents: doc['contents'],
       contentsInfo: doc['contentsInfo'],
       upvotes: doc['upvotes'],
+      tags: doc['tags'],
     );
   }
   int getUpVoteCount(upvotes) {
@@ -81,6 +85,7 @@ class Post extends StatefulWidget {
       contentsInfo: this.contentsInfo,
       upvotes: this.upvotes,
       upvoteCount: getUpVoteCount(this.upvotes),
+      tags: this.tags
       // postInteractions: this.postInteractions,
       );
 }
@@ -105,6 +110,7 @@ class _PostState extends State<Post> {
   final String topicId;
   final Map contents;
   final Map contentsInfo;
+  final List<dynamic> tags;
   // final PostInteractions postInteractions;
   int upvoteCount;
   Map upvotes;
@@ -121,7 +127,7 @@ class _PostState extends State<Post> {
       this.contentsInfo,
       this.upvotes,
       this.upvoteCount,
-      // this.postInteractions
+      this.tags
       });
   
   buildPostHeader() {
@@ -529,7 +535,14 @@ class _PostState extends State<Post> {
               padding: EdgeInsets.only(left: 13.0),
             ),
             GestureDetector(
-              onTap: () => null,
+              onTap: (){
+                showDialog(
+  context: context,
+  builder: (BuildContext context) => RepostDialog(
+    this.widget
+      ),
+);
+              },
               child: Icon(Icons.repeat, size: 28.0, color: Colors.grey),
             ),
             Padding(

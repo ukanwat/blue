@@ -39,17 +39,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String username = '';
   bool isFollowing = false;
   final String currentUserId = currentUser?.id;
-  bool isLoading = false;
+  bool postsAreLoading = false;
+  bool repostsAreLoading = false;
   int postCount = 0;
+   int repostCount = 0;
   int followerCount = 0;
   int followingCount = 0;
   List<Post> posts = [];
+  List<Post> reposts = [];
   // ScrollController _scrollController = ScrollController();
-  bool hasMore = true; // flag for more products available or not
+  bool hasMorePosts = true; // flag for more products available or not
+  bool hasMoreReposts = true; // flag for more products available or not
   int documentLimit = 10; // documents to be fetched per request
   final ItemPositionsListener itemPositionsListener =
       ItemPositionsListener.create();
-  DocumentSnapshot lastDocument;
+  DocumentSnapshot lastPostDocument;
+    DocumentSnapshot lastRepostDocument;
   int view;
   int lastView = -1;
   int top;
@@ -63,6 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     getProfilePosts();
+     getProfileReposts();
 
     // _scrollController = ScrollController()..addListener(() {
     //  double maxScroll = _scrollController.position.maxScrollExtent;
@@ -122,18 +128,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   getProfilePosts() async {
-    if (!hasMore) {
+    if (!hasMorePosts) {
       print('No More posts');
       return;
     }
-    if (isLoading) {
+    if (postsAreLoading) {
       return;
     }
     setState(() {
-      isLoading = true;
+      postsAreLoading = true;
     });
     QuerySnapshot snapshot;
-    if (lastDocument == null) {
+    if (lastPostDocument == null) {
       snapshot = await postsRef
           .document(widget.profileId)
           .collection('userPosts')
@@ -145,17 +151,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
           .document(widget.profileId)
           .collection('userPosts')
           .orderBy('timeStamp', descending: true)
-          .startAfterDocument(lastDocument)
+          .startAfterDocument(lastPostDocument)
           .limit(documentLimit)
           .getDocuments();
     }
     if (snapshot.documents.length < documentLimit) {
       // TODO: check if length and limit is exactly equal (0 length next time)
-      hasMore = false;
+      hasMorePosts = false;
     }
-    lastDocument = snapshot.documents[snapshot.documents.length - 1];
+    lastPostDocument = snapshot.documents[snapshot.documents.length - 1];
     setState(() {
-      isLoading = false;
+      postsAreLoading = false;
       postCount = snapshot.documents.length;
       posts = posts +
           snapshot.documents.map((doc) => Post.fromDocument(doc)).toList();
@@ -210,6 +216,96 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }
       }
     });
+  }
+   getProfileReposts() async {
+     
+    if (!hasMoreReposts) {
+      print('No More posts');
+      return;
+    }
+    if (repostsAreLoading) {
+      return;
+    }
+    setState(() {
+      repostsAreLoading = true;
+    });
+    QuerySnapshot snapshot;
+    if (lastRepostDocument == null) {
+      snapshot = await repostsRef
+          .document(widget.profileId)
+          .collection('userReposts')
+          .orderBy('timeStamp', descending: true)
+          .limit(documentLimit)
+          .getDocuments();
+    } else {
+      snapshot = await repostsRef
+          .document(widget.profileId)
+          .collection('userReposts')
+          .orderBy('timeStamp', descending: true)
+          .startAfterDocument(lastRepostDocument)
+          .limit(documentLimit)
+          .getDocuments();
+    }
+    if (snapshot.documents.length < documentLimit) {
+      // TODO: check if length and limit is exactly equal (0 length next time)
+      hasMoreReposts = false;
+    }
+    lastRepostDocument = snapshot.documents[snapshot.documents.length - 1];
+    setState(() {
+      repostsAreLoading = false;
+      repostCount = snapshot.documents.length;
+      reposts = reposts + snapshot.documents.map((doc) => Post.fromDocument(doc)).toList();
+    });
+
+    // itemPositionsListener.itemPositions.addListener(() {
+    //   if (itemPositionsListener.itemPositions.value.isEmpty == false) {
+    //     // Determine the first visible item by finding the item with the
+    //     // smallest trailing edge that is greater than 0.  i.e. the first
+    //     // item whose trailing edge in visible in the viewport.
+    //     top = itemPositionsListener.itemPositions.value
+    //         .where((ItemPosition position) => position.itemLeadingEdge > 1)
+    //         .reduce((ItemPosition view, ItemPosition position) =>
+    //             position.itemLeadingEdge > view.itemLeadingEdge
+    //                 ? position
+    //                 : view)
+    //         .index;
+    //     if (top == 0) {
+    //       setState(() {
+    //         profilePostPhysics = NeverScrollableScrollPhysics();
+    //       });
+    //     } else {
+    //       profilePostPhysics = AlwaysScrollableScrollPhysics();
+    //     }
+    //     view = itemPositionsListener.itemPositions.value
+    //         .where((ItemPosition position) => position.itemTrailingEdge > 0.7)
+    //         .reduce((ItemPosition view, ItemPosition position) =>
+    //             position.itemTrailingEdge < view.itemTrailingEdge
+    //                 ? position
+    //                 : view)
+    //         .index;
+    //     if (postInteractions.length > 0 && lastView != view) {
+    //       print('${snapshot.documents.length}jhgfghjkjhgf');
+    //       print(lastView);
+    //       print(view);
+    //       if (true) {
+    //         PostInteraction interaction = postInteractions[posts[view].postId];
+    //         print(postInteractions.toString());
+    //         print('asdfghjk');
+    //         uploadPostInteraction(
+    //           posts[view].postId,
+    //           interaction.ownerId,
+    //           true,
+    //           interaction.upvoted,
+    //           interaction.commented,
+    //           interaction.shared,
+    //           interaction.saved,
+    //         );
+    //       }
+
+    //       lastView = view;
+    //     }
+    //   }
+    // });
   }
 
   editProfile() {
@@ -518,6 +614,18 @@ launchWebsite(String url)async {
       itemCount: posts.length,
     );
   }
+    buildProfileReposts() {
+    return ListView.builder(
+      scrollDirection: Axis.vertical,
+      physics: profilePostPhysics,
+      // controller: _scrollController,
+      // shrinkWrap: true
+      itemBuilder: (ctx, i) {
+        return reposts[i];
+      },
+      itemCount: reposts.length,
+    );
+  }
 
   PreferredSize profileBar() {
     return PreferredSize(
@@ -638,12 +746,7 @@ launchWebsite(String url)async {
                 child: TabBarView(
                   children: [
                     buildProfilePosts(),
-                    ListView(
-                      padding: EdgeInsets.zero,
-                      children: Colors.primaries.map((color) {
-                        return Container(color: color, height: 150.0);
-                      }).toList(),
-                    ),
+                    buildProfileReposts(),
                   ],
                 ),
               ),
