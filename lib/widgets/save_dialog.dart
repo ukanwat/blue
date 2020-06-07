@@ -1,23 +1,29 @@
 import 'package:blue/screens/home.dart';
 import 'package:blue/widgets/post.dart';
+import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/settings_widgets.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class RepostDialog extends StatefulWidget {
+class SaveDialog extends StatefulWidget {
  final  Post post;
-  RepostDialog(this.post);
+  SaveDialog(this.post);
 
   @override
-  _RepostDialogState createState() => _RepostDialogState();
+  _SaveDialogState createState() => _SaveDialogState();
 }
 
-class _RepostDialogState extends State<RepostDialog> {
+class _SaveDialogState extends State<SaveDialog> {
   bool shareWithComment = true;
 TextEditingController commentController = TextEditingController();
-sharePost()async{
- await  repostsRef
+bool isLoading = true;
+List<InkWell> collectionList = [];
+savePost(String collectionName)async{
+ await  savedPostsRef
         .document(currentUser?.id)
-        .collection('userReposts')
+        .collection('userCollections')
+        .document(collectionName)
+        .collection('collectionPosts')
         .document(widget.post?.postId)
         .setData({
       'postId': widget.post?.postId,
@@ -34,8 +40,46 @@ sharePost()async{
       'comment': commentController.text
     }); // TODO: check if successful
 
-     Navigator.of(context).pop();
-}
+}  
+@override
+  void initState() {
+   getCollections();
+    super.initState();
+  }
+  getCollections()async{
+    DocumentSnapshot snapshot =await collectionsRef
+        .document(currentUser?.id).get();
+    setState(() {
+
+    if(snapshot != null) {snapshot.data.forEach((key, value) {
+         collectionList.insert(int.parse(key), InkWell(
+onTap: ()async {
+  await savePost(value);
+  Navigator.pop(context);                // TODO dont pop if user pops using tap or back button
+},
+                    child: Container(
+decoration: BoxDecoration(
+  borderRadius: BorderRadius.circular(5),
+  color: Colors.grey[200]
+),
+height: 40,width: double.infinity,
+margin: EdgeInsets.symmetric(vertical: 2),
+             child:Center(
+               child: Text(value,
+
+                 style: TextStyle(
+                   fontSize: 20
+                 ),
+                 ),
+             ),
+           ),
+         ));
+     });}
+   
+     isLoading = false;
+    });
+
+  }
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -62,7 +106,7 @@ sharePost()async{
           mainAxisSize: MainAxisSize.min, // To make the card compact
           children: <Widget>[
             Text(
-              "Share",
+              "Save to Collection",
               style: TextStyle(
                 fontSize: 18.0,
                 fontWeight: FontWeight.w600,
@@ -80,45 +124,23 @@ sharePost()async{
                    ),
               ),
             ),
-           
-            settingsSwitchListTile('Share with comment',shareWithComment , (newValue){
-            setState(() {
-              shareWithComment = newValue;
-            });
-              
-              
-            }),
-            if(shareWithComment )
-            TextFormField(
-              textAlignVertical: TextAlignVertical.center,
-              
-              style: TextStyle(fontSize: 16),
-              controller: commentController,
-              maxLines: 4,
-              minLines: 1,
-              keyboardType: TextInputType.multiline,
-              decoration: InputDecoration(
-                hintText: 'Comment',
-
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(5),
-                  borderSide: BorderSide(width: 0, color: Colors.grey),
-
-                ),
-
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(5),
-                  borderSide: BorderSide(width: 0, color: Colors.grey),
-                ),
-                contentPadding: EdgeInsets.all(6)
-              ),
-            ),
+ SizedBox(height: 20.0),
+       isLoading?
+       circularProgress():
+           Container(
+             height:  MediaQuery.of(context).size.height*0.4 > 44*collectionList.length.toDouble()?44*collectionList.length.toDouble(): MediaQuery.of(context).size.height*4.0,
+          child: ListView(
+            physics: BouncingScrollPhysics(),
+            children:
+              collectionList
+          ,
+          
+          ),
+           ),
             SizedBox(height: 20.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
+            
                 FlatButton(
+                  color: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -127,21 +149,12 @@ sharePost()async{
                   },
                   child: Text(
                     'Cancel',
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontSize: 20
+                    ),
                   ),
                 ),
-                FlatButton(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  color: Colors.blue,
-                  onPressed: sharePost,
-                  child: Text(
-                    'Share',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
           ],
         ),
       ),

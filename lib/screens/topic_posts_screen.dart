@@ -80,12 +80,11 @@ class _TopicPostsScreenState extends State<TopicPostsScreen> {
 // }
 // class DemoTab extends StatefulWidget {
 
-//   DemoTab({ 
+//   DemoTab({
 //     this.parentController
 //   });
 
 //   final ScrollController parentController;
-
 
 //   DemoTabState createState() => DemoTabState();
 // }
@@ -104,9 +103,7 @@ class _TopicPostsScreenState extends State<TopicPostsScreen> {
 //     super.initState();
 //     _scrollController = ScrollController();
 
-
 //     _scrollController.addListener((){
-
 
 //       var innerPos      = _scrollController.position.pixels;
 //       var maxOuterPos   = widget.parentController.position.maxScrollExtent;
@@ -122,12 +119,7 @@ class _TopicPostsScreenState extends State<TopicPostsScreen> {
 //         widget.parentController.position.jumpTo(currenParentPos);
 //       }
 
-
 //     });
-
-
-
-
 
 //     widget.parentController.addListener((){
 //       var currentOutPos = widget.parentController.position.pixels;
@@ -135,7 +127,6 @@ class _TopicPostsScreenState extends State<TopicPostsScreen> {
 //         _scrollController.position.jumpTo(0);
 //       }
 //     });
-
 
 //   }
 
@@ -158,80 +149,88 @@ class _TopicPostsScreenState extends State<TopicPostsScreen> {
 //     );
 //   }
 // }
- 
- @override
-   Widget build(BuildContext context) {
-    return Scaffold(
-      body: DefaultTabController(
-        length: 2,
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: DefaultTabController(
+        length: 3,
         child: NestedScrollView(
           headerSliverBuilder: (context, value) {
             return [
               SliverAppBar(
-                expandedHeight: 180,
-                pinned: false,
-                   floating: true,
-
-                   
-              titleSpacing: 0.0,
+                expandedHeight: 100,
+                pinned: true,
+                floating: true,
+                snap: true,
+                titleSpacing: 0.0,
                 flexibleSpace: FlexibleSpaceBar(
-                  
-                  background: cachedNetworkImage(context, topicData['imageUrl']),
-collapseMode: CollapseMode.pin,
-
-                  title: 
-                      Text(
-                        topicData['name'],
-                        style: TextStyle(
-                            fontSize: 20,
-                            color: Theme.of(context).primaryColor),
-                      ),
-                    
+                  background:
+                      cachedNetworkImage(context, topicData['imageUrl']),
+                  collapseMode: CollapseMode.pin,
+                  title: Text(
+                    topicData['name'],
+                    style: TextStyle(
+                        fontSize: 20, color: Theme.of(context).primaryColor,
+                        fontFamily: 'Techna Sans Regular'
+                        ),
+                  ),
                 ),
                 automaticallyImplyLeading: false,
                 leading: BackButton(
-                  color: Colors.white,
+                  color: Theme.of(context).primaryColor,
                 ),
                 elevation: 1,
                 backgroundColor: Colors.white,
               ),
               SliverPersistentHeader(
-                  //             child: PreferredSize(
-                  // preferredSize: Size.fromHeight(0),
-                  //               child: SliverAppBar(
-                    // snap: true,
-                    // floating: true,
-                    // expandedHeight: 0,
-                    pinned: true,
-      delegate: _SliverAppBarDelegate(
-           height: 45.0,
-      //  maxHeight: 200.0,
+                //             child: PreferredSize(
+                // preferredSize: Size.fromHeight(0),
+                //               child: SliverAppBar(
+                // snap: true,
+                // floating: true,
+                // expandedHeight: 0,
+                pinned: true,
+                delegate: _SliverAppBarDelegate(
+                  height: 45.0,
+                  //  maxHeight: 200.0,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 35),
                     child: TabBar(
+                      unselectedLabelStyle:
+                          TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                          labelStyle: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                      indicatorSize: TabBarIndicatorSize.tab,
                       indicatorColor: Theme.of(context).primaryColor,
                       labelColor: Theme.of(context).primaryColor,
                       unselectedLabelColor:
                           Theme.of(context).primaryColor.withAlpha(220),
-                         
-                          
                       tabs: [
-                        Tab(text: "Popular",),
+                        Tab(
+                          text: "Popular",
+                        ),
+                        Tab(text: "Today"),
                         Tab(text: "Top"),
                       ],
-                    ),),
+                    ),
+                  ),
+                ),
                 //  /
                 // ),
               )
             ];
           },
           body: TabBarView(
-            children: [Container(), Container()],
+            physics: BouncingScrollPhysics(),
+            children: [Container(), Container(), Container()],
           ),
         ),
       ),
     );
   }
 }
+
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   _SliverAppBarDelegate({
     @required this.height,
@@ -244,15 +243,13 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   double get minExtent => height;
   @override
-  double get maxExtent => height;//max(maxHeight, minHeight);
+  double get maxExtent => height; //max(maxHeight, minHeight);
   @override
   Widget build(
-      BuildContext context, 
-      double shrinkOffset, 
-      bool overlapsContent) 
-  {
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return new SizedBox.expand(child: child);
   }
+
   @override
   bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
     return false;

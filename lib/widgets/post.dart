@@ -6,9 +6,11 @@ import 'package:blue/models/post_interaction.dart';
 import 'package:blue/providers/post_interactions.dart';
 import 'package:blue/screens/profile_screen.dart';
 import 'package:blue/widgets/repost_dialog.dart';
+import 'package:blue/widgets/save_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:video_player/video_player.dart';
 
 import './custom_image.dart';
@@ -32,19 +34,19 @@ class Post extends StatefulWidget {
   final List<dynamic> tags;
   // final PostInteractions postInteractions;
 
-  Post({
-    this.postId,
-    this.ownerId,
-    this.username,
-    this.title,
-    this.topicName,
-    this.topicId,
-    this.contents,
-    this.contentsInfo,
-    this.upvotes,
-    this.tags
-    // this.postInteractions
-  });
+  Post(
+      {this.postId,
+      this.ownerId,
+      this.username,
+      this.title,
+      this.topicName,
+      this.topicId,
+      this.contents,
+      this.contentsInfo,
+      this.upvotes,
+      this.tags
+      // this.postInteractions
+      });
 
   factory Post.fromDocument(DocumentSnapshot doc) {
     return Post(
@@ -91,10 +93,9 @@ class Post extends StatefulWidget {
 }
 
 class _PostState extends State<Post> {
-  
   double topEdgeHeight;
   double bottomEdgeHeight;
-
+  bool showSaveBar = false;
   final GlobalKey trackKey = GlobalKey();
   Widget playbackButton = Container();
   VideoPlayerController _controller;
@@ -116,6 +117,7 @@ class _PostState extends State<Post> {
   Map upvotes;
   bool isUpvoted;
   double screenWidth;
+  bool tagBarVisible = false;
   _PostState(
       {this.postId,
       this.ownerId,
@@ -127,11 +129,11 @@ class _PostState extends State<Post> {
       this.contentsInfo,
       this.upvotes,
       this.upvoteCount,
-      this.tags
-      });
-  
+      this.tags});
+
   buildPostHeader() {
-    return FutureBuilder(                                    //TODO can set userdata on post
+    return FutureBuilder(
+        //TODO can set userdata on post
         future: usersRef.document(ownerId).get(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -144,7 +146,7 @@ class _PostState extends State<Post> {
               Container(
                 width: MediaQuery.of(context).size.width,
                 padding:
-                    EdgeInsets.only(left: 13, top: 5, right: 13, bottom: 0),
+                    EdgeInsets.only(left: 13, top: 6, right: 13, bottom: 0),
                 child: Row(
                   children: <Widget>[
                     Expanded(
@@ -153,7 +155,7 @@ class _PostState extends State<Post> {
                           widget.title,
                           style: TextStyle(
                               color: Colors.black,
-                              fontSize: 23,
+                              fontSize: 20,
                               fontWeight: FontWeight.w600),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -162,121 +164,272 @@ class _PostState extends State<Post> {
                     ),
                   ],
                 ),
+              ),if(tagBarVisible)
+              Padding(
+                padding: EdgeInsets.all(5),
+              child: InkWell(
+                
+                child: Text(topicName,
+                style: TextStyle(
+                fontSize: 14
+                ),
+                ),
               ),
+
+              ),
+              if(tagBarVisible)
               Container(
-                  padding:
-                      EdgeInsets.only(left: 13, top: 2, bottom: 2, right: 0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      CircleAvatar(
-                        radius: 15,
-                        backgroundImage:
-                            CachedNetworkImageProvider(user.photoUrl),
-                        backgroundColor: Colors.grey,
+                height: 28,
+                child: Row(children: <Widget>[
+                   Container(
+                     width: 28,
+                     child: Center(
+                       child: Text('#',
+                style: TextStyle(
+                fontSize: 22
+                ),
+                ),
+                     ),
+                   ),
+                   Expanded(
+                                        child: Container(
+                                          height: 28,
+                                          color: Colors.grey[200],
+                                          child: ListView.builder(
+                       itemCount: tags.length,
+                       scrollDirection: Axis.horizontal,
+                       itemBuilder: (_,i){
+                         print( tags[i],);
+                        return Container(
+                                    
+                  
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8
+                          ),
+                          margin: EdgeInsets.symmetric(
+                            horizontal: 2,
+                            vertical: 3
+                          ),
+
+decoration: BoxDecoration(
+color: Colors.white,
+  borderRadius: BorderRadius.circular(100)
+),
+                            child: Center(
+                              child: Text(
+                                tags[i],
+                                style: TextStyle(
+                                  fontSize: 14
+                                ),
+                              ),
+                            ),
+                          
+                        );
+                       },
+                     ),
+                                        ),
+                   )
+                ],),
+              )
+,              Container(
+                padding: EdgeInsets.only(left: 13, top: 0, bottom: 0, right: 0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    CircleAvatar(
+                      radius: 15,
+                      backgroundImage:
+                          CachedNetworkImageProvider(user.photoUrl),
+                      backgroundColor: Colors.grey,
+                    ),
+                    SizedBox(
+                      width: 8,
+                    ),
+                    Container(
+                      height: 24,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        user.username,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                      SizedBox(
-                        width: 8,
-                      ),
-                      Container(
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Expanded(
+                      child: Container(
                         height: 24,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          user.username,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.black87,
-                            fontWeight: FontWeight.w500,
+                        child: FittedBox(
+                          fit: BoxFit.none,
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            height: 20,
+                            width: 70,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.blue,
+                            ),
+                            child: RawMaterialButton(
+                              child: Text(
+                                'Follow',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              onPressed: null,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Expanded(
-                        child: Container(
-                          height: 24,
-                          child: FittedBox(
-                            fit: BoxFit.none,
-                            alignment: Alignment.centerLeft,
-                            child: Container(
-                              height: 20,
-                              width: 70,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
+                    ),
+                    tagBarVisible?
+                         SizedBox(
+                            height: 40,
+                            width: 40,
+                            child: IconButton(
+                              iconSize: 28,
+                              onPressed: () {
+                               setState(() {
+                                 tagBarVisible = false;
+                               });
+                              },
+                              icon: Icon(
+                                Icons.keyboard_arrow_up,
+                              ),
+                            ),
+                          )
+                        : SizedBox(
+                            height: 40,
+                            width: 40,
+                            child: IconButton(
+                              iconSize: 28,
+                              onPressed: () async {
+                              setState(() {
+                                tagBarVisible = true;
+                              });
+                              },
+                              icon: Icon(
+                                
+                                Icons.keyboard_arrow_down,
+                              ),
+                            ),
+                          ),
+                    isSaved
+                        ? SizedBox(
+                            height: 40,
+                            width: 40,
+                          
+                            child: IconButton(
+                              iconSize: 22,
+                              onPressed: () {
+                                setState(() {
+                                  isSaved = false;
+                                  showSaveBar = false;
+                                  savedPostsRef
+                                    .document(currentUser?.id)
+                                    .collection('All')
+                                    .document(postId).delete();
+                                });
+                              },
+                              icon: Icon(
+                                Icons.bookmark,
                                 color: Colors.blue,
                               ),
-                              child: RawMaterialButton(
-                                child: Text(
-                                  'Follow',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                onPressed: null,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
+                            ),
+                          )
+                        : SizedBox(
+                            height: 40,
+                            width: 40,
+                            child: IconButton(
+                              iconSize: 22,
+                              onPressed: () async {
+                               setState(() {
+                                 isSaved = true;
+                               });
+                                await savedPostsRef
+                                    .document(currentUser?.id)
+                                    .collection('All')
+                                    .document(postId)
+                                    .setData({
+                                  'postId': postId,
+                                  'ownerId': ownerId,
+                                  'username': username,
+                                  'contents': contents,
+                                  'contentsInfo': contentsInfo,
+                                  'title': title,
+                                  'timeStamp': timestamp,
+                                  'upvotes': {}, // TODO: Remove
+                                  'topicId': topicId,
+                                  'topicName': topicName,
+                                  'tags': tags,
+                                });
+                                 setState(() {
+                                  showSaveBar = true;
+                                });
+                                Future.delayed(
+                                    const Duration(milliseconds: 5000), () {
+                                  setState(() {
+                                    showSaveBar = false;
+                                  });
+                                });
+                               
+                              },
+                              icon: Icon(
+                                Icons.bookmark_border,
                               ),
                             ),
                           ),
-                        ),
-                      ), FlatButton(onPressed: null, child: Text(widget.topicName,style: TextStyle(fontSize: 12,color: Colors.blue),),),
-                      isSaved
-                          ? SizedBox(
-                              height: 40,
-                              width: 40,
-                              child: IconButton(
-                                iconSize: 22,
-                                onPressed: () {
-                                  setState(() {
-                                    isSaved = false;
-                                  });
-                                },
-                                icon: Icon(
-                                  Icons.bookmark,
-                                  color: Colors.blue,
-                                ),
-                              ),
-                            )
-                          : SizedBox(
-                              height: 40,
-                              width: 40,
-                              child: IconButton(
-                                iconSize: 22,
-                                onPressed: () {
-                                  setState(() {
-                                    isSaved = true;
-                                  });
-                                },
-                                icon: Icon(
-                                  Icons.bookmark_border,
-                                ),
-                              ),
-                            ),
-                      isPostOwner
-                          ? IconButton(
-                              onPressed: () => handleDeletePost(context),
-                              icon: Icon(Icons.more_vert),
-                            )
-                          : SizedBox(
-                              height: 40,
-                              width: 40,
-                              child: IconButton(
-                                iconSize: 22,
-                                onPressed: () => handleDeletePost(context),
-                                icon: Icon(
-                                  Icons.more_vert,
-                                ),
-                              ),
-                            )
-                    ],
-                  ),),
+                    
+                  ],
+                ),
+              ),
+              if(showSaveBar)
+              Container(
+                width: double.infinity,
+                 padding: EdgeInsets.symmetric(
+                   vertical: 0,
+                   horizontal: 6
+                 ),
+               child:   Row(
+                 mainAxisAlignment: MainAxisAlignment.spaceAround,
+                 children: <Widget>[
+                  Text('Saved!',style: TextStyle(  fontSize: 18),
+                
+                  ),
+                
+                  FlatButton(onPressed: (){
+                    setState(() {
+                      showSaveBar = false;
+                    });
+                      showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) => SaveDialog(this.widget),
+                                );    
+                  }, 
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)
+                  ),
+                  child: Text(
+                    'Save to Collection',
+                    style: TextStyle(color: Colors.blue,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18
+                    ),
+                  ))
+               ],)
+              )
             ],
           );
         });
@@ -357,7 +510,8 @@ class _PostState extends State<Post> {
         isUpvoted = false;
         upvotes[currentUserId] = false;
       });
-       postInteractions[postId] = PostInteraction( ownerId, false, false, false, false);
+      postInteractions[postId] =
+          PostInteraction(ownerId, false, false, false, false);
     } else if (!_isUpvoted) {
       postsRef
           .document(ownerId)
@@ -370,7 +524,8 @@ class _PostState extends State<Post> {
         isUpvoted = true;
         upvotes[currentUserId] = true;
       });
-       postInteractions[postId] = PostInteraction( ownerId, true, false, false, false);
+      postInteractions[postId] =
+          PostInteraction(ownerId, true, false, false, false);
     }
   }
 
@@ -407,15 +562,15 @@ class _PostState extends State<Post> {
       });
     }
   }
+
   bool persistentCallbackAdded = false;
   Timer timer;
   @override
   void didChangeDependencies() {
-
-     if(this.mounted && persistentCallbackAdded == false){
+    if (this.mounted && persistentCallbackAdded == false) {
       //timer =  Timer.periodic(Duration(milliseconds: 100), (Timer t){WidgetsBinding.instance.addPostFrameCallback(_afterLayout);} );
-    
-    persistentCallbackAdded = true;
+
+      persistentCallbackAdded = true;
     }
 
     super.didChangeDependencies();
@@ -441,14 +596,15 @@ class _PostState extends State<Post> {
         contentsViewList.add(textContentContainer(contents['$i']));
       }
     }
-  // postInteractions.postInteractions[postId] = PostInteraction( ownerId, false, false, false, false);
+    // postInteractions.postInteractions[postId] = PostInteraction( ownerId, false, false, false, false);
     super.initState();
   }
+
   Widget imageContentContainer(String url, double aspectRatio) {
     return Stack(
       alignment: Alignment.center,
       children: <Widget>[
-        (cachedNetworkImage(context,url,aspectRatio : aspectRatio)),
+        (cachedNetworkImage(context, url, aspectRatio: aspectRatio)),
       ],
     );
   }
@@ -464,7 +620,7 @@ class _PostState extends State<Post> {
         _controller.play();
       });
   }
-   
+
   Widget videoContentContainer(String url, double aspectRatio) {
     bool videoMuted = false;
     return FutureBuilder(
@@ -533,23 +689,52 @@ class _PostState extends State<Post> {
           children: <Widget>[
             Padding(
               padding: EdgeInsets.only(left: 13.0),
+            ),  ownerId == currentUser.id?
+                         SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: GestureDetector(
+
+                            
+                              onTap: () => handleDeletePost(context),
+                              child: Icon(
+                                Icons.more_vert,
+                                size: 22,
+                              ),
+                            ),
+                          )
+                        : SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: GestureDetector(
+
+                            
+                              onTap: () => handleDeletePost(context),
+                              child: Icon(
+                                Icons.more_horiz,
+                                size: 22,
+                              ),
+                            ),
+                          ), Expanded(
+              child: Container(),
             ),
             GestureDetector(
-              onTap: (){
+              onTap: () {
                 showDialog(
-  context: context,
-  builder: (BuildContext context) => RepostDialog(
-    this.widget
-      ),
-);
+                  context: context,
+                  builder: (BuildContext context) => RepostDialog(this.widget),
+                );
               },
-              child: Icon(Icons.repeat, size: 28.0, color: Colors.grey),
+              child: Icon(Icons.repeat, size: 24.0, color: Colors.grey),
             ),
             Padding(
               padding: EdgeInsets.only(right: 20.0),
             ),
+           
+                         
             Padding(
-              padding: const EdgeInsets.only(top: 4.0),
+              padding: const EdgeInsets.only(top: 4.0, right: 20.0),
+
               child: GestureDetector(
                 onTap: () => showComments(
                   context,
@@ -560,21 +745,19 @@ class _PostState extends State<Post> {
                 ),
                 child: Icon(
                   Icons.comment,
-                  size: 28.0,
+                  size: 24.0,
                   color: Colors.blue[300],
                 ),
               ),
             ),
-            Expanded(
-              child: Container(),
-            ),
+           
             GestureDetector(
               onTap: () => handleVoteButton(),
-              child: Icon(isUpvoted == true ? Icons.star : Icons.star_border,
-                  size: 24.0, color: Colors.blueGrey),
+              child: Icon(isUpvoted == true ? FlutterIcons.arrow_up_bold_mco : FlutterIcons.arrow_up_bold_outline_mco ,
+                  size: 26.0, color: Colors.blue),
             ),
             Container(
-                margin: EdgeInsets.only(left: 20),
+                margin: EdgeInsets.only(left: 8),
                 child: Text(
                   '$upvoteCount',
                   style: TextStyle(
@@ -591,6 +774,7 @@ class _PostState extends State<Post> {
         Divider(
           thickness: 3,
           color: Colors.grey[200],
+          height: 3,
         ),
       ],
     );
@@ -604,7 +788,8 @@ class _PostState extends State<Post> {
       key: trackKey,
       children: <Widget>[
         buildPostHeader(),
-        ListView.builder(padding: EdgeInsets.all(0),
+        ListView.builder(
+          padding: EdgeInsets.all(0),
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
           itemBuilder: (_, i) {
@@ -612,7 +797,9 @@ class _PostState extends State<Post> {
           },
           itemCount: contents.length,
         ),
-        SizedBox(height: 10,),
+        SizedBox(
+          height: 10,
+        ),
         buildPostFooter(),
       ],
     );
@@ -620,9 +807,16 @@ class _PostState extends State<Post> {
 }
 
 showComments(BuildContext context,
-    {String postId, String ownerId, Map contents,Map<String,PostInteraction> postInteractions}) {
-  Navigator.pushNamed(context, CommentsScreen.routeName,
-      arguments: {'postId': postId, 'ownerId': ownerId, 'contents': contents,'postIneractions': postInteractions});
+    {String postId,
+    String ownerId,
+    Map contents,
+    Map<String, PostInteraction> postInteractions}) {
+  Navigator.pushNamed(context, CommentsScreen.routeName, arguments: {
+    'postId': postId,
+    'ownerId': ownerId,
+    'contents': contents,
+    'postIneractions': postInteractions
+  });
 }
 
 showProfile(BuildContext context, {String profileId}) {

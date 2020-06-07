@@ -135,7 +135,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (postsAreLoading) {
       return;
     }
-    setState(() {
+    setState(() {   
       postsAreLoading = true;
     });
     QuerySnapshot snapshot;
@@ -158,6 +158,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (snapshot.documents.length < documentLimit) {
       // TODO: check if length and limit is exactly equal (0 length next time)
       hasMorePosts = false;
+    }
+    if(snapshot.documents.length == 0){
+        return;
     }
     lastPostDocument = snapshot.documents[snapshot.documents.length - 1];
     setState(() {
@@ -249,6 +252,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (snapshot.documents.length < documentLimit) {
       // TODO: check if length and limit is exactly equal (0 length next time)
       hasMoreReposts = false;
+    }
+     if(snapshot.documents.length == 0){
+        return;
     }
     lastRepostDocument = snapshot.documents[snapshot.documents.length - 1];
     setState(() {
@@ -710,7 +716,7 @@ launchWebsite(String url)async {
               ),
         actionButton: IconButton(
             icon: Icon(
-              Icons.settings,
+              FlutterIcons.settings_fea,
               color: Theme.of(context).primaryColor,
               size: 20,
             ),

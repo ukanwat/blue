@@ -140,9 +140,13 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         body: Column(
           children: <Widget>[
             Expanded(child: chatMessages(chatMessagesFuture)),
-            Divider(),
+            Divider(
+
+              height: 1,
+              color: Colors.grey
+            ),
             Container(
-              padding: EdgeInsets.only(bottom: 2, top: 0, left: 1, right: 1),
+              padding: EdgeInsets.only(bottom: 2, top: 5, left: 1, right: 1),
               child: Row(
                 children: <Widget>[
                   Container(
