@@ -27,6 +27,7 @@ factory User.fromDocument(DocumentSnapshot doc){
     displayName: doc['displayName'],
     bio: doc['bio'],
     website: doc['website'],
+    
   );
 }
 

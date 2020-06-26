@@ -20,23 +20,22 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_icons: ^1.1.0
-  cloud_firestore: ^0.13.5
+  cloud_firestore: ^0.13.6
   firebase_auth: ^0.16.0
   firebase_messaging: ^6.0.13
   google_sign_in: ^4.4.1
-  cached_network_image: ^2.1.0+1
+  cached_network_image: ^2.2.0+1
   flutter_svg: ^0.17.4
   image_picker: ^0.6.5+1
   firebase_storage: ^3.1.5
-  shared_preferences: ^0.5.7
+  shared_preferences: ^0.5.7+3
   intl: ^0.16.1
   timeago: ^2.0.26
   video_player: ^0.10.9+1
   flutter_video_compress: ^0.3.7+8
   provider: ^4.1.2
   video_thumbnail: ^0.2.1
-  firebase_database: ^3.1.5
-  scrollable_positioned_list: ^0.1.6
+  firebase_database: ^3.1.6
   carousel_pro: ^1.0.0
   link_previewer: ^1.2.1
   multi_image_picker: ^4.6.7
@@ -44,13 +43,18 @@ dependencies:
   url_launcher: ^5.4.10
   flutter_linkify: ^3.1.3
   simple_image_crop: ^0.1.3
+  video_compress: ^2.0.0
+  # hive: ^1.4.1+1
+  # hive_flutter: ^0.3.0+2
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
 
 dev_dependencies:
-  flutter_test:
+  flutter_test: 
     sdk: flutter
+  # hive_generator: ^0.7.0+2
+  # build_runner:
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -67,6 +71,7 @@ flutter:
    - assets/icons/appbar_appicon.png
    - assets/icons/appbar_appicon_inverted.png
    - assets/icons/google_signin_button.png
+   - assets/icons/google_sign_in_button.png
    - assets/images/appicon_rays.png
    - assets/icons/seperation_dot_icon.svg
   #  - images/a_dot_ham.jpeg
@@ -86,6 +91,9 @@ flutter:
     - family: Techna Sans Regular
       fonts:
         - asset: assets/fonts/TechnaSansRegular.ttf
+    - family: Diskopia
+      fonts:
+        - asset: assets/fonts/Diskopia.ttf
   #   - family: Trajan Pro
   #     fonts:
   #       - asset: fonts/TrajanPro.ttf

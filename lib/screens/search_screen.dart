@@ -1,7 +1,7 @@
-import 'package:blue/widgets/progress.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_icons/flutter_icons.dart';
+import 'package:blue/main.dart';
 import './home.dart';
 import './search_results_screen.dart';
 
@@ -46,10 +46,10 @@ class _SearchScreenState extends State<SearchScreen> {
  Widget getRecentSearches(){
     var recentSearches = usersDatabase
         .child(currentUser.id)
-        .child('recent-searches')
-        .limitToFirst(10);
+        .child('recent-searches');
    return FutureBuilder(
-        future: recentSearches.once(),
+        future: recentSearches
+        .limitToFirst(10).once(),
         builder: (context, snapshot) {
            if (snapshot.hasData) {
         items.clear();
@@ -68,12 +68,12 @@ class _SearchScreenState extends State<SearchScreen> {
                     key: UniqueKey(),
                 title: Text(items[index]['text'],
                 
-                ),trailing: IconButton(icon: Icon(Icons.clear),
+                ),trailing: IconButton(icon: Icon(Icons.clear,
+                color: Theme.of(context).iconTheme.color,
+                ),
                 onPressed: (){
                   setState(() {
-                usersDatabase
-        .child(currentUser.id)
-        .child('recent-searches').child(items[index]['text']).remove();
+               recentSearches.child(items[index]['text']).set(null);
              items.removeAt(index);       
                   });
                 },
@@ -92,14 +92,6 @@ class _SearchScreenState extends State<SearchScreen> {
         .addPostFrameCallback((_) => searchController.clear());
   }
 
-  Icon searchIcon() {
-    return Icon(
-      Icons.search,
-      size: 22,
-      color: Colors.grey,
-    );
-  }
-
   PreferredSize buildSearchField(context) {
     return PreferredSize(
       preferredSize: Size.fromHeight(50.0),
@@ -110,21 +102,20 @@ class _SearchScreenState extends State<SearchScreen> {
           margin: EdgeInsets.all(6),
           width: 15,
           decoration:
-              BoxDecoration(shape: BoxShape.circle, color: Colors.grey[300]),
+              BoxDecoration(shape: BoxShape.circle, color: Theme.of(context).cardColor,),
           child: IconButton(
               iconSize: 18,
               icon: Icon(
                 Icons.arrow_back_ios,
-                color: Theme.of(context).primaryColor,
+                color: Colors.blue,
                 size: 18,
               ),
               onPressed: () {
                 Navigator.pop(context);
               }),
         ),
-        iconTheme: IconThemeData(color: Theme.of(context).primaryColor),
         elevation: 1,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).canvasColor,
         title: Padding(
           padding: const EdgeInsets.only(right: 10.0, left: 1),
           child: Container(
@@ -136,25 +127,31 @@ class _SearchScreenState extends State<SearchScreen> {
               controller: searchController,
               decoration: InputDecoration(
                 hintText: 'Search',
-                fillColor: Colors.grey[300],
+                hintStyle: TextStyle(
+                  color:  Theme.of(context).iconTheme.color.withOpacity(0.8),
+                ),
+                fillColor: Theme.of(context).cardColor,
                 filled: true,
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide(width: 0, color: Colors.white),
+                  borderSide: BorderSide(width: 0, color: Theme.of(context).cardColor,),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide(width: 0, color: Colors.white),
+                  borderSide: BorderSide(width: 0, color: Theme.of(context).cardColor,),
                 ),
-                prefixIcon: searchIcon(),
+                prefixIcon: Icon(
+      FlutterIcons.search_oct,
+      size: 22,
+      color: Colors.grey,
+    ),
                 suffixIcon: IconButton(
                   padding: EdgeInsets.all(0),
                   onPressed: clearSearch,
                   icon: Icon(
-                    Icons.clear,
+                    Icons.cancel,
                     color: Colors.grey,
                   ),
-                  iconSize: 22,
                 ),
               ),
               onFieldSubmitted: handleSearch,
@@ -186,7 +183,8 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ],
           ),
-         getRecentSearches()
+       peopleResultsFuture == null && postsResultsFuture == null
+          ?   getRecentSearches()  : Container()
         ],
       ),
     );
@@ -195,16 +193,15 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).backgroundColor,
       appBar: buildSearchField(context),
       body: peopleResultsFuture == null && postsResultsFuture == null
           ? recentSearches()
           :
-          //  Column(
-          //   children: <Widget>[
           searchResultsScreen(
-              peopleResultsFuture, postsResultsFuture, searchController),
-
-      // ],),
+              peopleResultsFuture, postsResultsFuture, searchController,
+              context
+              ),
     );
   }
 }

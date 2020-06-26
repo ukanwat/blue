@@ -1,0 +1,95 @@
+import 'package:blue/providers/theme.dart';
+import 'package:blue/widgets/settings_widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class AppearanceScreen extends StatefulWidget {
+  static const routeName = 'appearance';
+  @override
+  _AppearanceScreenState createState() => _AppearanceScreenState();
+}
+
+class _AppearanceScreenState extends State<AppearanceScreen> {
+  String themeMode = 'System Default';
+  @override
+  void initState(){
+     getTheme();
+    super.initState();
+  }
+  getTheme()async{
+ SharedPreferences preferences = await SharedPreferences.getInstance();
+     switch( preferences.get('theme')){
+       case true: 
+       setState(() {
+        themeMode = 'Dark Mode';
+         
+       });
+        break;
+        case false: 
+        setState(() {
+           themeMode = 'Light Mode';
+        });
+       
+        break;
+        default: 
+          setState(() {
+            themeMode = 'System Default';
+        });
+      
+        break;
+     }
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: settingsHeader(context, 'Appearance'),
+      body:   Consumer<ThemeNotifier>(
+                          builder: (context,notifier,child) => ListView(
+        children: <Widget>[
+        ListTile(
+            onTap: (){
+              setState(() {
+                  themeMode = 'System Default';
+                notifier.toggleTheme(null);
+              });
+            
+            },
+          title: Text('System Default'),
+          trailing: Visibility(
+            visible: themeMode == 'System Default',
+                      child: Icon(FlutterIcons.check_circle_faw5s,
+            color: Colors.blue
+            ),
+          ),
+        ),
+           ListTile( onTap: (){
+             setState(() {
+              themeMode = 'Light Mode';
+                        notifier.toggleTheme(false);
+             });
+            }, title: Text('Light Mode'),
+          trailing: Visibility( visible: themeMode == 'Light Mode',
+                      child: Icon(FlutterIcons.check_circle_faw5s,
+            color: Colors.blue),
+          ),),
+              ListTile( onTap: (){
+                setState(() {
+              themeMode = 'Dark Mode';
+                           notifier.toggleTheme(true);
+                });
+            }, title: Text('Dark Mode'),
+              
+          trailing: Visibility( visible: themeMode == 'Dark Mode',
+
+                      child: Icon(FlutterIcons.check_circle_faw5s,
+            color: Colors.blue
+                ),
+          ),)
+
+        ],
+      ),)
+    );
+  }
+}

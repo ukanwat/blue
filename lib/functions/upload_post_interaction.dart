@@ -1,6 +1,6 @@
 import 'package:blue/screens/home.dart';
 import 'package:firebase_database/firebase_database.dart';
-
+import 'package:blue/main.dart';
 uploadPostInteraction(
   String postId,
   String ownerId,

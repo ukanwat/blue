@@ -5,13 +5,16 @@ PreferredSize settingsHeader(BuildContext context, String title) {
   return PreferredSize(
       preferredSize: Size.fromHeight(50),
       child: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).canvasColor,
 centerTitle: true,
-        elevation: 0,
-        title: Text(title,style: TextStyle(color: Theme.of(context).primaryColor),),
+        elevation: 1,
+        title: Text(title,style: TextStyle(
+color: Theme.of(context).iconTheme.color
+
+        )),
         automaticallyImplyLeading: false,
         leading: CupertinoNavigationBarBackButton(
-          color: Colors.grey,
+          color: Colors.blue,
           onPressed: () {
             Navigator.pop(context);
           },
@@ -54,7 +57,7 @@ GestureDetector settingsPageNavigationTile(
       Navigator.pushNamed(context, routeName);
     },
     child: Container(
-      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       child: Text(
             title,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),

@@ -1,6 +1,7 @@
 import 'package:blue/widgets/progress.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:giphy_client/giphy_client.dart';
 
 class GIFsScreen extends StatefulWidget {
@@ -43,8 +44,9 @@ gifCollection = await client.trending(limit: 50,
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).backgroundColor,
       appBar: AppBar(titleSpacing: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).canvasColor,
         elevation: 0,leading: CupertinoNavigationBarBackButton(),automaticallyImplyLeading: false,
         title: Padding(
           padding: const EdgeInsets.only(right: 20.0, left: 0),
@@ -56,18 +58,23 @@ gifCollection = await client.trending(limit: 50,
               style: TextStyle(fontSize: 18),
               controller: gifSearchController,
               decoration: InputDecoration(
-                hintText: 'Search',
-                fillColor: Colors.grey[300],
+                hintText: 'Search GIFs',
+                hintStyle: TextStyle(
+                  color: Theme.of(context).iconTheme.color.withOpacity(0.8)
+                ),
+                fillColor: Theme.of(context).cardColor,
                 filled: true,
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(25),
-                  borderSide: BorderSide(width: 0, color: Colors.white),
+                  borderSide: BorderSide(width: 0, color: Theme.of(context).cardColor),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(25),
-                  borderSide: BorderSide(width: 0, color: Colors.white),
+                  borderSide: BorderSide(width: 0, color: Theme.of(context).cardColor),
                 ),
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: Icon(FlutterIcons.search_fea,
+                color: Theme.of(context).iconTheme.color,
+                ),
               ),
               onFieldSubmitted: getSearchedGIFs,
             ),

@@ -25,7 +25,7 @@ final Function leftButtonFunction;
     horizontal: 15
   ),
   decoration: new BoxDecoration(
-    color: Colors.white,
+    color: Theme.of(context).canvasColor,
     shape: BoxShape.rectangle,
     borderRadius: BorderRadius.circular(15),
     boxShadow: [
@@ -65,6 +65,9 @@ final Function leftButtonFunction;
                 Navigator.of(context).pop(); // To close the dialog
               },
               child: Text(leftButtonText,
+              style: TextStyle(
+                color: Theme.of(context).iconTheme.color
+              ),
               ),
             ),
              FlatButton(shape: RoundedRectangleBorder(

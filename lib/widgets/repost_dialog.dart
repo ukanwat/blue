@@ -2,6 +2,7 @@ import 'package:blue/screens/home.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:blue/main.dart';
 
 class RepostDialog extends StatefulWidget {
  final  Post post;
@@ -15,24 +16,48 @@ class _RepostDialogState extends State<RepostDialog> {
   bool shareWithComment = true;
 TextEditingController commentController = TextEditingController();
 sharePost()async{
- await  repostsRef
-        .document(currentUser?.id)
+     var lastDoc = await repostsRef
+        .document(currentUser.id)
         .collection('userReposts')
-        .document(widget.post?.postId)
-        .setData({
-      'postId': widget.post?.postId,
-     'ownerId': widget.post?.ownerId,
-      'username': widget.post?.username,
-      'contents': widget.post?.contents,
-      'contentsInfo': widget.post?.contentsInfo,
-      'title': widget.post?.title,
-      'timeStamp': timestamp,
-      'upvotes': {},                     // TODO: Remove
-      'topicId': widget.post?.topicId,
-      'topicName': widget.post?.topicName,
-      'tags': widget.post?.tags,
-      'comment': commentController.text
-    }); // TODO: check if successful
+        .orderBy('order', descending: true)
+        .limit(1)
+        .getDocuments();
+
+     if (lastDoc.documents.length == 0) {
+     repostsRef
+        .document(currentUser.id)
+        .collection('userReposts')
+          .document()
+          .setData({
+                        'order' : 1,
+        'posts': [widget.post.postId,],
+        'comments': [commentController.text,],
+      });
+    }else if(lastDoc.documents.length == 1 && lastDoc.documents.first.data['posts'].length < 20){
+      List<dynamic> _postIdList = lastDoc.documents.first.data['posts'];
+       List<dynamic> _commentsList = lastDoc.documents.first.data['comments'];
+      _postIdList.add(widget.post.postId);
+       _commentsList.add(commentController.text);
+    repostsRef
+        .document(currentUser.id)
+        .collection('userReposts')
+          .document(lastDoc.documents.first.documentID)
+          .setData({
+              'posts': _postIdList,
+              'comments': _commentsList,
+      }, merge: true);
+
+
+  }else if(lastDoc.documents.length == 1 && lastDoc.documents.first.data['posts'].length > 19 ){
+   repostsRef
+        .document(currentUser.id)
+        .collection('userReposts')
+          .document()
+          .setData({ 'order' : lastDoc.documents.first.data['order'] + 1 ,
+         'posts': [widget.post.postId,],
+       'comments': [commentController.text,],
+      });
+  } 
 
      Navigator.of(context).pop();
 }
@@ -47,7 +72,7 @@ sharePost()async{
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 20, horizontal: 15),
         decoration: new BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).canvasColor,
           shape: BoxShape.rectangle,
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
@@ -91,21 +116,20 @@ sharePost()async{
             if(shareWithComment )
             TextFormField(
               textAlignVertical: TextAlignVertical.center,
-              
-              style: TextStyle(fontSize: 16),
+            
+              style: TextStyle(fontSize: 16, color: Theme.of(context).iconTheme.color),
               controller: commentController,
               maxLines: 4,
               minLines: 1,
               keyboardType: TextInputType.multiline,
               decoration: InputDecoration(
                 hintText: 'Comment',
-
+ hintStyle: TextStyle(fontSize: 16, color: Colors.grey),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(5),
                   borderSide: BorderSide(width: 0, color: Colors.grey),
 
                 ),
-
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(5),
                   borderSide: BorderSide(width: 0, color: Colors.grey),
@@ -127,6 +151,9 @@ sharePost()async{
                   },
                   child: Text(
                     'Cancel',
+                    style: TextStyle(
+                      color: Theme.of(context).iconTheme.color
+                    ),
                   ),
                 ),
                 FlatButton(

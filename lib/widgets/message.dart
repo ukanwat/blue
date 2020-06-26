@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:blue/main.dart';
 
 import 'package:blue/screens/home.dart';
 
@@ -67,13 +68,13 @@ class Message extends StatelessWidget {
                   padding: EdgeInsets.symmetric(vertical: 6, horizontal: 9),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(14),
-                    color: myText ? Colors.blue : Colors.grey[200],
+                    color: myText ? Colors.blue :Theme.of(context).cardColor,
                   ),
                   child: Text(
                     message,
                     style: TextStyle(
                         fontSize: 16,
-                        color: myText ? Colors.white : Colors.black),
+                        color: myText ? Colors.white : Theme.of(context).iconTheme.color),
                   ),
                 ),
               if(!myText)Expanded(child: Container())

@@ -1,15 +1,14 @@
 import 'package:blue/screens/select_topic_screen.dart';
-import 'package:blue/widgets/custom_image.dart';
 import 'package:carousel_pro/carousel_pro.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
+import 'package:video_compress/video_compress.dart' as Vc;
+import 'package:flutter_video_compress/flutter_video_compress.dart' as Fvc;
 import 'dart:io';
 import './home.dart';
 import 'package:http/http.dart';
-import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/post_screen_common_widget.dart';
+import 'package:blue/main.dart';
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image/image.dart' as Im;
@@ -18,10 +17,9 @@ import 'package:uuid/uuid.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 // import 'package:video_compress/video_compress.dart';
-import 'package:flutter_video_compress/flutter_video_compress.dart';
 import 'package:link_previewer/link_previewer.dart';
 
-enum ContentInsertOptions { Device, Camera,Carousel }
+enum ContentInsertOptions { Device, Camera, Carousel }
 
 class PostScreen extends StatefulWidget {
   static const routeName = '/post';
@@ -41,32 +39,29 @@ class _PostScreenState extends State<PostScreen> {
   bool isUploading = false;
   VideoPlayerController _videoPlayerController;
   VideoPlayerController _cameraVideoPlayerController;
-  var _videoCompress = FlutterVideoCompress();
   TextEditingController titleController = TextEditingController();
   List<TextEditingController> textControllers = List();
   List<TextEditingController> linkControllers = List();
   Map<int, dynamic> contentsMap = {};
-  Map<String, String> firestoreContents = {};
+  Map<String, dynamic> firestoreContents = {};
   Map<int, Map> contentsInfo = {};
   Map<String, Map> firestoreContentsInfo = {};
+  Map<int, String> videoSources = {};
   List<String> contentType = [];
   String imageId = Uuid().v4();
   String videoId = Uuid().v4();
   String postId = Uuid().v4();
   File compressedFile;
-
-// @override
-// void dispose(){
-//   _subscription.unsubscribe();
-//   super.dispose();
-// }
+  
   handleTakePhoto() async {
     File _cameraImage;
-    _cameraImage = await ImagePicker.pickImage(
+    var picker = ImagePicker();
+    var pickedFile = await picker.getImage(
       source: ImageSource.camera,
       maxHeight: 960,
       maxWidth: 960,
     );
+    _cameraImage = File(pickedFile.path);
     fileIndex++;
     double aspectRatio;
     var decodedImage =
@@ -84,19 +79,20 @@ class _PostScreenState extends State<PostScreen> {
         contents.add(imageDisplay(_cameraImage, fileIndex, aspectRatio));
       }
     });
-    // compressImage(fileIndex);
   }
 
   handleTakeVideo() async {
     File _cameraVideo;
-    _cameraVideo = await ImagePicker.pickVideo(source: ImageSource.camera);
+    var picker = ImagePicker();
+    var pickedFile = await picker.getVideo(source: ImageSource.camera);
+    _cameraVideo = File(pickedFile.path);
     fileIndex++;
     _cameraVideoPlayerController = VideoPlayerController.file(_cameraVideo)
       ..initialize().then((_) {
         setState(() {
           contents.add(videoDisplay(
-              _cameraVideo, _cameraVideoPlayerController, fileIndex));
-          _cameraVideoPlayerController.play();
+              _cameraVideo, _cameraVideoPlayerController, fileIndex, 'camera'));
+          // _cameraVideoPlayerController.play();
           if (_cameraVideoPlayerController.value.isPlaying == true) {
             print('amsdd');
           }
@@ -106,14 +102,18 @@ class _PostScreenState extends State<PostScreen> {
 
   handleChooseVideoFromGallery() async {
     File _galleryVideo;
-    _galleryVideo = await ImagePicker.pickVideo(source: ImageSource.gallery);
+    var picker = ImagePicker();
+    var pickedFile = await picker.getVideo(
+      source: ImageSource.gallery,
+    );
+    _galleryVideo = File(pickedFile.path);
     fileIndex++;
     _videoPlayerController = VideoPlayerController.file(_galleryVideo)
       ..initialize().then((_) {
         setState(() {
           contents.add(
-              videoDisplay(_galleryVideo, _videoPlayerController, fileIndex));
-          _videoPlayerController.play();
+              videoDisplay(_galleryVideo, _videoPlayerController, fileIndex, 'gallery'));
+          // _videoPlayerController.play();
           if (_videoPlayerController.value.isPlaying == true) {
             print('msdd');
           }
@@ -123,7 +123,11 @@ class _PostScreenState extends State<PostScreen> {
 
   handleChooseImageFromGallery() async {
     File _galleryImage;
-    _galleryImage = await ImagePicker.pickImage(source: ImageSource.gallery);
+    var picker = ImagePicker();
+    var pickedFile = await picker.getImage(
+      source: ImageSource.gallery,
+    );
+    _galleryImage = File(pickedFile.path);
     fileIndex++;
     double aspectRatio;
     var decodedImage =
@@ -135,79 +139,61 @@ class _PostScreenState extends State<PostScreen> {
     infoMap['aspectRatio'] = aspectRatio;
     contentsInfo[fileIndex] = infoMap;
     setState(() {
-      contents.add(imageDisplay(_galleryImage, fileIndex, aspectRatio));
+      contents.add(imageDisplay(_galleryImage, fileIndex, aspectRatio,));
     });
     // compressImage(fileIndex);
   }
+
   List<Asset> resultList = List<Asset>();
-   loadCarouselImages() async {
-
+  loadCarouselImages() async {
     // try {
-      resultList = await MultiImagePicker.pickImages(
-        maxImages: 12,
-        enableCamera: true,
-        cupertinoOptions: CupertinoOptions(takePhotoIcon: "chat",
-        
-        ),
-        
-        materialOptions: MaterialOptions(                 
-          actionBarColor: "#abcdef",
-          actionBarTitle: "Scrible",
-          allViewTitle: "All Images",
-          useDetailsView: false,
-          selectCircleStrokeColor: "#000000",
-
-        ),
-      );
-    // } on Exception catch (e) {
-    //   error = e.toString();
-    // }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    // if (!mounted) return;
-
-    // setState(() {
-         
-    // });
+    resultList = await MultiImagePicker.pickImages(
+      maxImages: 12,
+      enableCamera: true,
+      cupertinoOptions: CupertinoOptions(
+        takePhotoIcon: "chat",
+      ),
+      materialOptions: MaterialOptions(
+        actionBarColor: "#147efb",
+        actionBarTitle: "Scrible",
+        allViewTitle: "All Images",
+        useDetailsView: false,
+        selectCircleStrokeColor: "#000000",
+      ),
+    );
   }
-  String error = 'No Error Dectected';
- Future<void> handleCreateCarousel() async{
-       
-    
 
+  String error = 'No Error Dectected';
+  Future<void> handleCreateCarousel() async {
     try {
       resultList = await MultiImagePicker.pickImages(
         maxImages: 12,
         enableCamera: true,
-        cupertinoOptions: CupertinoOptions(takePhotoIcon: "chat",
-        
+        cupertinoOptions: CupertinoOptions(
+          takePhotoIcon: "chat",
         ),
-        
-        materialOptions: MaterialOptions(                 
+        materialOptions: MaterialOptions(
           actionBarColor: "#abcdef",
           actionBarTitle: "Scrible",
           allViewTitle: "All Images",
           useDetailsView: false,
           selectCircleStrokeColor: "#000000",
-
         ),
       );
     } on Exception catch (e) {
       error = e.toString();
     }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
+    fileIndex++;
     if (!mounted) return;
+    List carouselData = await getCarouselImages(resultList);
+    List<File> carouselImages = carouselData[0];
+    double _aspectRatio = carouselData[1];
 
     setState(() {
-         
+      contents.add(carouselDisplay(carouselImages, fileIndex, _aspectRatio));
     });
-    //  contents.add(carouselDisplay(resultList, 1, 1));
- }
+  }
+
   Future<File> compressImage(File file) async {
     imageId = Uuid().v4();
     final tempDir = await getTemporaryDirectory();
@@ -218,15 +204,28 @@ class _PostScreenState extends State<PostScreen> {
     return compressedImageFile;
   }
 
-  Future<MediaInfo> compressVideo(File file) async {
-    final info = await _videoCompress.compressVideo(
+  compressCameraVideo(File file) async {
+    Fvc.MediaInfo info = await Fvc.FlutterVideoCompress().compressVideo(
       file.path,
       quality:
-          VideoQuality.MediumQuality, // default(VideoQuality.DefaultQuality)
+          Fvc.VideoQuality.HighestQuality, // default(VideoQuality.DefaultQuality)
       deleteOrigin: false, // default(false)
     );
     return info;
+   
+    
   }
+    compressGalleryVideo(File file) async {
+      Vc.MediaInfo info = await Vc.VideoCompress.compressVideo(
+      file.path,
+      quality: Vc.VideoQuality.MediumQuality,
+      deleteOrigin: false, 
+
+    );
+    return info;
+    
+  }
+
 
   Future<String> uploadImage(File file) async {
     StorageUploadTask uploadTask = storageRef
@@ -237,7 +236,23 @@ class _PostScreenState extends State<PostScreen> {
     return downloadUrl;
   }
 
-  Future<String> uploadVideo(MediaInfo mediaInfo) async {
+  Future<List<String>> uploadCarousel(List<File> files) async {
+    List<String> downloadUrls = [];
+    StorageTaskSnapshot storageSnap;
+    String downloadUrl;
+    for (int i = 0; i < files.length; i++) {
+      imageId = Uuid().v4();
+      StorageUploadTask uploadTask = storageRef
+          .child("post_$imageId.jpg")
+          .putFile(files[i], StorageMetadata(contentType: 'jpg'));
+      storageSnap = await uploadTask.onComplete;
+      downloadUrl = await storageSnap.ref.getDownloadURL();
+      downloadUrls.add(downloadUrl);
+    }
+    return  downloadUrls;
+  }
+
+  Future<String> uploadVideo(dynamic mediaInfo) async {
     StorageUploadTask uploadTask =
         storageRef.child('video_$videoId.mp4').putFile(mediaInfo.file);
     StorageTaskSnapshot storageSnap = await uploadTask.onComplete;
@@ -245,70 +260,76 @@ class _PostScreenState extends State<PostScreen> {
     return downloadUrl;
   }
 
-  createPostInFirestore({
-    Map<String, String> contents,
-    String title,
-    Map<String, Map> contentsInfo,
-    String topicName,
-    String topicId,
-    List<String> tags
-  }) {
-    postsRef
-        .document(currentUser?.id)
+  createPostInFirestore(
+      {Map<String, dynamic> contents,
+      String title,
+      Map<String, Map> contentsInfo,
+      String topicName,
+      String topicId,
+      List<String> tags}) async {
+    var lastDoc = await userPostsRef
+        .document(currentUser.id)
         .collection('userPosts')
-        .document(postId)
-        .setData({
+        .orderBy('order', descending: true)
+        .limit(1)
+        .getDocuments();
+
+    postsRef.document(postId).setData({
       'postId': postId,
       'ownerId': currentUser?.id,
       'username': currentUser?.username,
+      'photoUrl': currentUser.photoUrl,
       'contents': contents,
       'contentsInfo': contentsInfo,
       'title': title,
-      'timeStamp': timestamp,
-      'upvotes': {},                     // TODO: Remove
+      'timeStamp': timestamp, // TODO: Remove
       'topicId': topicId,
       'topicName': topicName,
       'tags': tags,
+      'ownerName': currentUser?.username,
     }); // TODO: check if successful
-    topicPostsRef
-        .document(topicId)
-        .collection('topicPosts')
-        .document(postId)
-        .setData({
-      'postId': postId,
-      'ownerId': currentUser?.id,
-      'username': currentUser?.username,
-      'contents': contents,
-      'contentsInfo': contentsInfo,
-      'title': title,
-      'timeStamp': timestamp,
-      'upvotes': {},                          // TODO: Remove
-      'topicId': topicId,
-      'topicName': topicName,
-      'tags': tags
-    });
+    if (lastDoc.documents.length == 0) {
+      userPostsRef
+          .document(currentUser.id)
+          .collection('userPosts')
+          .document()
+          .setData({
+        'order': 1,
+        'posts': [
+          postId,
+        ],
+      }, merge: true);
+    } else if (lastDoc.documents.length == 1 &&
+        lastDoc.documents.first.data['posts'].length < 2) {
+      List<dynamic> _postIdList = lastDoc.documents.first.data['posts'];
+      _postIdList.add(postId);
+      userPostsRef
+          .document(currentUser.id)
+          .collection('userPosts')
+          .document(lastDoc.documents.first.documentID)
+          .setData({
+        'posts': _postIdList,
+      }, merge: true);
+    } else if (lastDoc.documents.length == 1 &&
+        lastDoc.documents.first.data['posts'].length > 1) {
+      userPostsRef
+          .document(currentUser.id)
+          .collection('userPosts')
+          .document()
+          .setData({
+        'order': lastDoc.documents.first.data['order'] + 1,
+        'posts': [
+          postId,
+        ],
+      }, merge: true);
+    }
   }
 
-  createPostInRealtimeDatabase(String topicId) {
-    topicPostsDatabase.child('$topicId').child('$postId').set({
-      'time': ServerValue.timestamp,
-      'postId': postId,
-      'ownerId': currentUser?.id,
-      'upvotes': 0,
-      'shared': 0,
-      'comments': 0,
-      'saves': 0,
-      'follows': 0,
-      'reports': 0,
-      'views': 0,
-    });
-  }
-
-  handleSubmit(String topicName, String topicId,List<String> tags) async {
+  handleSubmit(String topicName, String topicId, List<String> tags) async {
     setState(() {
       isUploading = true;
     });
-    int x = 1;
+    int x = 0;
     for (int i = 1; i <= contentsMap.length; i++) {
       if (contentType[i - 1] == 'null') {
       } else if (contentType[i - 1] == 'link') {
@@ -326,8 +347,17 @@ class _PostScreenState extends State<PostScreen> {
         firestoreContentsInfo['$x'] = contentsInfo[i];
         x++;
       } else if (contentType[i - 1] == 'video') {
-        MediaInfo videoMediaInfo = await compressVideo(contentsMap[i]);
+        dynamic videoMediaInfo ;
+       if(videoSources[i] == 'gallery'){  videoMediaInfo =  await compressGalleryVideo(contentsMap[i]);}
+       else{
+       videoMediaInfo =  await compressCameraVideo(contentsMap[i]);
+       }
         String mediaUrl = await uploadVideo(videoMediaInfo);
+        firestoreContents['$x'] = mediaUrl;
+        firestoreContentsInfo['$x'] = contentsInfo[i];
+        x++;
+      } else if (contentType[i - 1] == 'carousel') {
+        List<String> mediaUrl = await uploadCarousel(contentsMap[i]);
         firestoreContents['$x'] = mediaUrl;
         firestoreContentsInfo['$x'] = contentsInfo[i];
         x++;
@@ -341,7 +371,7 @@ class _PostScreenState extends State<PostScreen> {
         topicName: topicName,
         topicId: topicId,
         tags: tags);
-    await createPostInRealtimeDatabase(topicId);
+
     titleController.clear();
     textControllers = [];
     setState(() {
@@ -352,17 +382,18 @@ class _PostScreenState extends State<PostScreen> {
     });
     Navigator.pop(context);
     Navigator.pop(context);
-     Navigator.pop(context);
+    Navigator.pop(context);
   }
-
+  
   Container videoDisplay(
-      File file, VideoPlayerController videoController, int index) {
+      File file, VideoPlayerController videoController, int index,String source) {
     Map infoMap = {};
     infoMap['type'] = 'video';
     infoMap['aspectRatio'] = videoController.value.aspectRatio;
     contentsInfo[index] = infoMap;
     contentsMap[index] = file;
     contentType.add('video');
+    videoSources[index] = source;
     return Container(
         child: Stack(alignment: Alignment.center, children: <Widget>[
       AspectRatio(
@@ -375,7 +406,7 @@ class _PostScreenState extends State<PostScreen> {
         child: Container(
             margin: EdgeInsets.all(8),
             decoration: BoxDecoration(
-                color: Colors.black38, borderRadius: BorderRadius.circular(25)),
+                color: Colors.black38, borderRadius: BorderRadius.circular(25),),
             child: IconButton(
               icon: Icon(
                 Icons.clear,
@@ -437,6 +468,7 @@ class _PostScreenState extends State<PostScreen> {
     contentType.add('link');
     print(contentsMap);
     return Container(
+      
       padding: EdgeInsets.all(10),
       alignment: Alignment.center,
       child: TextField(
@@ -472,33 +504,32 @@ class _PostScreenState extends State<PostScreen> {
   void verifyLink(String linkText) async {
     final response = await head(linkText);
     if (response.statusCode == 200) {
-     
-        setState((){
+      setState(() {
         contents.add(linkImageDisplay(linkText));
-        });
+      });
     }
   }
 
   Container linkImageDisplay(String link) {
     return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12)
-      ),
-      padding: EdgeInsets.symmetric(horizontal: 30),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-              child: LinkPreviewer(
-            link: link,
-           direction: ContentDirection.vertical,
-           bodyMaxLines: 3,
-           borderColor: Colors.white,
-           borderRadius: 8,
-           key: UniqueKey(),
-           titleFontSize: 20,
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8),
         ),
-      )
-    );
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: LinkPreviewer(
+            link: link,
+            backgroundColor: Theme.of(context).canvasColor,
+            direction: ContentDirection.vertical,
+            bodyMaxLines: 3,
+            borderColor: Colors.white,
+            borderRadius: 8,
+            key: UniqueKey(),
+            titleFontSize: 20,
+          ),
+        ));
   }
+
   Container imageDisplay(File file, int index, double aspectRatio) {
     contentsMap[index] = file;
     contentType.add('image');
@@ -551,17 +582,57 @@ class _PostScreenState extends State<PostScreen> {
       ]),
     );
   }
-  Container carouselDisplay(List<Asset> images, int index, double aspectRatio){
-    
+
+  Future<List<dynamic>> getCarouselImages(List<Asset> images) async {
+    List<File> imageFiles = [];
+    double firstAspectRatio = 1;
+    final tempDir = await getTemporaryDirectory();
+    final path = tempDir.path;
+    for (int i = 0; i < images.length; i++) {
+      if (i == 0) {
+        int firstHeight = images.first.originalHeight;
+        int firstWidth = images.first.originalWidth;
+        firstAspectRatio = firstWidth / firstHeight;
+      }
+      imageId = Uuid().v4();
+      var byteData = await images.elementAt(i).getByteData();
+      var _imageMemory = byteData.buffer.asUint8List();
+      Im.Image decodedImage = Im.decodeImage(_imageMemory);
+      final compressedImageFile = File('$path/img_$imageId.jpg')
+        ..writeAsBytesSync(Im.encodeJpg(decodedImage, quality: 85));
+      imageFiles.add(compressedImageFile);
+    }
+    return [imageFiles, firstAspectRatio];
+  }
+
+  Container carouselDisplay(List<File> images, int index, double aspectRatio) {
+    Map infoMap = {};
+    infoMap['type'] = 'carousel';
+    infoMap['aspectRatio'] = aspectRatio;
+    contentsInfo[index] = infoMap;
+    contentsMap[index] = images;
+    contentType.add('carousel');
     return Container(
-         height: 200,child:
-      Carousel(
-    images: [
-     images[0] ,
-      NetworkImage('https://cdn-images-1.medium.com/max/2000/1*wnIEgP1gNMrK5gZU7QS0-A.jpeg'),
-    ],
-  )
-    );
+        height: MediaQuery.of(context).size.width / aspectRatio,
+        key: UniqueKey(),
+        child: Carousel(
+          dotVerticalPadding: 0,
+          dotSize: 6,
+          dotIncreaseSize: 1.2,
+          dotIncreasedColor: Colors.blue.withOpacity(0.7),
+          dotColor: Colors.white,
+          showIndicator: true,
+          dotPosition: DotPosition.bottomCenter,
+          dotSpacing: 15,
+          boxFit: BoxFit.fitWidth,
+          dotBgColor: Colors.transparent,
+          autoplay: false,
+          overlayShadow: false,
+          moveIndicatorFromBottom: 20,
+          images: List.generate(images.length, (i) {
+            return FileImage(images[i]);
+          }),
+        ));
   }
 
   Widget createPostItemButton(
@@ -577,12 +648,18 @@ class _PostScreenState extends State<PostScreen> {
             onSelected: function,
           );
   }
-  
+  @override
+  void dispose() {
+    _videoPlayerController?.dispose();
+      _cameraVideoPlayerController?.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).backgroundColor,
         appBar: AppBar(
+
           leading: Container(
             margin: EdgeInsets.all(5),
             decoration:
@@ -600,10 +677,10 @@ class _PostScreenState extends State<PostScreen> {
           title: Text('Create Post'),
           bottom: PreferredSize(
             preferredSize: Size.fromHeight(50),
-                      child: Container(
+            child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(5),
                 ),
                 margin: EdgeInsets.all(5),
                 child: Row(
@@ -622,14 +699,15 @@ class _PostScreenState extends State<PostScreen> {
                           PopupMenuItem(
                               child: Text('Device'),
                               value: ContentInsertOptions.Device),
-                              PopupMenuItem(
+                          PopupMenuItem(
                               child: Text('Carousel'),
                               value: ContentInsertOptions.Carousel),
                         ],
                         function: (selectedValue) {
                           if (selectedValue == ContentInsertOptions.Camera) {
                             handleTakePhoto();
-                          } else if(selectedValue == ContentInsertOptions.Device){
+                          } else if (selectedValue ==
+                              ContentInsertOptions.Device) {
                             handleChooseImageFromGallery();
                           } else {
                             handleCreateCarousel();
@@ -679,7 +757,8 @@ class _PostScreenState extends State<PostScreen> {
                           setState(() {
                             textControllers.add(textController);
                             fileIndex++;
-                            contents.add(textDisplay(textController, fileIndex));
+                            contents
+                                .add(textDisplay(textController, fileIndex));
                           });
                         }),
                     Container(
@@ -700,7 +779,8 @@ class _PostScreenState extends State<PostScreen> {
                           setState(() {
                             linkControllers.add(linkController);
                             fileIndex++;
-                            contents.add(linkDisplay(linkController, fileIndex));
+                            contents
+                                .add(linkDisplay(linkController, fileIndex));
                           });
                         }),
                   ],
@@ -731,7 +811,7 @@ class _PostScreenState extends State<PostScreen> {
               ),
             ),
           ],
-          
+          backgroundColor: Colors.blue[700]                             //TODO blue gradient
         ),
         body: ListView(
           children: <Widget>[

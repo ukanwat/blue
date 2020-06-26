@@ -7,7 +7,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:giphy_client/giphy_client.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../widgets/header.dart';
@@ -17,6 +16,7 @@ import '../widgets/progress.dart';
 import '../widgets/message.dart';
 import './chat_info_screen.dart';
 import './gifs_screen.dart';
+import 'package:blue/main.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image/image.dart' as Im;
@@ -116,10 +116,11 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).canvasColor,
         appBar: header(context,
             leadingButton: CupertinoNavigationBarBackButton(),
             actionButton:
-                IconButton(icon: Icon(Icons.info_outline,color: Colors.black,), onPressed: (){
+                IconButton(icon: Icon(Icons.info_outline,), onPressed: (){
                   Navigator.of(context).pushNamed(ChatInfoScreen.routeName,arguments: {'peerId':peerUser.id});
                 }),
             title: Row(
@@ -133,65 +134,95 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                 ),
                 Text(
                   peerUser.displayName,
-                  style: TextStyle(color: Colors.black),
                 ),
               ],
             )),
-        body: Column(
-          children: <Widget>[
-            Expanded(child: chatMessages(chatMessagesFuture)),
-            Divider(
-
-              height: 1,
-              color: Colors.grey
-            ),
-            Container(
-              padding: EdgeInsets.only(bottom: 2, top: 5, left: 1, right: 1),
-              child: Row(
-                children: <Widget>[
-                  Container(
-                      height: 45,
-                      margin:
-                          EdgeInsets.only(top: 0, bottom: 4, right: 2, left: 2),
-                      child:
-                          IconButton(icon: Icon(Icons.image), onPressed: sendMedia),),
-                          Container(
-                      height: 45,
-                      margin:
-                          EdgeInsets.only(top: 0, bottom: 4, right: 2, left: 2),
-                      child:
-                          IconButton(icon: Icon(FlutterIcons.gif_mco), onPressed: sendGIF),),
-                  Expanded(
-                    child: Container(
-                      height: 45,
-                      padding: EdgeInsets.only(bottom: 2),
-                      child: TextField(
-                        controller: messageController,
-                        style: TextStyle(fontSize: 18),
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.only(top: 8, left: 10),
-                          hintText: 'Message',
-                          fillColor: Colors.grey[200],
-                          filled: true,
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide:
-                                BorderSide(width: 0, color: Colors.white),
+        body: Container(
+          color: Theme.of(context).backgroundColor,
+          child: Column(
+            children: <Widget>[
+              Expanded(child: chatMessages(chatMessagesFuture)),
+              Container(
+                color: Theme.of(context).canvasColor,
+                padding: EdgeInsets.only(bottom: 2, top: 4, left: 1, right: 1),
+                child: Row(
+                  children: <Widget>[
+                    Container(
+                        // height: ,
+                        margin:
+                            EdgeInsets.only(top: 0, bottom: 4, right: 0, left: 0),
+                        child:
+                            GestureDetector(child: Container(
+                              margin:EdgeInsets.symmetric(
+                                horizontal: 2
+                              ),
+                              padding: EdgeInsets.all(5),
+                              child: Icon(FlutterIcons.image_fea,
+                              size: 28,
+                              )), onTap: sendMedia),),
+                            Container(
+                        height: 45, margin:
+                            EdgeInsets.only(top: 0, bottom: 4, right: 0, left: 0),
+                        child:
+                            GestureDetector(child: Padding(
+                              padding: EdgeInsets.only(
+                                top: 10.6,
+                                bottom: 10.8,
+                                right: 10,
+                                left: 2
+                              ),
+                                                          child: ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                clipBehavior: Clip.hardEdge,
+                                                            child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 1
+                                  ),
+                                  color: Theme.of(context).iconTheme.color,
+                                      child: Icon(FlutterIcons.gif_mco,
+                                      color:  Theme.of(context).backgroundColor,
+                                      size: 22,
+                                      )),
+                              ),
+                            ), onTap: sendGIF),),
+                    Expanded(
+                      child: Container(
+                        // height: 45,
+                        padding: EdgeInsets.only(bottom: 2),
+                        child: TextField(
+                          controller: messageController,
+                          style: TextStyle(fontSize: 18,
+                          color: Theme.of(context).iconTheme.color
+                          ),maxLines: 4,
+                          minLines: 1,
+                          decoration: InputDecoration(
+                            contentPadding: EdgeInsets.only(top: 8, left: 10),
+                            hintText: 'Message',
+                            hintStyle: TextStyle(fontSize: 18,
+                          color: Theme.of(context).iconTheme.color.withOpacity(0.8)
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide:
-                                BorderSide(width: 0, color: Colors.white),
+                            fillColor: Theme.of(context).cardColor,
+                            filled: true,
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              borderSide:
+                                  BorderSide(width: 0, color: Theme.of(context).cardColor,),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              borderSide:
+                                  BorderSide(width: 0, color: Theme.of(context).cardColor,),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  sendButton(sendFunction: sendMessage)
-                ],
+                    sendButton(sendFunction: sendMessage)
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ));
   }
 }

@@ -2,10 +2,9 @@ import 'package:blue/models/topic_list_tile.dart';
 import 'package:blue/screens/search_tag_screen.dart';
 import 'package:blue/widgets/custom_image.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:blue/widgets/show_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
+import 'package:blue/main.dart';
 import 'home.dart';
 
 class SelectTopicScreen extends StatefulWidget {
@@ -30,18 +29,18 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
     getFollowedTopics();
     super.initState();
   }
-  addTag()async{
-   Navigator.of(context).pushNamed(SearchTagScreen.routeName)
-   .then((value){
-     setState(() {
-      tags.add(value);
-       tagChips.add(Chip(
-         label: Text(value),
-       ));
-     });
-   })
-   ;
+
+  addTag() async {
+    Navigator.of(context).pushNamed(SearchTagScreen.routeName).then((value) {
+      setState(() {
+        tags.add(value);
+        tagChips.add(Chip(
+          label: Text(value),
+        ));
+      });
+    });
   }
+
   getFollowedTopics() async {
     setState(() {
       isLoading = true;
@@ -97,21 +96,22 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(30),
               ),
-              margin: EdgeInsets.all(5),
+              margin: EdgeInsets.all(4),
               alignment: Alignment.center,
               child: FlatButton(
                 onPressed: () {
                   if (selectedTopicTile != null) {
-                      setState(() {
+                    setState(() {
                       showDialog(
                         barrierDismissible: false,
                         // useRootNavigator: false,
                         context: context,
                         builder: (BuildContext context) => WillPopScope(
                           onWillPop: () async {
-        return false;
-      }, 
-      child: Dialog( shape: RoundedRectangleBorder(
+                            return false;
+                          },
+                          child: Dialog(
+                            shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15),
                             ),
                             elevation: 0.0,
@@ -131,9 +131,10 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                                   ),
                                 ],
                               ),
-                              child: Column( mainAxisSize: MainAxisSize.min,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
                                 children: <Widget>[
-                                  circularProgress(),
+                                  circularProgress(), 
                                   SizedBox(height: 15),
                                   Text('Submitting...')
                                 ],
@@ -144,10 +145,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                       );
                     });
                     postData['post-function'](
-                        selectedTopicTile.name, selectedTopicTile.id,
-                        tags
-                        );
-                  
+                        selectedTopicTile.name, selectedTopicTile.id, tags);
                   }
                 },
                 child: Text(
@@ -164,60 +162,60 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
           ],
         ),
       ),
-      body: Column(crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[ SizedBox(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          SizedBox(
             height: 8,
           ),
           Row(
             children: <Widget>[
-              SizedBox(width: 16,),
-              Text('Add Tags',
-              style: TextStyle(
-               fontSize: 16
-             ),
+              SizedBox(
+                width: 16,
               ),
-              SizedBox(width: 5,),
+              Text(
+                'Add Tags',
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(
+                width: 5,
+              ),
               Transform.scale(
                 scale: 1.8,
-                              child: Container(
-                                height: 30,
-                                width: 30,
-                                child: IconButton(icon: Icon(Icons.add
-                ,size: 12,
-                ), onPressed: addTag,
-                iconSize: 12,
+                child: Container(
+                  height: 30,
+                  width: 30,
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.add,
+                      size: 12,
+                    ),
+                    onPressed: addTag,
+                    iconSize: 12,
+                  ),
                 ),
-                              ),
               )
             ],
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Wrap(
               runSpacing: 6,
               spacing: 6,
-                     children: 
-                           tagChips
-                     ,
+              children: tagChips,
             ),
           ),
           SizedBox(
             height: 10,
           ),
-           Padding(
-             padding: const EdgeInsets.only(
-               left: 16
-             ),
-             child: Text('Select Topic'
-             ,style: TextStyle(
-               fontSize: 16
-             ),
-             ),
-           ),
-             
-              SizedBox(
+          Padding(
+            padding: const EdgeInsets.only(left: 16),
+            child: Text(
+              'Select Topic',
+              style: TextStyle(fontSize: 16),
+            ),
+          ),
+          SizedBox(
             height: 10,
           ),
           isLoading

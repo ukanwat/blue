@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 
 Container sendButton({Function sendFunction}) {
-  return Container(margin: EdgeInsets.only(top: 0,bottom: 4,right: 2,left: 2),height: 45,
+  return Container(margin: EdgeInsets.only(top: 2,bottom: 6,right: 4,left: 4),height: 41,
       decoration: BoxDecoration(shape: BoxShape.circle,color: Colors.blue),
     child: IconButton(
-      icon: Icon(Icons.send,color: Colors.white,),
+      icon: Icon(FlutterIcons.send_fea,color: Colors.white,),
       onPressed: sendFunction,
     ),
   );

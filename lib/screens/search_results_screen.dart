@@ -83,7 +83,7 @@ FutureBuilder postsResultsScreen(Future<QuerySnapshot> postsResultsFuture,TextEd
 }
 
 CustomScrollView searchResultsScreen(Future<QuerySnapshot> peopleResultsFuture,
-    Future<QuerySnapshot> postsResultsFuture,TextEditingController searchController) {
+    Future<QuerySnapshot> postsResultsFuture,TextEditingController searchController,BuildContext context) {
   return CustomScrollView(
     slivers: <Widget>[
       SliverToBoxAdapter(
@@ -95,7 +95,6 @@ CustomScrollView searchResultsScreen(Future<QuerySnapshot> peopleResultsFuture,
               Text(
                 'People',
                 style: TextStyle(
-                    color: Colors.black,
                     fontWeight: FontWeight.w500,
                     fontSize: 18),
               ),
@@ -107,9 +106,10 @@ CustomScrollView searchResultsScreen(Future<QuerySnapshot> peopleResultsFuture,
                     style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
-                        color: Colors.black),
+                       
+                       ),
                   ),
-                  fillColor: Colors.grey[300],
+                  fillColor: Theme.of(context).cardColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -119,9 +119,22 @@ CustomScrollView searchResultsScreen(Future<QuerySnapshot> peopleResultsFuture,
           ),
         ),
       ),
+      SliverToBoxAdapter(
+        child: Divider(
+          color: Theme.of(context).cardColor.withOpacity(0.7),
+          height: 15,
+          thickness: 1,
+        ),
+      ),
       SliverList(
         delegate: SliverChildListDelegate(
             [Container(child: peopleResultsScreen(peopleResultsFuture,searchController),),],),
+      ),  SliverToBoxAdapter(
+        child: Divider(
+          color: Theme.of(context).cardColor.withOpacity(0.7),
+          height: 15,
+          thickness: 1,
+        ),
       ),
        SliverToBoxAdapter(
         child: Container(
@@ -132,7 +145,6 @@ CustomScrollView searchResultsScreen(Future<QuerySnapshot> peopleResultsFuture,
               Text(
                 'Posts',
                 style: TextStyle(
-                    color: Colors.black,
                     fontWeight: FontWeight.w500,
                     fontSize: 18),
               ),
@@ -141,6 +153,12 @@ CustomScrollView searchResultsScreen(Future<QuerySnapshot> peopleResultsFuture,
               child: IconButton(icon: Icon(Icons.view_stream,size: 21,), onPressed: null),),
             ],
           ),
+        ),
+      ),  SliverToBoxAdapter(
+        child: Divider(
+          color: Theme.of(context).cardColor.withOpacity(0.7),
+          height: 15,
+          thickness: 1,
         ),
       ),
       SliverFillRemaining(

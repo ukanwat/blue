@@ -1,22 +1,18 @@
 import 'dart:async';
-import 'dart:io';
-
-import 'package:blue/functions/upload_post_interaction.dart';
 import 'package:blue/models/post_interaction.dart';
-import 'package:blue/providers/post_interactions.dart';
 import 'package:blue/screens/profile_screen.dart';
 import 'package:blue/widgets/repost_dialog.dart';
 import 'package:blue/widgets/save_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:carousel_pro/carousel_pro.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:video_player/video_player.dart';
+import 'package:blue/screens/tag_screen.dart';
+import 'package:blue/main.dart';
 
 import './custom_image.dart';
 import '../screens/home.dart';
-import '../widgets/progress.dart';
-import '../models/user.dart';
 import '../screens/comments_screen.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -25,6 +21,7 @@ class Post extends StatefulWidget {
   final String postId;
   final String ownerId;
   final String username;
+  final String photoUrl;
   final String title;
   final String topicName;
   final String topicId;
@@ -38,6 +35,7 @@ class Post extends StatefulWidget {
       {this.postId,
       this.ownerId,
       this.username,
+      this.photoUrl,
       this.title,
       this.topicName,
       this.topicId,
@@ -53,6 +51,7 @@ class Post extends StatefulWidget {
       postId: doc['postId'],
       ownerId: doc['ownerId'],
       username: doc['username'],
+      photoUrl: doc['photoUrl'],
       title: doc['title'],
       topicName: doc['topicName'],
       topicId: doc['topicId'],
@@ -80,6 +79,7 @@ class Post extends StatefulWidget {
       postId: this.postId,
       ownerId: this.ownerId,
       username: this.username,
+      photoUrl: this.photoUrl,
       title: this.title,
       topicName: this.topicName,
       topicId: this.topicId,
@@ -87,9 +87,7 @@ class Post extends StatefulWidget {
       contentsInfo: this.contentsInfo,
       upvotes: this.upvotes,
       upvoteCount: getUpVoteCount(this.upvotes),
-      tags: this.tags
-      // postInteractions: this.postInteractions,
-      );
+      tags: this.tags);
 }
 
 class _PostState extends State<Post> {
@@ -106,333 +104,431 @@ class _PostState extends State<Post> {
   final String postId;
   final String ownerId;
   final String username;
+  final String photoUrl;
   final String title;
   final String topicName;
   final String topicId;
   final Map contents;
   final Map contentsInfo;
   final List<dynamic> tags;
-  // final PostInteractions postInteractions;
+  _PostState({
+    this.postId,
+    this.ownerId,
+    this.username,
+    this.photoUrl,
+    this.title,
+    this.topicName,
+    this.topicId,
+    this.contents,
+    this.contentsInfo,
+    this.upvotes,
+    this.upvoteCount,
+    this.tags,
+  });
+  //
   int upvoteCount;
   Map upvotes;
   bool isUpvoted;
   double screenWidth;
   bool tagBarVisible = false;
-  _PostState(
-      {this.postId,
-      this.ownerId,
-      this.username,
-      this.title,
-      this.topicName,
-      this.topicId,
-      this.contents,
-      this.contentsInfo,
-      this.upvotes,
-      this.upvoteCount,
-      this.tags});
+  bool notInterested = false;
+  OverlayEntry overlayOptions;
+  showOptions() {
+    overlayOptions = createOverlayOptions();
+    Overlay.of(context).insert(overlayOptions);
+  }
+
+  OverlayEntry createOverlayOptions() {
+    RenderBox renderBox = context.findRenderObject();
+    var size = renderBox.size;
+    var offset = renderBox.localToGlobal(Offset.zero);
+
+    return OverlayEntry(
+        builder: (context) => Stack(
+              children: <Widget>[
+                Positioned.fill(
+                    child: GestureDetector(
+                  onTap: overlayOptions?.remove,
+                  onLongPress: overlayOptions?.remove,
+                  onHorizontalDragStart: (_) {
+                    overlayOptions?.remove();
+                  },
+                  onVerticalDragStart: (_) {
+                    overlayOptions?.remove();
+                  },
+                  child: Container(
+                    color: Colors.transparent,
+                  ),
+                )),
+                Positioned(
+                  left: 0,
+                  top: offset.dy + size.height - 170,
+                  width: MediaQuery.of(context).size.width * 0.55,
+                  child: Material(
+                    color: Colors.transparent,
+                    elevation: 0.0,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: Container(
+                        margin: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).canvasColor,
+                          borderRadius: BorderRadius.circular(15),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4.0,
+                              spreadRadius: 0.0,
+                              offset: Offset(
+                                  2, 2), // shadow direction: bottom right
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: <Widget>[
+                            ListTile(
+                              dense: true,
+                              leading: Icon(FlutterIcons.flag_fea,
+                              color: Theme.of(context).iconTheme.color,
+                              ),
+                              title: Text('Report'),
+                            ),
+                            ListTile(     dense: true,
+                              leading: Icon(FlutterIcons.block_mdi,  color: Theme.of(context).iconTheme.color,),
+                              title: Text('Not Interested'),
+                              onTap: () {
+                                setState(() {
+                                  overlayOptions?.remove();
+                                  notInterested = true;
+                                });
+                              },
+                            ),
+                            ListTile(     dense: true,
+                              leading: Icon(
+                                  FlutterIcons.arrow_down_bold_outline_mco,  color: Theme.of(context).iconTheme.color,),
+                              title: Text('Downvote'),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ));
+  }
 
   buildPostHeader() {
-    return FutureBuilder(
-        //TODO can set userdata on post
-        future: usersRef.document(ownerId).get(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return circularProgress();
-          }
-          User user = User.fromDocument(snapshot.data);
-          bool isPostOwner = currentUserId == ownerId;
-          return Column(
-            children: <Widget>[
-              Container(
-                width: MediaQuery.of(context).size.width,
-                padding:
-                    EdgeInsets.only(left: 13, top: 6, right: 13, bottom: 0),
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        child: Text(
-                          widget.title,
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),if(tagBarVisible)
-              Padding(
-                padding: EdgeInsets.all(5),
-              child: InkWell(
-                
-                child: Text(topicName,
-                style: TextStyle(
-                fontSize: 14
-                ),
-                ),
-              ),
-
-              ),
-              if(tagBarVisible)
-              Container(
-                height: 28,
-                child: Row(children: <Widget>[
-                   Container(
-                     width: 28,
-                     child: Center(
-                       child: Text('#',
-                style: TextStyle(
-                fontSize: 22
-                ),
-                ),
-                     ),
-                   ),
-                   Expanded(
-                                        child: Container(
-                                          height: 28,
-                                          color: Colors.grey[200],
-                                          child: ListView.builder(
-                       itemCount: tags.length,
-                       scrollDirection: Axis.horizontal,
-                       itemBuilder: (_,i){
-                         print( tags[i],);
-                        return Container(
-                                    
-                  
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 8
-                          ),
-                          margin: EdgeInsets.symmetric(
-                            horizontal: 2,
-                            vertical: 3
-                          ),
-
-decoration: BoxDecoration(
-color: Colors.white,
-  borderRadius: BorderRadius.circular(100)
-),
-                            child: Center(
-                              child: Text(
-                                tags[i],
-                                style: TextStyle(
-                                  fontSize: 14
-                                ),
-                              ),
-                            ),
+    bool isPostOwner = currentUserId == ownerId;
+    return Container(
+      color: Theme.of(context).backgroundColor,
+      child: Column(
+        children: <Widget>[
+          Container(
+            color: Theme.of(context).backgroundColor,
+            width: MediaQuery.of(context).size.width,
+            padding: EdgeInsets.only(left: 13, top: 8, right: 13, bottom: 3),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Container(
+                    child: Text(
+                      widget.title,
+                      style: TextStyle(
                           
-                        );
-                       },
-                     ),
-                                        ),
-                   )
-                ],),
-              )
-,              Container(
-                padding: EdgeInsets.only(left: 13, top: 0, bottom: 0, right: 0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    CircleAvatar(
-                      radius: 15,
-                      backgroundImage:
-                          CachedNetworkImageProvider(user.photoUrl),
-                      backgroundColor: Colors.grey,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(
-                      width: 8,
-                    ),
-                    Container(
-                      height: 24,
-                      alignment: Alignment.centerLeft,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (tagBarVisible)
+            Container(
+              
+              margin: EdgeInsets.only(top: 0, bottom: 0),
+              height: 28,
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    width: 28,
+                    color: Theme.of(context).backgroundColor,
+                    child: Center(
                       child: Text(
-                        user.username,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.black87,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        '#',
+                        style: TextStyle(fontSize: 22),
                       ),
                     ),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Expanded(
-                      child: Container(
-                        height: 24,
-                        child: FittedBox(
-                          fit: BoxFit.none,
-                          alignment: Alignment.centerLeft,
-                          child: Container(
-                            height: 20,
-                            width: 70,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              color: Colors.blue,
-                            ),
-                            child: RawMaterialButton(
-                              child: Text(
-                                'Follow',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
+                  ),
+                  Expanded(
+                    child: Container(
+                      height: 28,
+                      color: Theme.of(context).canvasColor,
+                      child: ListView.builder(
+                        itemCount: tags.length,
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (_, i) {
+                          print(
+                            tags[i],
+                          );
+                          return InkWell(
+                            onTap: () {
+                              Navigator.of(context).pushNamed(TagScreen.routeName,
+                                  arguments: tags[i]);
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 8),
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 2, vertical: 3),
+                              decoration: BoxDecoration(
+                                  color: Theme.of(context).backgroundColor,
+                                  borderRadius: BorderRadius.circular(100)),
+                              child: Center(
+                                child: Text(
+                                  tags[i],
+                                  style: TextStyle(fontSize: 14),
                                 ),
                               ),
-                              onPressed: null,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
                             ),
+                          );
+                        },
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          Container(
+                      color: Theme.of(context).backgroundColor,
+                      margin: EdgeInsets.zero,
+            padding: EdgeInsets.only(left: 13, top: 0, bottom: 0, right: 0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                CircleAvatar(
+                  radius: 15,
+                  backgroundImage: CachedNetworkImageProvider(photoUrl),
+                  backgroundColor: Colors.grey,
+                ),
+                SizedBox(
+                  width: 8,
+                ),
+                Container(
+                  height: 24,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+
+                    username,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                         
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+                Expanded(
+                  child: Container(
+                    height: 24,
+                    child: FittedBox(
+                      fit: BoxFit.none,
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        height: 20,
+                        width: 70,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.blue,
+                        ),
+                        child: RawMaterialButton(
+                          child: Text(
+                            'Follow',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          onPressed: null,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
                       ),
                     ),
-                    tagBarVisible?
-                         SizedBox(
-                            height: 40,
-                            width: 40,
-                            child: IconButton(
-                              iconSize: 28,
-                              onPressed: () {
-                               setState(() {
-                                 tagBarVisible = false;
-                               });
-                              },
-                              icon: Icon(
-                                Icons.keyboard_arrow_up,
-                              ),
-                            ),
-                          )
-                        : SizedBox(
-                            height: 40,
-                            width: 40,
-                            child: IconButton(
-                              iconSize: 28,
-                              onPressed: () async {
-                              setState(() {
-                                tagBarVisible = true;
-                              });
-                              },
-                              icon: Icon(
-                                
-                                Icons.keyboard_arrow_down,
-                              ),
-                            ),
-                          ),
-                    isSaved
-                        ? SizedBox(
-                            height: 40,
-                            width: 40,
-                          
-                            child: IconButton(
-                              iconSize: 22,
-                              onPressed: () {
-                                setState(() {
-                                  isSaved = false;
-                                  showSaveBar = false;
-                                  savedPostsRef
-                                    .document(currentUser?.id)
-                                    .collection('All')
-                                    .document(postId).delete();
-                                });
-                              },
-                              icon: Icon(
-                                Icons.bookmark,
-                                color: Colors.blue,
-                              ),
-                            ),
-                          )
-                        : SizedBox(
-                            height: 40,
-                            width: 40,
-                            child: IconButton(
-                              iconSize: 22,
-                              onPressed: () async {
-                               setState(() {
-                                 isSaved = true;
-                               });
-                                await savedPostsRef
-                                    .document(currentUser?.id)
-                                    .collection('All')
-                                    .document(postId)
-                                    .setData({
-                                  'postId': postId,
-                                  'ownerId': ownerId,
-                                  'username': username,
-                                  'contents': contents,
-                                  'contentsInfo': contentsInfo,
-                                  'title': title,
-                                  'timeStamp': timestamp,
-                                  'upvotes': {}, // TODO: Remove
-                                  'topicId': topicId,
-                                  'topicName': topicName,
-                                  'tags': tags,
-                                });
-                                 setState(() {
-                                  showSaveBar = true;
-                                });
-                                Future.delayed(
-                                    const Duration(milliseconds: 5000), () {
-                                  setState(() {
-                                    showSaveBar = false;
-                                  });
-                                });
-                               
-                              },
-                              icon: Icon(
-                                Icons.bookmark_border,
-                              ),
-                            ),
-                          ),
-                    
-                  ],
+                  ),
                 ),
-              ),
-              if(showSaveBar)
-              Container(
+                tagBarVisible
+                    ? SizedBox(
+                        height: 40,
+                        width: 40,
+                        child: IconButton(
+                          iconSize: 28,
+                          onPressed: () {
+                            setState(() {
+                              tagBarVisible = false;
+                            });
+                          },
+                          icon: Icon(
+                            Icons.keyboard_arrow_up,
+                          ),
+                        ),
+                      )
+                    : SizedBox(
+                        height: 40,
+                        width: 40,
+                        child: IconButton(
+                          iconSize: 28,
+                          onPressed: () async {
+                            setState(() {
+                              tagBarVisible = true;
+                            });
+                          },
+                          icon: Icon(
+                            Icons.keyboard_arrow_down,
+                          ),
+                        ),
+                      ),
+                isSaved
+                    ? SizedBox(
+                        height: 40,
+                        width: 40,
+                        child: IconButton(
+                          iconSize: 22,
+                          onPressed: () {
+                            setState(() {
+                              isSaved = false;
+                              showSaveBar = false;
+                              savedPostsRef
+                                  .document(currentUser?.id)
+                                  .collection('All')
+                                  .document(postId)
+                                  .delete();
+                            });
+                          },
+                          icon: Icon(
+                            Icons.bookmark,
+                            color: Colors.blue,
+
+                          ),
+                        ),
+                      )
+                    : SizedBox(
+                        height: 40,
+                        width: 40,
+                        child: IconButton(
+                          iconSize: 22,
+                          onPressed: () async {
+                            setState(() {
+                              isSaved = true;
+                            });
+                            var lastDoc = await savedPostsRef
+                                .document(currentUser?.id)
+                                .collection('all')
+                                .orderBy('order', descending: true)
+                                .limit(1)
+                                .getDocuments();
+                            if (lastDoc.documents.length == 0) {
+                              savedPostsRef
+                                  .document(currentUser?.id)
+                                  .collection('all')
+                                  .document()
+                                  .setData({
+                                'order': 1,
+                                'posts': [
+                                  postId,
+                                ],
+                              }, merge: true);
+                            } else if (lastDoc.documents.length == 1 &&
+                                lastDoc.documents.first.data['posts'].length <
+                                    2) {
+                              List<dynamic> _postIdList =
+                                  lastDoc.documents.first.data['posts'];
+                              _postIdList.add(postId);
+                              savedPostsRef
+                                  .document(currentUser?.id)
+                                  .collection('all')
+                                  .document(lastDoc.documents.first.documentID)
+                                  .setData({
+                                'posts': _postIdList,
+                              }, merge: true);
+                            } else if (lastDoc.documents.length == 1 &&
+                                lastDoc.documents.first.data['posts'].length >
+                                    1) {
+                              savedPostsRef
+                                  .document(currentUser?.id)
+                                  .collection('all')
+                                  .document()
+                                  .setData({
+                                'order':
+                                    lastDoc.documents.first.data['order'] + 1,
+                                'posts': [
+                                  postId,
+                                ],
+                              }, merge: true);
+                            }
+                            setState(() {
+                              showSaveBar = true;
+                            });
+                            Future.delayed(const Duration(milliseconds: 5000),
+                                () {
+                              setState(() {
+                                showSaveBar = false;
+                              });
+                            });
+                          },
+                          icon: Icon(
+                            Icons.bookmark_border,
+                          ),
+                        ),
+                      ),
+              ],
+            ),
+          ),
+          if (showSaveBar)
+            Container(
                 width: double.infinity,
-                 padding: EdgeInsets.symmetric(
-                   vertical: 0,
-                   horizontal: 6
-                 ),
-               child:   Row(
-                 mainAxisAlignment: MainAxisAlignment.spaceAround,
-                 children: <Widget>[
-                  Text('Saved!',style: TextStyle(  fontSize: 18),
-                
-                  ),
-                
-                  FlatButton(onPressed: (){
-                    setState(() {
-                      showSaveBar = false;
-                    });
-                      showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) => SaveDialog(this.widget),
-                                );    
-                  }, 
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)
-                  ),
-                  child: Text(
-                    'Save to Collection',
-                    style: TextStyle(color: Colors.blue,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 18
+                padding: EdgeInsets.symmetric(vertical: 0, horizontal: 6),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    Text(
+                      'Saved!',
+                      style: TextStyle(fontSize: 18),
                     ),
-                  ))
-               ],)
-              )
-            ],
-          );
-        });
+                    FlatButton(
+                        onPressed: () {
+                          setState(() {
+                            showSaveBar = false;
+                          });
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) =>
+                                SaveDialog(this.widget),
+                          );
+                        },
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                        child: Text(
+                          'Save to Collection',
+                          style: TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18),
+                        ))
+                  ],
+                ))
+        ],
+      ),
+    );
   }
 
   handleDeletePost(BuildContext parentContext) {
@@ -443,14 +539,15 @@ color: Colors.white,
             title: Text("Remove this post?"),
             children: <Widget>[
               SimpleDialogOption(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    deletePost();
-                  },
-                  child: Text(
-                    'Delete',
-                    style: TextStyle(color: Colors.red),
-                  )),
+                onPressed: () {
+                  Navigator.pop(context);
+                  deletePost();
+                },
+                child: Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
               SimpleDialogOption(
                   onPressed: () => Navigator.pop(context),
                   child: Text('Cancel')),
@@ -499,6 +596,7 @@ color: Colors.white,
   handleVoteButton() {
     bool _isUpvoted = upvotes[currentUserId] == true;
     if (_isUpvoted) {
+      topicPostsDatabase.child(postId).child('upvotes').set(0);
       postsRef
           .document(ownerId)
           .collection('userPosts')
@@ -510,9 +608,8 @@ color: Colors.white,
         isUpvoted = false;
         upvotes[currentUserId] = false;
       });
-      postInteractions[postId] =
-          PostInteraction(ownerId, false, false, false, false);
     } else if (!_isUpvoted) {
+      topicPostsDatabase.child(postId).child('upvotes').set(1);
       postsRef
           .document(ownerId)
           .collection('userPosts')
@@ -524,8 +621,7 @@ color: Colors.white,
         isUpvoted = true;
         upvotes[currentUserId] = true;
       });
-      postInteractions[postId] =
-          PostInteraction(ownerId, true, false, false, false);
+    
     }
   }
 
@@ -568,19 +664,12 @@ color: Colors.white,
   @override
   void didChangeDependencies() {
     if (this.mounted && persistentCallbackAdded == false) {
-      //timer =  Timer.periodic(Duration(milliseconds: 100), (Timer t){WidgetsBinding.instance.addPostFrameCallback(_afterLayout);} );
-
       persistentCallbackAdded = true;
     }
-
-    super.didChangeDependencies();
-  }
-
-  @override
-  void initState() {
     print(contents);
-    for (int i = 1; i <= contents.length; i++) {
+    for (int i = 0; i < contents.length; i++) {
       print(contents['$i']);
+      print(contentsInfo['$i']);
       if (contentsInfo['$i']['type'] == 'image') {
         contentsViewList.add(imageContentContainer(
             contents['$i'], contentsInfo['$i']['aspectRatio']));
@@ -589,15 +678,18 @@ color: Colors.white,
           contents['$i'],
         );
         _initializeVideoPlayerFuture = _controller.initialize();
-
-        contentsViewList.add(videoContentContainer(
-            contents['$i'], contentsInfo['$i']['aspectRatio']));
-      } else {
+        contentsViewList.add(VideoContentContainer(initializeVideoPlayerFuture:_initializeVideoPlayerFuture,
+          //  contents['$i'],
+            controller: _controller,
+            aspectRatio: contentsInfo['$i']['aspectRatio']));
+      } else if (contentsInfo['$i']['type'] == 'text') {
         contentsViewList.add(textContentContainer(contents['$i']));
+      } else {
+        contentsViewList.add(carouselContentContainer(
+            contents['$i'], contentsInfo['$i']['aspectRatio']));
       }
     }
-    // postInteractions.postInteractions[postId] = PostInteraction( ownerId, false, false, false, false);
-    super.initState();
+    super.didChangeDependencies();
   }
 
   Widget imageContentContainer(String url, double aspectRatio) {
@@ -609,32 +701,264 @@ color: Colors.white,
     );
   }
 
-  playOrPauseVideo() {
-    if (_controller.value.isPlaying) {
+  Widget carouselContentContainer(List<dynamic> urls, double aspectRatio) {
+    return Container(
+        height: MediaQuery.of(context).size.width / aspectRatio,
+        key: UniqueKey(),
+        child: Carousel(
+          dotVerticalPadding: 0,
+          dotSize: 6,
+          dotIncreaseSize: 1.2,
+          dotIncreasedColor: Colors.blue.withOpacity(0.7),
+          dotColor: Colors.white,
+          showIndicator: true,
+          dotPosition: DotPosition.bottomCenter,
+          dotSpacing: 15,
+          boxFit: BoxFit.fitWidth,
+          dotBgColor: Colors.transparent,
+          autoplay: false,
+          overlayShadow: false,
+          moveIndicatorFromBottom: 20,
+          images: List.generate(urls.length, (i) {
+            return cachedNetworkImage(context, urls[i],
+                aspectRatio: aspectRatio);
+          }),
+        ));
+  }
+
+  Widget textContentContainer(String text) {
+    return Container(
+      child: Text(text),
+      padding: EdgeInsets.all(8),
+    );
+  }
+
+  buildPostFooter() {
+    return Container(
+    
+      padding: EdgeInsets.only(
+        top: 5
+      ),
+      color: Theme.of(context).backgroundColor,
+          child: Column(
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.only(left: 13.0),
+              ),
+              ownerId == currentUser.id
+                  ? SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: GestureDetector(
+                        onTap: () {
+                          showOptions();
+                        },
+                        child: Icon(
+                          Icons.more_horiz,
+                          size: 22,
+                        ),
+                      ),
+                    )
+                  : SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: GestureDetector(
+                        onTap: () {
+                          showOptions();
+                        },
+                        child: Icon(
+                          Icons.more_horiz,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+              Expanded(
+                child: Container(),
+              ),
+              GestureDetector(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) => RepostDialog(this.widget),
+                  );
+                },
+                child: Icon(Icons.repeat, size: 24.0, color: Colors.grey),
+              ),
+              Padding(
+                padding: EdgeInsets.only(right: 20.0),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 4.0, right: 20.0),
+                child: GestureDetector(
+                  onTap: () => showComments(
+                    context,
+                    postId: postId,
+                    ownerId: ownerId,
+                    contents: contents,
+                  ),
+                  child: Icon(
+                    Icons.comment,
+                    size: 24.0,
+                    color: Colors.blue[300],
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => handleVoteButton(),
+                child: Icon(
+                    isUpvoted == true
+                        ? FlutterIcons.arrow_up_bold_mco
+                        : FlutterIcons.arrow_up_bold_outline_mco,
+                    size: 26.0,
+                    color: Colors.blue),
+              ),
+              Container(
+                  margin: EdgeInsets.only(left: 8),
+                  child: Text(
+                    '$upvoteCount',
+                    style: TextStyle(
+                   
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18),
+                  )),
+              SizedBox(width: 13),
+            ],
+          ),
+          Padding(
+            padding: EdgeInsets.only(bottom: 13),
+          ),
+          Divider(
+            thickness: 3,
+            color: Theme.of(context).canvasColor,
+            height: 3,
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    screenWidth = MediaQuery.of(context).size.width;
+    isUpvoted = false;
+    return notInterested //can do some other stuff
+        ? Container(
+            color: Theme.of(context).backgroundColor,
+            padding: EdgeInsets.symmetric(horizontal: 15),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text(
+                  "You won't see this post again",
+                ),
+                FlatButton(
+                  onPressed: () {
+                    setState(() {
+                      notInterested = false;
+                    });
+                  },
+                  child: Text(
+                    'Undo',
+                    style: TextStyle(
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        : Container(
+            color: Theme.of(context).backgroundColor,
+            child: Column(
+              children: <Widget>[
+                buildPostHeader(),
+                ListView.builder(
+                  padding: EdgeInsets.all(0),
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemBuilder: (_, i) {
+                    return contentsViewList[i];
+                  },
+                  itemCount: contents.length,
+                ),
+                buildPostFooter(),
+              ],
+            ),
+          );
+  }
+}
+
+showComments(BuildContext context,
+    {String postId,
+    String ownerId,
+    Map contents,}) {
+  Navigator.pushNamed(context, CommentsScreen.routeName, arguments: {
+    'postId': postId,
+    'ownerId': ownerId,
+    'contents': contents,
+  });
+}
+
+showProfile(BuildContext context, {String profileId}) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ProfileScreen(
+        profileId: profileId,
+      ),
+    ),
+  );
+}
+
+class VideoContentContainer extends StatefulWidget {
+  final Future<dynamic> initializeVideoPlayerFuture;
+  final VideoPlayerController controller;
+  final double aspectRatio;
+  VideoContentContainer(
+      {this.initializeVideoPlayerFuture, this.controller, this.aspectRatio});
+  @override
+  _VideoContentContainerState createState() => _VideoContentContainerState(
+      initializeVideoPlayerFuture: this.initializeVideoPlayerFuture,
+      controller: this.controller,
+      aspectRatio: this.aspectRatio);
+}
+
+class _VideoContentContainerState extends State<VideoContentContainer> {
+  final Future<dynamic> initializeVideoPlayerFuture;
+  final VideoPlayerController controller;
+  final double aspectRatio;
+ _VideoContentContainerState({
+      this.initializeVideoPlayerFuture, this.controller, this.aspectRatio});
+    Widget playbackButton = Container();
+        playOrPauseVideo() {
+    if (controller.value.isPlaying) {
       setState(() {
         playbackButton = Icon(Icons.play_arrow);
-        _controller.pause();
+        controller.pause();
       });
     } else
       setState(() {
-        _controller.play();
+        controller.play();
       });
   }
-
-  Widget videoContentContainer(String url, double aspectRatio) {
-    bool videoMuted = false;
+  @override
+  Widget build(BuildContext context) {
+     bool videoMuted = false;
     return FutureBuilder(
-      future: _initializeVideoPlayerFuture,
+      future: initializeVideoPlayerFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
-          _controller.play();
+          controller.play();
           return Stack(
             children: <Widget>[
               GestureDetector(
                 onTap: playOrPauseVideo,
                 child: AspectRatio(
-                  aspectRatio: _controller.value.aspectRatio,
-                  child: VideoPlayer(_controller),
+                  aspectRatio: controller.value.aspectRatio,
+                  child: VideoPlayer(controller),
                 ),
               ),
               Container(
@@ -651,9 +975,9 @@ color: Colors.white,
                       onPressed: () {
                         setState(() {
                           if (videoMuted) {
-                            _controller.setVolume(1);
+                            controller.setVolume(1);
                           } else {
-                            _controller.setVolume(0);
+                            controller.setVolume(0);
                           }
                           videoMuted = !videoMuted;
                         });
@@ -666,166 +990,11 @@ color: Colors.white,
           );
         } else {
           return Container(
-            color: Colors.amber,
-            height: screenWidth / aspectRatio,
+            color: Colors.grey,
+            height: MediaQuery.of(context).size.width/ aspectRatio,
           );
         }
       },
     );
   }
-
-  Widget textContentContainer(String text) {
-    return Container(
-      child: Text(text),
-      padding: EdgeInsets.all(8),
-    );
-  }
-
-  buildPostFooter() {
-    return Column(
-      children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.only(left: 13.0),
-            ),  ownerId == currentUser.id?
-                         SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: GestureDetector(
-
-                            
-                              onTap: () => handleDeletePost(context),
-                              child: Icon(
-                                Icons.more_vert,
-                                size: 22,
-                              ),
-                            ),
-                          )
-                        : SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: GestureDetector(
-
-                            
-                              onTap: () => handleDeletePost(context),
-                              child: Icon(
-                                Icons.more_horiz,
-                                size: 22,
-                              ),
-                            ),
-                          ), Expanded(
-              child: Container(),
-            ),
-            GestureDetector(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) => RepostDialog(this.widget),
-                );
-              },
-              child: Icon(Icons.repeat, size: 24.0, color: Colors.grey),
-            ),
-            Padding(
-              padding: EdgeInsets.only(right: 20.0),
-            ),
-           
-                         
-            Padding(
-              padding: const EdgeInsets.only(top: 4.0, right: 20.0),
-
-              child: GestureDetector(
-                onTap: () => showComments(
-                  context,
-                  postId: postId,
-                  ownerId: ownerId,
-                  contents: contents,
-                  postInteractions: postInteractions,
-                ),
-                child: Icon(
-                  Icons.comment,
-                  size: 24.0,
-                  color: Colors.blue[300],
-                ),
-              ),
-            ),
-           
-            GestureDetector(
-              onTap: () => handleVoteButton(),
-              child: Icon(isUpvoted == true ? FlutterIcons.arrow_up_bold_mco : FlutterIcons.arrow_up_bold_outline_mco ,
-                  size: 26.0, color: Colors.blue),
-            ),
-            Container(
-                margin: EdgeInsets.only(left: 8),
-                child: Text(
-                  '$upvoteCount',
-                  style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18),
-                )),
-            SizedBox(width: 13),
-          ],
-        ),
-        Padding(
-          padding: EdgeInsets.only(bottom: 7),
-        ),
-        Divider(
-          thickness: 3,
-          color: Colors.grey[200],
-          height: 3,
-        ),
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    screenWidth = MediaQuery.of(context).size.width;
-    isUpvoted = (upvotes[currentUserId] == true);
-    return Column(
-      key: trackKey,
-      children: <Widget>[
-        buildPostHeader(),
-        ListView.builder(
-          padding: EdgeInsets.all(0),
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          itemBuilder: (_, i) {
-            return contentsViewList[i];
-          },
-          itemCount: contents.length,
-        ),
-        SizedBox(
-          height: 10,
-        ),
-        buildPostFooter(),
-      ],
-    );
-  }
-}
-
-showComments(BuildContext context,
-    {String postId,
-    String ownerId,
-    Map contents,
-    Map<String, PostInteraction> postInteractions}) {
-  Navigator.pushNamed(context, CommentsScreen.routeName, arguments: {
-    'postId': postId,
-    'ownerId': ownerId,
-    'contents': contents,
-    'postIneractions': postInteractions
-  });
-}
-
-showProfile(BuildContext context, {String profileId}) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => ProfileScreen(
-        profileId: profileId,
-      ),
-    ),
-  );
 }

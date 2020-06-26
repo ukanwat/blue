@@ -1,6 +1,10 @@
+import 'package:blue/widgets/progress.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:blue/main.dart';
 
+import '../../home.dart';
 import 'collection_screens/create_collection_screen.dart';
 
 class CollectionsScreen extends StatefulWidget {
@@ -10,22 +14,38 @@ class CollectionsScreen extends StatefulWidget {
 }
 
 class _CollectionsScreenState extends State<CollectionsScreen> {
-  List<String> collectionNames = [];
+  DocumentSnapshot  snapshot ;
+  bool loading  = true;
+  @override
+  void initState() {
+    getCollections();
+    super.initState();
+  }
+      getCollections() async {
+snapshot =await collectionsRef
+        .document(currentUser?.id).get();
+        setState((){
+          loading  = false;
+        });
+   }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: 
+      Theme.of(context).backgroundColor,
       appBar: PreferredSize(
           preferredSize: Size.fromHeight(50),
           child: AppBar(
-            backgroundColor: Colors.white,
+            backgroundColor: Theme.of(context).canvasColor,
             elevation: 0,
+            centerTitle: true,
             title: Text(
               'Collections',
-              style: TextStyle(color: Theme.of(context).primaryColor),
+              style: TextStyle(),
             ),
             automaticallyImplyLeading: false,
             leading: CupertinoNavigationBarBackButton(
-              color: Colors.grey,
+              color: Colors.blue,
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -35,31 +55,32 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
                 onPressed: () {
                   Navigator.of(context).pushNamed(
                       CreateCollectionScreen.routeName,
-                      arguments: {'collectionNames': collectionNames});
+                    );
                 },
                 child: Text(
                   'New',
                   style: TextStyle(
+                    fontSize: 20,
                     color: Colors.blue,
                   ),
                 ),
               )
             ],
-          )),
-      body: GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: MediaQuery.of(context).size.width / 2,
-        ),
-        itemBuilder: (_, i) {
-          return Card(
-            child: Text(collectionNames[i]),
-            color: Colors.grey[200],
-            margin: EdgeInsets.all(5),
+          ),),
+      body: loading ? circularProgress(): ListView.builder(itemBuilder: (_,i){
+          return Container(
+            height: 80,
+            margin: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+
+            decoration: BoxDecoration(
+color: Theme.of(context).cardColor,
+borderRadius: BorderRadius.circular(15),
+
+            ),
           );
-        },
-        itemCount: collectionNames.length,
-      ),
+      },
+      itemCount: snapshot.data.length + 1,
+      )
     );
   }
 }

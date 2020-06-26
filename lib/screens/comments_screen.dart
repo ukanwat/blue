@@ -1,8 +1,6 @@
-
-import 'package:blue/models/post_interaction.dart';
-import 'package:blue/providers/post_interactions.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:flutter/material.dart';
+import 'package:blue/main.dart';
 
 import './home.dart';
 import '../widgets/comment.dart';

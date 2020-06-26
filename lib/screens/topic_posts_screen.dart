@@ -1,9 +1,8 @@
-import 'dart:math';
-
-import 'package:blue/widgets/custom_image.dart';
-import 'package:blue/widgets/header.dart';
+import 'package:blue/screens/topic/topic_popular_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:blue/main.dart';
+import 'home.dart';
 
 class TopicPostsScreen extends StatefulWidget {
   static const routeName = 'topic-posts';
@@ -160,70 +159,108 @@ class _TopicPostsScreenState extends State<TopicPostsScreen> {
           headerSliverBuilder: (context, value) {
             return [
               SliverAppBar(
-                expandedHeight: 100,
-                pinned: true,
-                floating: true,
-                snap: true,
-                titleSpacing: 0.0,
-                flexibleSpace: FlexibleSpaceBar(
-                  background:
-                      cachedNetworkImage(context, topicData['imageUrl']),
-                  collapseMode: CollapseMode.pin,
-                  title: Text(
-                    topicData['name'],
-                    style: TextStyle(
-                        fontSize: 20, color: Theme.of(context).primaryColor,
-                        fontFamily: 'Techna Sans Regular'
+                  expandedHeight: 110,
+                  pinned: true,
+                  floating: true,
+                  snap: true,
+                  titleSpacing: 0.0,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Stack(
+                      children: <Widget>[
+                        CachedNetworkImage(
+                          imageUrl: topicData['imageUrl'],
+                          fit: BoxFit.cover,
+                          width: MediaQuery.of(context).size.width,
                         ),
-                  ),
-                ),
-                automaticallyImplyLeading: false,
-                leading: BackButton(
-                  color: Theme.of(context).primaryColor,
-                ),
-                elevation: 1,
-                backgroundColor: Colors.white,
-              ),
-              SliverPersistentHeader(
-                //             child: PreferredSize(
-                // preferredSize: Size.fromHeight(0),
-                //               child: SliverAppBar(
-                // snap: true,
-                // floating: true,
-                // expandedHeight: 0,
-                pinned: true,
-                delegate: _SliverAppBarDelegate(
-                  height: 45.0,
-                  //  maxHeight: 200.0,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 35),
-                    child: TabBar(
-                      unselectedLabelStyle:
-                          TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-                          labelStyle: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      indicatorColor: Theme.of(context).primaryColor,
-                      labelColor: Theme.of(context).primaryColor,
-                      unselectedLabelColor:
-                          Theme.of(context).primaryColor.withAlpha(220),
-                      tabs: [
-                        Tab(
-                          text: "Popular",
-                        ),
-                        Tab(text: "Today"),
-                        Tab(text: "Top"),
+                        Container(
+                          decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                  colors: [
+                                Colors.black.withOpacity(0.2),
+                                Colors.black.withOpacity(0.2)
+                              ],
+                                  begin: Alignment(0, 0),
+                                  end: Alignment.bottomCenter)),
+                        )
                       ],
                     ),
+                    collapseMode: CollapseMode.pin,
+                    title: Text(
+                      topicData['name'],
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.white,
+                          fontFamily: 'Techna Sans Regular'),
+                    ),
+                  ),
+                  automaticallyImplyLeading: false,
+                  leading: BackButton(
+                    color: Colors.white,
+                  ),
+                  actions: <Widget>[
+                    PopupMenuButton(
+                      itemBuilder: (_) => [
+                        PopupMenuItem(child: Text('follow'), value: 'follow'),
+                      ],
+                      icon: Icon(Icons.more_vert),
+                      onSelected: (selectedValue) {
+                        if (selectedValue == 'follow') {
+                          followedTopicsRef
+                              .document(currentUser.id)
+                              .collection('userFollowedTopics')
+                              .document(topicData['id'])
+                              .setData({
+                            'name': topicData['name'],
+                            'imageUrl': topicData['imageUrl'],
+                            'id': topicData['id'],
+                            'info': topicData['info']
+                          });
+                        } else if (selectedValue == "") {
+                          //
+                        } else {
+                          //
+                        }
+                      },
+                    )
+                  ],
+                  elevation: 1,
+                  backgroundColor: Theme.of(context).primaryColor),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _SliverAppBarDelegate(
+                  TabBar(
+                    unselectedLabelStyle: TextStyle(
+                        backgroundColor: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600),
+                    labelStyle:
+                        TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicatorColor: Theme.of(context).primaryColor,
+                    labelColor: Theme.of(context).primaryColor,
+                    unselectedLabelColor:
+                        Theme.of(context).primaryColor.withAlpha(220),
+                    tabs: [
+                      Tab(
+                        text: "Popular",
+                      ),
+                      Tab(text: "Today"),
+                      Tab(text: "Top"),
+                    ],
                   ),
                 ),
                 //  /
                 // ),
-              )
+              ),
             ];
           },
           body: TabBarView(
             physics: BouncingScrollPhysics(),
-            children: [Container(), Container(), Container()],
+            children: [
+              TopicPopularScreen(topicData['id']),
+              Container(),
+              Container()
+            ],
           ),
         ),
       ),
@@ -232,29 +269,27 @@ class _TopicPostsScreenState extends State<TopicPostsScreen> {
 }
 
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  _SliverAppBarDelegate({
-    @required this.height,
-    // @required this.maxHeight,
-    @required this.child,
-  });
-  final double height;
-  // final double maxHeight;
-  final Widget child;
+  _SliverAppBarDelegate(this._tabBar);
+
+  final TabBar _tabBar;
+
   @override
-  double get minExtent => height;
+  double get minExtent => _tabBar.preferredSize.height;
   @override
-  double get maxExtent => height; //max(maxHeight, minHeight);
+  double get maxExtent => _tabBar.preferredSize.height;
+
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return new SizedBox.expand(child: child);
+    return new Container(
+      padding: EdgeInsets.symmetric(horizontal: 28),
+      color: Colors.white,
+      child: _tabBar,
+    );
   }
 
   @override
   bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
     return false;
-    //  maxHeight != oldDelegate.maxHeight ||
-    //     minHeight != oldDelegate.minHeight ||
-    //     child != oldDelegate.child;
   }
 }

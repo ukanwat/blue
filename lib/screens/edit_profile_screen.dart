@@ -1,10 +1,13 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:blue/main.dart';
 import 'package:blue/screens/profile_image_crop_screen.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:image/image.dart' as Im;
 import 'package:path_provider/path_provider.dart';
@@ -29,12 +32,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   TextEditingController displayNameController = TextEditingController();
   TextEditingController bioController = TextEditingController();
   TextEditingController websiteController = TextEditingController();
-  String _currentUserId;
   bool isLoading = false;
   User user;
   bool _displayNameValid = true;
   bool _bioValid = true;
   String profilePictureUrl;
+  String avatarUrl;
   File croppedImage;
   bool _websiteValid = true;
   getUser() async {
@@ -42,10 +45,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       isLoading = true;
     });
 
-    final currentUserIdMap =
-        ModalRoute.of(context).settings.arguments as Map<String, String>;
-    _currentUserId = currentUserIdMap['currentUserId'];
-    DocumentSnapshot doc = await usersRef.document(_currentUserId).get();
+ 
+    DocumentSnapshot doc = await usersRef.document(currentUser.id).get();
     user = User.fromDocument(doc);
     displayNameController.text = user.displayName;
     bioController.text = user.bio;
@@ -78,7 +79,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               displayNameController.text.isEmpty
           ? _displayNameValid = false
           : _displayNameValid = true;
-      bioController.text.trim().length > 100
+      bioController.text.trim().length > 300
           ? _bioValid = false
           : _bioValid = true;
       Uri.parse(websiteController.text.trim()).isAbsolute
@@ -89,24 +90,40 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _displayNameValid &&
         _bioValid &&
         _websiteValid) {
-      String imageId = Uuid().v4();
       final tempDir = await getTemporaryDirectory();
       final path = tempDir.path;
+      String avatarId = Uuid().v4();
+      String imageId = Uuid().v4();
       final Im.Image imageFile = Im.decodeImage(croppedImage.readAsBytesSync());
       final compressedImageFile = File('$path/img_$imageId.jpg')
         ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
-      StorageUploadTask uploadTask = storageRef
+      final Im.Image avatarFile = Im.copyResize(
+          Im.decodeImage(croppedImage.readAsBytesSync()),
+          width: 100);
+      final compressedAvatarFile = File('$path/img_$avatarId.jpg')
+        ..writeAsBytesSync(Im.encodeJpg(avatarFile, quality: 85));
+      StorageUploadTask imageUploadTask = storageRef
           .child("profile_$imageId.jpg")
           .putFile(compressedImageFile, StorageMetadata(contentType: 'jpg'));
-      StorageTaskSnapshot storageSnap = await uploadTask.onComplete;
-      String downloadUrl = await storageSnap.ref.getDownloadURL();
-      profilePictureUrl = downloadUrl;
-      await usersRef.document(_currentUserId).updateData({
-        'displayName': displayNameController.text,
-        'bio': bioController.text,
-        'website': websiteController.text.trim(),
-        'photoUrl': profilePictureUrl
-      });
+
+      StorageUploadTask avatarUploadTask = storageRef
+          .child("profile_$avatarId.jpg")
+          .putFile(compressedAvatarFile, StorageMetadata(contentType: 'jpg'));
+      StorageTaskSnapshot imageStorageSnap = await imageUploadTask.onComplete;
+      StorageTaskSnapshot avatarStorageSnap = await avatarUploadTask.onComplete;
+      String imageDownloadUrl = await imageStorageSnap.ref.getDownloadURL();
+      String avatarDownloadUrl = await avatarStorageSnap.ref.getDownloadURL();
+      profilePictureUrl = imageDownloadUrl;
+      avatarUrl = avatarDownloadUrl;
+      await usersRef.document(currentUser.id).updateData(
+        {
+          'displayName': displayNameController.text,
+          'bio': bioController.text,
+          'website': websiteController.text.trim(),
+          'photoUrl': profilePictureUrl,
+          'avatarUrl': avatarUrl,
+        },
+      );
       SnackBar snackbar = SnackBar(
         content: Text('Profile Updated!'),
       );
@@ -118,7 +135,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _displayNameValid &&
         _bioValid &&
         _websiteValid) {
-      await usersRef.document(_currentUserId).updateData({
+      await usersRef.document(currentUser.id).updateData({
         'displayName': displayNameController.text,
         'bio': bioController.text,
         'website': websiteController.text.trim(),
@@ -130,11 +147,41 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       Navigator.pop(context);
       _scaffoldKey.currentState.showSnackBar(snackbar);
     }
+
+    Map currentUserMap = {
+      'id': currentUser.id,
+      'username': currentUser.username,
+      'email': user.email,
+      'displayName': displayNameController.text,
+      'bio': bioController.text,
+      'website': websiteController.text.trim(),
+      'photoUrl':
+          croppedImage == null ? currentUser.photoUrl : profilePictureUrl,
+    };
+    String currentUserString = json.encode(currentUserMap);
+    print(currentUserMap);
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+
+    preferences.setString('currentUser', currentUserString);
+    Map currentUserMapGet = json.decode(preferences.get('currentUser')) ;
+  currentUser = User(
+    id: currentUserMapGet['id'],
+    bio: currentUserMapGet['bio'],
+    displayName: currentUserMapGet['displayName'],
+    email: currentUserMapGet['email'],
+    photoUrl: currentUserMapGet['photoUrl'],
+    username: currentUserMapGet['username'],
+    website: currentUserMapGet['website'],
+
+
+  );
   }
 
   updateProfilePicture() async {
     File imageFile;
-    imageFile = await ImagePicker.pickImage(source: ImageSource.gallery);
+    var picker = ImagePicker();
+    var pickedFile = await picker.getImage(source: ImageSource.gallery);
+    imageFile = File(pickedFile.path);
     // if (imageFile != null) {
     //   setState(() {
     //     state = AppState.picked;
@@ -184,7 +231,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         TextField(
           controller: bioController,
           keyboardType: TextInputType.multiline,
-          maxLength: 200,
+          maxLength: 300,
+          maxLines: 8,
+          minLines: 1,
           decoration: InputDecoration(
               hintText: "Update Bio",
               errorText: _bioValid ? null : "Bio is too long"),
@@ -219,23 +268,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).backgroundColor,
       key: _scaffoldKey,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: Icon(
             Icons.clear,
-            color: Theme.of(context).primaryColor,
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).canvasColor,
         elevation: 1,
         title: Text(
           "Edit Profile",
-          style: TextStyle(
-            color: Theme.of(context).primaryColor,
-          ),
+          style: TextStyle(),
         ),
         actions: <Widget>[
           IconButton(
@@ -243,7 +290,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             icon: Icon(
               Icons.save,
               size: 30.0,
-              color: Theme.of(context).primaryColor,
             ),
           ),
         ],

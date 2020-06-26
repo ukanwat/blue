@@ -1,9 +1,9 @@
 import 'package:blue/screens/home.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:blue/widgets/settings_widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:blue/main.dart';
 
 class SaveDialog extends StatefulWidget {
  final  Post post;

@@ -29,17 +29,23 @@ class TopicCard extends StatelessWidget {
           showTopicPostsScreen(context);
         },
         child: Card(
+
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(5),
           ),
           elevation: 1,
           child: Stack(
             children: <Widget>[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image(
-                  image: CachedNetworkImageProvider(topicImageUrl),
-                  fit: BoxFit.cover,
+              Center(
+                child: ClipRRect(
+                  
+                  borderRadius: BorderRadius.circular(5),
+                  child: Image(
+                    image: CachedNetworkImageProvider(topicImageUrl,
+                    
+                    ),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
               Container(

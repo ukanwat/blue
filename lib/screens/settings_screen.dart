@@ -5,9 +5,9 @@ import 'package:blue/screens/settings/advanced_settings/content_cache_screen.dar
 import 'package:blue/screens/settings/advanced_settings/gestures_screen.dart';
 import 'package:blue/screens/settings/feedback/give_a_suggestion_screen.dart';
 import 'package:blue/screens/settings/feedback/report_a_bug_screen.dart';
+import 'package:blue/screens/settings/general/appearance_screen.dart';
 import 'package:blue/screens/settings/general/collections_screen.dart';
 import 'package:blue/screens/settings/general/drafts_screen.dart';
-import 'package:blue/screens/settings/general/personalize_screen.dart';
 import 'package:blue/screens/settings/notification/email_notifications_screen.dart';
 import 'package:blue/screens/settings/notification/push_notifications_screen.dart';
 import 'package:blue/screens/settings/privacy/activity_screen.dart';
@@ -29,16 +29,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     
     return Scaffold(
+      backgroundColor: Theme.of(context).backgroundColor,
       appBar: settingsHeader(context, 'Settings',
-      
+    
       ),
       body: SingleChildScrollView(
           child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Divider(thickness: 4,
-          height: 4,
-          ),
           Container(
             height: 5,
           ),
@@ -47,12 +45,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           settingsPageNavigationTile(
               context, 'Account', AccountScreen.routeName),
           settingsPageNavigationTile(
-              context, 'Personalize', PersonalizeScreen.routeName),
+              context, 'Appearance', AppearanceScreen.routeName),
           settingsPageNavigationTile(
               context, 'Collection', CollectionsScreen.routeName),
           settingsPageNavigationTile(context, 'Drafts', DraftsScreen.routeName),
-          Divider(thickness: 4,
-          height: 4,
+          Divider(thickness: 6,
+          height: 20,
+color: Theme.of(context).canvasColor,
           ),
           settingsSectionTitle(
               icon: Icon(Icons.notifications_active), title: 'Notifications'),
@@ -60,8 +59,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               EmailNotificationsScreen.routeName),
           settingsPageNavigationTile(
               context, 'Push Notifications', PushNotificationsScreen.routeName),
-              Divider(thickness: 4,
-          height: 14,
+              Divider(thickness: 6,
+          height: 20,color: Theme.of(context).canvasColor,
           ),
           settingsSectionTitle(
             icon: Icon(Icons.category),
@@ -73,8 +72,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               context, 'Content Cache', ContentCacheScreen.routeName),
           settingsPageNavigationTile(
               context, 'Gestures', GesturesScreen.routeName),
-              Divider(thickness: 4,
-          height: 14,
+              Divider(thickness: 6,
+          height: 20,color: Theme.of(context).canvasColor,
           ),
           settingsSectionTitle(
             icon: Icon(Icons.person_outline),
@@ -83,8 +82,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           settingsPageNavigationTile(context, 'Safety', SafetyScreen.routeName),
           settingsPageNavigationTile(
               context, 'Activity', ActivityScreen.routeName),
-              Divider(thickness: 4,
-          height: 14,
+              Divider(thickness: 6,
+          height: 20,color: Theme.of(context).canvasColor,
           ),
           settingsSectionTitle(
             icon: Icon(Icons.feedback),
@@ -94,8 +93,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               context, 'Give a Suggestion', GiveASuggestionScreen.routeName),
           settingsPageNavigationTile(
               context, 'Report a Bug', ReportABugScreen.routeName),
-              Divider(thickness: 4,
-          height: 14,
+              Divider(thickness: 6,
+          height: 20,color: Theme.of(context).canvasColor,
           ),
           settingsSectionTitle(
             icon: Icon(Icons.info_outline),
@@ -106,8 +105,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           settingsPageNavigationTile(
               context, 'Acknowledgements', AcknowledgementsScreen.routeName),
               Container(
+                margin: EdgeInsets.only(
+                  top: 8
+                ),
                 width: double.infinity,
-                height: 40, child: Center(child: Text('Build v1.1'),),)
+                color: Theme.of(context).canvasColor,
+                height: 40, child: Center(child: Text('Scrible v1.0'),),)
         ],
       )),
     );

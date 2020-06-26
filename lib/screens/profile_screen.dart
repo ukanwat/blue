@@ -1,12 +1,10 @@
-import 'package:blue/functions/upload_post_interaction.dart';
-import 'package:blue/models/post_interaction.dart';
-import 'package:blue/providers/post_interactions.dart';
+import 'package:blue/screens/all_saved_posts_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:blue/main.dart';
 
 import '../widgets/post.dart';
 import '../models/user.dart';
@@ -17,13 +15,13 @@ import './edit_profile_screen.dart';
 import './settings_screen.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String profileId;
   final String profileUsername;
+  final String profileName;
 //  final PostInteractions postInteractions;
-  ProfileScreen({this.profileId, this.profileUsername
+  ProfileScreen({this.profileId, this.profileUsername, this.profileName
       // this.postInteractions
       });
 
@@ -33,7 +31,8 @@ class ProfileScreen extends StatefulWidget {
       );
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen>
+    with AutomaticKeepAliveClientMixin<ProfileScreen> {
   // final PostInteractions postInteractions;
   // _ProfileScreenState(this.postInteractions);
   String username = '';
@@ -42,56 +41,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool postsAreLoading = false;
   bool repostsAreLoading = false;
   int postCount = 0;
-   int repostCount = 0;
+  int repostCount = 0;
   int followerCount = 0;
   int followingCount = 0;
   List<Post> posts = [];
   List<Post> reposts = [];
-  // ScrollController _scrollController = ScrollController();
+  bool headerLoading = true;
   bool hasMorePosts = true; // flag for more products available or not
   bool hasMoreReposts = true; // flag for more products available or not
   int documentLimit = 10; // documents to be fetched per request
-  final ItemPositionsListener itemPositionsListener =
-      ItemPositionsListener.create();
+  List<dynamic> postDocSnapshots = [];
+  List<dynamic> repostDocSnapshots = [];
   DocumentSnapshot lastPostDocument;
-    DocumentSnapshot lastRepostDocument;
-  int view;
-  int lastView = -1;
-  int top;
-  ScrollPhysics profilePostPhysics = ScrollPhysics();
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-  }
+  DocumentSnapshot lastRepostDocument;
 
   @override
   void initState() {
     super.initState();
     getProfilePosts();
-     getProfileReposts();
-
-    // _scrollController = ScrollController()..addListener(() {
-    //  double maxScroll = _scrollController.position.maxScrollExtent;
-    //  double currentScroll = _scrollController.position.pixels;
-    //  double delta = MediaQuery.of(context).size.height * 0.2;
-    //  WidgetsBinding.instance.addPersistentFrameCallback((timeStamp) { print(delta);});
-    //    if (maxScroll - currentScroll <= delta) {
-
-    //  setState(() {
-    //  getProfilePosts();
-
-    //   });
-    // }
-    //  });
+    getProfileReposts();
     getFollowers();
     getFollowing();
     checkIfFollowing();
-
-    //  WidgetsBinding.instance
-    //       .addPostFrameCallback((_){
-    //          RenderBox box = postKey.currentContext.findRenderObject();
-    //  double yPosition = box.localToGlobal(Offset.zero).dy;
-    //       });
   }
 
   checkIfFollowing() async {
@@ -135,93 +106,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (postsAreLoading) {
       return;
     }
-    setState(() {   
+    setState(() {
       postsAreLoading = true;
     });
-    QuerySnapshot snapshot;
-    if (lastPostDocument == null) {
-      snapshot = await postsRef
-          .document(widget.profileId)
-          .collection('userPosts')
-          .orderBy('timeStamp', descending: true)
-          .limit(documentLimit)
-          .getDocuments();
-    } else {
-      snapshot = await postsRef
-          .document(widget.profileId)
-          .collection('userPosts')
-          .orderBy('timeStamp', descending: true)
-          .startAfterDocument(lastPostDocument)
-          .limit(documentLimit)
-          .getDocuments();
+    var _postGroup = await userPostsRef
+        .document(currentUser.id)
+        .collection('userPosts')
+        .orderBy('order', descending: false)
+        .getDocuments();
+    List _postList = [];
+    for (int l = 0; l < _postGroup.documents.length; l++) {
+      _postList.add(_postGroup.documents.elementAt(l).data['posts']);
     }
-    if (snapshot.documents.length < documentLimit) {
-      // TODO: check if length and limit is exactly equal (0 length next time)
+    List _postFullList = [];
+    for (int i = 0; i < _postList.length; i++) {
+      for (int x = 0; x < _postList[i].length; x++) {
+        _postFullList.add(_postList[i][x]);
+      }
+    }
+    List<Future> postFutures = [];
+    if (lastPostDocument == null) {
+      for (int k = 0; k < _postFullList.length; k++) {
+        postFutures.add(postsRef.document(_postFullList[k]).get());
+      }
+    } else {
+      for (int k = 0; k < _postFullList.length; k++) {
+        postFutures.add(postsRef.document(_postFullList[k]).get());
+      }
+    }
+    postDocSnapshots = await Future.wait(postFutures);
+    print(postDocSnapshots.first);
+    print('${postDocSnapshots.length}j');
+    if (postDocSnapshots.length < documentLimit) {
       hasMorePosts = false;
     }
-    if(snapshot.documents.length == 0){
-        return;
+    if (postDocSnapshots.length == 0) {
+      return;
     }
-    lastPostDocument = snapshot.documents[snapshot.documents.length - 1];
+    lastPostDocument = postDocSnapshots[postDocSnapshots.length - 1];
     setState(() {
       postsAreLoading = false;
-      postCount = snapshot.documents.length;
+      postCount = postDocSnapshots.length;
+      print(postDocSnapshots);
       posts = posts +
-          snapshot.documents.map((doc) => Post.fromDocument(doc)).toList();
-    });
-
-    itemPositionsListener.itemPositions.addListener(() {
-      if (itemPositionsListener.itemPositions.value.isEmpty == false) {
-        // Determine the first visible item by finding the item with the
-        // smallest trailing edge that is greater than 0.  i.e. the first
-        // item whose trailing edge in visible in the viewport.
-        top = itemPositionsListener.itemPositions.value
-            .where((ItemPosition position) => position.itemLeadingEdge > 1)
-            .reduce((ItemPosition view, ItemPosition position) =>
-                position.itemLeadingEdge > view.itemLeadingEdge
-                    ? position
-                    : view)
-            .index;
-        if (top == 0) {
-          setState(() {
-            profilePostPhysics = NeverScrollableScrollPhysics();
-          });
-        } else {
-          profilePostPhysics = AlwaysScrollableScrollPhysics();
-        }
-        view = itemPositionsListener.itemPositions.value
-            .where((ItemPosition position) => position.itemTrailingEdge > 0.7)
-            .reduce((ItemPosition view, ItemPosition position) =>
-                position.itemTrailingEdge < view.itemTrailingEdge
-                    ? position
-                    : view)
-            .index;
-        if (postInteractions.length > 0 && lastView != view) {
-          print('${snapshot.documents.length}jhgfghjkjhgf');
-          print(lastView);
-          print(view);
-          if (true) {
-            PostInteraction interaction = postInteractions[posts[view].postId];
-            print(postInteractions.toString());
-            print('asdfghjk');
-            uploadPostInteraction(
-              posts[view].postId,
-              interaction.ownerId,
-              true,
-              interaction.upvoted,
-              interaction.commented,
-              interaction.shared,
-              interaction.saved,
-            );
-          }
-
-          lastView = view;
-        }
-      }
+          postDocSnapshots.map((doc) => Post.fromDocument(doc)).toList();
     });
   }
-   getProfileReposts() async {
-     
+
+  getProfileReposts() async {
     if (!hasMoreReposts) {
       print('No More posts');
       return;
@@ -232,138 +164,106 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {
       repostsAreLoading = true;
     });
-    QuerySnapshot snapshot;
-    if (lastRepostDocument == null) {
-      snapshot = await repostsRef
-          .document(widget.profileId)
-          .collection('userReposts')
-          .orderBy('timeStamp', descending: true)
-          .limit(documentLimit)
-          .getDocuments();
+    var _repostGroup = await repostsRef
+        .document(currentUser.id)
+        .collection('userReposts')
+        .orderBy('order', descending: false)
+        .getDocuments();
+    List _repostList = [];
+    for (int l = 0; l < _repostGroup.documents.length; l++) {
+      _repostList.add(_repostGroup.documents.elementAt(l).data['posts']);
+    }
+    List _repostFullList = [];
+    for (int i = 0; i < _repostList.length; i++) {
+      for (int x = 0; x < _repostList[i].length; x++) {
+        _repostFullList.add(_repostList[i][x]);
+      }
+    }
+    List<Future> repostFutures = [];
+    if (lastPostDocument == null) {
+      for (int k = 0; k < _repostFullList.length; k++) {
+        repostFutures.add(postsRef.document(_repostFullList[k]).get());
+      }
     } else {
-      snapshot = await repostsRef
-          .document(widget.profileId)
-          .collection('userReposts')
-          .orderBy('timeStamp', descending: true)
-          .startAfterDocument(lastRepostDocument)
-          .limit(documentLimit)
-          .getDocuments();
+      for (int k = 0; k < _repostFullList.length; k++) {
+        repostFutures.add(postsRef.document(_repostFullList[k]).get());
+      }
     }
-    if (snapshot.documents.length < documentLimit) {
-      // TODO: check if length and limit is exactly equal (0 length next time)
-      hasMoreReposts = false;
+    repostDocSnapshots = await Future.wait(repostFutures);
+
+    if (repostDocSnapshots.length < documentLimit) {
+      hasMorePosts = false;
     }
-     if(snapshot.documents.length == 0){
-        return;
+    if (repostDocSnapshots.length == 0) {
+      return;
     }
-    lastRepostDocument = snapshot.documents[snapshot.documents.length - 1];
+    lastRepostDocument = repostDocSnapshots[repostDocSnapshots.length - 1];
     setState(() {
       repostsAreLoading = false;
-      repostCount = snapshot.documents.length;
-      reposts = reposts + snapshot.documents.map((doc) => Post.fromDocument(doc)).toList();
+      repostCount = repostDocSnapshots.length;
+      reposts = reposts +
+          repostDocSnapshots.map((doc) => Post.fromDocument(doc)).toList();
     });
-
-    // itemPositionsListener.itemPositions.addListener(() {
-    //   if (itemPositionsListener.itemPositions.value.isEmpty == false) {
-    //     // Determine the first visible item by finding the item with the
-    //     // smallest trailing edge that is greater than 0.  i.e. the first
-    //     // item whose trailing edge in visible in the viewport.
-    //     top = itemPositionsListener.itemPositions.value
-    //         .where((ItemPosition position) => position.itemLeadingEdge > 1)
-    //         .reduce((ItemPosition view, ItemPosition position) =>
-    //             position.itemLeadingEdge > view.itemLeadingEdge
-    //                 ? position
-    //                 : view)
-    //         .index;
-    //     if (top == 0) {
-    //       setState(() {
-    //         profilePostPhysics = NeverScrollableScrollPhysics();
-    //       });
-    //     } else {
-    //       profilePostPhysics = AlwaysScrollableScrollPhysics();
-    //     }
-    //     view = itemPositionsListener.itemPositions.value
-    //         .where((ItemPosition position) => position.itemTrailingEdge > 0.7)
-    //         .reduce((ItemPosition view, ItemPosition position) =>
-    //             position.itemTrailingEdge < view.itemTrailingEdge
-    //                 ? position
-    //                 : view)
-    //         .index;
-    //     if (postInteractions.length > 0 && lastView != view) {
-    //       print('${snapshot.documents.length}jhgfghjkjhgf');
-    //       print(lastView);
-    //       print(view);
-    //       if (true) {
-    //         PostInteraction interaction = postInteractions[posts[view].postId];
-    //         print(postInteractions.toString());
-    //         print('asdfghjk');
-    //         uploadPostInteraction(
-    //           posts[view].postId,
-    //           interaction.ownerId,
-    //           true,
-    //           interaction.upvoted,
-    //           interaction.commented,
-    //           interaction.shared,
-    //           interaction.saved,
-    //         );
-    //       }
-
-    //       lastView = view;
-    //     }
-    //   }
-    // });
   }
 
   editProfile() {
     Navigator.pushNamed(context, EditProfileScreen.routeName,
-        arguments: {'currentUserId': currentUserId});
+        );
   }
 
-  Column buildCountColumn(String label, int count) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        Container(
-          child: Text(
-            count.toString(),
-            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-          ),
-        ),
-        Container(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 13.0,
-              fontWeight: FontWeight.w500,
+  Expanded buildCountColumn(IconData label, int count) {
+    return Expanded(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.max,
+        children: <Widget>[
+          Container(
+            child: Text(
+              compactString(count),        // TODO improve formatting
+              style: TextStyle(
+                fontSize: 30.0,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-        ),
-      ],
+          SizedBox(
+            width: 10,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 3),
+            child: Icon(
+              label,
+              size: 22,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   buildButton({String text, Function function}) {
-    return Container(
-      height: 25,
-      child: FlatButton(
-        padding: EdgeInsets.all(0),
-        onPressed: function,
-        child: Container(
-          width: 130,
-          height: 33,
-          child: Text(
-            text,
-            style: TextStyle(
-                color: isFollowing ? Colors.black : Colors.white,
-                fontWeight: FontWeight.bold),
-          ),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: isFollowing ? Colors.white : Colors.blue,
-            border:
-                Border.all(color: isFollowing ? Colors.black54 : Colors.blue),
-            borderRadius: BorderRadius.circular(20.0),
+    return Expanded(
+      child: Container(
+        height: 25,
+        child: FlatButton(
+          padding: EdgeInsets.all(0),
+          onPressed: function,
+          child: Container(
+            width: double.infinity,
+            height: 33,
+            child: Text(
+              text,
+              style: TextStyle(
+                  color: isFollowing ? Colors.black : Colors.white,
+                  fontWeight: FontWeight.bold),
+            ),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: isFollowing ? Colors.white : Colors.blue,
+              border:
+                  Border.all(color: isFollowing ? Colors.black54 : Colors.blue),
+              borderRadius: BorderRadius.circular(20.0),
+            ),
           ),
         ),
       ),
@@ -471,11 +371,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (isProfileOwner) {
       return buildButtonCircular(
           icon: Icon(
-            FlutterIcons.more_horiz_mdi,
+            FlutterIcons.bookmark_mco,
             size: 7,
           ),
           function: () {
-            print('adddddd');
+            Navigator.pushNamed(context, AllSavedPostsScreen.routeName);
           });
     } else {
       return buildButtonCircular(
@@ -497,17 +397,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           return circularProgress();
         }
         User user = User.fromDocument(snapshot.data);
-        username = user.username;
         return Column(
-          children: <Widget>[Divider(
-            height: 1,
-            color: Colors.grey,
-          ),
+          children: <Widget>[
             Container(
               width: MediaQuery.of(context).size.width,
               child: Padding(
-                padding: EdgeInsets.only(
-                    top: 10.0, left: 15.0, right: 15.0, bottom: 0),
+                padding:
+                    EdgeInsets.only(top: 5, left: 15.0, right: 15.0, bottom: 0),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -527,34 +423,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[ Text(
-                    user.displayName,
-                    textAlign: TextAlign.start,
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600),
-                  ),
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: <Widget>[
-                                buildCountColumn("Posts", postCount),
-                                SizedBox(width: 14,),
-                                buildCountColumn("Followers", followerCount),
-                                  SizedBox(width: 10,),
-                                buildCountColumn("Following", followingCount),
-                              ],
-                            ), Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Text(
+                              '@${user.username}',
+                              textAlign: TextAlign.start,
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w600),
+                            ),
+                            Container(
+                              padding: EdgeInsets.symmetric(vertical: 0),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: Theme.of(context).canvasColor,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.max,
                                 children: <Widget>[
-                                  buildProfileButton(),
-                                  SizedBox(width: 16),
-                                  buildProfileIconButton(),
+                                  // buildCountColumn(
+                                  //     FlutterIcons.post_outline_mco, postCount),
+                                  // Container(
+                                  //   decoration: BoxDecoration(
+                                  //     borderRadius: BorderRadius.circular(2),
+                                  //     color: Colors.grey,
+                                  //   ),
+                                  //   height: 52,
+                                  //   width: 1,
+                                  // ),
+                                  buildCountColumn(
+                                      FlutterIcons.people_sli, followerCount),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(2),
+                                      color: Colors.grey,
+                                    ),
+                                    height: 20,
+                                    width: 1,
+                                  ),
+                                  buildCountColumn(
+                                      FlutterIcons.user_following_sli,
+                                      followingCount),
                                 ],
                               ),
-                            
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                buildProfileButton(),
+                                SizedBox(width: 5),
+                                buildProfileIconButton(),
+                              ],
+                            ),
                           ],
                         ),
                       ),
@@ -567,65 +486,102 @@ class _ProfileScreenState extends State<ProfileScreen> {
               width: double.infinity,
               padding: EdgeInsets.only(left: 15, top: 8, right: 15, bottom: 2),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  if(user.website != null)
-                  
-                      Linkify(text: user.website,
-                      
-                      linkStyle: TextStyle(
-                        fontSize: 15,
-                        
+                  if (user.website != null)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Linkify(
+                          text: user.website,
+                          linkStyle: TextStyle(
+                            fontSize: 15,
                             color: Colors.blue,
                             decoration: TextDecoration.none,
-                      ),onOpen: (link){ launchWebsite(user.website);},
-                      overflow: TextOverflow.ellipsis,
-                      
-                      ),
-                    
-                   Text(
+                          ),
+                          onOpen: (link) {
+                            launchWebsite(user.website);
+                          },
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 5),
+                          child: Icon(Icons.link),
+                        ),
+                      ],
+                    ),
+                  Text(
                     user.bio,
-                    textAlign: TextAlign.start,
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
                   ),
                 ],
               ),
             ),
+            // Row(
+            //   mainAxisSize: MainAxisSize.min,
+            //   children: <Widget>[
+            //     Text(
+            //       postCount.toString(),
+            //       style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+            //     ),
+            //     Container(
+            //       margin: EdgeInsets.all(5),
+            //       decoration: BoxDecoration(
+            //         shape: BoxShape.circle,
+            //         color: Theme.of(context).iconTheme.color,
+            //       ),
+            //       height: 6,
+            //       width: 6,
+            //     ),
+            //     Text(
+            //       repostCount.toString(),
+            //       style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+            //     )
+            //   ],
+            // )
           ],
         );
       },
     );
   }
-launchWebsite(String url)async {
- if (await canLaunch(url)) {
-    await launch(url, forceWebView: true,
-    enableJavaScript: true,
-    ); 
-  } else {
-    throw 'Could not launch $url';
-  }
+String compactString(int value) {
+  const units = <int, String>{
+    1000000000: 'B',
+    1000000: 'M',
+    1000: 'K',
+  };
+  return units.entries
+      .map((e) => '${value ~/ e.key}${e.value}')
+      .firstWhere((e) => !e.startsWith('0'), orElse: () => '$value');
 }
+  launchWebsite(String url) async {
+    if (await canLaunch(url)) {
+      await launch(
+        url,
+        forceWebView: true,
+        enableJavaScript: true,
+      );
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
   buildProfilePosts() {
     return ListView.builder(
       scrollDirection: Axis.vertical,
-      physics: profilePostPhysics,
-      // controller: _scrollController,
-      // shrinkWrap: true
-      itemBuilder: (ctx, i) {
+      physics: ScrollPhysics(),
+      itemBuilder: (_, i) {
         return posts[i];
       },
       itemCount: posts.length,
     );
   }
-    buildProfileReposts() {
+
+  buildProfileReposts() {
     return ListView.builder(
       scrollDirection: Axis.vertical,
-      physics: profilePostPhysics,
-      // controller: _scrollController,
-      // shrinkWrap: true
+      physics: ScrollPhysics(),
       itemBuilder: (ctx, i) {
         return reposts[i];
       },
@@ -633,92 +589,25 @@ launchWebsite(String url)async {
     );
   }
 
-  PreferredSize profileBar() {
-    return PreferredSize(
-      preferredSize: Size.fromHeight(50.0),
-      child: AppBar(
-        centerTitle: true,
-        leading: IconButton(icon: Icon(Icons.arrow_back_ios), onPressed: null),
-        backgroundColor: Colors.white,
-        elevation: 1,
-        title: FlatButton(
-          onPressed: null,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          child: Text(
-            username,
-            style: TextStyle(
-                color: Theme.of(context).primaryColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w500),
-          ),
-        ),
-        actions: <Widget>[
-          IconButton(
-              icon: Icon(
-                Icons.settings,
-                color: Theme.of(context).primaryColor,
-              ),
-              onPressed: () {
-                Navigator.pushNamed(context, SettingsScreen.routeName);
-              })
-        ],
-      ),
-    );
-  }
-
-  //  Widget get positionsView => ValueListenableBuilder<Iterable<ItemPosition>>(
-  //       valueListenable: itemPositionsListener.itemPositions,
-  //       builder: (context, positions, child) {
-  //         int view;
-  //         if (positions.isNotEmpty) {
-  //           // Determine the first visible item by finding the item with the
-  //           // smallest trailing edge that is greater than 0.  i.e. the first
-  //           // item whose trailing edge in visible in the viewport.
-  //           view = positions
-  //               .where((ItemPosition position) => position.itemTrailingEdge > 0)
-  //               .reduce((ItemPosition view, ItemPosition position) =>
-  //                   position.itemTrailingEdge < view.itemTrailingEdge
-  //                       ? position
-  //                       : view)
-  //               .index;
-
-  //         }
-  //         return Row(
-  //           children: <Widget>[
-  //             Expanded(child: Text('First Item: ${min ?? ''}')),
-  //             Expanded(child: Text('Last Item: ${max ?? ''}')),
-  //             const Text('Reversed: '),
-  //             Checkbox(
-  //                 value: reversed,
-  //                 onChanged: (bool value) => setState(() {
-  //                       reversed = value;
-  //                     }))
-  //           ],
-  //         );
-  //       },
-  //     );
-
+  bool get wantKeepAlive => true;
   @override
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: Colors.white,
+    super.build(context);
+    return Scaffold(
+      backgroundColor: Theme.of(context).canvasColor,
       // Persistent AppBar that never scrolls
       appBar: header(
-        context,centerTitle: false,
-        title: widget.profileUsername != null
-            ? Text(
-                widget.profileUsername,
-                style: TextStyle(color: Colors.black),
-              )
-            : Text(
-                currentUser.username,
-                style: TextStyle(color: Colors.black),
-              ),
+        context,
+        centerTitle: false,
+        elevation: 0,
+        title: Text(
+          widget.profileName,
+        ),
         actionButton: IconButton(
             icon: Icon(
               FlutterIcons.settings_fea,
-              color: Theme.of(context).primaryColor,
               size: 20,
+              color: Theme.of(context).iconTheme.color,
             ),
             onPressed: () {
               Navigator.pushNamed(context, SettingsScreen.routeName);
@@ -741,8 +630,8 @@ launchWebsite(String url)async {
           body: Column(
             children: <Widget>[
               TabBar(
-                indicatorColor: Theme.of(context).primaryColor,
-                labelColor: Theme.of(context).primaryColor,
+                indicatorColor: Theme.of(context).iconTheme.color,
+                labelColor: Theme.of(context).iconTheme.color,
                 tabs: [
                   Tab(text: 'All'),
                   Tab(text: 'Shares'),
@@ -761,39 +650,5 @@ launchWebsite(String url)async {
         ),
       ),
     );
-//     return Scaffold(
-//       body:NestedScrollView(
-//           headerSliverBuilder: (context, value){
-//              return[
-//                SliverAppBar(
-//                 expandedHeight: 60,
-//                 pinned: true,
-//                    floating: true,
-
-//               titleSpacing: 0.0,
-//                 flexibleSpace: FlexibleSpaceBar(
-
-// collapseMode: CollapseMode.pin,
-// centerTitle: true,
-//                   title:
-//                       Text(
-//                       'name',
-//                         style: TextStyle(
-//                             fontSize: 20,
-//                             color: Theme.of(context).primaryColor),
-//                       ),
-
-//                 ),
-//                 automaticallyImplyLeading: false,
-//                 elevation: 0,
-//                 backgroundColor: Colors.white,
-//               ),
-//                buildProfileHeader(),];
-//           },
-//      // child: isLoading?circularProgress(): Container(),)
-//       body: buildProfilePosts(),
-
-//       ),
-//     );
   }
 }
