@@ -19,26 +19,59 @@ TextEditingController commentController = TextEditingController();
 bool isLoading = true;
 List<InkWell> collectionList = [];
 savePost(String collectionName)async{
- await  savedPostsRef
-        .document(currentUser?.id)
-        .collection('userCollections')
-        .document(collectionName)
-        .collection('collectionPosts')
-        .document(widget.post?.postId)
-        .setData({
-      'postId': widget.post?.postId,
-     'ownerId': widget.post?.ownerId,
-      'username': widget.post?.username,
-      'contents': widget.post?.contents,
-      'contentsInfo': widget.post?.contentsInfo,
-      'title': widget.post?.title,
-      'timeStamp': timestamp,
-      'upvotes': {},                     // TODO: Remove
-      'topicId': widget.post?.topicId,
-      'topicName': widget.post?.topicName,
-      'tags': widget.post?.tags,
-      'comment': commentController.text
-    }); // TODO: check if successful
+  var lastDoc = await savedPostsRef
+                                .document(currentUser?.id)
+                                .collection('userCollections')
+                                .document(collectionName)
+                                .collection('collectionPosts')
+                                .orderBy('order', descending: true)
+                                .limit(1)
+                                .getDocuments();
+                            if (lastDoc.documents.length == 0) {
+                              savedPostsRef
+                       .document(currentUser?.id)
+                                .collection('userCollections')
+                                .document(collectionName)
+                                .collection('collectionPosts')
+                                  .document()
+                                  .setData({
+                                'order': 1,
+                                'posts': [
+                                  widget.post.postId,
+                                ],
+                              }, merge: true);
+                            } else if (lastDoc.documents.length == 1 &&
+                                lastDoc.documents.first.data['posts'].length <
+                                    20) {
+                              List<dynamic> _postIdList =
+                                  lastDoc.documents.first.data['posts'];
+                              _postIdList.add(widget.post.postId);
+                              savedPostsRef
+                                   .document(currentUser?.id)
+                                .collection('userCollections')
+                                .document(collectionName)
+                                .collection('collectionPosts')
+                                  .document(lastDoc.documents.first.documentID)
+                                  .setData({
+                                'posts': _postIdList,
+                              }, merge: true);
+                            } else if (lastDoc.documents.length == 1 &&
+                                lastDoc.documents.first.data['posts'].length >
+                                    19) {
+                              savedPostsRef
+                                    .document(currentUser?.id)
+                                .collection('userCollections')
+                                .document(collectionName)
+                                .collection('collectionPosts')
+                                  .document()
+                                  .setData({
+                                'order':
+                                    lastDoc.documents.first.data['order'] + 1,
+                                'posts': [
+                                  widget.post.postId,
+                                ],
+                              }, merge: true);
+                            }
 
 }  
 @override
@@ -60,7 +93,7 @@ onTap: ()async {
                     child: Container(
 decoration: BoxDecoration(
   borderRadius: BorderRadius.circular(5),
-  color: Colors.grey[200]
+  color: Theme.of(context).cardColor
 ),
 height: 40,width: double.infinity,
 margin: EdgeInsets.symmetric(vertical: 2),
@@ -68,7 +101,7 @@ margin: EdgeInsets.symmetric(vertical: 2),
                child: Text(value,
 
                  style: TextStyle(
-                   fontSize: 20
+                   fontSize: 20,
                  ),
                  ),
              ),
@@ -91,7 +124,7 @@ margin: EdgeInsets.symmetric(vertical: 2),
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 20, horizontal: 15),
         decoration: new BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).canvasColor,
           shape: BoxShape.rectangle,
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
@@ -140,7 +173,7 @@ margin: EdgeInsets.symmetric(vertical: 2),
             SizedBox(height: 20.0),
             
                 FlatButton(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -149,9 +182,10 @@ margin: EdgeInsets.symmetric(vertical: 2),
                   },
                   child: Text(
                     'Cancel',
+
                     style: TextStyle(
-                      color: Colors.blue,
-                      fontSize: 20
+                      fontSize: 20,
+                      color: Theme.of(context).iconTheme.color,
                     ),
                   ),
                 ),

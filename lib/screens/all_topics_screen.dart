@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:blue/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'home.dart';
 
@@ -16,7 +17,7 @@ class AllTopicsScreen extends StatefulWidget {
 }
 
 class _AllTopicsScreenState extends State<AllTopicsScreen> {
-  List<TopicCard> topics = [];
+
   List<String> tags = [];
   List<Widget> tagChips = [];
   bool tagLoading = true;
@@ -24,95 +25,81 @@ class _AllTopicsScreenState extends State<AllTopicsScreen> {
   double screenWidth;
   @override
   void didChangeDependencies() {
-    getAllTopics();
     getFollowedTags();
     super.didChangeDependencies();
   }
 
-  getAllTopics() async {
-    screenWidth = MediaQuery.of(context).size.width;
-    QuerySnapshot snapshot = await topicsRef.getDocuments();
-    print(snapshot);
-    setState(() {
-      topicLoading = false;
-      snapshot.documents.forEach((doc) {
-        print(doc.data);
-        topics.add(
-          TopicCard(doc['name'], doc['imageUrl'], doc['id'], doc['info'],
-              (screenWidth - 16) / 3),
-        );
-      });
-    });
-  }
+ 
 
   getFollowedTags() async {
     screenWidth = MediaQuery.of(context).size.width;
     var tagsDoc = await followedTagsRef.document(currentUser.id).get();
+    List<String> followedTags = [];
     setState(() {
       tagLoading = false;
       tags = tagsDoc.data.keys.toList();
       for (int i = 0; i < tags.length; i++) {
+        followedTags.add(tags[i]);
         tagChips.add(InkWell(
-           onTap: () {
-                              Navigator.of(context).pushNamed(TagScreen.routeName,
-                                  arguments: tags[i]);
-                            },
-                  child: Chip(
-            label: Text(tags[i], style: TextStyle(
-              color: Theme.of(context).iconTheme.color
-            ),),
+          onTap: () {
+            Navigator.of(context)
+                .pushNamed(TagScreen.routeName, arguments: tags[i]);
+          },
+          child: Chip(
+            label: Text(
+              tags[i],
+              style: TextStyle(color: Theme.of(context).iconTheme.color),
+            ),
             backgroundColor: Theme.of(context).cardColor,
           ),
         ));
       }
     });
+    if(preferences == null)
+ preferences = await SharedPreferences.getInstance();
+    preferences.setStringList('followed_tags', followedTags);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
+        backgroundColor: Theme.of(context).backgroundColor,
         appBar: header(
           context,
           title: Text(
-            'Topics & Tags',
+            'Tags you Follow',
             style: TextStyle(),
           ),
-          leadingButton: CupertinoNavigationBarBackButton(
-              color: Colors.blue),
+          leadingButton: CupertinoNavigationBarBackButton(color: Colors.blue),
         ),
         body: tagLoading == false && topicLoading == false
             ? Column(
                 children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.only(
-                      top: 5,
-                      left: 5,
-                      right: 5,
-                    ),
-                    child: GridView.count(
-                      crossAxisCount: 3,
-                      children: topics,
-                      shrinkWrap: true,
-                      crossAxisSpacing: 0,
-                      mainAxisSpacing: 0,
-                      addAutomaticKeepAlives: true,
-                    ),
-                  ),
-                  Padding(
-                    child: Text('Tags you Follow',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600
-                    ),
-                    ),
-                     padding: const EdgeInsets.only(
-                    top: 10
-                     ),
-                  ),
+                  // Container(
+                  //   padding: EdgeInsets.only(
+                  //     top: 5,
+                  //     left: 5,
+                  //     right: 5,
+                  //   ),
+                  //   child: GridView.count(
+                  //     crossAxisCount: 3,
+                  //     children: topics,
+                  //     shrinkWrap: true,
+                  //     crossAxisSpacing: 0,
+                  //     mainAxisSpacing: 0,
+                  //     addAutomaticKeepAlives: true,
+                  //   ),
+                  // ),
+                  // Padding(
+                  //   child: Text(
+                  //     'Tags you Follow',
+                  //     style:
+                  //         TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  //   ),
+                  //   padding: const EdgeInsets.only(top: 10),
+                  // ),
                   Container(
                     width: double.infinity,
-
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Wrap(
                       runSpacing: 6,

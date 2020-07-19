@@ -1,9 +1,11 @@
+import 'package:blue/screens/all_saved_posts_screen.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:blue/main.dart';
 
+import '../../collection_posts_screen.dart';
 import '../../home.dart';
 import 'collection_screens/create_collection_screen.dart';
 
@@ -68,14 +70,33 @@ snapshot =await collectionsRef
             ],
           ),),
       body: loading ? circularProgress(): ListView.builder(itemBuilder: (_,i){
-          return Container(
-            height: 80,
-            margin: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+        i = i-1;
+          return InkWell(
+             onTap: (){
+           if(i== -1){
+              Navigator.of(context).pushNamed( AllSavedPostsScreen.routeName);
+           }else{
+              Navigator.of(context).pushNamed( CollectionPostsScreen.routeName,arguments: snapshot.data['$i' ]);
+           }
+             },
+                      child: Container(
+              height: 80,
+              
+              margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
 
-            decoration: BoxDecoration(
+              decoration: BoxDecoration(
 color: Theme.of(context).cardColor,
-borderRadius: BorderRadius.circular(15),
-
+borderRadius: BorderRadius.circular(5),
+            
+              ), child: Center(
+               child: Text(i== -1? 'All Saved':
+                snapshot.data['$i' ],
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.w500
+                ),
+                )
+             )
             ),
           );
       },

@@ -7,20 +7,21 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:blue/main.dart';
 
-class AllSavedPostsScreen extends StatefulWidget {
-  static const routeName  = 'all-saved-posts';
+class CollectionPostsScreen extends StatefulWidget {
+  static const routeName  = 'collection-posts';
   @override
-  _AllSavedPostsScreenState createState() => _AllSavedPostsScreenState();
+  _CollectionPostsScreenState createState() => _CollectionPostsScreenState();
 }
 
-class _AllSavedPostsScreenState extends State<AllSavedPostsScreen> {
+class _CollectionPostsScreenState extends State<CollectionPostsScreen> {
 bool hasMorePosts = true;
 bool loading = false;
 List<Post> posts = [];
   List<dynamic> postDocSnapshots = [];
   DocumentSnapshot lastPostDocument;
   int documentLimit = 10;
-getAllSavedPosts() async {
+  String collectionName ;
+getAllSavedPosts(String collectionName) async {
     if (!hasMorePosts) {
       print('No More posts');
       return;
@@ -33,7 +34,9 @@ getAllSavedPosts() async {
     });
     var _postGroup = await savedPostsRef
         .document(currentUser.id)
-        .collection('all')
+        .collection('userCollections')
+        .document(collectionName)
+        .collection('collectionPosts')
         .orderBy('order', descending: false)
         .getDocuments();
     List _postList = [];
@@ -71,9 +74,7 @@ getAllSavedPosts() async {
           postDocSnapshots.map((doc) => Post.fromDocument(doc)).toList();
     });
   }
-  
   buildAllSavedPosts(){
-    print(posts.length);
         if (loading) {
       return circularProgress();
     } else if (posts.isEmpty) {
@@ -83,16 +84,15 @@ getAllSavedPosts() async {
     }
   }
   @override
-  void initState() {
-    getAllSavedPosts();
-    super.initState();
+  void didChangeDependencies() {
+   collectionName =  ModalRoute.of(context).settings.arguments as String;
+    getAllSavedPosts(collectionName );
+    super.didChangeDependencies();
   }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
-      appBar: header(context,
-    title: Text('All Saved'),
+    return Scaffold(appBar: header(context,
+    title: Text(collectionName),
     centerTitle: true,
     elevation: 1,
     leadingButton: CupertinoNavigationBarBackButton(

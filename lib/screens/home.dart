@@ -12,6 +12,7 @@ import '../models/user.dart';
 
 final GoogleSignIn googleSignIn = GoogleSignIn();
 final StorageReference storageRef = FirebaseStorage.instance.ref();
+final preferencesRef = Firestore.instance.collection('preferences');
 final usersRef = Firestore.instance.collection('users');
 final postsRef = Firestore.instance.collection('posts');
 final repostsRef = Firestore.instance.collection('reposts');
@@ -31,9 +32,14 @@ final postsCollectionGroupRef = Firestore.instance.collectionGroup('userPosts');
 final topicPostsCollectionGroupRef =
     Firestore.instance.collectionGroup('topicPosts');
 final userPostsRef = Firestore.instance.collection('user-posts');
+  final accountReportsRef =Firestore.instance.collection('account-reports');
+    final commentReportsRef =Firestore.instance.collection('comment-reports');
+        final suggestionsRef =Firestore.instance.collection('suggestions');
+            final bugsRef =Firestore.instance.collection('bugs');
 final usersDatabase = FirebaseDatabase.instance.reference().child('users');
 final topicPostsDatabase =
     FirebaseDatabase.instance.reference().child('topic-posts');
+
 
 final Timestamp timestamp = Timestamp.now();
 

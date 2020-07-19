@@ -5,6 +5,7 @@ import 'package:blue/widgets/progress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:blue/main.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'home.dart';
 
 class SelectTopicScreen extends StatefulWidget {
@@ -67,38 +68,28 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
     final postData =
         ModalRoute.of(context).settings.arguments as Map<String, dynamic>;
     return Scaffold(
+      backgroundColor: Theme.of(context).backgroundColor,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(50),
         child: AppBar(
           elevation: 0,
           centerTitle: true,
-          backgroundColor: Theme.of(context).primaryColor,
+        
+          backgroundColor: Theme.of(context).canvasColor,
           title: Text(
-            'Select Topic',
-            style: TextStyle(color: Colors.white),
+            'Post Settings',
+            style: TextStyle(),
           ),
-          leading: Container(
-            margin: EdgeInsets.all(5),
-            decoration:
-                BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-            child: IconButton(
-              icon: Icon(Icons.arrow_back_ios,
+          leading: IconButton(
+              icon: Icon(FlutterIcons.ios_arrow_back_ion,size: 30,
                   color: Theme.of(context).primaryColor),
               onPressed: () {
                 Navigator.pop(context);
               },
               color: Colors.grey,
             ),
-          ),
-          actions: <Widget>[
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-              ),
-              margin: EdgeInsets.all(4),
-              alignment: Alignment.center,
-              child: FlatButton(
+          
+          actions: <Widget>[ FlatButton(
                 onPressed: () {
                   if (selectedTopicTile != null) {
                     setState(() {
@@ -158,7 +149,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                           : Theme.of(context).primaryColor),
                 ),
               ),
-            ),
+            
           ],
         ),
       ),
@@ -178,29 +169,28 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                 style: TextStyle(fontSize: 16),
               ),
               SizedBox(
-                width: 5,
-              ),
-              Transform.scale(
-                scale: 1.8,
-                child: Container(
-                  height: 30,
-                  width: 30,
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.add,
-                      size: 12,
-                    ),
-                    onPressed: addTag,
-                    iconSize: 12,
+                width: 8,
+              ),GestureDetector(
+                onTap: (){
+                  addTag();
+                },
+                              child: Container(
+                    height: 26,
+                    width: 26,
+                    decoration: BoxDecoration(color: Colors.blue,borderRadius: BorderRadius.circular(5)),
+                    child: Icon(
+                        Icons.add,
+                        size: 24,color: Colors.white
+                      ),
+                    
                   ),
-                ),
-              )
+              ),
+              
             ],
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Wrap(
-              runSpacing: 6,
               spacing: 6,
               children: tagChips,
             ),
@@ -208,10 +198,14 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
           SizedBox(
             height: 10,
           ),
+          Divider(color: Colors.grey[350],height: 0.3,),
+          SizedBox(
+            height: 10,
+          ),
           Padding(
             padding: const EdgeInsets.only(left: 16),
             child: Text(
-              'Select Topic',
+              'Select Topic (optional)',
               style: TextStyle(fontSize: 16),
             ),
           ),
@@ -225,10 +219,13 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                   itemBuilder: (_, i) {
                     return ListTile(
                       enabled: true,
-                      leading: ClipRRect(
-                        borderRadius: BorderRadius.circular(5),
-                        child: cachedNetworkImage(
-                            context, followedTopicsListTile[i].imageUrl),
+                      leading: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(5),
+                          child: cachedNetworkImage(
+                              context, followedTopicsListTile[i].imageUrl),
+                        ),
                       ),
                       title: Text(
                         followedTopicsListTile[i].name,

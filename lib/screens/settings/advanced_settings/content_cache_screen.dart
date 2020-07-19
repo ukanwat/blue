@@ -1,5 +1,7 @@
 import 'package:blue/widgets/settings_widgets.dart';
+import 'package:blue/widgets/show_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class ContentCacheScreen extends StatefulWidget {
   static const routeName = 'content-cache';
@@ -14,7 +16,22 @@ class _ContentCacheScreenState extends State<ContentCacheScreen> {
       appBar: settingsHeader(context, 'Content Cache'),
       body: ListView(
         children: <Widget>[
-          settingsActionTile(context, 'Clear Content Cache', (){}),
+          settingsActionTile(context, 'Clear Content Cache', (){
+                 showDialog(
+  context: context,
+  builder: (BuildContext context) => ShowDialog(
+        title: "Clear cache",
+        description:
+            "lopem ipsum",
+        leftButtonText: "Clear Cache",
+        rightButtonText: "Cancel",
+        leftButtonFunction: (){
+              DefaultCacheManager manager = new DefaultCacheManager();
+                     manager.emptyCache(); 
+        },
+      ),
+);
+          }),
         ],
       ),
     );

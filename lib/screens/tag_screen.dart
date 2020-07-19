@@ -1,6 +1,7 @@
 import 'package:blue/screens/home.dart';
 import 'package:blue/screens/tag/tag_popular_screen.dart';
 import 'package:blue/screens/tag/tag_recent_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:blue/main.dart';
@@ -29,26 +30,56 @@ class _TagScreenState extends State<TagScreen> {
         appBar: AppBar(
           elevation: 0,
           actions: <Widget>[
-            isFollowing
-                ? IconButton(icon: Icon(Icons.more_vert,
-                color: Theme.of(context).iconTheme.color,
-                ), onPressed: null)
-                : FlatButton(
-                    child: Text(
-                      'Follow',
-                      style: TextStyle(color: Colors.blue),
-                    ),
+            preferences.getStringList('followed_tags').contains(tag)
+                ?  PopupMenuButton(
+                      padding: EdgeInsets.zero,
+                      
+                      color: Theme.of(context).canvasColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                          side: BorderSide(width: 0)
+                      ),
+                      itemBuilder: (_) => [
+                        PopupMenuItem(
+                            child: Text('Unfollow'),
+                            value:'Unfollow'),
+                      ],
+                      icon: Icon(Icons.more_vert),
+                      onSelected: (selectedValue) async {
+                        if (selectedValue == 'Unfollow') {
+                             setState(() {
+                 List<String> followedTags =          preferences.getStringList('followed_tags');
+                       followedTags.remove(tag);
+ preferences.setStringList('followed_tags',followedTags);
+
+                        }); 
+           await   followedTagsRef.document(currentUser.id).updateData({tag: FieldValue.delete()});
+            // print(tag);
+            // print( followedTagsMap.data.containsKey(tag));
+            //         followedTagsMap.data.removeWhere((key, value) => key == tag);
+            //         print(followedTagsMap.data.keys );
+            //          followedTagsRef.document(currentUser.id).setData(followedTagsMap.data);
+                        }
+                      },
+                    )
+                : IconButton(
+                 icon:    Icon( Icons.add,
+                 size: 34,
+                 color: Colors.blue
+                 ),
+
                     onPressed: () async { // TODO
 
-                      if (isFollowing == false) {
                         followedTagsRef.document(currentUser.id).setData({
-                          tag: 0,
+                          tag: DateTime.now(),
                         }, merge: true);
-
+                         
                         setState(() {
-                          isFollowing = true;
+                                 List<String> followedTags =          preferences.getStringList('followed_tags');
+                       followedTags.add(tag);
+ preferences.setStringList('followed_tags',followedTags);
                         });
-                      }
+                      
                     },
                   )
           ],

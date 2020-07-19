@@ -7,11 +7,8 @@ uploadPostInteraction(
   bool viewed,
  bool upvoted,
  bool commented,
-
  bool shared,
  bool saved,
- 
-
 ){
 
     usersDatabase.child('${currentUser.id}').child('post-views').child('$postId').set({

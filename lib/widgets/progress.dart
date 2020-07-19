@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-Container circularProgress() {
+ circularProgress() {
   return Container(
     alignment: Alignment.center,
-    padding: EdgeInsets.only(top: 10),
+    padding: EdgeInsets.only(top: 10,bottom: 2),
     child: CircularProgressIndicator(
       valueColor: AlwaysStoppedAnimation(
         Color.fromRGBO(3, 23, 84, 1),

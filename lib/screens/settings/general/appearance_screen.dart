@@ -44,6 +44,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).backgroundColor,
       appBar: settingsHeader(context, 'Appearance'),
       body:   Consumer<ThemeNotifier>(
                           builder: (context,notifier,child) => ListView(

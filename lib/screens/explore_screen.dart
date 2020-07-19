@@ -1,4 +1,5 @@
 import 'package:blue/screens/all_topics_screen.dart';
+import 'package:blue/screens/category_posts_screen.dart';
 import 'package:blue/screens/search_screen.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/topic_card.dart';
@@ -18,11 +19,13 @@ class ExploreScreen extends StatefulWidget {
 }
 
 class _ExploreScreenState extends State<ExploreScreen>
-    with AutomaticKeepAliveClientMixin<ExploreScreen> {
+    with AutomaticKeepAliveClientMixin<ExploreScreen> ,SingleTickerProviderStateMixin{
   List<Post> posts = [];
-  bool horizontalListViewIsLoading;
   int noOfFollowedTopicCards = 0;
-  List<TopicCard> followedTopics = [];
+  List<Tab> topicTabs = [];
+    List<Widget> topicViews = [];
+ bool  loading = true; 
+ TabController tabController;
   @override
   void initState() {
     getFollowedTopics();
@@ -36,13 +39,11 @@ class _ExploreScreenState extends State<ExploreScreen>
         snapshot.documents.map((doc) => Post.fromDocument(doc)).toList();
     setState(() {
       this.posts = posts;
+      loading = false;
     });
   }
 
   getFollowedTopics() async {
-    setState(() {
-      horizontalListViewIsLoading = true;
-    });
     QuerySnapshot snapshot = await followedTopicsRef
         .document('${currentUser.id}')
         .collection('userFollowedTopics')
@@ -52,16 +53,15 @@ class _ExploreScreenState extends State<ExploreScreen>
     setState(() {
       noOfFollowedTopicCards = snapshot.documents.length;
       snapshot.documents.forEach((doc) {
-        print(doc.data);
-        followedTopics.add(
-          TopicCard(doc['name'], doc['imageUrl'], doc['id'], doc['info'],
-              MediaQuery.of(context).size.width / 4.3),
+        topicTabs.add(
+          Tab(text: doc['name'],)
         );
-        horizontalListViewIsLoading = false;
+        topicViews.add( CategoryPostsScreen( doc['name']));
       });
+
+     tabController = new TabController(length:  noOfFollowedTopicCards , vsync: this);
     });
   }
-
   // getPopularPosts() async {
   //   QuerySnapshot snapshot = await popularPostsRef.getDocuments();
   //   List<Post> posts =
@@ -76,22 +76,29 @@ class _ExploreScreenState extends State<ExploreScreen>
     super.build(context);
     return Scaffold(
         backgroundColor: Theme.of(context).canvasColor,
-        appBar: header(
-
-          context,
+        appBar: AppBar(centerTitle: true,backgroundColor: Theme.of(context).canvasColor,elevation: 1,
           title: Text(
             'Explore',
             style: TextStyle(
               fontFamily: 'Techna Sans Regular',
             ),
           ),
-          actionButton: IconButton(
+        bottom: loading? PreferredSize(child: Container(), preferredSize: Size.fromHeight(0)): PreferredSize(preferredSize: Size.fromHeight(40),
+                  child: Container(height: 40,
+                    child: TabBar(
+            
+            isScrollable: true,
+            controller: tabController,indicatorColor: Colors.blue,labelPadding: EdgeInsets.symmetric(horizontal: 10),
+            tabs: topicTabs,),
+                  ),
+        ),
+          actions:<Widget>[ IconButton(
               icon: Icon(FlutterIcons.plus_ant,size: 29,
                   color: Theme.of(context).iconTheme.color),
               onPressed: () {
                 Navigator.pushNamed(context, AllTopicsScreen.routeName);
-              }),
-          leadingButton: IconButton(
+              })],
+          leading: IconButton(
             icon: Icon(FlutterIcons.search_oct,
             
             ),
@@ -100,49 +107,12 @@ class _ExploreScreenState extends State<ExploreScreen>
             },
             color: Theme.of(context).iconTheme.color
           ),
+          
         ),
-        body: CustomScrollView(
-          slivers: <Widget>[
-            SliverToBoxAdapter(
-              child: horizontalListViewIsLoading
-                  ? linearProgress()
-                  : SizedBox(
-                      height: 0,
-                    ),
-            ),
-            SliverToBoxAdapter(
-              child: horizontalListViewIsLoading
-                  ? Container()
-                  : Container(
-                      color: Theme.of(context).backgroundColor,
-                      height: MediaQuery.of(context).size.width / 4,
-                      padding: EdgeInsets.symmetric(vertical: 3),
-                      child: ListView(
-                        physics: ClampingScrollPhysics(),
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        children: followedTopics,
-                      ),
-                    ),
-            ),
-            SliverToBoxAdapter(
-              child: horizontalListViewIsLoading
-                  ? Container()
-                  : Divider(
-                      height: 0.5,
-                      thickness: 0.5,
-                      color: Colors.grey[850],
-                    ),
-            ),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (_, i) {
-                  return posts[i];
-                },
-                childCount: posts.length,
-              ),
-            ),
-          ],
+        body: loading? circularProgress():TabBarView(
+children: topicViews,
+controller: tabController,
+
         ));
   }
 }

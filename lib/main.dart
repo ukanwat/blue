@@ -4,6 +4,11 @@ import 'package:blue/providers/provider_widget.dart' as PW;
 import 'package:blue/providers/theme.dart';
 import 'package:blue/screens/all_saved_posts_screen.dart';
 import 'package:blue/screens/all_topics_screen.dart';
+import 'package:blue/screens/collection_posts_screen.dart';
+import 'package:blue/screens/license_screen.dart';
+import 'package:blue/screens/package_licenses_screen.dart';
+import 'package:blue/screens/settings/about/privacy_policy_screen.dart';
+import 'package:blue/screens/settings/about/terms_of_service_screen.dart';
 import 'package:blue/screens/settings/general/appearance_screen.dart';
 import 'package:blue/screens/sign_in_screen.dart';
 import 'package:blue/screens/profile_image_crop_screen.dart';
@@ -16,7 +21,6 @@ import 'package:blue/screens/select_topic_screen.dart';
 import 'package:blue/screens/settings/about/acknowledgements_screen.dart';
 import 'package:blue/screens/settings/advanced_settings/autoplay_screen.dart';
 import 'package:blue/screens/settings/advanced_settings/content_cache_screen.dart';
-import 'package:blue/screens/settings/advanced_settings/gestures_screen.dart';
 import 'package:blue/screens/settings/feedback/give_a_suggestion_screen.dart';
 import 'package:blue/screens/settings/feedback/report_a_bug_screen.dart';
 import 'package:blue/screens/settings/general/account_screen.dart';
@@ -30,11 +34,10 @@ import 'package:blue/screens/settings/general/appearance_screen.dart';
 import 'package:blue/screens/settings/notification/email_notifications_screen.dart';
 import 'package:blue/screens/settings/notification/push_notifications_screen.dart';
 import 'package:blue/screens/settings/privacy/activity_screen.dart';
-import 'package:blue/screens/settings/privacy/activity_screens/account_privacy_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screens/blocked_accounts_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screens/muted_accounts_screen.dart';
-import 'package:blue/screens/topic_posts_screen.dart';
+import 'package:blue/screens/category_posts_screen.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -69,7 +72,7 @@ await getPreferences();
   runApp(MyApp());
 }
 Future getPreferences()async{
-   SharedPreferences preferences = await SharedPreferences.getInstance();
+ preferences = await SharedPreferences.getInstance();
     try{ accountType = preferences.getString('accountType');}
     catch(e){
       print(e);
@@ -99,6 +102,7 @@ catch(e){
 }
   
 }
+   SharedPreferences preferences ;
 User currentUser;
 String accountType;
 class MyApp extends StatelessWidget {
@@ -135,6 +139,7 @@ class MyApp extends StatelessWidget {
             primaryColor: Colors.blue,
             backgroundColor: Color.fromRGBO(255, 255, 255, 1),
             textTheme: Typography.blackMountainView,
+            accentTextTheme:  Typography.blackMountainView,
             iconTheme: IconThemeData(
               color: Colors.black,
             ),
@@ -146,7 +151,6 @@ class MyApp extends StatelessWidget {
               ),
           darkTheme: notifier.darkTheme == false? ThemeData(
               accentColor: Colors.grey,
-          
             cardColor: Color.fromRGBO(238, 238, 238, 1),
             canvasColor: Color.fromRGBO(250, 250, 250, 1),
             primaryColor: Colors.blue,
@@ -162,11 +166,12 @@ class MyApp extends StatelessWidget {
             unselectedWidgetColor: Colors.grey[700],
               ):ThemeData(
             accentColor: Colors.white,
-          
+          accentTextTheme: Typography.whiteMountainView,//
+          primaryTextTheme: Typography.whiteMountainView,//
             cardColor: Color.fromRGBO(50, 50, 50, 1),
-            canvasColor: Color.fromRGBO(32, 32, 32, 1),
+            canvasColor: Color.fromRGBO(26, 26, 26, 1),
             primaryColor: Colors.blue,
-            backgroundColor: Color.fromRGBO(10, 10, 10, 1),
+            backgroundColor: Color.fromRGBO(12, 12, 12, 1),
             textTheme: Typography.whiteMountainView,
             iconTheme: IconThemeData(
               color: Colors.white,
@@ -181,7 +186,7 @@ class MyApp extends StatelessWidget {
                     builder: (_) => AllTopicsScreen(), settings: settings);
                 break;
             }
-             return CupertinoPageRoute(
+             return CupertinoPageRoute(                                                    // TODO
                     builder: (_) => HomeController(), settings: settings);
           
            
@@ -198,7 +203,6 @@ class MyApp extends StatelessWidget {
             CommentsScreen.routeName: (ctx) => CommentsScreen(),
             ChatMessagesScreen.routeName: (ctx) => ChatMessagesScreen(),
             SelectTopicScreen.routeName: (ctx) => SelectTopicScreen(),
-            TopicPostsScreen.routeName: (ctx) => TopicPostsScreen(),
             AllSavedPostsScreen.routeName: (ctx) => AllSavedPostsScreen(),
             SettingsScreen.routeName: (ctx) => SettingsScreen(),
             ChatInfoScreen.routeName: (ctx) => ChatInfoScreen(),
@@ -206,6 +210,8 @@ class MyApp extends StatelessWidget {
             ProfileImageCropScreen.routeName: (ctx) => ProfileImageCropScreen(),
             SearchTagScreen.routeName: (ctx) => SearchTagScreen(),
             TagScreen.routeName: (ctx) => TagScreen(),
+            CollectionPostsScreen.routeName: (ctx) => CollectionPostsScreen(),
+
             AccountScreen.routeName: (ctx) => AccountScreen(),
             AppearanceScreen.routeName: (ctx) => AppearanceScreen(),
             CollectionsScreen.routeName: (ctx) => CollectionsScreen(),
@@ -215,7 +221,6 @@ class MyApp extends StatelessWidget {
                 EmailNotificationsScreen(),
             AutoplayScreen.routeName: (ctx) => AutoplayScreen(),
             ContentCacheScreen.routeName: (ctx) => ContentCacheScreen(),
-            GesturesScreen.routeName: (ctx) => GesturesScreen(),
             SafetyScreen.routeName: (ctx) => SafetyScreen(),
             ActivityScreen.routeName: (ctx) => ActivityScreen(),
             GiveASuggestionScreen.routeName: (ctx) => GiveASuggestionScreen(),
@@ -228,7 +233,12 @@ class MyApp extends StatelessWidget {
             CreateCollectionScreen.routeName: (ctx) => CreateCollectionScreen(),
             BlockedAccountsScreen.routeName: (ctx) => BlockedAccountsScreen(),
             MutedAccountsScreen.routeName: (ctx) => MutedAccountsScreen(),
-            AccountPrivacyScreen.routeName: (ctx) => AccountPrivacyScreen(),
+            PrivacyPolicyScreen.routeName: (ctx) => PrivacyPolicyScreen(),
+                 TermsOfServiceScreen.routeName: (ctx) => TermsOfServiceScreen(),
+
+
+                 LicenseScreen.routeName: (ctx) => LicenseScreen(),
+                 PackageLicensesScreen.routeName: (ctx) => PackageLicensesScreen(),
           }),
     ); } ,
           ),

@@ -1,3 +1,5 @@
+import 'package:blue/main.dart';
+import 'package:blue/screens/home.dart';
 import 'package:blue/screens/settings/privacy/safety_screens/blocked_accounts_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screens/muted_accounts_screen.dart';
 import 'package:blue/widgets/settings_widgets.dart';
@@ -12,8 +14,15 @@ class SafetyScreen extends StatefulWidget {
 class _SafetyScreenState extends State<SafetyScreen> {
   bool sensitiveContent =  true;
   @override
+  void initState() {
+   bool _sensitiveContent = preferences.getBool('hide_sensitive_content');
+      if(_sensitiveContent != null)
+        sensitiveContent =_sensitiveContent;
+    super.initState();
+  }
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Scaffold(                                       // TODO
       appBar: settingsHeader(context, 'Safety'),
       body: ListView(
         children: <Widget>[
@@ -21,7 +30,15 @@ class _SafetyScreenState extends State<SafetyScreen> {
               context, 'Muted Accounts', MutedAccountsScreen.routeName),
                 settingsPageNavigationTile(
               context, 'Blocked Accounts', BlockedAccountsScreen.routeName),
-              settingsSwitchListTile('Hide Sensitive Content', sensitiveContent, (newValue){sensitiveContent = newValue;})
+              settingsSwitchListTile('Hide Sensitive Content', sensitiveContent, (newValue){
+                preferences.setBool('hide_sensitive_content',newValue );
+                preferencesRef.document(currentUser.id).updateData({
+                  'hide_sensitive_content': newValue
+                });
+                setState(() {
+                    sensitiveContent = newValue;
+                });
+              })
         ],
       ),
     );

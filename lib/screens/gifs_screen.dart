@@ -1,7 +1,9 @@
 import 'package:blue/widgets/progress.dart';
+import 'package:flutter_clipboard_manager/flutter_clipboard_manager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:giphy_client/giphy_client.dart';
 
 class GIFsScreen extends StatefulWidget {
@@ -21,7 +23,6 @@ class _GIFsScreenState extends State<GIFsScreen> {
     super.initState();
   }
   
-  
   getTrendingGIFs()async{
      setState(() {
       loading = true;
@@ -36,7 +37,7 @@ gifCollection = await client.trending(limit: 50,
     setState(() {
       loading = true;
     });
-    gifCollection = await client.search(gifSearchController.text);
+    gifCollection = await client.search(gifSearchController.text,limit: 50);
     setState(() {
       loading = false;
     });
@@ -81,36 +82,138 @@ gifCollection = await client.trending(limit: 50,
           ),
         ),
       ),
-      body:loading? circularProgress(): GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 1,
-              crossAxisSpacing: 0,
-              mainAxisSpacing: 0),
-              itemCount:gifCollection.data.length ,
-          itemBuilder: (_,i){
-           return Container(
-             child: GestureDetector(
-               onTap: (){
-                 Navigator.pop(context,gifCollection.data[i].images.original.url);
-               },
-                            child: Card(elevation: 0,
-               shape: RoundedRectangleBorder(
-                 borderRadius: BorderRadius.circular(10),
-               ),
-                 child: ClipRRect(
-                   borderRadius: BorderRadius.circular(10),
-                                  child: Image.network(
-                     
-                     gifCollection.data[i].images.previewGif.url,
-                     height: MediaQuery.of(context).size.width/2-10,
-                     fit: BoxFit.cover,
-                   ),
-                 ),
-               ),
-             ),
-           );
-          }),
+      body:loading? circularProgress(): SingleChildScrollView(
+              child: Column(
+          children: <Widget>[
+            Row(mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                Text('Powered By',style: TextStyle(fontSize: 12),),
+                Container(
+                  padding: EdgeInsets.symmetric(vertical:Theme.of(context).iconTheme.color!= Colors.black? 8:4,horizontal: 10),
+                  height: 32,
+                  child: Image.asset(Theme.of(context).iconTheme.color!= Colors.black? 'assets/images/GIPHY_dark.png':'assets/images/GIPHY_light.png'),//TODO check final icon color
+                ),
+              ],
+            ),
+            
+            Container(
+            //  height: ((MediaQuery.of(context).size.width-16)/2 + 4)*25,
+              child: GridView.builder(shrinkWrap: true,padding: EdgeInsets.symmetric(horizontal: 8),
+              physics: NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 1,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8),
+                      itemCount:gifCollection.data.length ,
+                  itemBuilder: (_,i){
+                   return Container(
+                     child: InkWell(
+                       onLongPress: (){
+                         showDialog(
+                  context: context,
+                  builder: (BuildContext context) => Dialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        elevation: 0.0,
+                        backgroundColor: Colors.transparent,
+                                 child: Container(
+                            padding:
+                                EdgeInsets.symmetric(vertical: 5),
+                            decoration: new BoxDecoration(
+                              color: Theme.of(context).canvasColor,
+                              shape: BoxShape.rectangle,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 10.0,
+                                  offset: const Offset(0.0, 10.0),
+                                ),
+                              ],
+                            ), 
+                            child:Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                if(gifCollection.data[i].username != '')
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 14),
+                                  child: Text('Created By'),
+                                ),
+                                 if(gifCollection.data[i].username != '')
+                                 GestureDetector(
+                                   onTap: (){
+                                     Navigator.of(context).pop();
+ gifSearchController.text = '@${gifCollection.data[i].username}';
+                          getSearchedGIFs('@${gifCollection.data[i].username}');
+                                   },
+                               child: Container(
+                                margin: EdgeInsetsDirectional.only(bottom: 10,top: 0),
+                                     padding: const EdgeInsets.symmetric(vertical: 4),
+                                     child: Text(
+                        '@${gifCollection.data[i].username}',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.blue,
+                           
+                          ),
+                        ),
+                                   ),
+                                 ),
+                                    if(gifCollection.data[i].username != '')
+                                Divider(
+                                  height: 10,
+                                  color: Colors.grey,
+                                ),
+                                 InkWell(
+                          onTap: ()async{
+                            FlutterClipboardManager.copyToClipBoard("${gifCollection.data[i].sourcePostUrl}");
+                              Navigator.pop(context);
+                            
+
+                            }    , child:        Container( 
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                     child: Center(child: Text('Copy Source Link',
+                                     style: TextStyle(fontSize: 18),)),
+
+                                ),)
+                                        ],
+                            
+                    ))));
+                       },
+                       onTap: (){
+
+                         Navigator.pop(context,gifCollection.data[i].images.original.url);
+                       },
+                         child: Container(
+                            height: (MediaQuery.of(context).size.width-16)/2-8,
+                        decoration: BoxDecoration(
+                               borderRadius: BorderRadius.circular(10),
+                               color: Theme.of(context).cardColor
+                         
+                        ),
+                           child: ClipRRect(
+
+                             borderRadius: BorderRadius.circular(10),
+                                            child: Image.network(
+                               
+                               gifCollection.data[i].images.previewGif.url,
+                               height: (MediaQuery.of(context).size.width-16)/2-8,
+                               fit: BoxFit.cover,
+                               
+                             ),
+                           ),
+                        
+                       ),
+                     ),
+                   );
+                  }),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 
 class ShowDialog extends StatelessWidget {
   final String title, description, leftButtonText,rightButtonText;
-final Function leftButtonFunction;
+final Function leftButtonFunction,rightButtonFunction;
   ShowDialog({
     @required this.title,
     @required this.description,
     @required this.leftButtonText,
    @required this.rightButtonText,
     this.leftButtonFunction,
+    this.rightButtonFunction,
   });
 
   @override
@@ -73,7 +74,7 @@ final Function leftButtonFunction;
              FlatButton(shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
       ), color: Colors.blue,
-              onPressed: () {
+              onPressed:rightButtonFunction != null?rightButtonFunction: () {
                 Navigator.of(context).pop(); // To close the dialog
               },
               child: Text(rightButtonText,

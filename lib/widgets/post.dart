@@ -29,8 +29,9 @@ class Post extends StatefulWidget {
   final Map contentsInfo;
   final dynamic upvotes;
   final List<dynamic> tags;
+  final bool isCompact;
   // final PostInteractions postInteractions;
-
+   
   Post(
       {this.postId,
       this.ownerId,
@@ -42,11 +43,14 @@ class Post extends StatefulWidget {
       this.contents,
       this.contentsInfo,
       this.upvotes,
-      this.tags
+      this.tags,
+      this.isCompact
       // this.postInteractions
       });
 
-  factory Post.fromDocument(DocumentSnapshot doc) {
+  factory Post.fromDocument(DocumentSnapshot doc, {bool isCompact}) {
+     if(isCompact == null)
+     isCompact = false;
     return Post(
       postId: doc['postId'],
       ownerId: doc['ownerId'],
@@ -59,6 +63,7 @@ class Post extends StatefulWidget {
       contentsInfo: doc['contentsInfo'],
       upvotes: doc['upvotes'],
       tags: doc['tags'],
+      isCompact: isCompact,
     );
   }
   int getUpVoteCount(upvotes) {
@@ -217,7 +222,7 @@ class _PostState extends State<Post> {
               ],
             ));
   }
-
+  
   buildPostHeader() {
     bool isPostOwner = currentUserId == ownerId;
     return Container(
@@ -407,7 +412,7 @@ class _PostState extends State<Post> {
                             setState(() {
                               isSaved = false;
                               showSaveBar = false;
-                              savedPostsRef
+                              savedPostsRef              // TODO
                                   .document(currentUser?.id)
                                   .collection('All')
                                   .document(postId)
@@ -478,7 +483,7 @@ class _PostState extends State<Post> {
                             setState(() {
                               showSaveBar = true;
                             });
-                            Future.delayed(const Duration(milliseconds: 5000),
+                            Future.delayed(const Duration(milliseconds: 4000),
                                 () {
                               setState(() {
                                 showSaveBar = false;
@@ -526,6 +531,335 @@ class _PostState extends State<Post> {
                         ))
                   ],
                 ))
+        ],
+      ),
+    );
+  }
+  buildCompactPostHeader(){
+     bool isPostOwner = currentUserId == ownerId;
+    return Container(
+      color: Theme.of(context).backgroundColor,
+      child: Row(
+        children: <Widget>[
+          Expanded(
+                      child: Column(mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                  Container(
+                        color: Theme.of(context).backgroundColor,
+                        margin: EdgeInsets.zero,
+              padding: EdgeInsets.only(left: 13, top: 0, bottom: 0, right: 0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  CircleAvatar(
+                    radius: 15,
+                    backgroundImage: CachedNetworkImageProvider(photoUrl),
+                    backgroundColor: Colors.grey,
+                  ),
+                  SizedBox(
+                    width: 8,
+                  ),
+                  Container(
+                    height: 24,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+
+                      username,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                           
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Expanded(
+                    child: Container(
+                      height: 24,
+                      child: FittedBox(
+                        fit: BoxFit.none,
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          height: 20,
+                          width: 70,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: Colors.blue,
+                          ),
+                          child: RawMaterialButton(
+                            child: Text(
+                              'Follow',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            onPressed: null,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  tagBarVisible
+                      ? SizedBox(
+                          height: 40,
+                          width: 40,
+                          child: IconButton(
+                            iconSize: 28,
+                            onPressed: () {
+                              setState(() {
+                                tagBarVisible = false;
+                              });
+                            },
+                            icon: Icon(
+                              Icons.keyboard_arrow_up,
+                            ),
+                          ),
+                        )
+                      : SizedBox(
+                          height: 40,
+                          width: 40,
+                          child: IconButton(
+                            iconSize: 28,
+                            onPressed: () async {
+                              setState(() {
+                                tagBarVisible = true;
+                              });
+                            },
+                            icon: Icon(
+                              Icons.keyboard_arrow_down,
+                            ),
+                          ),
+                        ),
+                  isSaved
+                      ? SizedBox(
+                          height: 40,
+                          width: 40,
+                          child: IconButton(
+                            iconSize: 22,
+                            onPressed: () {
+                              setState(() {
+                                isSaved = false;
+                                showSaveBar = false;
+                                savedPostsRef              // TODO
+                                    .document(currentUser?.id)
+                                    .collection('All')
+                                    .document(postId)
+                                    .delete();
+                              });
+                            },
+                            icon: Icon(
+                              Icons.bookmark,
+                              color: Colors.blue,
+
+                            ),
+                          ),
+                        )
+                      : SizedBox(
+                          height: 40,
+                          width: 40,
+                          child: IconButton(
+                            iconSize: 22,
+                            onPressed: () async {
+                              setState(() {
+                                isSaved = true;
+                              });
+                              var lastDoc = await savedPostsRef
+                                  .document(currentUser?.id)
+                                  .collection('all')
+                                  .orderBy('order', descending: true)
+                                  .limit(1)
+                                  .getDocuments();
+                              if (lastDoc.documents.length == 0) {
+                                savedPostsRef
+                                    .document(currentUser?.id)
+                                    .collection('all')
+                                    .document()
+                                    .setData({
+                                  'order': 1,
+                                  'posts': [
+                                    postId,
+                                  ],
+                                }, merge: true);
+                              } else if (lastDoc.documents.length == 1 &&
+                                  lastDoc.documents.first.data['posts'].length <
+                                      2) {
+                                List<dynamic> _postIdList =
+                                    lastDoc.documents.first.data['posts'];
+                                _postIdList.add(postId);
+                                savedPostsRef
+                                    .document(currentUser?.id)
+                                    .collection('all')
+                                    .document(lastDoc.documents.first.documentID)
+                                    .setData({
+                                  'posts': _postIdList,
+                                }, merge: true);
+                              } else if (lastDoc.documents.length == 1 &&
+                                  lastDoc.documents.first.data['posts'].length >
+                                      1) {
+                                savedPostsRef
+                                    .document(currentUser?.id)
+                                    .collection('all')
+                                    .document()
+                                    .setData({
+                                  'order':
+                                      lastDoc.documents.first.data['order'] + 1,
+                                  'posts': [
+                                    postId,
+                                  ],
+                                }, merge: true);
+                              }
+                              setState(() {
+                                showSaveBar = true;
+                              });
+                              Future.delayed(const Duration(milliseconds: 4000),
+                                  () {
+                                setState(() {
+                                  showSaveBar = false;
+                                });
+                              });
+                            },
+                            icon: Icon(
+                              Icons.bookmark_border,
+                            ),
+                          ),
+                        ),
+                ],
+              ),
+            ),
+                Container(
+                  color: Theme.of(context).backgroundColor,
+                  width: MediaQuery.of(context).size.width,
+                  padding: EdgeInsets.only(left: 13, top: 8, right: 13, bottom: 3),
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Container(
+                          child: Text(
+                            widget.title,
+                            style: TextStyle(
+                                
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+
+              child: Container(
+                color: Colors.blue,
+                height: MediaQuery.of(context).size.width*0.24,width: MediaQuery.of(context).size.width*0.24,)),
+          )
+          // if (tagBarVisible)
+          //   Container(
+              
+          //     margin: EdgeInsets.only(top: 0, bottom: 0),
+          //     height: 28,
+          //     child: Row(
+          //       children: <Widget>[
+          //         Container(
+          //           width: 28,
+          //           color: Theme.of(context).backgroundColor,
+          //           child: Center(
+          //             child: Text(
+          //               '#',
+          //               style: TextStyle(fontSize: 22),
+          //             ),
+          //           ),
+          //         ),
+          //         Expanded(
+          //           child: Container(
+          //             height: 28,
+          //             color: Theme.of(context).canvasColor,
+          //             child: ListView.builder(
+          //               itemCount: tags.length,
+          //               scrollDirection: Axis.horizontal,
+          //               itemBuilder: (_, i) {
+          //                 print(
+          //                   tags[i],
+          //                 );
+          //                 return InkWell(
+          //                   onTap: () {
+          //                     Navigator.of(context).pushNamed(TagScreen.routeName,
+          //                         arguments: tags[i]);
+          //                   },
+          //                   child: Container(
+          //                     padding: EdgeInsets.symmetric(horizontal: 8),
+          //                     margin: EdgeInsets.symmetric(
+          //                         horizontal: 2, vertical: 3),
+          //                     decoration: BoxDecoration(
+          //                         color: Theme.of(context).backgroundColor,
+          //                         borderRadius: BorderRadius.circular(100)),
+          //                     child: Center(
+          //                       child: Text(
+          //                         tags[i],
+          //                         style: TextStyle(fontSize: 14),
+          //                       ),
+          //                     ),
+          //                   ),
+          //                 );
+          //               },
+          //             ),
+          //           ),
+          //         )
+          //       ],
+          //     ),
+          //   ),
+         
+          // if (showSaveBar)
+          //   Container(
+          //       width: double.infinity,
+          //       padding: EdgeInsets.symmetric(vertical: 0, horizontal: 6),
+          //       child: Row(
+          //         mainAxisAlignment: MainAxisAlignment.spaceAround,
+          //         children: <Widget>[
+          //           Text(
+          //             'Saved!',
+          //             style: TextStyle(fontSize: 18),
+          //           ),
+          //           FlatButton(
+          //               onPressed: () {
+          //                 setState(() {
+          //                   showSaveBar = false;
+          //                 });
+          //                 showDialog(
+          //                   context: context,
+          //                   builder: (BuildContext context) =>
+          //                       SaveDialog(this.widget),
+          //                 );
+          //               },
+          //               shape: RoundedRectangleBorder(
+          //                   borderRadius: BorderRadius.circular(10)),
+          //               child: Text(
+          //                 'Save to Collection',
+          //                 style: TextStyle(
+          //                     color: Colors.blue,
+          //                     fontWeight: FontWeight.w600,
+          //                     fontSize: 18),
+          //               ))
+          //         ],
+          //       ))
+        
         ],
       ),
     );
@@ -795,9 +1129,8 @@ class _PostState extends State<Post> {
                 child: GestureDetector(
                   onTap: () => showComments(
                     context,
-                    postId: postId,
-                    ownerId: ownerId,
-                    contents: contents,
+                    post: this.widget,
+
                   ),
                   child: Icon(
                     Icons.comment,
@@ -874,8 +1207,8 @@ class _PostState extends State<Post> {
             color: Theme.of(context).backgroundColor,
             child: Column(
               children: <Widget>[
-                buildPostHeader(),
-                ListView.builder(
+                widget.isCompact?buildCompactPostHeader() :buildPostHeader(),
+              if(!widget.isCompact)  ListView.builder(
                   padding: EdgeInsets.all(0),
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
@@ -892,14 +1225,8 @@ class _PostState extends State<Post> {
 }
 
 showComments(BuildContext context,
-    {String postId,
-    String ownerId,
-    Map contents,}) {
-  Navigator.pushNamed(context, CommentsScreen.routeName, arguments: {
-    'postId': postId,
-    'ownerId': ownerId,
-    'contents': contents,
-  });
+    {Post post,}) {
+  Navigator.pushNamed(context, CommentsScreen.routeName, arguments: post);
 }
 
 showProfile(BuildContext context, {String profileId}) {
