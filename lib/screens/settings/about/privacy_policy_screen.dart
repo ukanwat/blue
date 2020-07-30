@@ -17,7 +17,7 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
     return Scaffold(
       appBar: settingsHeader(context, 'Privacy Policy'),
       body: WebView(
-        initialUrl: 'https://www.scrible.app/privacypolicy/',
+        initialUrl: 'https://google.com',
           onWebViewCreated: (WebViewController webViewController) {
           _controller.complete(webViewController);
         },

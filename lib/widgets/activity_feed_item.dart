@@ -85,61 +85,67 @@ class ActivityFeedItem extends StatelessWidget {
             border: Border(bottom: BorderSide(width: 1,color: Theme.of(context).cardColor)),
             color: Theme.of(context).backgroundColor,
           ),
-          padding: EdgeInsets.only(bottom: 2.0,top: 8) ,
           
-          child: Column(
-            children: <Widget>[
-              ListTile(
-               
-                title: GestureDetector(
-                  onTap: () {
+          child: Material(
+            color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
   activityFeedRef.document(currentUser.id).collection('feedItems').document(activityFeedDocumentId).updateData({'seen' : true});
-                            },
-                  child: RichText(
+                                  },
+                        child: Padding(
+         padding: EdgeInsets.only(bottom: 2.0,top: 8) ,
+                child: Column(
+                  children: <Widget>[
+                    ListTile(
+                     
+                      title: RichText(
 maxLines: 3,
 overflow: TextOverflow.ellipsis,
-                    text: TextSpan(
-                        style: TextStyle(fontSize: 15.0,),
-                        children: [
-                          TextSpan(
-                              text: username,
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                              TextSpan(text: ' '),
-                          TextSpan(text: '$activityItemText'),
-                           TextSpan(text: '$activityItemTextData',
-                           style: TextStyle(color:seen? Colors.grey: Colors.white )
-                           )
-                        ]),
-                  ),
-                ),
-                leading: CircleAvatar(
-                  maxRadius: 22,
-                  minRadius: 22,
-                  backgroundImage: CachedNetworkImageProvider(userProfileImg),
-                ),
-              ),
-              Container(padding: EdgeInsets.only(
-                top: 4,
-                bottom: 8,
-                left: 12,
-                right: 12
-              ),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                                      child: Center(
-                                        child: Text('$title',
-                           
-                    maxLines: 3,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400,color:seen? Colors.grey: Colors.white ),
+                          text: TextSpan(
+                              style: TextStyle(fontSize: 15.0,),
+                              children: [
+                                TextSpan(
+                                    text: username,
+                                    style: TextStyle(fontWeight: FontWeight.bold)),
+                                    TextSpan(text: ' '),
+                                TextSpan(text: '$activityItemText'),
+                                 TextSpan(text: '$activityItemTextData',
+                                 style: TextStyle(color:seen? Colors.grey: Colors.white )
+                                 )
+                              ]),
+                        ),
+                      
+                      leading: CircleAvatar(
+                        maxRadius: 22,
+                        minRadius: 22,
+                        backgroundImage: CachedNetworkImageProvider(userProfileImg),
+                      ),
                     ),
-                                      ),
-                  ),
-                  Icon(FlutterIcons.launch_mco,color: Colors.blue,)
-                ],
+                    Padding(padding: EdgeInsets.only(
+                      top: 4,
+                      bottom: 8,
+                      left: 12,
+                      right: 12
+                    ),
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(
+                                            child: Center(
+                                              child: Text('$title',
+                                 
+                          maxLines: 2,overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400,color:seen? Colors.grey: Colors.white ),
+                          ),
+                                            ),
+                        ),
+                        Container(child: IconButton(icon: Icon(FlutterIcons.external_link_square_faw,),onPressed: (){},iconSize: 24,padding: EdgeInsets.all(0),))
+                      ],
+                    ),
+                    )
+                  ],
+                ),
               ),
-              )
-            ],
+            ),
           ),
         
       

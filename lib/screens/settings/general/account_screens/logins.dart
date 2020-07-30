@@ -12,7 +12,7 @@ class LoginsScreen extends StatelessWidget {
   }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Scaffold(backgroundColor: Theme.of(context).backgroundColor,
         appBar: settingsHeader(context, 'Logins'),
         body: ListView(children: <Widget>[
           settingsActionTile(context, 'Sign Out', () {

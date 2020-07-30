@@ -1,4 +1,6 @@
+import 'package:blue/main.dart';
 import 'package:blue/providers/theme.dart';
+import 'package:blue/screens/home.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -55,7 +57,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                   themeMode = 'System Default';
                 notifier.toggleTheme(null);
               });
-            
+                       preferencesRef.document(currentUser.id).setData({'theme': themeMode },merge: true);
             },
           title: Text('System Default'),
           trailing: Visibility(
@@ -70,6 +72,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
               themeMode = 'Light Mode';
                         notifier.toggleTheme(false);
              });
+                    preferencesRef.document(currentUser.id).setData({'theme': themeMode },merge: true);
             }, title: Text('Light Mode'),
           trailing: Visibility( visible: themeMode == 'Light Mode',
                       child: Icon(FlutterIcons.check_circle_faw5s,
@@ -80,6 +83,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
               themeMode = 'Dark Mode';
                            notifier.toggleTheme(true);
                 });
+                       preferencesRef.document(currentUser.id).setData({'theme': themeMode },merge: true);
             }, title: Text('Dark Mode'),
               
           trailing: Visibility( visible: themeMode == 'Dark Mode',

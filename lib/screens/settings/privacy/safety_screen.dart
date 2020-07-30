@@ -22,7 +22,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
   }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(                                       // TODO
+    return Scaffold(    backgroundColor: Theme.of(context).backgroundColor,                                   // TODO
       appBar: settingsHeader(context, 'Safety'),
       body: ListView(
         children: <Widget>[

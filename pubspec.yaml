@@ -54,6 +54,7 @@ dependencies:
   webview_flutter: ^0.3.22+1
   flick_video_player: ^0.1.1
   visibility_detector: ^0.1.5
+  flutter_link_preview: ^1.2.11
   # hive: ^1.4.1+1
   # hive_flutter: ^0.3.0+2
   # The following adds the Cupertino Icons font to your application.
@@ -112,6 +113,9 @@ flutter:
     - family: LostFish
       fonts:
         - asset: assets/fonts/LostFish.ttf
+    - family: Georgia
+      fonts:
+        - asset: assets/fonts/Georgia.ttf
   #   - family: Trajan Pro
   #     fonts:
   #       - asset: fonts/TrajanPro.ttf

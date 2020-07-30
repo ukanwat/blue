@@ -5,10 +5,12 @@ import 'package:blue/providers/theme.dart';
 import 'package:blue/screens/all_saved_posts_screen.dart';
 import 'package:blue/screens/all_topics_screen.dart';
 import 'package:blue/screens/collection_posts_screen.dart';
+import 'package:blue/screens/explore_posts_screen.dart';
 import 'package:blue/screens/license_screen.dart';
 import 'package:blue/screens/package_licenses_screen.dart';
 import 'package:blue/screens/settings/about/privacy_policy_screen.dart';
 import 'package:blue/screens/settings/about/terms_of_service_screen.dart';
+import 'package:blue/screens/settings/advanced_settings/font_screen.dart';
 import 'package:blue/screens/settings/general/appearance_screen.dart';
 import 'package:blue/screens/sign_in_screen.dart';
 import 'package:blue/screens/profile_image_crop_screen.dart';
@@ -211,6 +213,7 @@ class MyApp extends StatelessWidget {
             SearchTagScreen.routeName: (ctx) => SearchTagScreen(),
             TagScreen.routeName: (ctx) => TagScreen(),
             CollectionPostsScreen.routeName: (ctx) => CollectionPostsScreen(),
+            ExplorePostsScreen.routeName: (ctx) => ExplorePostsScreen(),
 
             AccountScreen.routeName: (ctx) => AccountScreen(),
             AppearanceScreen.routeName: (ctx) => AppearanceScreen(),
@@ -220,6 +223,7 @@ class MyApp extends StatelessWidget {
             EmailNotificationsScreen.routeName: (ctx) =>
                 EmailNotificationsScreen(),
             AutoplayScreen.routeName: (ctx) => AutoplayScreen(),
+             FontScreen.routeName: (ctx) => FontScreen(),
             ContentCacheScreen.routeName: (ctx) => ContentCacheScreen(),
             SafetyScreen.routeName: (ctx) => SafetyScreen(),
             ActivityScreen.routeName: (ctx) => ActivityScreen(),
@@ -235,7 +239,7 @@ class MyApp extends StatelessWidget {
             MutedAccountsScreen.routeName: (ctx) => MutedAccountsScreen(),
             PrivacyPolicyScreen.routeName: (ctx) => PrivacyPolicyScreen(),
                  TermsOfServiceScreen.routeName: (ctx) => TermsOfServiceScreen(),
-
+               
 
                  LicenseScreen.routeName: (ctx) => LicenseScreen(),
                  PackageLicensesScreen.routeName: (ctx) => PackageLicensesScreen(),

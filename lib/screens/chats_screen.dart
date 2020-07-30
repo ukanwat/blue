@@ -116,8 +116,8 @@ class _ChatsScreenState extends State<ChatsScreen>
                                   Text(' Image')
                                 ],
                               ) 
-                                  : Text(directMap[user.id]['message'])))
-                          : Text(user.username),
+                                  : Text(directMap[user.id]['message'],maxLines: 1,overflow: TextOverflow.ellipsis,)))
+                          : Text(user.username,maxLines: 1,),
                     ),
                   ),
                   Text(directMap.containsKey(user.id)

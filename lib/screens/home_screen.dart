@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:blue/screens/search_results_screen.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import '../widgets/header.dart';
 import '../models/user.dart';
 import './home.dart';
@@ -10,19 +11,18 @@ import 'package:blue/main.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-final usersRef = Firestore.instance.collection('users');
-
 class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with  AutomaticKeepAliveClientMixin<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with  AutomaticKeepAliveClientMixin<HomeScreen>,SingleTickerProviderStateMixin {
   List<Post> posts;
-
+  TabController tabController;
   @override
   void initState() {
     super.initState();
+    tabController = TabController(length: 2, vsync: this);
     getTimeline();
   }
 
@@ -111,19 +111,55 @@ class _HomeScreenState extends State<HomeScreen> with  AutomaticKeepAliveClientM
   @override
   Widget build(context) {
        super.build(context);
-    return Scaffold(
-        backgroundColor: Theme.of(context).canvasColor,
-        appBar: header(
-          context,title: Text('Scrible',style: TextStyle(
-            fontFamily: 'Techna Sans Regular',
+    return DefaultTabController(
+length: 2,
+          child: TabBarView(
+            controller: tabController,
+        children: <Widget>[
+
+           Scaffold(
+          backgroundColor: Theme.of(context).canvasColor,
+          appBar: header(
+            context,title: Text('Scrible',style: TextStyle(
+              fontFamily: 'Techna Sans Regular',
+      
+            ),),
+            actionButton: IconButton(icon: Icon(FlutterIcons.plus_ant,size: 29,),onPressed: (){
+              tabController.animateTo(1);
+            },),
+            centerTitle: true,
+         
+            ),
+          
+          
+          body: RefreshIndicator(
+              onRefresh: () => getTimeline(), child: buildTimeline(),),),
+            Scaffold(
+              appBar: header(context,title: Text('Following',),leadingButton: IconButton(
+                onPressed: (){
+                  tabController.animateTo(0);
+                },
+                icon: Icon(FlutterIcons.back_ant,size: 29,))),
+            )
+        ],
+      ),
+    )
     
-          ),),
-          centerTitle: true,
+    // Scaffold(
+    //     backgroundColor: Theme.of(context).canvasColor,
+    //     appBar: header(
+    //       context,title: Text('Scrible',style: TextStyle(
+    //         fontFamily: 'Techna Sans Regular',
+    
+    //       ),),
+    //       centerTitle: true,
        
-          ),
+    //       ),
         
         
-        body: RefreshIndicator(
-            onRefresh: () => getTimeline(), child: buildTimeline(),),);
+    //     body: RefreshIndicator(
+    //         onRefresh: () => getTimeline(), child: buildTimeline(),),)
+            
+            ;
   }
 }

@@ -18,7 +18,7 @@ class PostScreenCommonWidget extends StatelessWidget {
               maxLines: 2,
               controller: captionController,
               decoration: InputDecoration(
-                hintText: "An Interesting Title...",
+                hintText: "Title",
                 border: InputBorder.none,
               ),
             ),

@@ -48,7 +48,7 @@ setState(() {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Scaffold(backgroundColor: Theme.of(context).backgroundColor,
       appBar: settingsHeader(context, 'Push Notifications'),
       body: loading? circularProgress():ListView(
         children: <Widget>[

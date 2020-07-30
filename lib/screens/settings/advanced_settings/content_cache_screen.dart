@@ -12,7 +12,7 @@ class ContentCacheScreen extends StatefulWidget {
 class _ContentCacheScreenState extends State<ContentCacheScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Scaffold(backgroundColor: Theme.of(context).backgroundColor,
       appBar: settingsHeader(context, 'Content Cache'),
       body: ListView(
         children: <Widget>[

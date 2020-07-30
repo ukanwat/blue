@@ -244,6 +244,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.0"
+  flutter_link_preview:
+    dependency: "direct main"
+    description:
+      name: flutter_link_preview
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.2.11"
   flutter_linkify:
     dependency: "direct main"
     description:

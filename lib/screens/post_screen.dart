@@ -1,3 +1,7 @@
+import 'dart:ui';
+import 'package:blue/providers/submit_state.dart';
+import 'package:blue/services/link_preview.dart';
+import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:blue/screens/select_topic_screen.dart';
 import 'package:blue/services/video_controls.dart';
 import 'package:carousel_pro/carousel_pro.dart';
@@ -5,6 +9,7 @@ import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter_link_preview/flutter_link_preview.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:video_compress/video_compress.dart' as Vc;
@@ -15,7 +20,7 @@ import './home.dart';
 import 'package:http/http.dart';
 import 'package:blue/widgets/post_screen_common_widget.dart';
 import 'package:blue/main.dart';
-
+import 'package:path/path.dart' as p;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image/image.dart' as Im;
 import 'package:path_provider/path_provider.dart';
@@ -24,6 +29,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 // import 'package:video_compress/video_compress.dart';
 import 'package:link_previewer/link_previewer.dart';
+import '../services/video_processing.dart';
 
 enum ContentInsertOptions { Device, Camera, Carousel }
 
@@ -54,12 +60,14 @@ class _PostScreenState extends State<PostScreen> {
   Map<int, Map> contentsInfo = {};
   Map<String, Map> firestoreContentsInfo = {};
   Map<int, String> videoSources = {};
+  List<Map<String, dynamic>> contentsData =
+      []; //////////////////////////////////////////////////////////////////////////////
   List<String> contentType = [];
   String imageId = Uuid().v4();
   String videoId = Uuid().v4();
   String postId = Uuid().v4();
   File compressedFile;
-  
+
   handleTakePhoto() async {
     File _cameraImage;
     var picker = ImagePicker();
@@ -70,20 +78,25 @@ class _PostScreenState extends State<PostScreen> {
     );
     _cameraImage = File(pickedFile.path);
     fileIndex++;
-    double aspectRatio;
+    double _aspectRatio;
     var decodedImage =
         await decodeImageFromList(_cameraImage.readAsBytesSync());
-    aspectRatio =
+    _aspectRatio =
         decodedImage.width.toDouble() / decodedImage.height.toDouble();
-    Map infoMap = {};
-    infoMap['type'] = 'image';
-    infoMap['aspectRatio'] = aspectRatio;
-    contentsInfo[fileIndex] = infoMap;
+    Map infoMap = {}; //
+    infoMap['type'] = 'image'; //
+    infoMap['aspectRatio'] = _aspectRatio; //
+    contentsInfo[fileIndex] = infoMap; //
     setState(() {
       if (_cameraImage == null) {
         print('File is not available');
       } else {
-        contents.add(imageDisplay(_cameraImage, fileIndex, aspectRatio));
+        contentsData.add({
+          'info': {'type': 'image', 'aspectRatio': _aspectRatio},
+          'content': _cameraImage,
+          'widget': imageDisplay(_cameraImage, fileIndex, _aspectRatio)
+        });
+        contents.add(imageDisplay(_cameraImage, fileIndex, _aspectRatio));
       }
     });
   }
@@ -96,15 +109,19 @@ class _PostScreenState extends State<PostScreen> {
     fileIndex++;
     _cameraVideoPlayerController = VideoPlayerController.file(_cameraVideo)
       ..initialize().then((_) {
+        flickManager = FlickManager(
+          videoPlayerController: _cameraVideoPlayerController,
+        );
         setState(() {
-          videoDisplayFunction(
-              _cameraVideo, _cameraVideoPlayerController, fileIndex, 'camera');
-                  flickManager = FlickManager(
-      videoPlayerController:
-         _cameraVideoPlayerController ,
-    );
-     contents.add(
-              Container(child: VideoDisplay(  flickManager)));
+          contentsData.add({
+            'info': {
+              'type': 'video',
+              'aspectRatio': _cameraVideoPlayerController.value.aspectRatio
+            },
+            'content': _cameraVideo,
+            'widget': Container(child: VideoDisplay(flickManager,false))
+          });
+
           if (_cameraVideoPlayerController.value.isPlaying == true) {
             print('amsdd');
           }
@@ -122,15 +139,19 @@ class _PostScreenState extends State<PostScreen> {
     fileIndex++;
     _videoPlayerController = VideoPlayerController.file(_galleryVideo)
       ..initialize().then((_) {
+        flickManager = FlickManager(
+          videoPlayerController: _videoPlayerController,
+        );
         setState(() {
-          videoDisplayFunction(_galleryVideo, _videoPlayerController, fileIndex, 'gallery');
-      
-              flickManager = FlickManager(
-      videoPlayerController:
-          _videoPlayerController ,
-    );
-        contents.add(
-              Container(child: VideoDisplay(  flickManager)));
+          contentsData.add({
+            'info': {
+              'type': 'video',
+              'aspectRatio': _videoPlayerController.value.aspectRatio
+            },
+            'content': _galleryVideo,
+            'widget': Container(child: VideoDisplay(flickManager,false))
+          });
+
           if (_videoPlayerController.value.isPlaying == true) {
             print('msdd');
           }
@@ -151,12 +172,21 @@ class _PostScreenState extends State<PostScreen> {
         await decodeImageFromList(_galleryImage.readAsBytesSync());
     aspectRatio =
         decodedImage.width.toDouble() / decodedImage.height.toDouble();
+    contentsData.add({
+      'info': {'type': 'image', 'aspectRatio': aspectRatio},
+      'content': _galleryImage,
+      'widget': imageDisplay(_galleryImage, fileIndex, aspectRatio)
+    });
     Map infoMap = {};
     infoMap['type'] = 'image';
     infoMap['aspectRatio'] = aspectRatio;
     contentsInfo[fileIndex] = infoMap;
     setState(() {
-      contents.add(imageDisplay(_galleryImage, fileIndex, aspectRatio,));
+      contents.add(imageDisplay(
+        _galleryImage,
+        fileIndex,
+        aspectRatio,
+      ));
     });
     // compressImage(fileIndex);
   }
@@ -207,6 +237,11 @@ class _PostScreenState extends State<PostScreen> {
     double _aspectRatio = carouselData[1];
 
     setState(() {
+      contentsData.add({
+        'info': {'type': 'carousel', 'aspectRatio': _aspectRatio},
+        'content': carouselImages,
+        'widget': carouselDisplay(carouselImages, fileIndex, _aspectRatio)
+      });
       contents.add(carouselDisplay(carouselImages, fileIndex, _aspectRatio));
     });
   }
@@ -220,29 +255,6 @@ class _PostScreenState extends State<PostScreen> {
       ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
     return compressedImageFile;
   }
-
-  compressCameraVideo(File file) async {
-    Fvc.MediaInfo info = await Fvc.FlutterVideoCompress().compressVideo(
-      file.path,
-      quality:
-          Fvc.VideoQuality.HighestQuality, // default(VideoQuality.DefaultQuality)
-      deleteOrigin: false, // default(false)
-    );
-    return info;
-   
-    
-  }
-    compressGalleryVideo(File file) async {
-      Vc.MediaInfo info = await Vc.VideoCompress.compressVideo(
-      file.path,
-      quality: Vc.VideoQuality.MediumQuality,
-      deleteOrigin: false, 
-
-    );
-    return info;
-    
-  }
-
 
   Future<String> uploadImage(File file) async {
     StorageUploadTask uploadTask = storageRef
@@ -266,7 +278,7 @@ class _PostScreenState extends State<PostScreen> {
       downloadUrl = await storageSnap.ref.getDownloadURL();
       downloadUrls.add(downloadUrl);
     }
-    return  downloadUrls;
+    return downloadUrls;
   }
 
   Future<String> uploadVideo(dynamic mediaInfo) async {
@@ -294,7 +306,8 @@ class _PostScreenState extends State<PostScreen> {
     postsRef.document(postId).setData({
       'postId': postId,
       'ownerId': currentUser?.id,
-      'username': currentUser?.username,              //TODO username is not set in google accounts
+      'username':
+          currentUser?.username, //TODO username is not set in google accounts
       'photoUrl': currentUser.photoUrl,
       'contents': contents,
       'contentsInfo': contentsInfo,
@@ -342,45 +355,169 @@ class _PostScreenState extends State<PostScreen> {
     }
   }
 
+  Future<String> _uploadFile(filePath, folderName) async {
+    final file = new File(filePath);
+    final basename = p.basename(filePath);
+    final StorageReference ref =
+        FirebaseStorage.instance.ref().child(folderName).child(basename);
+    StorageUploadTask uploadTask = ref.putFile(file);
+    StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
+    String videoUrl = await taskSnapshot.ref.getDownloadURL();
+    return videoUrl;
+  }
+
+  Future<String> _uploadHLSFiles(dirPath, videoName) async {
+    final videosDir = Directory(dirPath);
+
+    var playlistUrl = '';
+
+    final files = videosDir.listSync();
+    for (FileSystemEntity file in files) {
+      final fileName = p.basename(file.path);
+      final exploded = fileName.split('.');
+      final fileExtension = exploded[exploded.length - 1];
+      if (fileExtension == 'm3u8') _updatePlaylistUrls(file, videoName);
+      final downloadUrl = await _uploadFile(file.path, videoName);
+
+      if (fileName == 'master.m3u8') {
+        playlistUrl = downloadUrl;
+      }
+    }
+    return playlistUrl;
+  }
+
+  void _updatePlaylistUrls(File file, String videoName) {
+    final lines = file.readAsLinesSync();
+    var updatedLines = List<String>();
+
+    for (final String line in lines) {
+      var updatedLine = line;
+      if (line.contains('.ts') || line.contains('.m3u8')) {
+        updatedLine = '$videoName%2F$line?alt=media';
+      }
+      updatedLines.add(updatedLine);
+    }
+    final updatedContents =
+        updatedLines.reduce((value, element) => value + '\n' + element);
+
+    file.writeAsStringSync(updatedContents);
+  }
+
+  Future<Map<String, String>> _processVideo(File file) async {
+    var stateProvider = Provider.of<SubmitState>(context, listen: false);
+
+    final FlutterFFmpeg _encoder = FlutterFFmpeg();
+
+    final info = await VideoProcessing.getMediaInformation(file.path);
+    print(info);
+    final aspectRatio = VideoProcessing.getAspectRatio(info);
+    double videoHeight;
+    double videoWidth;
+    if (aspectRatio >= 1) {
+      videoHeight = 540;
+      videoWidth = 540 * aspectRatio;
+    } else {
+      videoWidth = 540;
+      videoHeight = 540 / aspectRatio;
+    }
+
+    Directory appDocumentDir = await getExternalStorageDirectory();
+    final String outDir = '${appDocumentDir.path}/Videos/$postId';
+    final videosDir = new Directory(outDir);
+    videosDir.createSync(recursive: true);
+    String tempArguments = '';
+    videoWidth = 960;
+    videoHeight = 540;
+    print('${VideoProcessing.checkAudio(info)}');
+    if (VideoProcessing.checkAudio(info)) {
+      tempArguments = '-y -i ${file.path} ' +
+          '-preset fast -g 48 -sc_threshold 0 ' +
+          '-map 0:0 -map 0:1 -map 0:0 -map 0:1 ' +
+          '-r:v:1 24 -s:v:1 ${videoWidth.toInt()}x${videoHeight.toInt()} -c:v:1 libx265 -b:v:1 900k ' +
+          '-r:v:0 24 -s:v:0 ${(videoWidth * (360 / 540)).toInt()}x${(videoHeight * (360 / 540)).toInt()} -c:v:0 libx265 -b:v:0 145k ' +
+          '-c:a copy ' +
+          '-var_stream_map "v:0,a:0 v:1,a:1" ' +
+          '-master_pl_name master.m3u8 ' +
+          '-f hls -hls_time 6 -hls_list_size 0 ' +
+          '-hls_segment_filename "$outDir/%v_fileSequence_%d.ts" ' +
+          '$outDir/%v_playlistVariant.m3u8';
+    } else {
+      tempArguments = '-y -i ${file.path} ' +
+          '-preset fast -g 48 -sc_threshold 0 ' +
+          '-map 0:0 -map 0:0 ' +
+          '-r:v:1 24 -s:v:1 ${videoWidth.toInt()}x${videoHeight.toInt()} -c:v:1 libx265 -b:v:1 900k ' +
+          '-r:v:0 24 -s:v:0 ${(videoWidth * (360 / 540)).toInt()}x${(videoHeight * (360 / 540)).toInt()} -c:v:0 libx265 -b:v:0 145k ' +
+          '-var_stream_map "v:0 v:1" ' +
+          '-master_pl_name master.m3u8 ' +
+          '-f hls -hls_time 6 -hls_list_size 0 ' +
+          '-hls_segment_filename "$outDir/%v_fileSequence_%d.ts" ' +
+          '$outDir/%v_playlistVariant.m3u8';
+    }
+    await _encoder
+        .execute(tempArguments)
+        .then((rc) => print("FFmpeg process exited with rc $rc"));
+    // return;
+    // final outDirPath = '${extDir.path}/Videos/$videoName';
+    // final videosDir = new Directory(outDirPath);
+    // videosDir.createSync(recursive: true);
+
+    String thumbFilePath = await VideoProcessing.getThumb(
+        file.path,
+        (videoWidth * (300 / 540)).toInt(),
+        (videoHeight * (300 / 540)).toInt());
+
+    final String thumbUrl = await _uploadFile(thumbFilePath, 'thumbnail');
+    final String videoUrl = await _uploadHLSFiles(outDir, 'video_$postId');
+    print('$thumbUrl  $videoUrl');
+    return {'thumbUrl': thumbUrl, 'videoUrl': videoUrl};
+
+    // final videoInfo = VideoInfo(
+    //   videoUrl: videoUrl,
+    //   thumbUrl: thumbUrl,
+    //   coverUrl: thumbUrl,
+    //   aspectRatio: aspectRatio,
+    //   uploadedAt: DateTime.now().millisecondsSinceEpoch,
+    //   videoName: videoName,
+    // );
+
+    // await FirebaseProvider.saveVideo(videoInfo);
+  }
+
   handleSubmit(String topicName, String topicId, List<String> tags) async {
     setState(() {
       isUploading = true;
     });
     int x = 0;
-    for (int i = 1; i <= contentsMap.length; i++) {
-      if (contentType[i - 1] == 'null') {
-      } else if (contentType[i - 1] == 'link') {
-        firestoreContents['$x'] = contentsMap[i].text;
-        firestoreContentsInfo['$x'] = contentsInfo[i];
+    for (int i = 0; i < contentsData.length; i++) {
+      if (contentsData[i]['info']['type'] == 'null') {
+      } else if (contentsData[i]['info']['type'] == 'link') {
+        firestoreContents['$x'] = contentsData[i]['content'].text;
+        firestoreContentsInfo['$x'] = contentsData[i]['info'];
         x++;
-      } else if (contentType[i - 1] == 'text') {
-        firestoreContents['$x'] = contentsMap[i].text;
-        firestoreContentsInfo['$x'] = contentsInfo[i];
+      } else if (contentsData[i]['info']['type'] == 'text') {
+        firestoreContents['$x'] = contentsData[i]['content'].text;
+        firestoreContentsInfo['$x'] = contentsData[i]['info'];
         x++;
-      } else if (contentType[i - 1] == 'image') {
-        File imageFile = await compressImage(contentsMap[i]);
+      } else if (contentsData[i]['info']['type'] == 'image') {
+        File imageFile = await compressImage(contentsData[i]['content']);
         String mediaUrl = await uploadImage(imageFile);
         firestoreContents['$x'] = mediaUrl;
-        firestoreContentsInfo['$x'] = contentsInfo[i];
+        firestoreContentsInfo['$x'] = contentsData[i]['info'];
         x++;
-      } else if (contentType[i - 1] == 'video') {
-        dynamic videoMediaInfo ;
-       if(videoSources[i] == 'gallery'){  videoMediaInfo =  await compressGalleryVideo(contentsMap[i]);}
-       else{
-       videoMediaInfo =  await compressCameraVideo(contentsMap[i]);
-       }
-        String mediaUrl = await uploadVideo(videoMediaInfo);
-        firestoreContents['$x'] = mediaUrl;
-        firestoreContentsInfo['$x'] = contentsInfo[i];
+      } else if (contentsData[i]['info']['type'] == 'video') {
+        Map _videoData = await _processVideo(contentsData[i]['content']);
+        firestoreContents['$x'] = _videoData['videoUrl'];
+        contentsData[i]['info']['thumbUrl'] = _videoData['thumbUrl'];
+        firestoreContentsInfo['$x'] = contentsData[i]['info'];
         x++;
-      } else if (contentType[i - 1] == 'carousel') {
-        List<String> mediaUrl = await uploadCarousel(contentsMap[i]);
+      } else if (contentsData[i]['info']['type'] == 'carousel') {
+        List<String> mediaUrl =
+            await uploadCarousel(contentsData[i]['content']);
         firestoreContents['$x'] = mediaUrl;
-        firestoreContentsInfo['$x'] = contentsInfo[i];
+        firestoreContentsInfo['$x'] = contentsData[i]['info'];
         x++;
       }
     }
-
     await createPostInFirestore(
         contents: firestoreContents,
         title: titleController.text,
@@ -401,19 +538,6 @@ class _PostScreenState extends State<PostScreen> {
     Navigator.pop(context);
     Navigator.pop(context);
   }
-  
-   videoDisplayFunction(
-      File file, VideoPlayerController videoController, int index,String source) {
-    Map infoMap = {};
-    infoMap['type'] = 'video';
-    infoMap['aspectRatio'] = videoController.value.aspectRatio;
-    contentsInfo[index] = infoMap;
-    contentsMap[index] = file;
-    contentType.add('video');
-    videoSources[index] = source;
- 
-   
-  }
 
   Container textDisplay(TextEditingController textController, int index) {
     Map infoMap = {};
@@ -423,25 +547,20 @@ class _PostScreenState extends State<PostScreen> {
     contentType.add('text');
     print(contentsMap);
     return Container(
-        padding: EdgeInsets.all(10),
+        key: UniqueKey(),
+        padding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
         child: TextField(
           controller: textController,
           decoration:
-              InputDecoration(border: InputBorder.none, hintText: '...'),
+              InputDecoration(border: InputBorder.none, hintText: 'Text...'),
           keyboardType: TextInputType.multiline,
           maxLines: null,
         ));
   }
 
-  Container linkDisplay(TextEditingController linkController, int index) {
-    Map infoMap = {};
-    infoMap['type'] = 'link';
-    contentsInfo[index] = infoMap;
-    contentsMap[index] = linkController;
-    contentType.add('link');
-    print(contentsMap);
+  Container linkDisplay(TextEditingController linkController, bool isLoading,
+      {bool error}) {
     return Container(
-      
       padding: EdgeInsets.all(10),
       alignment: Alignment.center,
       child: TextField(
@@ -449,9 +568,25 @@ class _PostScreenState extends State<PostScreen> {
         controller: linkController,
         decoration: InputDecoration(
           hintText: 'Link',
+          hintStyle: TextStyle(
+              color: Theme.of(context).iconTheme.color.withOpacity(0.8)),
           contentPadding: EdgeInsets.symmetric(horizontal: 3),
+          suffixIcon: isLoading
+              ? Container(
+                  padding:
+                      EdgeInsets.only(right: 13, top: 13, bottom: 13, left: 13),
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor: AlwaysStoppedAnimation(Colors.blue),
+                  ),
+                )
+              : Container(
+                  width: 0,
+                ),
           prefixIcon: Icon(
-            Icons.insert_link,
+            FlutterIcons.link_fea,
             color: Colors.grey,
           ),
           border: OutlineInputBorder(),
@@ -464,51 +599,95 @@ class _PostScreenState extends State<PostScreen> {
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.grey, width: 3),
+            borderSide: BorderSide(
+                color: error == true ? Colors.red : Colors.grey, width: 3),
           ),
         ),
         keyboardType: TextInputType.url,
         maxLines: 1,
-        onSubmitted: verifyLink,
+        onSubmitted: (controller) {
+          verifyLink(linkController);
+        },
       ),
     );
   }
 
-  void verifyLink(String linkText) async {
-    final response = await head(linkText);
-    if (response.statusCode == 200) {
+  void verifyLink(TextEditingController linkController) async {
+    setState(() {
+      contentsData.firstWhere((element) {
+        if (element['content'] == linkController) {
+          return true;
+        }
+        return false;
+      })['widget'] = linkDisplay(linkController, true);
+    });
+    Response response;
+    // final response = await head(linkController.text);
+    // print('${response.statusCode}//////////////////////////////////////////////////////////////////////');
+    bool errorOccured = false;
+    try {
+      response = await head(linkController.text);
+    } catch (error) {
+      errorOccured = true;
+    }
+    if (!errorOccured && response.statusCode == 200) {
       setState(() {
-        contents.add(linkImageDisplay(linkText));
+        contents.add(linkImageDisplay(linkController.text));
+        contentsData.firstWhere((element) {
+          if (element['content'] == linkController) {
+            return true;
+          }
+          return false;
+        })['widget'] = linkImageDisplay(linkController.text);
+        //      contentsData.add({
+        //   'info': {'type':'link'},
+        //   'content':   linkController,
+        //   'widget':linkDisplay(linkController, fileIndex)
+        // });
+      });
+    } else {
+      setState(() {
+        contentsData.firstWhere((element) {
+          if (element['content'] == linkController) {
+            return true;
+          }
+          return false;
+        })['widget'] = linkDisplay(linkController, false, error: true);
+      });
+      await Future.delayed(Duration(seconds: 3));
+      setState(() {
+        contentsData.firstWhere((element) {
+          if (element['content'] == linkController) {
+            return true;
+          }
+          return false;
+        })['widget'] = linkDisplay(linkController, false, error: false);
       });
     }
   }
 
   Container linkImageDisplay(String link) {
     return Container(
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8),
-        ),
-        padding: EdgeInsets.symmetric(horizontal: 20),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(6),
+            color: Theme.of(context).canvasColor),
+        margin: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: LinkPreviewer(
-            link: link,
-            backgroundColor: Theme.of(context).canvasColor,
-            direction: ContentDirection.vertical,
-            bodyMaxLines: 3,
-            borderColor: Colors.white,
-            borderRadius: 8,
-            key: UniqueKey(),
-            titleFontSize: 20,
-          ),
-        ));
+            borderRadius: BorderRadius.circular(6),
+            child: LinkPreview(
+              url: link,
+              bodyStyle: TextStyle(fontSize: 13),
+              titleStyle: TextStyle(fontWeight: FontWeight.w500),
+              showMultimedia: true,
+            )));
   }
 
   Container imageDisplay(File file, int index, double aspectRatio) {
-    contentsMap[index] = file;
-    contentType.add('image');
+    contentsMap[index] = file; //
+    contentType.add('image'); //
     return Container(
       key: ValueKey(index),
-      child: Stack(alignment: Alignment.centerRight, children: <Widget>[
+      child: 
         AspectRatio(
           aspectRatio: aspectRatio,
           child: Container(
@@ -522,37 +701,7 @@ class _PostScreenState extends State<PostScreen> {
             ),
           ),
         ),
-        Positioned(
-          top: 0,
-          right: 0,
-          child: Container(
-            margin: EdgeInsets.all(8),
-            decoration: BoxDecoration(
-                color: Colors.black38, borderRadius: BorderRadius.circular(25)),
-            child: IconButton(
-              icon: Icon(
-                Icons.clear,
-                color: Colors.white,
-                size: 18,
-              ),
-              onPressed: () {
-                setState(() {
-                  contents.removeAt(index);
-                  contents.insert(
-                      index,
-                      Container(
-                        height: 0,
-                      ));
-                  contentsMap[index] = null;
-                  contentType.removeAt(index);
-                  contentType.insert(index, 'null');
-                  contentsInfo[index] = null;
-                });
-              },
-            ),
-          ),
-        ),
-      ]),
+       
     );
   }
 
@@ -586,26 +735,29 @@ class _PostScreenState extends State<PostScreen> {
     contentsMap[index] = images;
     contentType.add('carousel');
     return Container(
-        height: MediaQuery.of(context).size.width / aspectRatio,
-        key: UniqueKey(),
-        child: Carousel(
-          dotVerticalPadding: 0,
-          dotSize: 6,
-          dotIncreaseSize: 1.2,
-          dotIncreasedColor: Colors.blue.withOpacity(0.7),
-          dotColor: Colors.white,
-          showIndicator: true,
-          dotPosition: DotPosition.bottomCenter,
-          dotSpacing: 15,
-          boxFit: BoxFit.fitWidth,
-          dotBgColor: Colors.transparent,
-          autoplay: false,
-          overlayShadow: false,
-          moveIndicatorFromBottom: 20,
-          images: List.generate(images.length, (i) {
-            return FileImage(images[i]);
-          }),
-        ));
+      child: 
+          Container(
+              height: MediaQuery.of(context).size.width / aspectRatio,
+              key: UniqueKey(),
+              child: Carousel(
+                dotVerticalPadding: 0,
+                dotSize: 6,
+                dotIncreaseSize: 1.2,
+                dotIncreasedColor: Colors.blue.withOpacity(0.7),
+                dotColor: Colors.white,
+                showIndicator: true,
+                dotPosition: DotPosition.bottomCenter,
+                dotSpacing: 15,
+                boxFit: BoxFit.fitWidth,
+                dotBgColor: Colors.transparent,
+                autoplay: false,
+                overlayShadow: false,
+                moveIndicatorFromBottom: 20,
+                images: List.generate(images.length, (i) {
+                  return FileImage(images[i]);
+                }),
+              ))
+    );
   }
 
   Widget createPostItemButton(
@@ -622,71 +774,80 @@ class _PostScreenState extends State<PostScreen> {
           );
   }
 
-
   @override
   void dispose() {
     _videoPlayerController?.dispose();
-      _cameraVideoPlayerController?.dispose();
-      flickManager?.dispose();
+    _cameraVideoPlayerController?.dispose();
+    flickManager?.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
+    List<Widget> _contents = [];
+    print(contentsData);
+    for (int i = 0; i < contentsData.length; i++) {
+      _contents.add(
+        GestureDetector( onLongPress:(){
+             showContentSettingsSheet(i+1);
+          },
+          child:contentsData[i]['widget'])
+        );
+    }
     return Scaffold(
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: AppBar(
-          elevation: 0.5,
-          leading: IconButton(
+            elevation: 0.5,
+            leading: IconButton(
                 icon: Icon(
                   Icons.clear,
                 ),
                 onPressed: () {
                   Navigator.pop(context);
                 }),
-                    centerTitle: true,
-          title: Card(
-            margin: EdgeInsets.symmetric(vertical: 10),
-            elevation: 1,
-            semanticContainer: false,
-            color: Theme.of(context).backgroundColor,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+            centerTitle: true,
+            title: Card(
+                margin: EdgeInsets.symmetric(vertical: 10),
+                elevation: 1,
+                semanticContainer: false,
+                color: Theme.of(context).backgroundColor,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25)),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
-                  
-                          IconButton(icon:Icon( Icons.image),
-                        onPressed: () {
-                              showDialog(
-  context: context,
-  builder: (BuildContext context) => postItemsDialog(
-       {
-         'Camera':  handleTakePhoto,
-         'Device':       handleChooseImageFromGallery, 
-         'Multiple': handleCreateCarousel,
-       },
-       context
-      ),
-);
-                        },
-                        ),
-                        IconButton(icon:Icon( Icons.videocam),
-                        onPressed: () {
-                              showDialog(
-  context: context,
-  builder: (BuildContext context) => postItemsDialog(
-       {
-         'Camera':  handleTakeVideo,
-         'Device':       handleChooseVideoFromGallery, 
-       },
-       context
-      ),
-);
-                        },
-                        ),
-                  
+                    IconButton(
+                      icon: Icon(FlutterIcons.image_fea),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) => postItemsDialog({
+                            'Camera': handleTakePhoto,
+                            'Device': handleChooseImageFromGallery,
+                            'Multiple': handleCreateCarousel,
+                          }, context),
+                        );
+                      },
+                    ),
+                    IconButton(
+                      padding: EdgeInsets.only(top: 2),
+                      icon: Icon(
+                        FlutterIcons.video_fea,
+                        size: 25.5,
+                      ),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) => postItemsDialog({
+                            'Camera': handleTakeVideo,
+                            'Device': handleChooseVideoFromGallery,
+                          }, context),
+                        );
+                      },
+                    ),
                     IconButton(
                         icon: Icon(
-                          Icons.text_fields,
+                          FlutterIcons.text_ent,
                         ),
                         onPressed: () {
                           TextEditingController textController =
@@ -694,13 +855,19 @@ class _PostScreenState extends State<PostScreen> {
                           setState(() {
                             textControllers.add(textController);
                             fileIndex++;
+                            contentsData.add({
+                              'info': {'type': 'text'},
+                              'content': textController,
+                              'widget': textDisplay(textController, fileIndex)
+                            });
                             contents
                                 .add(textDisplay(textController, fileIndex));
                           });
                         }),
-                  IconButton(
+                    IconButton(
                         icon: Icon(
-                          Icons.link,
+                          FlutterIcons.link_fea,
+                          size: 21,
                         ),
                         onPressed: () {
                           TextEditingController linkController =
@@ -708,15 +875,17 @@ class _PostScreenState extends State<PostScreen> {
                           setState(() {
                             linkControllers.add(linkController);
                             fileIndex++;
-                            contents
-                                .add(linkDisplay(linkController, fileIndex));
+                            contentsData.add({
+                              'info': {'type': 'link'},
+                              'content': linkController,
+                              'widget': linkDisplay(linkController, false)
+                            });
                           });
                         }),
                   ],
-                )
-          ),
-          actions: <Widget>[
-            IconButton(
+                )),
+            actions: <Widget>[
+              IconButton(
                 onPressed: () {
                   Navigator.of(context)
                       .pushNamed(SelectTopicScreen.routeName, arguments: {
@@ -724,142 +893,197 @@ class _PostScreenState extends State<PostScreen> {
                   });
                 },
                 icon: Icon(
-                  FlutterIcons.ios_arrow_forward_ion,color: Colors.blue,size: 30,
-              ),)
-          ],
-          backgroundColor: Theme.of(context).canvasColor                            //TODO blue gradient
-        ),
-        body: ListView(
-          children: <Widget>[
-            PostScreenCommonWidget(
-              captionController: titleController,
-              currentUser: currentUser,
+                  FlutterIcons.ios_arrow_forward_ion,
+                  color: Colors.blue,
+                  size: 30,
+                ),
+              )
+            ],
+            backgroundColor: Theme.of(context).canvasColor //TODO blue gradient
             ),
-            Column(
-              children: contents,
-            )
-          ],
+        body: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                width: double.infinity,
+                child: TextField(
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                  maxLines: 2,
+                  minLines: 1,
+                  controller: titleController,
+                  decoration: InputDecoration(
+                    hintText: "Title",
+                    hintStyle: TextStyle(
+                        color:
+                            Theme.of(context).iconTheme.color.withOpacity(0.8)),
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              Divider(
+                color: Colors.grey,
+                height: 1,
+                thickness: 0.3,
+              ),
+              if (_contents.length > 0)
+                Column(
+                  children: _contents,
+                )
+              else
+                Container(
+                  height: MediaQuery.of(context).size.height * 0.35,
+                  alignment: Alignment.bottomCenter,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Icon(
+                          FlutterIcons.addfile_ant,
+                          size: 35,
+                        ),
+                      ),
+                      Text(
+                        'Add Content',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ),
+              SizedBox(
+                height: 30,
+              )
+            ],
+          ),
         ));
   }
-  postItemsDialog(Map functions,BuildContext context) {
 
-    return Dialog(insetPadding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width*0.2),
+  postItemsDialog(Map functions, BuildContext context) {
+    return Dialog(
+      insetPadding: EdgeInsets.symmetric(
+          horizontal: MediaQuery.of(context).size.width * 0.2),
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-      ),      
+        borderRadius: BorderRadius.circular(15),
+      ),
       elevation: 0.0,
       backgroundColor: Colors.transparent,
       child: Container(
-  padding: EdgeInsets.symmetric(
-    vertical: 0,
-    horizontal: 0
-  ),
-  decoration: new BoxDecoration(
-    color: Theme.of(context).canvasColor,
-    shape: BoxShape.rectangle,
-    borderRadius: BorderRadius.circular(15),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black12,
-        blurRadius: 10.0,
-        offset: const Offset(0.0, 5.0),
-      ),
-    ],
-  ),
-  child: ListView.builder(
-    physics: NeverScrollableScrollPhysics(),
-shrinkWrap: true,
-    itemBuilder: (_,i){
-      return InkWell(
-  
-        onTap: (){
-          Navigator.of(context).pop();
-          functions.values.elementAt(i)();}
-         ,
+        padding: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+        decoration: new BoxDecoration(
+          color: Theme.of(context).canvasColor,
+          shape: BoxShape.rectangle,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 10.0,
+              offset: const Offset(0.0, 5.0),
+            ),
+          ],
+        ),
+        child: ListView.builder(
+          physics: NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemBuilder: (_, i) {
+            return InkWell(
+              onTap: () {
+                Navigator.of(context).pop();
+                functions.values.elementAt(i)();
+              },
               child: Container(
                 alignment: Alignment.center,
-                decoration: BoxDecoration(border: Border(bottom: BorderSide(width: 0.3,color: Colors.grey))),
-                child: Text(functions.keys.elementAt(i),
-              style: TextStyle(fontSize: 18),),
-        padding: EdgeInsets.symmetric(vertical: 15,horizontal: 10),
+                decoration: BoxDecoration(
+                    border: Border(
+                        bottom: BorderSide(width: 0.3, color: Colors.grey))),
+                child: Text(
+                  functions.keys.elementAt(i),
+                  style: TextStyle(fontSize: 18),
+                ),
+                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+              ),
+            );
+          },
+          itemCount: functions.length,
         ),
-      );
-    },
-    itemCount: functions.length,
-  ),
-),
+      ),
     );
-  
-}
-}
+  }
 
- class VideoDisplay extends StatefulWidget {
-   final FlickManager flickManager;
-   VideoDisplay(this.flickManager);
+  showContentSettingsSheet(int index) {
 
-  @override
-  _VideoDisplayState createState() => _VideoDisplayState();
-}
-
-class _VideoDisplayState extends State<VideoDisplay> {
-   @override
-   Widget build(BuildContext context) {
-     return  VisibilityDetector(
-      key: ObjectKey(widget.flickManager),
-      onVisibilityChanged: (visibility) {
-        if (visibility.visibleFraction == 0 && this.mounted) {
-          widget.flickManager.flickControlManager.autoPause();
-        } else if (visibility.visibleFraction == 1) {
-          widget.flickManager.flickControlManager.autoResume();
-        }
-      },
-      child: Container(
-        child: FlickVideoPlayer(
-         
-          flickManager: widget.flickManager,
-          wakelockEnabledFullscreen: true,
-          wakelockEnabled: true,
-
-flickVideoWithControls: FlickVideoWithControls(
-            playerLoadingFallback: Positioned.fill(
-              child: Stack(
-                children: <Widget>[
-                  Positioned.fill(
-                    child:Container(
-                      color: Colors.black,
-                    ),
-                  ),
-                  Positioned(
-                    right: 10,
-                    top: 10,
+          showModalBottomSheet(
+              context: context,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              builder: (context) => ClipRRect(
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        topRight: Radius.circular(10)),
                     child: Container(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        backgroundColor: Colors.white,
-                        strokeWidth: 4,
+                      width: MediaQuery.of(context).size.width,
+                      
+                      decoration: new BoxDecoration(
+                        color: Theme.of(context).canvasColor,
+                      ),
+                      child: ListView(shrinkWrap: true,
+                        children: <Widget>[
+                          SizedBox(
+                            height: 5,
+                          ),
+                          ListTile(
+                            onTap: () {
+                              setState(() {
+                                contentsData.removeAt(index - 1);
+                                Navigator.pop(context);
+                              });
+                            },
+                            leading: Icon(
+                              Icons.clear,
+                              color: Colors.red,
+                            ),
+                            title: Text('Remove'),
+                          ),
+                          if (index > 1)
+                            ListTile(
+                              onTap: () {
+                                setState(() {
+                                  var upperContent = contentsData[index - 2];
+                                  contentsData[index - 2] =
+                                      contentsData[index - 1];
+                                  contentsData[index - 1] = upperContent;
+                                  Navigator.pop(context);
+                                });
+                              },
+                              title: Text('Move Up'),
+                              leading: Icon(
+                                Icons.arrow_upward,
+                                color: Theme.of(context).iconTheme.color,
+                              ),
+                            ),
+                          if (index < contentsData.length)
+                            ListTile(
+                              onTap: () {
+                                setState(() {
+                                  var lowerContent = contentsData[index];
+                                  contentsData[index] = contentsData[index - 1];
+                                  contentsData[index - 1] = lowerContent;
+                                  Navigator.pop(context);
+                                });
+                              },
+                              leading: Icon(
+                                Icons.arrow_downward,
+                                color: Theme.of(context).iconTheme.color,
+                              ),
+                              title: Text('Move Down'),
+                            ),SizedBox(height: 10,)
+                        ],
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            controls: PortraitVideoControls(pauseOnTap: true,
-            ),
-          ),
-          flickVideoWithControlsFullscreen: FlickVideoWithControls(
-
-            playerLoadingFallback: Center(
-                child: Icon(Icons.warning)),
-            controls: LandscapeVideoControls(),
-            iconThemeData: IconThemeData(
-              size: 40,
-              color: Colors.white,
-            ),
-            textStyle: TextStyle(fontSize: 16, color: Colors.white),
-          ),
-     ),)
-      );
-   }
+                  ));
+        
+  }
 }
-

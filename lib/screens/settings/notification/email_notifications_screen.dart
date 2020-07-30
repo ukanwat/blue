@@ -44,7 +44,7 @@ class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Scaffold(backgroundColor: Theme.of(context).backgroundColor,
       appBar: settingsHeader(context, 'Email Notifications'),
       body: loading
           ? circularProgress()
@@ -55,7 +55,10 @@ class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
                   feedbacks,
                   (newValue) {
                      preferences.setBool('email_feedbacks', newValue);
-                    feedbacks = activities;
+                      setState(() {
+                   
+                    feedbacks = newValue;
+                         });
                      preferencesRef.document(currentUser.id).setData({'email_feedbacks': newValue},merge: true);
                   },
                   description: 'Give Feedback on app',
@@ -64,8 +67,12 @@ class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
                   'Announcement Emails',
                   announcements,
                   (newValue) {
+                    
                      preferences.setBool('email_announcements', newValue);
-                       announcements = activities;
+                     setState(() {
+                   
+                       announcements = newValue;
+                     });
                         preferencesRef.document(currentUser.id).setData({'email_announcements': newValue},merge: true);
                   },
                   description: 'Get new update announcements',
@@ -75,7 +82,10 @@ class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
                   activities,
                   (newValue) {
                      preferences.setBool('email_activities', newValue);
-                       activities = activities;
+                      setState(() {
+                   
+                       activities = newValue;
+                            });
                         preferencesRef.document(currentUser.id).setData({'email_activities': newValue},merge: true);
                   },
                   description: 'Get Notifications related to your activity',

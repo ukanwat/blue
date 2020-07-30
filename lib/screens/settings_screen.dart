@@ -6,6 +6,7 @@ import 'package:blue/screens/license_screen.dart';
 import 'package:blue/screens/settings/about/acknowledgements_screen.dart';
 import 'package:blue/screens/settings/about/privacy_policy_screen.dart';
 import 'package:blue/screens/settings/about/terms_of_service_screen.dart';
+import 'package:blue/screens/settings/advanced_settings/font_screen.dart';
 import 'package:blue/screens/settings/general/account_screen.dart';
 import 'package:blue/screens/settings/advanced_settings/autoplay_screen.dart';
 import 'package:blue/screens/settings/advanced_settings/content_cache_screen.dart';
@@ -108,6 +109,8 @@ color: Theme.of(context).canvasColor,
           ),
           settingsPageNavigationTile(
               context, 'Autoplay', AutoplayScreen.routeName),
+                   settingsPageNavigationTile(
+              context, 'Font', FontScreen.routeName),
           settingsPageNavigationTile(
               context, 'Content Cache', ContentCacheScreen.routeName),
               Divider(thickness: 6,

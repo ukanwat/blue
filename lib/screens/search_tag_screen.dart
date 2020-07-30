@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 
 class SearchTagScreen extends StatefulWidget {
   static const routeName = 'search-tag';
@@ -10,6 +11,7 @@ class SearchTagScreen extends StatefulWidget {
 class _SearchTagScreenState extends State<SearchTagScreen> {
   TextEditingController tagSearchController = TextEditingController();
   String searchTerm;
+  List<String> tagResults = [];
   InkWell tagTile(String tag){
     return 
      InkWell(
@@ -25,7 +27,7 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
        appBar: AppBar(titleSpacing: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).backgroundColor,
         elevation: 0,leading: CupertinoNavigationBarBackButton(),automaticallyImplyLeading: false,
         title: Padding(
           padding: const EdgeInsets.only(right: 20.0, left: 0),
@@ -34,7 +36,7 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
             alignment: Alignment.center,
             child: TextFormField(
               textAlignVertical: TextAlignVertical.bottom,
-              style: TextStyle(fontSize: 18),
+              style: TextStyle(fontSize: 18,),
               onChanged: (value){
                 setState(() {
           searchTerm = value;
@@ -43,17 +45,18 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
               controller: tagSearchController,
               decoration: InputDecoration(
                 hintText: 'Search Tags',
-                fillColor: Colors.grey[300],
+                hintStyle: TextStyle(fontSize: 18,color: Theme.of(context).iconTheme.color.withOpacity(0.8)),
+                fillColor: Theme.of(context).cardColor,
                 filled: true,
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
-                  borderSide: BorderSide(width: 0, color: Colors.white),
+                  borderRadius: BorderRadius.circular(13),
+                  borderSide: BorderSide(width: 0, color: Theme.of(context).backgroundColor),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
-                  borderSide: BorderSide(width: 0, color: Colors.white),
+                  borderRadius: BorderRadius.circular(13),
+                  borderSide: BorderSide(width: 0, color: Theme.of(context).backgroundColor),
                 ),
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: Icon(FlutterIcons.search_oct,color: Theme.of(context).iconTheme.color,),
                 
               ),
               onFieldSubmitted: null,
@@ -76,12 +79,27 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
        },
             child: Padding(
          padding: EdgeInsets.symmetric(vertical: 5),
-         child: Text('#$searchTerm'
+         child: Text(searchTerm == null?'':'#$searchTerm'
          ,style: TextStyle(
            fontSize: 18
          ),
          )),
-     )
+     ),if(tagResults.isEmpty)Container(
+  height: MediaQuery.of(context).size.height*0.4,
+  alignment: Alignment.bottomCenter,
+  child:  Stack
+  (
+    children: <Widget>[
+      Padding(
+        padding: const EdgeInsets.all(14.5),
+        child: Icon(FlutterIcons.hashtag_faw5s,size: 16,),
+      ),
+       Icon(FlutterIcons.search_fea,size: 50,),
+    ],
+  ),
+    
+  ),
+
             
             ],
       ),

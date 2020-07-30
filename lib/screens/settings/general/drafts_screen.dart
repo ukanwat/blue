@@ -10,7 +10,7 @@ class DraftsScreen extends StatefulWidget {
 class _DraftsScreenState extends State<DraftsScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Scaffold(backgroundColor: Theme.of(context).backgroundColor,
       appBar: settingsHeader(context, 'Drafts'),
       body: ListView(
         children: <Widget>[

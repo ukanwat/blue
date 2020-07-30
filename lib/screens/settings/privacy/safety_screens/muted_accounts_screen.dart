@@ -48,7 +48,7 @@ accountsDocSnapshots = await Future.wait(accountFutures);
      }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Scaffold(backgroundColor: Theme.of(context).backgroundColor,
       appBar: settingsHeader(
       context  , 'Muted Accounts'),
       body: loading? circularProgress(): ListView.builder(itemBuilder: (_,i){

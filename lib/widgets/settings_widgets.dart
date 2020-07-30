@@ -50,13 +50,13 @@ SwitchListTile settingsSwitchListTile(
   );
 }
 
-GestureDetector settingsPageNavigationTile(
+InkWell settingsPageNavigationTile(
     BuildContext context, String title, String routeName) {
-  return GestureDetector(
+  return InkWell(
     onTap: () {
       Navigator.pushNamed(context, routeName);
     },
-    child: Container(
+    child: Container(width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       child: Text(
             title,
@@ -66,12 +66,12 @@ GestureDetector settingsPageNavigationTile(
   );
 }
  
-GestureDetector settingsActionTile(
+InkWell settingsActionTile(
     BuildContext context, String title, Function function) {
-  return GestureDetector(
+  return InkWell(
     onTap: function,
-    child: Container(alignment: Alignment.centerLeft,
-      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+    child: Container(alignment: Alignment.centerLeft,width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       child: 
           Text(
             title,
