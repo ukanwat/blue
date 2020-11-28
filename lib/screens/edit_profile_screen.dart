@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:blue/main.dart';
 import 'package:blue/screens/profile_image_crop_screen.dart';
+import 'package:blue/widgets/custom_image.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,7 +22,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditProfileScreen extends StatefulWidget {
   static const routeName = '/edit-profile';
-
   @override
   _EditProfileScreenState createState() => _EditProfileScreenState();
 }
@@ -38,14 +38,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _bioValid = true;
   String profilePictureUrl;
   String avatarUrl;
+  String headerUrl;
   File croppedImage;
+  File headerImage;
   bool _websiteValid = true;
   getUser() async {
     setState(() {
       isLoading = true;
     });
 
- 
     DocumentSnapshot doc = await usersRef.document(currentUser.id).get();
     user = User.fromDocument(doc);
     displayNameController.text = user.displayName;
@@ -82,7 +83,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       bioController.text.trim().length > 300
           ? _bioValid = false
           : _bioValid = true;
-      Uri.parse(websiteController.text.trim()).isAbsolute
+      Uri.parse(websiteController.text.trim()).isAbsolute //TODO
           ? _websiteValid = true
           : _websiteValid = false;
     });
@@ -94,7 +95,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final path = tempDir.path;
       String avatarId = Uuid().v4();
       String imageId = Uuid().v4();
+      if (headerImage != null) {
+        String headerId = Uuid().v4();
+        final Im.Image headerFile =
+            Im.decodeImage(headerImage.readAsBytesSync());
+
+        final compressedHeaderFile = File('$path/img_$headerId.jpg')
+          ..writeAsBytesSync(Im.encodeJpg(headerFile, quality: 85));
+        StorageUploadTask headerUploadTask = storageRef
+            .child("profile_$headerId.jpg")
+            .putFile(compressedHeaderFile, StorageMetadata(contentType: 'jpg'));
+        StorageTaskSnapshot headerStorageSnap =
+            await headerUploadTask.onComplete;
+        String headerDownloadUrl = await headerStorageSnap.ref.getDownloadURL();
+        headerUrl = headerDownloadUrl;
+      }
+
       final Im.Image imageFile = Im.decodeImage(croppedImage.readAsBytesSync());
+
       final compressedImageFile = File('$path/img_$imageId.jpg')
         ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
       final Im.Image avatarFile = Im.copyResize(
@@ -102,28 +120,45 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           width: 100);
       final compressedAvatarFile = File('$path/img_$avatarId.jpg')
         ..writeAsBytesSync(Im.encodeJpg(avatarFile, quality: 85));
+
       StorageUploadTask imageUploadTask = storageRef
           .child("profile_$imageId.jpg")
           .putFile(compressedImageFile, StorageMetadata(contentType: 'jpg'));
-
       StorageUploadTask avatarUploadTask = storageRef
           .child("profile_$avatarId.jpg")
           .putFile(compressedAvatarFile, StorageMetadata(contentType: 'jpg'));
+
       StorageTaskSnapshot imageStorageSnap = await imageUploadTask.onComplete;
       StorageTaskSnapshot avatarStorageSnap = await avatarUploadTask.onComplete;
+
       String imageDownloadUrl = await imageStorageSnap.ref.getDownloadURL();
       String avatarDownloadUrl = await avatarStorageSnap.ref.getDownloadURL();
+
       profilePictureUrl = imageDownloadUrl;
       avatarUrl = avatarDownloadUrl;
-      await usersRef.document(currentUser.id).updateData(
-        {
-          'displayName': displayNameController.text,
-          'bio': bioController.text,
-          'website': websiteController.text.trim(),
-          'photoUrl': profilePictureUrl,
-          'avatarUrl': avatarUrl,
-        },
-      );
+      if (headerUrl == null) {
+        await usersRef.document(currentUser.id).updateData(
+          {
+            'displayName': displayNameController.text,
+            'bio': bioController.text,
+            'website': websiteController.text.trim(),
+            'photoUrl': profilePictureUrl,
+            'avatarUrl': avatarUrl,
+          },
+        );
+      } else {
+        await usersRef.document(currentUser.id).updateData(
+          {
+            'displayName': displayNameController.text,
+            'bio': bioController.text,
+            'website': websiteController.text.trim(),
+            'photoUrl': profilePictureUrl,
+            'avatarUrl': avatarUrl,
+            'headerUrl': headerUrl,
+          },
+        );
+      }
+
       SnackBar snackbar = SnackBar(
         content: Text('Profile Updated!'),
       );
@@ -135,11 +170,38 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _displayNameValid &&
         _bioValid &&
         _websiteValid) {
-      await usersRef.document(currentUser.id).updateData({
-        'displayName': displayNameController.text,
-        'bio': bioController.text,
-        'website': websiteController.text.trim(),
-      });
+      if (headerImage != null) {
+        final tempDir = await getTemporaryDirectory();
+        final path = tempDir.path;
+        String headerId = Uuid().v4();
+        final Im.Image headerFile =
+            Im.decodeImage(headerImage.readAsBytesSync());
+
+        final compressedHeaderFile = File('$path/img_$headerId.jpg')
+          ..writeAsBytesSync(Im.encodeJpg(headerFile, quality: 85));
+        StorageUploadTask headerUploadTask = storageRef
+            .child("profile_$headerId.jpg")
+            .putFile(compressedHeaderFile, StorageMetadata(contentType: 'jpg'));
+        StorageTaskSnapshot headerStorageSnap =
+            await headerUploadTask.onComplete;
+        String headerDownloadUrl = await headerStorageSnap.ref.getDownloadURL();
+        headerUrl = headerDownloadUrl;
+      }
+      if (headerUrl == null) {
+        await usersRef.document(currentUser.id).updateData({
+          'displayName': displayNameController.text,
+          'bio': bioController.text,
+          'website': websiteController.text.trim(),
+        });
+      } else {
+        await usersRef.document(currentUser.id).updateData({
+          'displayName': displayNameController.text,
+          'bio': bioController.text,
+          'website': websiteController.text.trim(),
+          'headerUrl': headerUrl,
+        });
+      }
+
       SnackBar snackbar = SnackBar(
         content: Text('Profile Updated!'),
       );
@@ -147,7 +209,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       Navigator.pop(context);
       _scaffoldKey.currentState.showSnackBar(snackbar);
     }
-
     Map currentUserMap = {
       'id': currentUser.id,
       'username': currentUser.username,
@@ -155,44 +216,57 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       'displayName': displayNameController.text,
       'bio': bioController.text,
       'website': websiteController.text.trim(),
-      'photoUrl':
-          croppedImage == null ? currentUser.photoUrl : profilePictureUrl,
+      'photoUrl': croppedImage == null
+          ? currentUser.photoUrl
+          : profilePictureUrl, //TODO
+      'headerUrl': headerUrl == null ? currentUser.headerUrl : headerUrl,
     };
     String currentUserString = json.encode(currentUserMap);
     print(currentUserMap);
     SharedPreferences preferences = await SharedPreferences.getInstance();
 
     preferences.setString('currentUser', currentUserString);
-    Map currentUserMapGet = json.decode(preferences.get('currentUser')) ;
-  currentUser = User(
-    id: currentUserMapGet['id'],
-    bio: currentUserMapGet['bio'],
-    displayName: currentUserMapGet['displayName'],
-    email: currentUserMapGet['email'],
-    photoUrl: currentUserMapGet['photoUrl'],
-    username: currentUserMapGet['username'],
-    website: currentUserMapGet['website'],
-
-
-  );
+    Map currentUserMapGet = json.decode(preferences.get('currentUser'));
+    currentUser = User(
+        id: currentUserMapGet['id'],
+        bio: currentUserMapGet['bio'],
+        displayName: currentUserMapGet['displayName'],
+        email: currentUserMapGet['email'],
+        photoUrl: currentUserMapGet['photoUrl'],
+        username: currentUserMapGet['username'],
+        website: currentUserMapGet['website'],
+        headerUrl: currentUserMapGet['headerUrl']);
   }
 
   updateProfilePicture() async {
     File imageFile;
     var picker = ImagePicker();
-    var pickedFile = await picker.getImage(source: ImageSource.gallery);
+    var pickedFile = await picker.getImage(
+        source: ImageSource.gallery, maxHeight: 500, maxWidth: 1000);
+    if (pickedFile == null) return;
     imageFile = File(pickedFile.path);
-    // if (imageFile != null) {
-    //   setState(() {
-    //     state = AppState.picked;
-    //   });
-    // }
+
     await Navigator.of(context)
         .pushNamed(ProfileImageCropScreen.routeName, arguments: imageFile)
         .then((value) {
+      if (value == null) return;
       setState(() {
         croppedImage = value;
       });
+    });
+  }
+
+  updateHeaderPicture() async {
+    File headerFile;
+    var picker = ImagePicker();
+    var pickedFile =
+        await picker.getImage(source: ImageSource.gallery, imageQuality: 85);
+    if (pickedFile == null) return;
+    headerFile = File(pickedFile.path);
+
+    if (headerFile == null) return;
+    setState(() {
+      headerImage = headerFile;
     });
   }
 
@@ -267,6 +341,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print(currentUser.headerUrl);
+    print('thfthfthfh');
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       key: _scaffoldKey,
@@ -303,39 +379,142 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     children: <Widget>[
                       Padding(
                         padding: EdgeInsets.only(
-                          top: 16.0,
-                          bottom: 8.0,
+                          bottom: 60.0,
                         ),
-                        child: Container(
-                          height: 100,
-                          width: 100,
-                          child: Center(
-                            child: Stack(
-                              children: <Widget>[
-                                CircleAvatar(
-                                  radius: 50.0,
-                                  backgroundImage: croppedImage != null
-                                      ? FileImage(croppedImage)
-                                      : CachedNetworkImageProvider(
-                                          user.photoUrl,
+                        child: Stack(
+                          overflow: Overflow.visible,
+                          children: <Widget>[
+                            if (headerImage == null)
+                              GestureDetector(
+                                  onTap: updateHeaderPicture,
+                                  child: Stack(
+                                    children: <Widget>[
+                                      Container(
+                                        child: currentUser.headerUrl == null
+                                            ? Container(
+                                                height: 140,
+                                                color: Colors.grey,
+                                                width: double.infinity,
+                                              )
+                                            : Container(
+                                                height: 140,
+                                                child: cachedNetworkImage(
+                                                    context,
+                                                    currentUser.headerUrl),
+                                                width: double.infinity,
+                                              ),
+                                      ),
+                                      Positioned.fill(
+                                          child: Container(
+                                        width: double.infinity,
+                                        height: 140,
+                                        color:
+                                            Colors.grey[900].withOpacity(0.6),
+                                        child: Container(
+                                          margin: EdgeInsets.only(
+                                              top: 20,
+                                              bottom: 75,
+                                              left: 100,
+                                              right: 100),
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(15),
+                                              border: Border.all(
+                                                  color: Colors.white,
+                                                  width: 3)),
+                                          padding: EdgeInsets.all(10),
+                                          child: Center(
+                                              child: Text(
+                                            'Add Header Image',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16),
+                                          )),
                                         ),
-                                ),
-                                InkWell(
-                                  onTap: updateProfilePicture,
-                                  child: Container(
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Color.fromRGBO(0, 0, 0, 0.1),
-                                    ),
-                                    height: 100,
-                                    width: 100,
-                                    child: Icon(Icons.add_a_photo),
+                                      ))
+                                    ],
+                                  ))
+                            else
+                              GestureDetector(
+                                  onTap: updateHeaderPicture,
+                                  child: Stack(
+                                    children: <Widget>[
+                                      Container(
+                                        height: 140,
+                                        child: Image.file(
+                                          headerImage,
+                                          fit: BoxFit.cover,
+                                        ),
+                                        width: double.infinity,
+                                      ),
+                                      Positioned.fill(
+                                          child: Container(
+                                        width: double.infinity,
+                                        height: 140,
+                                        color:
+                                            Colors.grey[900].withOpacity(0.6),
+                                        child: Container(
+                                          margin: EdgeInsets.only(
+                                              top: 20,
+                                              bottom: 75,
+                                              left: 100,
+                                              right: 100),
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(15),
+                                              border: Border.all(
+                                                  color: Colors.white,
+                                                  width: 3)),
+                                          padding: EdgeInsets.all(10),
+                                          child: Center(
+                                              child: Text(
+                                            'Replace Header Image',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16),
+                                          )),
+                                        ),
+                                      ))
+                                    ],
+                                  )),
+                            Positioned(
+                              top: 80,
+                              left: MediaQuery.of(context).size.width / 2 - 60,
+                              child: Container(
+                                height: 120,
+                                width: 120,
+                                child: Center(
+                                  child: Stack(
+                                    children: <Widget>[
+                                      CircleAvatar(
+                                        radius: 60.0,
+                                        backgroundImage: croppedImage != null
+                                            ? FileImage(croppedImage)
+                                            : CachedNetworkImageProvider(
+                                                user.photoUrl,
+                                              ),
+                                      ),
+                                      InkWell(
+                                        onTap: updateProfilePicture,
+                                        child: Container(
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Color.fromRGBO(0, 0, 0, 0.1),
+                                          ),
+                                          height: 120,
+                                          width: 120,
+                                          child: Icon(Icons.add_a_photo),
+                                        ),
+                                      )
+                                    ],
                                   ),
-                                )
-                              ],
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
                       Padding(

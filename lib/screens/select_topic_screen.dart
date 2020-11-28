@@ -42,7 +42,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
       setState(() {
         tags.add(value);
         tagChips.add(Chip(
-          label: Text(value),
+          label: Text(value,style: TextStyle(color: Theme.of(context).iconTheme.color.withOpacity(0.8)),),
         ));
       });
     });

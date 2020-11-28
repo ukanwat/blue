@@ -106,11 +106,11 @@ class _LinkPreviewState extends State<LinkPreview> {
           child: Column(
             children: <Widget>[
                 if( (_info as  YoutubeInfo).title != '')SizedBox(height: 10,),
-              Expanded(child: Icon(FlutterIcons.youtube_mco,size: 60,)),
+              Expanded(child: Icon(FlutterIcons.youtube_mco,size: 60,color:Colors.white)),
               if( (_info as  YoutubeInfo).title != '')
-              Container(padding: EdgeInsets.symmetric(horizontal: 6),
+              Container(padding: EdgeInsets.symmetric(horizontal: 7,vertical: 7),
                 width: double.infinity,
-                color: Colors.black.withOpacity(0.3),height: 30,child: Center(child: Text( (_info as  YoutubeInfo).title,maxLines: 1,overflow: TextOverflow.ellipsis,style: widget.titleStyle,)),)
+                color: Colors.black.withOpacity(0.3),child: Center(child: Text( (_info as  YoutubeInfo).title,maxLines: 2,overflow: TextOverflow.ellipsis,style: TextStyle(color:Colors.white))),)
             ],
           ),
         )

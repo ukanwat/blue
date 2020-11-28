@@ -96,7 +96,7 @@ class ActivityFeedItem extends StatelessWidget {
          padding: EdgeInsets.only(bottom: 2.0,top: 8) ,
                 child: Column(
                   children: <Widget>[
-                    ListTile(
+                    ListTile(dense: true,
                      
                       title: RichText(
 maxLines: 3,
@@ -107,10 +107,10 @@ overflow: TextOverflow.ellipsis,
                                 TextSpan(
                                     text: username,
                                     style: TextStyle(fontWeight: FontWeight.bold)),
-                                    TextSpan(text: ' '),
-                                TextSpan(text: '$activityItemText'),
+                                    TextSpan(text: 'username todo', style: TextStyle(  fontWeight: FontWeight.w500, color:Theme.of(context).iconTheme.color.withOpacity(seen?0.8:1))),
+                                TextSpan(text: ' $activityItemText', style: TextStyle(color:Theme.of(context).iconTheme.color.withOpacity(seen?0.8:1))),
                                  TextSpan(text: '$activityItemTextData',
-                                 style: TextStyle(color:seen? Colors.grey: Colors.white )
+                                 style: TextStyle(color:Theme.of(context).iconTheme.color.withOpacity(seen?0.8:1))
                                  )
                               ]),
                         ),
@@ -134,11 +134,11 @@ overflow: TextOverflow.ellipsis,
                                               child: Text('$title',
                                  
                           maxLines: 2,overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400,color:seen? Colors.grey: Colors.white ),
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400,color:Theme.of(context).iconTheme.color.withOpacity(seen?0.8:1)),
                           ),
                                             ),
                         ),
-                        Container(child: IconButton(icon: Icon(FlutterIcons.external_link_square_faw,),onPressed: (){},iconSize: 24,padding: EdgeInsets.all(0),))
+                        Container(child: IconButton(icon: Icon(FlutterIcons.external_link_square_faw,color: Colors.blue.withOpacity(0.8),),onPressed: (){},iconSize: 24,padding: EdgeInsets.all(0),))
                       ],
                     ),
                     )

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:blue/providers/provider_widget.dart' as PW;
 import 'package:blue/providers/theme.dart';
+import 'package:blue/screens/about_screen.dart';
 import 'package:blue/screens/all_saved_posts_screen.dart';
 import 'package:blue/screens/all_topics_screen.dart';
 import 'package:blue/screens/collection_posts_screen.dart';
@@ -66,11 +67,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 await getCurrentUser();
 await getPreferences();
-//     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-//     statusBarColor: Colors.transparent,
-//   statusBarIconBrightness: Brightness.dark         ,            //TODO
-//   statusBarBrightness: Brightness.dark
-//  ));
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      //TODO
+systemNavigationBarColor: Colors.black,
+systemNavigationBarDividerColor: Colors.grey[900],
+systemNavigationBarIconBrightness: Brightness.light
+ ));
   runApp(MyApp());
 }
 Future getPreferences()async{
@@ -123,7 +125,7 @@ class MyApp extends StatelessWidget {
           title: 'Scrible',
           theme:notifier.darkTheme == true? ThemeData(
             accentColor: Colors.white,
-          
+            textSelectionColor: Color.fromRGBO(205, 205, 205, 1),
             cardColor: Color.fromRGBO(50, 50, 50, 1),
             canvasColor: Color.fromRGBO(32, 32, 32, 1),
             primaryColor: Colors.blue,
@@ -133,7 +135,7 @@ class MyApp extends StatelessWidget {
               color: Colors.white,
             ),
             unselectedWidgetColor: Colors.white,
-          ):ThemeData(
+          ):ThemeData(  textSelectionColor: Color.fromRGBO(51, 51, 51, 1),
               accentColor: Colors.grey,
           
             cardColor: Color.fromRGBO(238, 238, 238, 1),
@@ -152,7 +154,7 @@ class MyApp extends StatelessWidget {
             unselectedWidgetColor: Colors.grey[700],
               ),
           darkTheme: notifier.darkTheme == false? ThemeData(
-              accentColor: Colors.grey,
+              accentColor: Colors.grey,  textSelectionColor: Color.fromRGBO(24, 24, 24, 1),
             cardColor: Color.fromRGBO(238, 238, 238, 1),
             canvasColor: Color.fromRGBO(250, 250, 250, 1),
             primaryColor: Colors.blue,
@@ -167,6 +169,8 @@ class MyApp extends StatelessWidget {
             primaryTextTheme: Typography.blackMountainView,
             unselectedWidgetColor: Colors.grey[700],
               ):ThemeData(
+                dividerColor: Colors.grey,
+                textSelectionColor: Color.fromRGBO(205, 205, 205, 1),
             accentColor: Colors.white,
           accentTextTheme: Typography.whiteMountainView,//
           primaryTextTheme: Typography.whiteMountainView,//
@@ -186,6 +190,10 @@ class MyApp extends StatelessWidget {
               case AllTopicsScreen.routeName:
                 return CupertinoPageRoute(
                     builder: (_) => AllTopicsScreen(), settings: settings);
+                break;
+                case AboutScreen.routeName:
+                return CupertinoPageRoute(
+                    builder: (_) => AboutScreen(), settings: settings);
                 break;
             }
              return CupertinoPageRoute(                                                    // TODO

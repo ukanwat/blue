@@ -8,6 +8,7 @@ final String photoUrl;
 final String displayName;
 final String bio;
 final String website;
+final String headerUrl;
 User({
   this.id,
   this.username,
@@ -15,7 +16,8 @@ User({
   this.photoUrl,
   this.displayName,
   this.bio,
-  this.website
+  this.website,
+  this.headerUrl
 });
 
 factory User.fromDocument(DocumentSnapshot doc){
@@ -27,7 +29,7 @@ factory User.fromDocument(DocumentSnapshot doc){
     displayName: doc['displayName'],
     bio: doc['bio'],
     website: doc['website'],
-    
+    headerUrl: doc['headerUrl']
   );
 }
 

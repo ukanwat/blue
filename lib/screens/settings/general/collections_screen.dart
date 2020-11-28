@@ -81,7 +81,7 @@ snapshot =await collectionsRef
              },
                       child: Container(
               height: 80,
-              
+              padding: EdgeInsets.symmetric(horizontal: 10),
               margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
 
               decoration: BoxDecoration(
@@ -90,10 +90,11 @@ borderRadius: BorderRadius.circular(5),
             
               ), child: Center(
                child: Text(i== -1? 'All Saved':
-                snapshot.data['$i' ],
+                snapshot.data['$i' ],maxLines: 1,overflow: TextOverflow.ellipsis,
                 style: TextStyle(
+               
                   fontSize: 25,
-                  fontWeight: FontWeight.w500
+                  fontWeight: FontWeight.w500,
                 ),
                 )
              )

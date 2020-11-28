@@ -19,13 +19,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  image: ^2.1.14
   flutter_icons: ^1.1.0
   cloud_firestore: ^0.13.6
   firebase_auth: ^0.16.0
   firebase_messaging: ^6.0.13
   google_sign_in: ^4.4.1
   cached_network_image: ^2.2.0+1
-  flutter_svg: ^0.17.4
   image_picker: ^0.6.5+1
   firebase_storage: ^3.1.5
   shared_preferences: ^0.5.7+3

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:blue/models/post_interaction.dart';
 import 'package:blue/screens/explore_posts_screen.dart';
 import 'package:blue/screens/profile_screen.dart';
+import 'package:blue/services/link_preview.dart';
 import 'package:blue/services/video_controls.dart';
 import 'package:blue/services/video_thumbnail_generator.dart';
 import 'package:blue/widgets/repost_dialog.dart';
@@ -1060,7 +1061,6 @@ class _PostState extends State<Post> {
                             thumbnailType = CompactPostThumbnailType.image;
                             compactPostThumbnailData =   contents['$i'];
       }
-
         contentsViewList.add(imageContentContainer(
             contents['$i'], contentsInfo['$i']['aspectRatio']));
       } else if (contentsInfo['$i']['type'] == 'video') {
@@ -1083,7 +1083,9 @@ class _PostState extends State<Post> {
         });
       } else if (contentsInfo['$i']['type'] == 'text') {
         contentsViewList.add(textContentContainer(contents['$i']));
-      } else {
+      } else if (contentsInfo['$i']['type'] == 'link') {
+        contentsViewList.add(linkContentContainer(contents['$i']));
+      } else{
         contentsViewList.add(carouselContentContainer(
             contents['$i'], contentsInfo['$i']['aspectRatio']));
       }
@@ -1130,11 +1132,25 @@ class _PostState extends State<Post> {
       preferences.setBool('serif',false);
     }
     return Container(
-      child: Text(text,style: preferences.getBool('serif')?TextStyle(fontFamily: 'Georgia'):TextStyle(),),
-      padding: EdgeInsets.all(8),
+      child: Text(text,style: preferences.getBool('serif')?TextStyle(fontFamily: 'Georgia',fontSize: 17,letterSpacing: 0,wordSpacing: 0,height: 1.25,color: Theme.of(context).textSelectionColor):TextStyle(fontSize: 16,letterSpacing: 0,wordSpacing: 0,height: 1.25,color: Theme.of(context).textSelectionColor),),
+      padding: EdgeInsets.symmetric( horizontal: 15,vertical: 5),
     );
   }
-
+    Container linkContentContainer(String link) {
+    return Container(
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(6),
+            color: Theme.of(context).canvasColor),
+        margin: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        child: ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinkPreview(
+              url: link,
+              bodyStyle: TextStyle(fontSize: 13),
+              titleStyle: TextStyle(fontWeight: FontWeight.w500),
+              showMultimedia: true,
+            )));
+  }
   buildPostFooter() {
     return Padding(
     

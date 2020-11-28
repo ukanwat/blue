@@ -9,7 +9,6 @@ PreferredSize settingsHeader(BuildContext context, String title) {
 centerTitle: true,
         elevation: 1,
         title: Text(title,style: TextStyle(
-color: Theme.of(context).iconTheme.color
 
         )),
         automaticallyImplyLeading: false,

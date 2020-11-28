@@ -49,7 +49,7 @@ class _TabsScreenState extends State<TabsScreen> {
         data: Theme.of(context).copyWith(
           
           // sets the background color of the `BottomNavigationBar`
-          canvasColor: Theme.of(context).canvasColor,
+          canvasColor: Colors.grey[900],
           // sets the active color of the `BottomNavigationBar` if `Brightness` is light
           primaryColor: Theme.of(context).primaryColor.withOpacity(0.8),
           
@@ -58,8 +58,8 @@ class _TabsScreenState extends State<TabsScreen> {
           height: 50,
                   child: BottomNavigationBar(iconSize: 25,elevation: 10,
             type: BottomNavigationBarType.fixed,
-            unselectedItemColor: Theme.of(context).unselectedWidgetColor,
-            selectedItemColor: Colors.blueAccent,
+            unselectedItemColor: Color.fromRGBO(200, 200, 200, 1),
+            selectedItemColor:  Color.fromRGBO(250, 250, 250, 1),
 
             items: <BottomNavigationBarItem>[
               BottomNavigationBarItem(
@@ -75,13 +75,12 @@ class _TabsScreenState extends State<TabsScreen> {
 
               BottomNavigationBarItem(
                 icon: Icon(
-                  // FontAwesome.compass,
-                FlutterIcons.search_oct,
+                FlutterIcons.compass_fea,size: 26,
                 // size: 34,
                 ),
                 activeIcon: Icon(
                   // FontAwesome.compass,
-                FlutterIcons.search_oct
+                 FlutterIcons.compass_fea,size: 26,
                 ),
                 title: Container(height: 0.0),
               ),
@@ -95,10 +94,10 @@ class _TabsScreenState extends State<TabsScreen> {
 
               BottomNavigationBarItem(
                 icon: Icon(FlutterIcons.notification_ent,
-                   size: 24,
+                   size: 23.6,
                 ),
                 activeIcon: Icon(FlutterIcons.notification_ent,
-                   size: 24.4,
+                   size: 23.6,
                 ),
                 title: Container(height: 0.0),
               ),

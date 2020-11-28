@@ -1,3 +1,4 @@
+import 'package:blue/main.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:flutter/material.dart';
 
@@ -8,6 +9,11 @@ class DraftsScreen extends StatefulWidget {
 }
 
 class _DraftsScreenState extends State<DraftsScreen> {
+  @override
+  void initState() {
+    print(preferences.get('drafts'));
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(backgroundColor: Theme.of(context).backgroundColor,

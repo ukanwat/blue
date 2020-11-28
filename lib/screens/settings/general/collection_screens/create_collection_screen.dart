@@ -104,16 +104,14 @@ class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
               },
                       controller: collectionNameController,
                       decoration: InputDecoration(
-                      
-                     
-                        hintText: 'New Password',
+                        hintText: 'Name',
                         fillColor: Theme.of(context).cardColor,
                         hintStyle: TextStyle(
                             color: Theme.of(context)
                                 .iconTheme
                                 .color
                                 .withOpacity(0.8)),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 5),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8),
                         border: OutlineInputBorder(),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),

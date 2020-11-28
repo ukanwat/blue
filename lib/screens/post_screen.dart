@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:ui';
 import 'package:blue/providers/submit_state.dart';
 import 'package:blue/services/link_preview.dart';
+import 'package:blue/widgets/show_dialog.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:blue/screens/select_topic_screen.dart';
 import 'package:blue/services/video_controls.dart';
@@ -30,7 +32,7 @@ import 'package:video_player/video_player.dart';
 // import 'package:video_compress/video_compress.dart';
 import 'package:link_previewer/link_previewer.dart';
 import '../services/video_processing.dart';
-
+import 'package:path/path.dart' as Path;
 enum ContentInsertOptions { Device, Camera, Carousel }
 
 class PostScreen extends StatefulWidget {
@@ -67,6 +69,7 @@ class _PostScreenState extends State<PostScreen> {
   String videoId = Uuid().v4();
   String postId = Uuid().v4();
   File compressedFile;
+  bool isDrafted = false;
 
   handleTakePhoto() async {
     File _cameraImage;
@@ -119,7 +122,7 @@ class _PostScreenState extends State<PostScreen> {
               'aspectRatio': _cameraVideoPlayerController.value.aspectRatio
             },
             'content': _cameraVideo,
-            'widget': Container(child: VideoDisplay(flickManager,false))
+            'widget': Container(child: VideoDisplay(flickManager, false))
           });
 
           if (_cameraVideoPlayerController.value.isPlaying == true) {
@@ -149,7 +152,7 @@ class _PostScreenState extends State<PostScreen> {
               'aspectRatio': _videoPlayerController.value.aspectRatio
             },
             'content': _galleryVideo,
-            'widget': Container(child: VideoDisplay(flickManager,false))
+            'widget': Container(child: VideoDisplay(flickManager, false))
           });
 
           if (_videoPlayerController.value.isPlaying == true) {
@@ -687,21 +690,19 @@ class _PostScreenState extends State<PostScreen> {
     contentType.add('image'); //
     return Container(
       key: ValueKey(index),
-      child: 
-        AspectRatio(
-          aspectRatio: aspectRatio,
-          child: Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                fit: BoxFit.cover,
-                image: FileImage(
-                  file,
-                ),
+      child: AspectRatio(
+        aspectRatio: aspectRatio,
+        child: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              fit: BoxFit.cover,
+              image: FileImage(
+                file,
               ),
             ),
           ),
         ),
-       
+      ),
     );
   }
 
@@ -735,29 +736,27 @@ class _PostScreenState extends State<PostScreen> {
     contentsMap[index] = images;
     contentType.add('carousel');
     return Container(
-      child: 
-          Container(
-              height: MediaQuery.of(context).size.width / aspectRatio,
-              key: UniqueKey(),
-              child: Carousel(
-                dotVerticalPadding: 0,
-                dotSize: 6,
-                dotIncreaseSize: 1.2,
-                dotIncreasedColor: Colors.blue.withOpacity(0.7),
-                dotColor: Colors.white,
-                showIndicator: true,
-                dotPosition: DotPosition.bottomCenter,
-                dotSpacing: 15,
-                boxFit: BoxFit.fitWidth,
-                dotBgColor: Colors.transparent,
-                autoplay: false,
-                overlayShadow: false,
-                moveIndicatorFromBottom: 20,
-                images: List.generate(images.length, (i) {
-                  return FileImage(images[i]);
-                }),
-              ))
-    );
+        child: Container(
+            height: MediaQuery.of(context).size.width / aspectRatio,
+            key: UniqueKey(),
+            child: Carousel(
+              dotVerticalPadding: 0,
+              dotSize: 6,
+              dotIncreaseSize: 1.2,
+              dotIncreasedColor: Colors.blue.withOpacity(0.7),
+              dotColor: Colors.white,
+              showIndicator: true,
+              dotPosition: DotPosition.bottomCenter,
+              dotSpacing: 15,
+              boxFit: BoxFit.fitWidth,
+              dotBgColor: Colors.transparent,
+              autoplay: false,
+              overlayShadow: false,
+              moveIndicatorFromBottom: 20,
+              images: List.generate(images.length, (i) {
+                return FileImage(images[i]);
+              }),
+            )));
   }
 
   Widget createPostItemButton(
@@ -783,17 +782,33 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    String _postId = ModalRoute.of(context).settings.arguments;
+    if (_postId != null) {
+      var _postData = preferences.get('drafts');
+      Map _postDataMap = jsonDecode(_postData);
+      setState(() {
+        contentsData = _postDataMap['contentsData'];
+        titleController =
+            TextEditingController(text: _postDataMap['contentsData']);
+        isDrafted = true;
+      });
+    }
+    super.didChangeDependencies();
+  }
+
+  @override
   Widget build(BuildContext context) {
     List<Widget> _contents = [];
     print(contentsData);
     for (int i = 0; i < contentsData.length; i++) {
-      _contents.add(
-        GestureDetector( onLongPress:(){
-             showContentSettingsSheet(i+1);
+      _contents.add(GestureDetector(
+          onLongPress: () {
+            showContentSettingsSheet(i + 1);
           },
-          child:contentsData[i]['widget'])
-        );
+          child: contentsData[i]['widget']));
     }
+
     return Scaffold(
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: AppBar(
@@ -803,7 +818,81 @@ class _PostScreenState extends State<PostScreen> {
                   Icons.clear,
                 ),
                 onPressed: () {
-                  Navigator.pop(context);
+                  if (isDrafted) {
+                    Navigator.pop(context);
+                  } else {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) => ShowDialog(
+                        title: "Save as Draft",
+                        description: "Do you want to save your work as Draft?",
+                        rightButtonText: "Save Draft",
+                        leftButtonText: "Cancel",
+                        rightButtonFunction: ()  async {
+                          List<Map> _modifiedContentsData = contentsData;
+                        Directory appDocDir;
+                          // Directory(_storageInfo[0].rootDir + '/MyCreatedFolder').create();
+                          for(int i =0; i< _modifiedContentsData.length; i++){
+                          _modifiedContentsData[i].remove('widget');
+                            switch ( _modifiedContentsData[i]['info']['type']) {
+                              case 'image':
+                              final _fileName = Path.basename( _modifiedContentsData[i]['content'].path);
+                              if( appDocDir == null)
+                             appDocDir = await getApplicationDocumentsDirectory();
+                                 String _path = appDocDir.path + '/$postId/$_fileName'; 
+                                await _modifiedContentsData[i]['content'].copy(_path);
+                               _modifiedContentsData[i]['content'] =  _path ;
+                                break;
+                              case 'video':
+                                       final _fileName = Path.basename( _modifiedContentsData[i]['content'].path);
+                            if( appDocDir == null)appDocDir = await getApplicationDocumentsDirectory();
+                                 String _path = appDocDir.path + '/$postId/$_fileName'; 
+                                await _modifiedContentsData[i]['content'].copy(_path);
+                               _modifiedContentsData[i]['content'] =  _path ;
+                                break;
+                              case 'carousel':
+                          if( appDocDir == null) appDocDir = await getApplicationDocumentsDirectory();
+                                 String _path = appDocDir.path + '/$postId';
+                                 List _paths= []; 
+                                 for(int f= 0; f< _modifiedContentsData[i]['content'].length; f++){
+                                            var _fileName = Path.basename( _modifiedContentsData[i]['content'][f].path);
+                                                 await _modifiedContentsData[i]['content'][f].copy(_path + '/$_fileName');
+                                         _paths.add(_path + '/$_fileName');
+                                 }
+                               _modifiedContentsData[i]['content'] =  _paths ;
+                                break;
+                              case 'text':
+                                  _modifiedContentsData[i]['content'] = contentsData[i]['content'].text;
+                                break;
+                               case 'link':
+                                   _modifiedContentsData[i]['content'] = contentsData[i]['content'].text;
+                                break;
+                              default:
+                            }
+                          }
+                          var drafts = preferences.get('drafts');
+                          if (drafts == null) {
+                            drafts = jsonEncode({});
+                            preferences.setString('drafts',   drafts);
+                          }
+                          
+                          Map _drafts = jsonDecode(drafts);
+                          _drafts[postId] = {
+                            'title': titleController.text,
+                            'contentsData': _modifiedContentsData
+                          };
+                          preferences.setString('drafts',jsonEncode( _drafts ));
+                                  print(_drafts );
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pop();
+                        },
+                        leftButtonFunction: () {
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    );
+                  }
                 }),
             centerTitle: true,
             title: Card(
@@ -887,6 +976,7 @@ class _PostScreenState extends State<PostScreen> {
             actions: <Widget>[
               IconButton(
                 onPressed: () {
+                  print(contentsData);
                   Navigator.of(context)
                       .pushNamed(SelectTopicScreen.routeName, arguments: {
                     'post-function': handleSubmit,
@@ -1013,77 +1103,76 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   showContentSettingsSheet(int index) {
-
-          showModalBottomSheet(
-              context: context,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              builder: (context) => ClipRRect(
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10)),
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      
-                      decoration: new BoxDecoration(
-                        color: Theme.of(context).canvasColor,
-                      ),
-                      child: ListView(shrinkWrap: true,
-                        children: <Widget>[
-                          SizedBox(
-                            height: 5,
-                          ),
-                          ListTile(
-                            onTap: () {
-                              setState(() {
-                                contentsData.removeAt(index - 1);
-                                Navigator.pop(context);
-                              });
-                            },
-                            leading: Icon(
-                              Icons.clear,
-                              color: Colors.red,
-                            ),
-                            title: Text('Remove'),
-                          ),
-                          if (index > 1)
-                            ListTile(
-                              onTap: () {
-                                setState(() {
-                                  var upperContent = contentsData[index - 2];
-                                  contentsData[index - 2] =
-                                      contentsData[index - 1];
-                                  contentsData[index - 1] = upperContent;
-                                  Navigator.pop(context);
-                                });
-                              },
-                              title: Text('Move Up'),
-                              leading: Icon(
-                                Icons.arrow_upward,
-                                color: Theme.of(context).iconTheme.color,
-                              ),
-                            ),
-                          if (index < contentsData.length)
-                            ListTile(
-                              onTap: () {
-                                setState(() {
-                                  var lowerContent = contentsData[index];
-                                  contentsData[index] = contentsData[index - 1];
-                                  contentsData[index - 1] = lowerContent;
-                                  Navigator.pop(context);
-                                });
-                              },
-                              leading: Icon(
-                                Icons.arrow_downward,
-                                color: Theme.of(context).iconTheme.color,
-                              ),
-                              title: Text('Move Down'),
-                            ),SizedBox(height: 10,)
-                        ],
-                      ),
+    showModalBottomSheet(
+        context: context,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        builder: (context) => ClipRRect(
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10), topRight: Radius.circular(10)),
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                decoration: new BoxDecoration(
+                  color: Theme.of(context).canvasColor,
+                ),
+                child: ListView(
+                  shrinkWrap: true,
+                  children: <Widget>[
+                    SizedBox(
+                      height: 5,
                     ),
-                  ));
-        
+                    ListTile(
+                      onTap: () {
+                        setState(() {
+                          contentsData.removeAt(index - 1);
+                          Navigator.pop(context);
+                        });
+                      },
+                      leading: Icon(
+                        Icons.clear,
+                        color: Colors.red,
+                      ),
+                      title: Text('Remove'),
+                    ),
+                    if (index > 1)
+                      ListTile(
+                        onTap: () {
+                          setState(() {
+                            var upperContent = contentsData[index - 2];
+                            contentsData[index - 2] = contentsData[index - 1];
+                            contentsData[index - 1] = upperContent;
+                            Navigator.pop(context);
+                          });
+                        },
+                        title: Text('Move Up'),
+                        leading: Icon(
+                          Icons.arrow_upward,
+                          color: Theme.of(context).iconTheme.color,
+                        ),
+                      ),
+                    if (index < contentsData.length)
+                      ListTile(
+                        onTap: () {
+                          setState(() {
+                            var lowerContent = contentsData[index];
+                            contentsData[index] = contentsData[index - 1];
+                            contentsData[index - 1] = lowerContent;
+                            Navigator.pop(context);
+                          });
+                        },
+                        leading: Icon(
+                          Icons.arrow_downward,
+                          color: Theme.of(context).iconTheme.color,
+                        ),
+                        title: Text('Move Down'),
+                      ),
+                    SizedBox(
+                      height: 10,
+                    )
+                  ],
+                ),
+              ),
+            ));
   }
 }

@@ -1,4 +1,7 @@
+import 'package:blue/screens/about_screen.dart';
 import 'package:blue/screens/all_saved_posts_screen.dart';
+import 'package:blue/widgets/custom_image.dart';
+import 'package:carousel_pro/carousel_pro.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -35,6 +38,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     with AutomaticKeepAliveClientMixin<ProfileScreen> {
   // final PostInteractions postInteractions;
   // _ProfileScreenState(this.postInteractions);
+  bool compactPosts = true;
   String username = '';
   bool isFollowing = false;
   final String currentUserId = currentUser?.id;
@@ -54,7 +58,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   List<dynamic> repostDocSnapshots = [];
   DocumentSnapshot lastPostDocument;
   DocumentSnapshot lastRepostDocument;
-
+  String sortBy = 'Recent';
+  bool sortDropDown = false;
   @override
   void initState() {
     super.initState();
@@ -207,8 +212,10 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   editProfile() {
-    Navigator.pushNamed(context, EditProfileScreen.routeName,
-        );
+    Navigator.pushNamed(
+      context,
+      EditProfileScreen.routeName,
+    );
   }
 
   Expanded buildCountColumn(IconData label, int count) {
@@ -219,7 +226,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         children: <Widget>[
           Container(
             child: Text(
-              compactString(count),        // TODO improve formatting
+              compactString(count), // TODO improve formatting
               style: TextStyle(
                 fontSize: 30.0,
                 fontWeight: FontWeight.bold,
@@ -241,51 +248,41 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  buildButton({String text, Function function}) {
-    return Expanded(
-      child: Container(
-        height: 25,
-        child: FlatButton(
-          padding: EdgeInsets.all(0),
-          onPressed: function,
-          child: Container(
-            width: double.infinity,
-            height: 33,
-            child: Text(
-              text,
-              style: TextStyle(
-                  color: isFollowing ? Colors.black : Colors.white,
-                  fontWeight: FontWeight.bold),
-            ),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: isFollowing ? Colors.white : Colors.blue,
-              border:
-                  Border.all(color: isFollowing ? Colors.black54 : Colors.blue),
-              borderRadius: BorderRadius.circular(20.0),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  buildButtonCircular({Icon icon, Function function}) {
+  buildButton({String text, Function function, IconData icon}) {
     return Container(
-      height: 25,
-      width: 25,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          color: Colors.blue,
-          border: Border.all(color: Colors.blue)),
-      child: Transform.scale(
-        scale: 2.5,
-        child: IconButton(
-          icon: icon,
-          onPressed: function,
-          color: Colors.white,
-          iconSize: 18,
-          alignment: Alignment.topLeft,
+      margin: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+      height: 40,
+      child: FlatButton(
+        padding: EdgeInsets.all(0),
+        onPressed: function,
+        child: Container(
+          width: double.infinity,
+          height: 33,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Icon(
+                icon,
+                size: 17,
+                color: Colors.white,
+              ),
+              SizedBox(
+                width: 10,
+              ),
+              Text(
+                text,
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: Colors.blue,
+            border:
+                Border.all(color: isFollowing ? Colors.black54 : Colors.blue),
+            borderRadius: BorderRadius.circular(10.0),
+          ),
         ),
       ),
     );
@@ -294,11 +291,20 @@ class _ProfileScreenState extends State<ProfileScreen>
   buildProfileButton() {
     bool isProfileOwner = currentUserId == widget.profileId;
     if (isProfileOwner) {
-      return buildButton(text: 'Edit Profile', function: editProfile);
+      return buildButton(
+          text: 'Edit Profile',
+          function: editProfile,
+          icon: FlutterIcons.edit_ant);
     } else if (isFollowing) {
-      return buildButton(text: 'Unfollow', function: handleUnfollowUser);
+      return buildButton(
+          text: 'Message',
+          function: handleUnfollowUser,
+          icon: FlutterIcons.message1_ant);
     } else if (!isFollowing) {
-      return buildButton(text: 'Follow', function: handleFollowUser);
+      return buildButton(
+          text: 'Follow',
+          function: handleFollowUser,
+          icon: FlutterIcons.adduser_ant);
     }
   }
 
@@ -369,27 +375,27 @@ class _ProfileScreenState extends State<ProfileScreen>
   buildProfileIconButton() {
     bool isProfileOwner = currentUserId == widget.profileId;
     if (isProfileOwner) {
-      return buildButtonCircular(
+      return IconButton(
           icon: Icon(
             FlutterIcons.bookmark_mco,
-            size: 7,
+            size: 24,
           ),
-          function: () {
+          onPressed: () {
             Navigator.pushNamed(context, AllSavedPostsScreen.routeName);
           });
     } else {
-      return buildButtonCircular(
+      return IconButton(
           icon: Icon(
             Icons.chat_bubble,
-            size: 7,
+            size: 4,
           ),
-          function: () {
+          onPressed: () {
             print('adddddd');
           });
     }
   }
 
-  buildProfileHeader() {
+  buildProfileHeaderTemp() {
     return FutureBuilder(
       future: usersRef.document(widget.profileId).get(),
       builder: (context, snapshot) {
@@ -400,161 +406,119 @@ class _ProfileScreenState extends State<ProfileScreen>
         return Column(
           children: <Widget>[
             Container(
-              width: MediaQuery.of(context).size.width,
-              child: Padding(
-                padding:
-                    EdgeInsets.only(top: 5, left: 15.0, right: 15.0, bottom: 0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              child: CachedNetworkImage(
+                imageUrl: user.headerUrl,
+                fit: BoxFit.cover,
+                height: 160,
+              ),
+              height: 160,
+              width: double.infinity,
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                SizedBox(
+                  width: 20,
+                ),
+                Stack(
+                  overflow: Overflow.visible,
                   children: <Widget>[
-                    CircleAvatar(
-                      radius: 55.0,
-                      backgroundColor: Colors.grey,
-                      backgroundImage:
-                          CachedNetworkImageProvider(user.photoUrl),
+                    Container(
+                      height: 50,
+                      width: 130,
                     ),
-                    SizedBox(
-                      width: 20,
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        height: 110,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text(
-                              '@${user.username}',
-                              textAlign: TextAlign.start,
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w600),
-                            ),
-                            Container(
-                              padding: EdgeInsets.symmetric(vertical: 0),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: Theme.of(context).canvasColor,
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.max,
-                                children: <Widget>[
-                                  // buildCountColumn(
-                                  //     FlutterIcons.post_outline_mco, postCount),
-                                  // Container(
-                                  //   decoration: BoxDecoration(
-                                  //     borderRadius: BorderRadius.circular(2),
-                                  //     color: Colors.grey,
-                                  //   ),
-                                  //   height: 52,
-                                  //   width: 1,
-                                  // ),
-                                  buildCountColumn(
-                                      FlutterIcons.people_sli, followerCount),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(2),
-                                      color: Colors.grey,
-                                    ),
-                                    height: 20,
-                                    width: 1,
-                                  ),
-                                  buildCountColumn(
-                                      FlutterIcons.user_following_sli,
-                                      followingCount),
-                                ],
-                              ),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                buildProfileButton(),
-                                SizedBox(width: 5),
-                                buildProfileIconButton(),
-                              ],
-                            ),
-                          ],
-                        ),
+                    Positioned(
+                      bottom: 0,
+                      child: CircleAvatar(
+                        radius: 65.0,
+                        backgroundColor: Theme.of(context).backgroundColor,
+                        backgroundImage:
+                            CachedNetworkImageProvider(user.photoUrl),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ),
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.only(left: 15, top: 8, right: 15, bottom: 2),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  if (user.website != null)
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Linkify(
-                          text: user.website,
-                          linkStyle: TextStyle(
-                            fontSize: 15,
-                            color: Colors.blue,
-                            decoration: TextDecoration.none,
+                SizedBox(
+                  width: 10,
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: Text(
+                              '${user.username}',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500, fontSize: 18),
+                            ),
                           ),
-                          onOpen: (link) {
-                            launchWebsite(user.website);
-                          },
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 5),
-                          child: Icon(Icons.link),
-                        ),
-                      ],
-                    ),
-                  Text(
-                    user.bio,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
+                          Expanded(
+                            child: Container(),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).pushNamed(
+                                  AboutScreen.routeName,
+                                  arguments: user);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 5, horizontal: 8),
+                              child: Icon(
+                                Icons.arrow_forward_ios,
+                                size: 18,
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 0),
+                        child: Text(
+                          '$followerCount Followers',
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context)
+                                  .iconTheme
+                                  .color
+                                  .withOpacity(0.6)),
+                        ), //TODO fix follower count
+                      )
+                    ],
                   ),
-                ],
-              ),
+                )
+              ],
             ),
-            // Row(
-            //   mainAxisSize: MainAxisSize.min,
-            //   children: <Widget>[
-            //     Text(
-            //       postCount.toString(),
-            //       style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-            //     ),
-            //     Container(
-            //       margin: EdgeInsets.all(5),
-            //       decoration: BoxDecoration(
-            //         shape: BoxShape.circle,
-            //         color: Theme.of(context).iconTheme.color,
-            //       ),
-            //       height: 6,
-            //       width: 6,
-            //     ),
-            //     Text(
-            //       repostCount.toString(),
-            //       style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-            //     )
-            //   ],
-            // )
+            buildProfileButton(),
+            Divider(
+              color: Colors.grey,
+              height: 0.3,
+              thickness: 0.3,
+            ),
           ],
         );
       },
     );
   }
-String compactString(int value) {
-  const units = <int, String>{
-    1000000000: 'B',
-    1000000: 'M',
-    1000: 'K',
-  };
-  return units.entries
-      .map((e) => '${value ~/ e.key}${e.value}')
-      .firstWhere((e) => !e.startsWith('0'), orElse: () => '$value');
-}
+
+  String compactString(int value) {
+    const units = <int, String>{
+      1000000000: 'B',
+      1000000: 'M',
+      1000: 'K',
+    };
+    return units.entries
+        .map((e) => '${value ~/ e.key}${e.value}')
+        .firstWhere((e) => !e.startsWith('0'), orElse: () => '$value');
+  }
+
   launchWebsite(String url) async {
     if (await canLaunch(url)) {
       await launch(
@@ -596,32 +560,35 @@ String compactString(int value) {
     return Scaffold(
       backgroundColor: Theme.of(context).canvasColor,
       // Persistent AppBar that never scrolls
-      appBar: header(
-        context,
-        centerTitle: false,
-        elevation: 0,
-        title: Text(
-          widget.profileName,
-        ),
-        actionButton: IconButton(
-            icon: Icon(
-              FlutterIcons.settings_fea,
-              size: 20,
-              color: Theme.of(context).iconTheme.color,
+      appBar: PreferredSize(preferredSize: Size.fromHeight(50),
+              child: AppBar(
+            backgroundColor: Colors.transparent,
+            centerTitle: false,
+            elevation: 0,
+            title: Text(
+              widget.profileName,
             ),
-            onPressed: () {
-              Navigator.pushNamed(context, SettingsScreen.routeName);
-            }),
+            actions: <Widget>[
+              buildProfileIconButton(),
+              IconButton(
+                  icon: Icon(
+                    FlutterIcons.settings_fea,
+                    size: 20,
+                    color: Theme.of(context).iconTheme.color,
+                  ),
+                  onPressed: () {
+                    Navigator.pushNamed(context, SettingsScreen.routeName);
+                  }),
+            ]),
       ),
-      body: DefaultTabController(
-        length: 2,
+      body: Container(
         child: NestedScrollView(
           // allows you to build a list of elements that would be scrolled away till the body reached the top
           headerSliverBuilder: (context, _) {
             return [
               SliverToBoxAdapter(
                 // delegate: SliverChildListDelegate(
-                child: buildProfileHeader(),
+                child: buildProfileHeaderTemp(),
                 //),
               ),
             ];
@@ -629,22 +596,113 @@ String compactString(int value) {
           // You tab view goes here
           body: Column(
             children: <Widget>[
-              TabBar(
-                indicatorColor: Theme.of(context).iconTheme.color,
-                labelColor: Theme.of(context).iconTheme.color,
-                tabs: [
-                  Tab(text: 'All'),
-                  Tab(text: 'Shares'),
-                ],
-              ),
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    buildProfilePosts(),
-                    buildProfileReposts(),
+              Container(
+                  color: Theme.of(context).canvasColor,
+                  height: 45,
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      GestureDetector(  onTap: () {
+                          setState(() {
+                            sortDropDown = !sortDropDown;
+                          });
+                        },
+                                              child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 12,vertical: 12),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10)),
+                            child: Row(
+                              children: <Widget>[
+                               sortDropDown? Icon(Icons.arrow_drop_up):Icon(Icons.arrow_drop_down),
+                                Icon(Icons.sort),
+                              ],
+                            )),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            compactPosts = !compactPosts;
+                          });
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Icon(
+                            !compactPosts ? Icons.view_agenda : Icons.view_day,
+                            size: 20,
+                          ),
+                        ),
+                      )
+                    ],
+                  )),
+             Divider(height: 0.3,thickness: 0.3,color: Colors.grey,),
+              if(sortDropDown)Material(
+                color: Theme.of(context).backgroundColor,
+                elevation: 1,
+                borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(8),
+                    bottomRight: Radius.circular(8)),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Container( width: double.infinity,
+                      child: InkWell(
+                        onTap: (){
+setState(() {
+  sortBy = 'Recent';
+});
+                        },
+                        child: Padding(
+                          padding:
+                              EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                          child: Center(
+                            child: Text(
+                              'Recent',
+                              style: TextStyle(fontSize: 18,color: sortBy == 'Recent'? Colors.blue:Theme.of(context).iconTheme.color),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Container(  width: double.infinity,
+                      child: InkWell(
+                           onTap: (){
+setState(() {
+  sortBy = 'Old';
+});
+                        },
+                        child: Padding(
+                          padding:
+                              EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                     
+                          child: Center(
+                            child: Text(
+                              'Old',
+                              style: TextStyle(fontSize: 18,color: sortBy == 'Old'? Colors.blue:Theme.of(context).iconTheme.color),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Container(    width: double.infinity,
+                      child: InkWell(   onTap: (){
+setState(() {
+  sortBy = 'Popular';
+});
+                        },
+                        child: Padding(
+                          
+                            padding: EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 15),
+                        
+                            child:
+                                Center(child: Text('Popular', style: TextStyle(fontSize: 18,color: sortBy == 'Popular'? Colors.blue:Theme.of(context).iconTheme.color)))),
+                      ),
+                    ),
                   ],
                 ),
               ),
+              Expanded(child: Container()
+                  ),
             ],
           ),
         ),

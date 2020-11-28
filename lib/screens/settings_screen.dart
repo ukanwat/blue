@@ -88,7 +88,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           settingsPageNavigationTile(
               context, 'Appearance', AppearanceScreen.routeName),
           settingsPageNavigationTile(
-              context, 'Collection', CollectionsScreen.routeName),
+              context, 'Collections', CollectionsScreen.routeName),
           settingsPageNavigationTile(context, 'Drafts', DraftsScreen.routeName),
           Divider(thickness: 6,
           height: 20,
