@@ -626,7 +626,7 @@ class _PostScreenState extends State<PostScreen> {
     });
     Response response;
     // final response = await head(linkController.text);
-    // print('${response.statusCode}//////////////////////////////////////////////////////////////////////');
+    // print('${response.statusCode}');
     bool errorOccured = false;
     try {
       response = await head(linkController.text);
@@ -798,7 +798,7 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) {    
     List<Widget> _contents = [];
     print(contentsData);
     for (int i = 0; i < contentsData.length; i++) {
@@ -809,7 +809,7 @@ class _PostScreenState extends State<PostScreen> {
           child: contentsData[i]['widget']));
     }
 
-    return Scaffold(
+    return Scaffold( 
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: AppBar(
             elevation: 0.5,
