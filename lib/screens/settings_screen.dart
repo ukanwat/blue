@@ -20,6 +20,7 @@ import 'package:blue/screens/settings/notification/push_notifications_screen.dar
 import 'package:blue/screens/settings/privacy/activity_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screen.dart';
 import 'package:device_info/device_info.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -71,84 +72,90 @@ class _SettingsScreenState extends State<SettingsScreen> {
     
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
-      appBar: settingsHeader(context, 'Settings',
-    
-      ),
-      body: SingleChildScrollView(
-          child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Container(
-            height: 5,
-          ),
-          settingsSectionTitle(
-              icon: Icon(Icons.account_circle), title: 'General'),
-          settingsPageNavigationTile(
-              context, 'Account', AccountScreen.routeName),
-          settingsPageNavigationTile(
-              context, 'Appearance', AppearanceScreen.routeName),
-          settingsPageNavigationTile(
-              context, 'Collections', CollectionsScreen.routeName),
-          settingsPageNavigationTile(context, 'Drafts', DraftsScreen.routeName),
-          Divider(thickness: 6,
-          height: 20,
+     
+      body: SafeArea(
+              child: SingleChildScrollView(
+            child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              width: MediaQuery.of(context).size.width,
+              child: Row(children: [
+                IconButton(icon:Icon(FluentIcons.chevron_left_24_filled,color: Theme.of(context).primaryColor,size: 30,), onPressed: (){
+                  Navigator.pop(context);
+                },),
+                Text('Settings',style: TextStyle(fontFamily: 'Techna Sans Regular',fontSize: 24,),),
+              ],)),
+            Container(
+              height: 5,
+            ),
+            settingsSectionTitle(
+           'General',      Icon(Icons.account_circle), context),
+            settingsPageNavigationTile(
+                context, 'Account', AccountScreen.routeName),
+            settingsPageNavigationTile(
+                context, 'Appearance', AppearanceScreen.routeName),
+            settingsPageNavigationTile(
+                context, 'Collections', CollectionsScreen.routeName),
+            settingsPageNavigationTile(context, 'Drafts', DraftsScreen.routeName),
+            Divider(thickness: 6,
+            height: 20,
 color: Theme.of(context).canvasColor,
-          ),
-          settingsSectionTitle(
-              icon: Icon(Icons.notifications_active), title: 'Notifications'),
-          settingsPageNavigationTile(context, 'Email Notifications',
-              EmailNotificationsScreen.routeName),
-          settingsPageNavigationTile(
-              context, 'Push Notifications', PushNotificationsScreen.routeName),
-              Divider(thickness: 6,
-          height: 20,color: Theme.of(context).canvasColor,
-          ),
-          settingsSectionTitle(
-            icon: Icon(Icons.category),
-            title: 'Advanced Settings',
-          ),
-          settingsPageNavigationTile(
-              context, 'Autoplay', AutoplayScreen.routeName),
-                   settingsPageNavigationTile(
-              context, 'Font', FontScreen.routeName),
-          settingsPageNavigationTile(
-              context, 'Content Cache', ContentCacheScreen.routeName),
-              Divider(thickness: 6,
-          height: 20,color: Theme.of(context).canvasColor,
-          ),
-          settingsSectionTitle(
-            icon: Icon(Icons.person_outline),
-            title: 'Privacy',
-          ),
-          settingsPageNavigationTile(context, 'Safety', SafetyScreen.routeName),
-          settingsPageNavigationTile(
-              context, 'Activity', ActivityScreen.routeName),
-              Divider(thickness: 6,
-          height: 20,color: Theme.of(context).canvasColor,
-          ),
-          settingsSectionTitle(
-            icon: Icon(Icons.feedback),
-            title: 'Support & Feedback',
-          ),
-          settingsPageNavigationTile(
-              context, 'Give a Suggestion', GiveASuggestionScreen.routeName),
-          settingsPageNavigationTile(
-              context, 'Report a Bug', ReportABugScreen.routeName),
-        settingsActionTile(context, 'Get Help', ()async{
+            ),
+            settingsSectionTitle('Notifications',
+            Icon(Icons.notifications_active),context),
+            settingsPageNavigationTile(context, 'Email Notifications',
+                EmailNotificationsScreen.routeName),
+            settingsPageNavigationTile(
+                context, 'Push Notifications', PushNotificationsScreen.routeName),
+                Divider(thickness: 6,
+            height: 20,color: Theme.of(context).canvasColor,
+            ),
+            settingsSectionTitle(   'Advanced Settings',
+            Icon(Icons.category),context
+      
+            ),
+            settingsPageNavigationTile(
+                context, 'Autoplay', AutoplayScreen.routeName),
+                     settingsPageNavigationTile(
+                context, 'Font', FontScreen.routeName),
+            settingsPageNavigationTile(
+                context, 'Content Cache', ContentCacheScreen.routeName),
+                Divider(thickness: 6,
+            height: 20,color: Theme.of(context).canvasColor,
+            ),
+            settingsSectionTitle(     'Privacy',
+            Icon(Icons.person_outline),context
+         
+            ),
+            settingsPageNavigationTile(context, 'Safety', SafetyScreen.routeName),
+            settingsPageNavigationTile(
+                context, 'Activity', ActivityScreen.routeName),
+                Divider(thickness: 6,
+            height: 20,color: Theme.of(context).canvasColor,
+            ),
+            settingsSectionTitle('Support & Feedback',
+           Icon(Icons.feedback),context
+            ),
+            settingsPageNavigationTile(
+                context, 'Give a Suggestion', GiveASuggestionScreen.routeName),
+            settingsPageNavigationTile(
+                context, 'Report a Bug', ReportABugScreen.routeName),
+          settingsActionTile(context, 'Get Help', ()async{
  Map<String, dynamic> deviceData;
     try {
-      if (Platform.isAndroid) {
-        deviceData = _readAndroidBuildData(await deviceInfoPlugin.androidInfo);
-      } else if (Platform.isIOS) {
-        deviceData = _readIosDeviceInfo(await deviceInfoPlugin.iosInfo);
-      }
+        if (Platform.isAndroid) {
+          deviceData = _readAndroidBuildData(await deviceInfoPlugin.androidInfo);
+        } else if (Platform.isIOS) {
+          deviceData = _readIosDeviceInfo(await deviceInfoPlugin.iosInfo);
+        }
     } on PlatformException {
-      deviceData = <String, dynamic>{
-        'Error:': 'Failed to get platform version.'
-      };
-      return;
+        deviceData = <String, dynamic>{
+          'Error:': 'Failed to get platform version.'
+        };
+        return;
     }
-      _deviceData = deviceData;
+        _deviceData = deviceData;
   
 
 final Email email = Email(
@@ -160,37 +167,38 @@ final Email email = Email(
 );
 
 await FlutterEmailSender.send(email);
-          
-        }),
-              Divider(thickness: 6,
-          height: 20,color: Theme.of(context).canvasColor,
-          ),
-          settingsSectionTitle(
-            icon: Icon(Icons.info_outline),
-            title: 'About',
-          ),
-                 settingsPageNavigationTile(
-              context, 'Terms of Use', TermsOfServiceScreen.routeName),
-                settingsPageNavigationTile(
-              context, 'Privacy policy', PrivacyPolicyScreen.routeName),
-              settingsActionTile(context, 'acknowledgements', 
-              (){
-                  
-                   Navigator.of(context).pushNamed(LicenseScreen.routeName);
-              }
-              
-              ),
-          // settingsPageNavigationTile(
-          //     context, 'Acknowledgements', AcknowledgementsScreen.routeName),
-              Container(
-                margin: EdgeInsets.only(
-                  top: 8
+            
+          }),
+                Divider(thickness: 6,
+            height: 20,color: Theme.of(context).canvasColor,
+            ),
+            settingsSectionTitle( 'About',
+               Icon(Icons.info_outline),
+              context
+            ),
+                   settingsPageNavigationTile(
+                context, 'Terms of Use', TermsOfServiceScreen.routeName),
+                  settingsPageNavigationTile(
+                context, 'Privacy policy', PrivacyPolicyScreen.routeName),
+                settingsActionTile(context, 'acknowledgements', 
+                (){
+                    
+                     Navigator.of(context).pushNamed(LicenseScreen.routeName);
+                }
+                
                 ),
-                width: double.infinity,
-                color: Theme.of(context).canvasColor,
-                height: 40, child: Center(child: Text('Scrible v1.0'),),)
-        ],
-      )),
+            // settingsPageNavigationTile(
+            //     context, 'Acknowledgements', AcknowledgementsScreen.routeName),
+                Container(
+                  margin: EdgeInsets.only(
+                    top: 8
+                  ),
+                  width: double.infinity,
+                  color: Theme.of(context).canvasColor,
+                  height: 40, child: Center(child: Text('ABC v1.0'),),)
+          ],
+        )),
+      ),
     );
   }
 }

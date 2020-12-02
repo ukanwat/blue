@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 PreferredSize header(context,
-    {Widget actionButton,
+    {Widget actionButton,Widget actionButton2,
     Widget leadingButton,
     Widget title,
     bool centerTitle,
@@ -10,11 +10,12 @@ PreferredSize header(context,
   bool textTitleExists = title != null;
   bool centerTitleExists = centerTitle != null;
   bool actionButtonExists = actionButton != null;
+  bool actionButton2Exists = actionButton2 != null;
   return PreferredSize(
     preferredSize: Size.fromHeight(50.0),
     child: AppBar(
       leading: leadingButton,
-      actions: actionButtonExists ? <Widget>[actionButton] : null,
+      actions: actionButtonExists ? (actionButton2Exists ? <Widget>[actionButton2,actionButton]: <Widget>[actionButton]) : null,
       backgroundColor: Theme.of(context).canvasColor,
       title: textTitleExists
           ? title

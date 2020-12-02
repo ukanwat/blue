@@ -1,3 +1,6 @@
+import 'package:blue/screens/following_posts_screen.dart';
+import 'package:blue/widgets/tags_wrap.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
 import 'package:blue/screens/search_results_screen.dart';
@@ -23,20 +26,45 @@ class _HomeScreenState extends State<HomeScreen>
         AutomaticKeepAliveClientMixin<HomeScreen>,
         SingleTickerProviderStateMixin {
   List<Post> posts;
-
+  bool followingPosts = false;
   bool topicLoading = true;
+  bool banner = false;
+  OverlayEntry tabToggleBanner;
   @override
   void initState() {
     super.initState();
     getTimeline();
+    tabToggleBanner = toggleBanner();
+  }
+
+  OverlayEntry toggleBanner() {
+    return OverlayEntry(
+        builder: (context) => Positioned(
+              left: MediaQuery.of(context).size.width * 0.5 -50,
+              top: 100,
+              width: 100,
+              height: 30,
+              child: 
+              
+              Material(borderRadius: BorderRadius.circular(30),
+                  elevation: 1.0,
+                  child: ClipRRect(borderRadius: BorderRadius.circular(30),
+                                      child: Container(height: 30,width: 100,
+                      child: Text(
+                        followingPosts ? 'Following' : 'Home',style: TextStyle(color: Colors.white,fontSize: 16),
+                      ),
+                      alignment: Alignment.center,decoration: BoxDecoration(  borderRadius: BorderRadius.circular(30),color: Theme.of(context).primaryColor),
+                     
+                     
+                    
+                    ),
+                  )),
+            ));
   }
 
   getTimeline() async {
     print(currentUser);
-    QuerySnapshot snapshot = await timelineRef
-        .document(currentUser.id)
-        .collection('timelinePosts')
-        .getDocuments();
+    QuerySnapshot snapshot = await postsRef.getDocuments();
 
     setState(() {
       posts = snapshot.documents.map((doc) => Post.fromDocument(doc)).toList();
@@ -44,7 +72,6 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   showTagsSheet() {
- 
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
@@ -79,18 +106,14 @@ class _HomeScreenState extends State<HomeScreen>
                       })
                 ],
               ),
-              Expanded (child:TagsWrap()),
+              Expanded(child: TagsWrap()),
             ],
           ),
         ),
       ),
     );
   }
-   
 
-
-  
-  
   buildTimeline() {
     if (posts == null) {
       return circularProgress();
@@ -101,63 +124,6 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
-  // buildUsersToFollow() {
-  //   return StreamBuilder(
-  //     stream:
-  //         usersRef.orderBy('timestamp', descending: true).limit(30).snapshots(),
-  //     builder: (context, snapshot) {
-  //       if (!snapshot.hasData) {
-  //         return circularProgress();
-  //       }
-  //       List<UserResult> userResults = [];
-  //       snapshot.data.documents.forEach((doc) {
-  //         User user = User.fromDocument(doc);
-  //         final bool isAuthUser = currentUser.id == user.id;
-  //         final bool isFollowingUser = followingList.contains(user.id);
-  //         // remove auth user from recommended list
-  //         if (isAuthUser) {
-  //           return;
-  //         } else if (isFollowingUser) {
-  //           return;
-  //         } else {
-  //           UserResult userResult = UserResult(user);
-  //           userResults.add(userResult);
-  //         }
-  //       });
-  //       return Container(
-  //         color: Theme.of(context).accentColor.withOpacity(0.2),
-  //         child: Column(
-  //           children: <Widget>[
-  //             Container(
-  //               padding: EdgeInsets.all(12.0),
-  //               child: Row(
-  //                 mainAxisAlignment: MainAxisAlignment.center,
-  //                 children: <Widget>[
-  //                   Icon(
-  //                     Icons.person_add,
-  //                     color: Theme.of(context).primaryColor,
-  //                     size: 30.0,
-  //                   ),
-  //                   SizedBox(
-  //                     width: 8.0,
-  //                   ),
-  //                   Text(
-  //                     "Users to Follow",
-  //                     style: TextStyle(
-  //                       color: Theme.of(context).primaryColor,
-  //                       fontSize: 30.0,
-  //                     ),
-  //                   ),
-  //                 ],
-  //               ),
-  //             ),
-  //             Column(children: userResults),
-  //           ],
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
   bool get wantKeepAlive => true;
   @override
   Widget build(context) {
@@ -167,15 +133,41 @@ class _HomeScreenState extends State<HomeScreen>
       appBar: header(
         context,
         title: Text(
-          'Scrible',
+          'FlipBoard',
           style: TextStyle(
+            fontSize: 26,
             fontFamily: 'Techna Sans Regular',
           ),
         ),
+        actionButton2: IconButton(
+            icon: Icon(
+              followingPosts
+                  ? FluentIcons.person_24_regular
+                  : FluentIcons.new_24_regular,
+              size: 26,
+            ),
+            onPressed: () {
+              setState(() {
+                followingPosts = !followingPosts;
+                banner = !banner;
+                if (banner)
+                  Overlay.of(context).insert(tabToggleBanner);
+                else
+                  tabToggleBanner?.remove();
+              });
+              Future.delayed(const Duration(milliseconds: 1800), () {
+                setState(() {
+                  if (banner) {
+                    tabToggleBanner?.remove();
+                    banner = false;
+                  }
+                });
+              });
+            }),
         actionButton: IconButton(
           icon: Icon(
-            FlutterIcons.plus_ant,
-            size: 29,
+            FluentIcons.add_24_regular,
+            size: 27,
           ),
           onPressed: () {
             showTagsSheet();
@@ -183,82 +175,75 @@ class _HomeScreenState extends State<HomeScreen>
         ),
         centerTitle: false,
       ),
-      body: RefreshIndicator(
-        onRefresh: () => getTimeline(),
-        child: buildTimeline(),
-      ),
-    );
-
-    // Scaffold(
-    //     backgroundColor: Theme.of(context).canvasColor,
-    //     appBar: header(
-    //       context,title: Text('Scrible',style: TextStyle(
-    //         fontFamily: 'Techna Sans Regular',
-
-    //       ),),
-    //       centerTitle: true,
-
-    //       ),
-
-    //     body: RefreshIndicator(
-    //         onRefresh: () => getTimeline(), child: buildTimeline(),),)
-
-    // ;
-  }
-}
-
-class TagsWrap extends StatefulWidget {
-  @override
-  _TagsWrapState createState() => _TagsWrapState();
-}
-
-class _TagsWrapState extends State<TagsWrap> {
-      List<String> tags = [];
-  List<Widget> tagChips = [];
-  bool tagLoading = true;
-  
-  @override
-  void initState() {
-        getFollowedTags();
-    super.initState();
-  }
-       getFollowedTags() async {
-    var tagsDoc = await followedTagsRef.document(currentUser.id).get();
-    List<String> followedTags = [];
-    setState(() {
-      tagLoading = false;
-      tags = tagsDoc.data.keys.toList();
-      for (int i = 0; i < tags.length; i++) {
-        followedTags.add(tags[i]);
-        tagChips.add(InkWell(
-          onTap: () {
-            Navigator.of(context)
-                .pushNamed(TagScreen.routeName, arguments: tags[i]);
-          },
-          child: Chip(padding: EdgeInsets.all(12),
-            label: Text(
-              tags[i],
-              style: TextStyle(color: Theme.of(context).iconTheme.color,fontSize: 18),
+      body: followingPosts
+          ? FollowingPostsScreen()
+          : RefreshIndicator(
+              onRefresh: () => getTimeline(),
+              child: buildTimeline(),
             ),
-            backgroundColor: Theme.of(context).cardColor,
-          ),
-        ));
-      }
-    });
-    if(preferences == null)
- preferences = await SharedPreferences.getInstance();
-    preferences.setStringList('followed_tags', followedTags);
-  }
-  @override
-  Widget build(BuildContext context) {
-    return tagLoading? circularProgress():Container(
-  
-      padding: const EdgeInsets.symmetric(horizontal: 5.0),
-      child: SingleChildScrollView(
-              child: Wrap(
-          spacing: 10,runSpacing: 12,
-          children: tagChips,),
-      ),
     );
   }
 }
+
+// class TagsWrap extends StatefulWidget {
+//   @override
+//   _TagsWrapState createState() => _TagsWrapState();
+// }
+
+// class _TagsWrapState extends State<TagsWrap> {
+//   List<String> tags = [];
+//   List<Widget> tagChips = [];
+//   bool tagLoading = true;
+
+//   @override
+//   void initState() {
+//     getFollowedTags();
+//     super.initState();
+//   }
+
+//   getFollowedTags() async {
+//     var tagsDoc = await followedTagsRef.document(currentUser.id).get();
+//     List<String> followedTags = [];
+//     setState(() {
+//       tagLoading = false;
+//       tags = tagsDoc.data.keys.toList();
+//       for (int i = 0; i < tags.length; i++) {
+//         followedTags.add(tags[i]);
+//         tagChips.add(InkWell(
+//           onTap: () {
+//             Navigator.of(context)
+//                 .pushNamed(TagScreen.routeName, arguments: tags[i]);
+//           },
+//           child: Chip(
+//             padding: EdgeInsets.all(12),
+//             label: Text(
+//               tags[i],
+//               style: TextStyle(
+//                   color: Theme.of(context).iconTheme.color, fontSize: 18),
+//             ),
+//             backgroundColor: Theme.of(context).cardColor,
+//           ),
+//         ));
+//       }
+//     });
+//     if (preferences == null)
+//       preferences = await SharedPreferences.getInstance();
+//     preferences.setStringList('followed_tags', followedTags);
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return tagLoading
+//         ? circularProgress()
+//         : Container(
+//             padding: const EdgeInsets.symmetric(horizontal: 5.0),
+//             child: SingleChildScrollView(
+//               child: Wrap(
+//                 spacing: 10,
+//                 runSpacing: 12,
+//                 children: tagChips,
+//               ),
+//             ),
+//           );
+//   }
+// }

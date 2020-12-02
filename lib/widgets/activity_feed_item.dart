@@ -1,5 +1,6 @@
 import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
@@ -132,13 +133,12 @@ overflow: TextOverflow.ellipsis,
                         Expanded(
                                             child: Center(
                                               child: Text('$title',
-                                 
                           maxLines: 2,overflow: TextOverflow.ellipsis,
                           style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400,color:Theme.of(context).iconTheme.color.withOpacity(seen?0.8:1)),
                           ),
-                                            ),
                         ),
-                        Container(child: IconButton(icon: Icon(FlutterIcons.external_link_square_faw,color: Colors.blue.withOpacity(0.8),),onPressed: (){},iconSize: 24,padding: EdgeInsets.all(0),))
+                        ),
+                        Container(child: IconButton(icon: Icon(FluentIcons.open_24_regular,color: Colors.blue.withOpacity(0.8),),onPressed: (){},iconSize: 24,padding: EdgeInsets.all(0),))
                       ],
                     ),
                     )

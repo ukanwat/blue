@@ -23,14 +23,13 @@ final activityFeedRef = Firestore.instance.collection('activityFeed');
 final followersRef = Firestore.instance.collection('followers');
 final followingRef = Firestore.instance.collection('following');
 final messagesRef = Firestore.instance.collection('messages');
-final timelineRef = Firestore.instance.collection('timeline');
+final timelineRef = Firestore.instance.collection('timeline');           //**fix timeline posts
 final communitiesRef = Firestore.instance.collection('communities');
 final followedTopicsRef = Firestore.instance.collection('followed-topics');
 final followedTagsRef = Firestore.instance.collection('followed-tags');
 final topicsRef = Firestore.instance.collection('topics');
 final postsCollectionGroupRef = Firestore.instance.collectionGroup('userPosts');
-final topicPostsCollectionGroupRef =
-    Firestore.instance.collectionGroup('topicPosts');
+final topicPostsCollectionGroupRef = Firestore.instance.collectionGroup('topicPosts');
 final userPostsRef = Firestore.instance.collection('user-posts');
   final accountReportsRef =Firestore.instance.collection('account-reports');
     final commentReportsRef =Firestore.instance.collection('comment-reports');

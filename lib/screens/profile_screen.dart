@@ -1,8 +1,10 @@
 import 'package:blue/screens/about_screen.dart';
 import 'package:blue/screens/all_saved_posts_screen.dart';
+import 'package:blue/services/fade_on_scroll.dart';
 import 'package:blue/widgets/custom_image.dart';
 import 'package:carousel_pro/carousel_pro.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
@@ -18,6 +20,22 @@ import './edit_profile_screen.dart';
 import './settings_screen.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
+// class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+//   final AppBar appBar;
+
+//   CustomAppBar({Widget flexibleSpace,List<Widget> actions, bool centerTitle, Text title,double elevation }): appBar = new AppBar(flexibleSpace: flexibleSpace,actions: actions, centerTitle: centerTitle, title: title,elevation: elevation,);
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return new Theme(
+//       child: appBar,
+//       data: new ThemeData(primaryColor: Colors.transparent)
+//     );
+//   }
+
+//   @override
+//   Size get preferredSize => appBar.preferredSize;
+// }
 
 class ProfileScreen extends StatefulWidget {
   final String profileId;
@@ -36,8 +54,11 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen>
     with AutomaticKeepAliveClientMixin<ProfileScreen> {
+ 
   // final PostInteractions postInteractions;
   // _ProfileScreenState(this.postInteractions);
+  
+final controller = ScrollController();
   bool compactPosts = true;
   String username = '';
   bool isFollowing = false;
@@ -60,6 +81,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   DocumentSnapshot lastRepostDocument;
   String sortBy = 'Recent';
   bool sortDropDown = false;
+  
   @override
   void initState() {
     super.initState();
@@ -68,6 +90,21 @@ class _ProfileScreenState extends State<ProfileScreen>
     getFollowers();
     getFollowing();
     checkIfFollowing();
+    controller.addListener(onScroll);
+  }
+  @override
+void dispose() {
+  controller.removeListener(onScroll);
+  super.dispose();
+}
+    double screenHeight;
+  double barOpacity;
+  onScroll() {
+    setState(() {
+     barOpacity = controller.offset/ (0.5*screenHeight);
+     if(barOpacity > 1) barOpacity = 1;                    
+       if(barOpacity <0 ) barOpacity = 0;
+    });
   }
 
   checkIfFollowing() async {
@@ -377,7 +414,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     if (isProfileOwner) {
       return IconButton(
           icon: Icon(
-            FlutterIcons.bookmark_mco,
+            FluentIcons.bookmark_24_regular,
             size: 24,
           ),
           onPressed: () {
@@ -409,9 +446,9 @@ class _ProfileScreenState extends State<ProfileScreen>
               child: CachedNetworkImage(
                 imageUrl: user.headerUrl,
                 fit: BoxFit.cover,
-                height: 160,
+                height: 130,
               ),
-              height: 160,
+              height: 130,
               width: double.infinity,
             ),
             Row(
@@ -553,36 +590,59 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
+  
+
+
   bool get wantKeepAlive => true;
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Scaffold(
-      backgroundColor: Theme.of(context).canvasColor,
+    screenHeight = MediaQuery.of(context).size.height;
+    return Scaffold(backgroundColor: Colors.transparent,extendBodyBehindAppBar: false
       // Persistent AppBar that never scrolls
-      appBar: PreferredSize(preferredSize: Size.fromHeight(50),
-              child: AppBar(
-            backgroundColor: Colors.transparent,
-            centerTitle: false,
-            elevation: 0,
-            title: Text(
-              widget.profileName,
-            ),
-            actions: <Widget>[
-              buildProfileIconButton(),
-              IconButton(
-                  icon: Icon(
-                    FlutterIcons.settings_fea,
-                    size: 20,
-                    color: Theme.of(context).iconTheme.color,
-                  ),
-                  onPressed: () {
-                    Navigator.pushNamed(context, SettingsScreen.routeName);
-                  }),
-            ]),
+     , appBar: PreferredSize(
+        preferredSize: Size.fromHeight(42),
+        child: AnimatedBuilder(animation:  controller,
+        builder: (BuildContext context, Widget child){
+    barOpacity =controller.offset/ (0.2*screenHeight);
+     if(barOpacity > 1) barOpacity = 1;
+       if(barOpacity <0 ) barOpacity = 0;
+        return AppBar(
+                flexibleSpace: Container(
+        //   decoration: BoxDecoration(
+        //     gradient: LinearGradient(
+        //       begin: Alignment(0,-0.5),
+        //         end: Alignment(0,1),
+        //         colors: <Color>[
+        //       Theme.of(context).backgroundColor,
+        //        Theme.of(context).canvasColor.withOpacity(barOpacity),
+        //     ])          
+        //  ),        
+     ), 
+     backgroundColor: Theme.of(context).backgroundColor,
+                centerTitle: false,
+                elevation: 0,
+                title: Text(
+                    widget.profileName,
+                ),
+                actions: <Widget>[
+                    buildProfileIconButton(),
+                    IconButton(
+                        icon: Icon(
+                          FluentIcons.settings_24_regular,
+                          size: 24,
+                          color: Theme.of(context).iconTheme.color,
+                        ),
+                        onPressed: () {
+                          Navigator.pushNamed(context, SettingsScreen.routeName);
+                        }),
+                ],
+                  );}
+        ),
+        
       ),
       body: Container(
-        child: NestedScrollView(
+        child: NestedScrollView(controller: controller,
           // allows you to build a list of elements that would be scrolled away till the body reached the top
           headerSliverBuilder: (context, _) {
             return [
@@ -603,18 +663,22 @@ class _ProfileScreenState extends State<ProfileScreen>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      GestureDetector(  onTap: () {
+                      GestureDetector(
+                        onTap: () {
                           setState(() {
                             sortDropDown = !sortDropDown;
                           });
                         },
-                                              child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 12,vertical: 12),
+                        child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 12),
                             decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10)),
                             child: Row(
                               children: <Widget>[
-                               sortDropDown? Icon(Icons.arrow_drop_up):Icon(Icons.arrow_drop_down),
+                                sortDropDown
+                                    ? Icon(Icons.arrow_drop_up)
+                                    : Icon(Icons.arrow_drop_down),
                                 Icon(Icons.sort),
                               ],
                             )),
@@ -635,74 +699,95 @@ class _ProfileScreenState extends State<ProfileScreen>
                       )
                     ],
                   )),
-             Divider(height: 0.3,thickness: 0.3,color: Colors.grey,),
-              if(sortDropDown)Material(
-                color: Theme.of(context).backgroundColor,
-                elevation: 1,
-                borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(8),
-                    bottomRight: Radius.circular(8)),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Container( width: double.infinity,
-                      child: InkWell(
-                        onTap: (){
-setState(() {
-  sortBy = 'Recent';
-});
-                        },
-                        child: Padding(
-                          padding:
-                              EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                          child: Center(
-                            child: Text(
-                              'Recent',
-                              style: TextStyle(fontSize: 18,color: sortBy == 'Recent'? Colors.blue:Theme.of(context).iconTheme.color),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(  width: double.infinity,
-                      child: InkWell(
-                           onTap: (){
-setState(() {
-  sortBy = 'Old';
-});
-                        },
-                        child: Padding(
-                          padding:
-                              EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                     
-                          child: Center(
-                            child: Text(
-                              'Old',
-                              style: TextStyle(fontSize: 18,color: sortBy == 'Old'? Colors.blue:Theme.of(context).iconTheme.color),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(    width: double.infinity,
-                      child: InkWell(   onTap: (){
-setState(() {
-  sortBy = 'Popular';
-});
-                        },
-                        child: Padding(
-                          
+              Divider(
+                height: 0.3,
+                thickness: 0.3,
+                color: Colors.grey,
+              ),
+              if (sortDropDown)
+                Material(
+                  color: Theme.of(context).backgroundColor,
+                  elevation: 1,
+                  borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(8),
+                      bottomRight: Radius.circular(8)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        width: double.infinity,
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              sortBy = 'Recent';
+                            });
+                          },
+                          child: Padding(
                             padding: EdgeInsets.symmetric(
                                 vertical: 10, horizontal: 15),
-                        
-                            child:
-                                Center(child: Text('Popular', style: TextStyle(fontSize: 18,color: sortBy == 'Popular'? Colors.blue:Theme.of(context).iconTheme.color)))),
+                            child: Center(
+                              child: Text(
+                                'Recent',
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    color: sortBy == 'Recent'
+                                        ? Colors.blue
+                                        : Theme.of(context).iconTheme.color),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(child: Container()
+                      Container(
+                        width: double.infinity,
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              sortBy = 'Old';
+                            });
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 15),
+                            child: Center(
+                              child: Text(
+                                'Old',
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    color: sortBy == 'Old'
+                                        ? Colors.blue
+                                        : Theme.of(context).iconTheme.color),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: double.infinity,
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              sortBy = 'Popular';
+                            });
+                          },
+                          child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 10, horizontal: 15),
+                              child: Center(
+                                  child: Text('Popular',
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          color: sortBy == 'Popular'
+                                              ? Colors.blue
+                                              : Theme.of(context)
+                                                  .iconTheme
+                                                  .color)))),
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+              Expanded(child: Container()),
             ],
           ),
         ),

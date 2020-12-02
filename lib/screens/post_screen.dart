@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:ui';
 import 'package:blue/providers/submit_state.dart';
+import 'package:blue/screens/editor_field_screen.dart';
 import 'package:blue/services/link_preview.dart';
 import 'package:blue/widgets/show_dialog.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:blue/screens/select_topic_screen.dart';
 import 'package:blue/services/video_controls.dart';
@@ -17,6 +19,7 @@ import 'package:provider/provider.dart';
 import 'package:video_compress/video_compress.dart' as Vc;
 import 'package:flutter_video_compress/flutter_video_compress.dart' as Fvc;
 import 'package:visibility_detector/visibility_detector.dart';
+import 'package:zefyr/zefyr.dart';
 import 'dart:io';
 import './home.dart';
 import 'package:http/http.dart';
@@ -33,6 +36,8 @@ import 'package:video_player/video_player.dart';
 import 'package:link_previewer/link_previewer.dart';
 import '../services/video_processing.dart';
 import 'package:path/path.dart' as Path;
+import 'package:quill_delta/quill_delta.dart';
+import 'package:zefyr/src/widgets/field.dart';
 enum ContentInsertOptions { Device, Camera, Carousel }
 
 class PostScreen extends StatefulWidget {
@@ -42,7 +47,7 @@ class PostScreen extends StatefulWidget {
 }
 
 class _PostScreenState extends State<PostScreen> {
-  List<Container> contents = [
+  List<Widget> contents = [                            //**choose btween container and widget due to zefyr
     Container(),
   ];
   List<File> videos = [];
@@ -55,7 +60,9 @@ class _PostScreenState extends State<PostScreen> {
   VideoPlayerController _videoPlayerController;
   VideoPlayerController _cameraVideoPlayerController;
   TextEditingController titleController = TextEditingController();
-  List<TextEditingController> textControllers = List();
+  // List<TextEditingController> textControllers = List();
+   List<ZefyrController> textControllers = List();
+  List<FocusNode> textFocusNodes = List();
   List<TextEditingController> linkControllers = List();
   Map<int, dynamic> contentsMap = {};
   Map<String, dynamic> firestoreContents = {};
@@ -542,23 +549,36 @@ class _PostScreenState extends State<PostScreen> {
     Navigator.pop(context);
   }
 
-  Container textDisplay(TextEditingController textController, int index) {
+  Widget textDisplay(ZefyrController textController,
+    // TextEditingController textController,
+   int index,
+      FocusNode textFocusNode) {
     Map infoMap = {};
     infoMap['type'] = 'text';
     contentsInfo[index] = infoMap;
     contentsMap[index] = textController;
     contentType.add('text');
     print(contentsMap);
-    return Container(
-        key: UniqueKey(),
-        padding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-        child: TextField(
-          controller: textController,
-          decoration:
-              InputDecoration(border: InputBorder.none, hintText: 'Text...'),
-          keyboardType: TextInputType.multiline,
-          maxLines: null,
-        ));
+    return 
+    ZefyrField(      height: 200.0,
+      decoration: InputDecoration(border: InputBorder.none, hintText: 'Text...',),
+      controller: textController,key: UniqueKey(),
+      focusNode: textFocusNode,
+      autofocus: true,
+      imageDelegate: CustomImageDelegate(),
+      physics: AlwaysScrollableScrollPhysics(),
+        // key: UniqueKey(),
+        // padding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+        // child: TextField(
+        //   controller: textController,
+        //   focusNode: textFocusNode,
+        //   key: UniqueKey(),
+        //   decoration:
+        //       InputDecoration(border: InputBorder.none, hintText: 'Text...'),
+        //   keyboardType: TextInputType.multiline,
+        //   maxLines: null,
+        // )
+        );
   }
 
   Container linkDisplay(TextEditingController linkController, bool isLoading,
@@ -798,7 +818,7 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {    
+  Widget build(BuildContext context) {
     List<Widget> _contents = [];
     print(contentsData);
     for (int i = 0; i < contentsData.length; i++) {
@@ -809,7 +829,7 @@ class _PostScreenState extends State<PostScreen> {
           child: contentsData[i]['widget']));
     }
 
-    return Scaffold( 
+    return Scaffold(
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: AppBar(
             elevation: 0.5,
@@ -828,44 +848,66 @@ class _PostScreenState extends State<PostScreen> {
                         description: "Do you want to save your work as Draft?",
                         rightButtonText: "Save Draft",
                         leftButtonText: "Cancel",
-                        rightButtonFunction: ()  async {
+                        rightButtonFunction: () async {
                           List<Map> _modifiedContentsData = contentsData;
-                        Directory appDocDir;
+                          Directory appDocDir;
                           // Directory(_storageInfo[0].rootDir + '/MyCreatedFolder').create();
-                          for(int i =0; i< _modifiedContentsData.length; i++){
-                          _modifiedContentsData[i].remove('widget');
-                            switch ( _modifiedContentsData[i]['info']['type']) {
+                          for (int i = 0;
+                              i < _modifiedContentsData.length;
+                              i++) {
+                            _modifiedContentsData[i].remove('widget');
+                            switch (_modifiedContentsData[i]['info']['type']) {
                               case 'image':
-                              final _fileName = Path.basename( _modifiedContentsData[i]['content'].path);
-                              if( appDocDir == null)
-                             appDocDir = await getApplicationDocumentsDirectory();
-                                 String _path = appDocDir.path + '/$postId/$_fileName'; 
-                                await _modifiedContentsData[i]['content'].copy(_path);
-                               _modifiedContentsData[i]['content'] =  _path ;
+                                final _fileName = Path.basename(
+                                    _modifiedContentsData[i]['content'].path);
+                                if (appDocDir == null)
+                                  appDocDir =
+                                      await getApplicationDocumentsDirectory();
+                                String _path =
+                                    appDocDir.path + '/$postId/$_fileName';
+                                await _modifiedContentsData[i]['content']
+                                    .copy(_path);
+                                _modifiedContentsData[i]['content'] = _path;
                                 break;
                               case 'video':
-                                       final _fileName = Path.basename( _modifiedContentsData[i]['content'].path);
-                            if( appDocDir == null)appDocDir = await getApplicationDocumentsDirectory();
-                                 String _path = appDocDir.path + '/$postId/$_fileName'; 
-                                await _modifiedContentsData[i]['content'].copy(_path);
-                               _modifiedContentsData[i]['content'] =  _path ;
+                                final _fileName = Path.basename(
+                                    _modifiedContentsData[i]['content'].path);
+                                if (appDocDir == null)
+                                  appDocDir =
+                                      await getApplicationDocumentsDirectory();
+                                String _path =
+                                    appDocDir.path + '/$postId/$_fileName';
+                                await _modifiedContentsData[i]['content']
+                                    .copy(_path);
+                                _modifiedContentsData[i]['content'] = _path;
                                 break;
                               case 'carousel':
-                          if( appDocDir == null) appDocDir = await getApplicationDocumentsDirectory();
-                                 String _path = appDocDir.path + '/$postId';
-                                 List _paths= []; 
-                                 for(int f= 0; f< _modifiedContentsData[i]['content'].length; f++){
-                                            var _fileName = Path.basename( _modifiedContentsData[i]['content'][f].path);
-                                                 await _modifiedContentsData[i]['content'][f].copy(_path + '/$_fileName');
-                                         _paths.add(_path + '/$_fileName');
-                                 }
-                               _modifiedContentsData[i]['content'] =  _paths ;
+                                if (appDocDir == null)
+                                  appDocDir =
+                                      await getApplicationDocumentsDirectory();
+                                String _path = appDocDir.path + '/$postId';
+                                List _paths = [];
+                                for (int f = 0;
+                                    f <
+                                        _modifiedContentsData[i]['content']
+                                            .length;
+                                    f++) {
+                                  var _fileName = Path.basename(
+                                      _modifiedContentsData[i]['content'][f]
+                                          .path);
+                                  await _modifiedContentsData[i]['content'][f]
+                                      .copy(_path + '/$_fileName');
+                                  _paths.add(_path + '/$_fileName');
+                                }
+                                _modifiedContentsData[i]['content'] = _paths;
                                 break;
                               case 'text':
-                                  _modifiedContentsData[i]['content'] = contentsData[i]['content'].text;
+                                _modifiedContentsData[i]['content'] =
+                                    contentsData[i]['content'].text;
                                 break;
-                               case 'link':
-                                   _modifiedContentsData[i]['content'] = contentsData[i]['content'].text;
+                              case 'link':
+                                _modifiedContentsData[i]['content'] =
+                                    contentsData[i]['content'].text;
                                 break;
                               default:
                             }
@@ -873,16 +915,16 @@ class _PostScreenState extends State<PostScreen> {
                           var drafts = preferences.get('drafts');
                           if (drafts == null) {
                             drafts = jsonEncode({});
-                            preferences.setString('drafts',   drafts);
+                            preferences.setString('drafts', drafts);
                           }
-                          
+
                           Map _drafts = jsonDecode(drafts);
                           _drafts[postId] = {
                             'title': titleController.text,
                             'contentsData': _modifiedContentsData
                           };
-                          preferences.setString('drafts',jsonEncode( _drafts ));
-                                  print(_drafts );
+                          preferences.setString('drafts', jsonEncode(_drafts));
+                          print(_drafts);
                           Navigator.of(context).pop();
                           Navigator.of(context).pop();
                         },
@@ -939,18 +981,23 @@ class _PostScreenState extends State<PostScreen> {
                           FlutterIcons.text_ent,
                         ),
                         onPressed: () {
-                          TextEditingController textController =
-                              TextEditingController();
+                          // TextEditingController textController =
+                          //     TextEditingController();
+                                ZefyrController textController =
+                              ZefyrController(NotusDocument());
+                          FocusNode textFocusNode = FocusNode();
                           setState(() {
                             textControllers.add(textController);
+                            textFocusNodes.add(textFocusNode);
                             fileIndex++;
                             contentsData.add({
                               'info': {'type': 'text'},
                               'content': textController,
-                              'widget': textDisplay(textController, fileIndex)
+                              'widget': textDisplay(
+                                  textController, fileIndex, textFocusNode)
                             });
-                            contents
-                                .add(textDisplay(textController, fileIndex));
+                            contents.add(textDisplay(
+                                textController, fileIndex, textFocusNode));
                           });
                         }),
                     IconButton(
@@ -991,62 +1038,65 @@ class _PostScreenState extends State<PostScreen> {
             ],
             backgroundColor: Theme.of(context).canvasColor //TODO blue gradient
             ),
-        body: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-                width: double.infinity,
-                child: TextField(
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                  maxLines: 2,
-                  minLines: 1,
-                  controller: titleController,
-                  decoration: InputDecoration(
-                    hintText: "Title",
-                    hintStyle: TextStyle(
-                        color:
-                            Theme.of(context).iconTheme.color.withOpacity(0.8)),
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
-              Divider(
-                color: Colors.grey,
-                height: 1,
-                thickness: 0.3,
-              ),
-              if (_contents.length > 0)
-                Column(
-                  children: _contents,
-                )
-              else
+        body: ZefyrScaffold(
+                  child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+             
                 Container(
-                  height: MediaQuery.of(context).size.height * 0.35,
-                  alignment: Alignment.bottomCenter,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Icon(
-                          FlutterIcons.addfile_ant,
-                          size: 35,
-                        ),
-                      ),
-                      Text(
-                        'Add Content',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.w500),
-                      ),
-                    ],
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                  width: double.infinity,
+                  child: TextField(
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                    maxLines: 2,
+                    minLines: 1,
+                    controller: titleController,
+                    decoration: InputDecoration(
+                      hintText: "Title",
+                      hintStyle: TextStyle(
+                          color:
+                              Theme.of(context).iconTheme.color.withOpacity(0.8)),
+                      border: InputBorder.none,
+                    ),
                   ),
                 ),
-              SizedBox(
-                height: 30,
-              )
-            ],
+                Divider(
+                  color: Colors.grey,
+                  height: 1,
+                  thickness: 0.3,
+                ),
+                if (_contents.length > 0)
+                  Column(
+                    children: _contents,
+                  )
+                else
+                  Container(
+                    height: MediaQuery.of(context).size.height * 0.35,
+                    alignment: Alignment.bottomCenter,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Icon(
+                            FluentIcons.collections_add_24_regular,
+                            size: 45,
+                          ),
+                        ),
+                        Text(
+                          'Add Content',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                  ),
+                SizedBox(
+                  height: 30,
+                )
+              ],
+            ),
           ),
         ));
   }
@@ -1174,5 +1224,36 @@ class _PostScreenState extends State<PostScreen> {
                 ),
               ),
             ));
+  }
+}
+
+
+class CustomImageDelegate implements ZefyrImageDelegate<ImageSource> {
+  @override
+  ImageSource get cameraSource => ImageSource.camera;
+
+  @override
+  ImageSource get gallerySource => ImageSource.gallery;
+
+  @override
+  Future<String> pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final file = await picker.getImage(source: source);
+    if (file == null) return null;
+    return file.path;
+  }
+
+  @override
+  Widget buildImage(BuildContext context, String key) {
+    // We use custom "asset" scheme to distinguish asset images from other files.
+    if (key.startsWith('asset://')) {
+      final asset = AssetImage(key.replaceFirst('asset://', ''));
+      return Image(image: asset);
+    } else {
+      // Otherwise assume this is a file stored locally on user's device.
+      final file = File.fromUri(Uri.parse(key));
+      final image = FileImage(file);
+      return Image(image: image);
+    }
   }
 }

@@ -109,6 +109,11 @@ catch(e){
    SharedPreferences preferences ;
 User currentUser;
 String accountType;
+
+class FakeFocusIntent extends Intent {
+  const FakeFocusIntent();
+}
+
 class MyApp extends StatelessWidget {
   
   @override
@@ -120,7 +125,13 @@ class MyApp extends StatelessWidget {
 
     return PW.Provider(
        auth: AuthService(),
-          child: MaterialApp(
+          child: MaterialApp(  shortcuts: Map<LogicalKeySet, Intent>.from(WidgetsApp.defaultShortcuts)
+        ..addAll(<LogicalKeySet, Intent>{
+          LogicalKeySet(LogicalKeyboardKey.arrowLeft): const FakeFocusIntent(),
+          LogicalKeySet(LogicalKeyboardKey.arrowRight): const FakeFocusIntent(),
+          LogicalKeySet(LogicalKeyboardKey.arrowDown): const FakeFocusIntent(),
+          LogicalKeySet(LogicalKeyboardKey.arrowUp): const FakeFocusIntent(),
+        }),
           debugShowCheckedModeBanner: false,
           title: 'Scrible',
           theme:notifier.darkTheme == true? ThemeData(

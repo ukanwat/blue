@@ -34,8 +34,7 @@ class _TabsScreenState extends State<TabsScreen> {
         onPageChanged: onPageChanged,
 
         children: <Widget>[
-        HomeScreen(),
-       // RaisedButton(onPressed: logout,child: Text('Logout'),),
+         HomeScreen(),
           ExploreScreen(),
           Container(),
          CommunicationTabbarScreen(),
