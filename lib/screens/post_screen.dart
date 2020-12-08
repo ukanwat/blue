@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:ui';
 import 'package:blue/providers/submit_state.dart';
-import 'package:blue/screens/editor_field_screen.dart';
 import 'package:blue/services/link_preview.dart';
 import 'package:blue/widgets/show_dialog.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -544,6 +543,7 @@ class _PostScreenState extends State<PostScreen> {
       videoId = Uuid().v4();
       firestoreContents = {};
     });
+     postReportsRef.document(postId).setData({'abusive': 0,'inappropriate': 0,'spam': 0,});
     Navigator.pop(context);
     Navigator.pop(context);
     Navigator.pop(context);
@@ -560,25 +560,17 @@ class _PostScreenState extends State<PostScreen> {
     contentType.add('text');
     print(contentsMap);
     return 
-    ZefyrField(      height: 200.0,
-      decoration: InputDecoration(border: InputBorder.none, hintText: 'Text...',),
-      controller: textController,key: UniqueKey(),
-      focusNode: textFocusNode,
-      autofocus: true,
-      imageDelegate: CustomImageDelegate(),
-      physics: AlwaysScrollableScrollPhysics(),
-        // key: UniqueKey(),
-        // padding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-        // child: TextField(
-        //   controller: textController,
-        //   focusNode: textFocusNode,
-        //   key: UniqueKey(),
-        //   decoration:
-        //       InputDecoration(border: InputBorder.none, hintText: 'Text...'),
-        //   keyboardType: TextInputType.multiline,
-        //   maxLines: null,
-        // )
-        );
+    Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15,vertical: 10),
+      child: ZefyrField( height: 300,
+        decoration: InputDecoration(border: InputBorder.none, hintText: 'Text...',),
+        controller: textController,key: UniqueKey(),
+        focusNode: textFocusNode,
+        autofocus: true,
+        imageDelegate: CustomImageDelegate(),
+        physics: AlwaysScrollableScrollPhysics(),
+          ),
+    );
   }
 
   Container linkDisplay(TextEditingController linkController, bool isLoading,

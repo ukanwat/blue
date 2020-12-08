@@ -60,8 +60,6 @@ import './screens/settings_screen.dart';
 import 'models/user.dart';
 import 'screens/settings/general/account_screens/email_screen.dart';
 
-// import 'package:path_provider/path_provider.dart';
-// import 'package:hive/hive.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

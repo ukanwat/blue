@@ -96,14 +96,17 @@ decoration: BoxDecoration(
   color: Theme.of(context).cardColor
 ),
 height: 40,width: double.infinity,
-margin: EdgeInsets.symmetric(vertical: 2),
+margin: EdgeInsets.symmetric(horizontal: 5,vertical: 2),
              child:Center(
-               child: Text(value,
-
-                 style: TextStyle(
-                   fontSize: 20,
-                 ),
-                 ),
+               child: Padding(
+                 padding: const EdgeInsets.only(left: 8),
+                 child: Text(value,maxLines: 1,
+overflow: TextOverflow.ellipsis,
+                   style: TextStyle(
+                     fontSize: 20,
+                   ),
+                   ),
+               ),
              ),
            ),
          ));
@@ -140,9 +143,9 @@ margin: EdgeInsets.symmetric(vertical: 2),
           children: <Widget>[
             Text(
               "Save to Collection",
-              style: TextStyle(
-                fontSize: 18.0,
-                fontWeight: FontWeight.w600,
+              style: TextStyle(color: Theme.of(context).iconTheme.color.withOpacity(0.8),
+                fontSize: 16.0,
+                fontWeight: FontWeight.w500,
               ),
             ),
                SizedBox(height: 10.0),
@@ -160,7 +163,7 @@ margin: EdgeInsets.symmetric(vertical: 2),
  SizedBox(height: 20.0),
        isLoading?
        circularProgress():
-           Container(
+           Container(constraints: BoxConstraints.loose(Size.fromHeight(300)),
              height:  MediaQuery.of(context).size.height*0.4 > 44*collectionList.length.toDouble()?44*collectionList.length.toDouble(): MediaQuery.of(context).size.height*4.0,
           child: ListView(
             physics: BouncingScrollPhysics(),

@@ -6,11 +6,13 @@ import 'package:blue/screens/profile_screen.dart';
 import 'package:blue/services/link_preview.dart';
 import 'package:blue/services/video_controls.dart';
 import 'package:blue/services/video_thumbnail_generator.dart';
+import 'package:blue/widgets/report_dialog.dart';
 import 'package:blue/widgets/repost_dialog.dart';
 import 'package:blue/widgets/save_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_pro/carousel_pro.dart';
 import 'package:flick_video_player/flick_video_player.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:video_player/video_player.dart';
@@ -25,11 +27,12 @@ import '../screens/comments_screen.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum CompactPostThumbnailType{
+enum CompactPostThumbnailType {
   video,
   image,
   link,
 }
+
 class Post extends StatefulWidget {
   final String postId;
   final String ownerId;
@@ -44,7 +47,7 @@ class Post extends StatefulWidget {
   final List<dynamic> tags;
   final bool isCompact;
   // final PostInteractions postInteractions;
-   
+
   Post(
       {this.postId,
       this.ownerId,
@@ -62,8 +65,7 @@ class Post extends StatefulWidget {
       });
 
   factory Post.fromDocument(DocumentSnapshot doc, {bool isCompact}) {
-     if(isCompact == null)
-     isCompact = false;
+    if (isCompact == null) isCompact = false;
     return Post(
       postId: doc['postId'],
       ownerId: doc['ownerId'],
@@ -153,17 +155,15 @@ class _PostState extends State<Post> {
   var compactPostThumbnailData;
   CompactPostThumbnailType thumbnailType;
   OverlayEntry overlayOptions;
-        
-      FlickManager    flickManager ;
+  bool isFollowing = false;
+  bool isDownvoted = false;
+  FlickManager flickManager;
   showOptions() {
     overlayOptions = createOverlayOptions();
     Overlay.of(context).insert(overlayOptions);
   }
-  
+
   OverlayEntry createOverlayOptions() {
-    RenderBox renderBox = context.findRenderObject();
-    var size = renderBox.size;
-    var offset = renderBox.localToGlobal(Offset.zero);
 
     return OverlayEntry(
         builder: (context) => Stack(
@@ -184,8 +184,8 @@ class _PostState extends State<Post> {
                 )),
                 Positioned(
                   left: 0,
-                  top: offset.dy + size.height - 170,
-                  width: MediaQuery.of(context).size.width * 0.55,
+                  top: 85,
+                  width: 250,
                   child: Material(
                     color: Colors.transparent,
                     elevation: 0.0,
@@ -209,14 +209,29 @@ class _PostState extends State<Post> {
                         child: Column(
                           children: <Widget>[
                             ListTile(
+                              onTap: (){
+                                setState(() {
+                                  overlayOptions?.remove();
+                                });
+                                showDialog(
+        context: context,
+        builder: (context) {
+          return ReportDialog(widget.postId, widget.title);
+        });
+                              },
                               dense: true,
-                              leading: Icon(FlutterIcons.flag_fea,
-                              color: Theme.of(context).iconTheme.color,
+                              leading: Icon(
+                                FluentIcons.flag_24_regular,
+                                color: Theme.of(context).iconTheme.color,
                               ),
                               title: Text('Report'),
                             ),
-                            ListTile(     dense: true,
-                              leading: Icon(FlutterIcons.block_mdi,  color: Theme.of(context).iconTheme.color,),
+                            ListTile(
+                              dense: true,
+                              leading: Icon(
+                                FluentIcons.block_24_regular,
+                                color: Theme.of(context).iconTheme.color,
+                              ),
                               title: Text('Not Interested'),
                               onTap: () {
                                 setState(() {
@@ -225,10 +240,35 @@ class _PostState extends State<Post> {
                                 });
                               },
                             ),
-                            ListTile(     dense: true,
-                              leading: Icon(
-                                  FlutterIcons.arrow_down_bold_outline_mco,  color: Theme.of(context).iconTheme.color,),
+                            ListTile(
+                              dense: true,
+                              leading: Transform.rotate(
+                                angle: 59.7,
+                                child: Icon(
+                                  FluentIcons.keyboard_shift_24_regular,
+                                  color: Theme.of(context).iconTheme.color,
+                                ),
+                              ),
                               title: Text('Downvote'),
+                            ),
+                             if(isFollowing)
+                             ListTile(
+                              dense: true,
+                              leading: Icon(
+                                  FluentIcons.channel_unfollow_24_regular,
+                                  color: Theme.of(context).iconTheme.color,
+                                
+                              ),onTap: ()async{
+                             QuerySnapshot followersDoc = await followersRef.document(widget.ownerId).collection('userFollowers').where('followers',arrayContains: currentUserId).getDocuments(); 
+                             followersDoc.documents.forEach((doc) {
+                              followersRef.document(widget.ownerId).collection('userFollowers').document(doc.documentID).updateData({'followers': FieldValue.arrayRemove([currentUserId])}); 
+                             });
+                             QuerySnapshot followingDoc = await followingRef.document(currentUserId).collection('userFollowing').where('following',arrayContains: widget.ownerId).getDocuments();
+                              followingDoc.documents.forEach((doc) {
+                              followingRef.document(currentUserId).collection('userFollowers').document(doc.documentID).updateData({'followers': FieldValue.arrayRemove([widget.ownerId])}); 
+                             });
+                              },
+                              title: Text('Unfollow'),
                             )
                           ],
                         ),
@@ -239,9 +279,8 @@ class _PostState extends State<Post> {
               ],
             ));
   }
-  
+
   buildPostHeader() {
-    bool isPostOwner = currentUserId == ownerId;
     return Container(
       color: Theme.of(context).backgroundColor,
       child: Column(
@@ -249,28 +288,218 @@ class _PostState extends State<Post> {
           Container(
             color: Theme.of(context).backgroundColor,
             width: MediaQuery.of(context).size.width,
-            padding: EdgeInsets.only(left: 13, top: 8, right: 13, bottom: 3),
+            padding: EdgeInsets.only(left: 10, top: 10, right: 10, bottom: 0),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
+                CircleAvatar(
+                  radius: 18,
+                  backgroundImage: CachedNetworkImageProvider(photoUrl),
+                  backgroundColor: Colors.grey,
+                ),
                 Expanded(
-                  child: Container(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 10),
                     child: Text(
-                      widget.title,
-                      style: TextStyle(
-                          
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                        'Hope you weren’t planning to watchiiiii Wonder Woman 1984 with an HBO Max free trial', ///////******/
+
+                        //  widget.title,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'OpenSans',
+                            fontSize: 16),
+                        maxLines: tagBarVisible ? 5 : 2,
+                        overflow: TextOverflow.ellipsis),
                   ),
                 ),
               ],
             ),
           ),
+          Container(
+            width: MediaQuery.of(context).size.width,
+            color: Theme.of(context).backgroundColor,
+            child: Row(
+              children: [
+                GestureDetector(
+                    child: Container(
+                      height: 38,
+                      padding: const EdgeInsets.only(
+                          bottom: 6, left: 15, right: 16, top: 3),
+                      child: Icon(
+                        FluentIcons.more_20_filled,
+                      ),
+                    ),
+                    onTap: () {
+                      showOptions();
+                    }),
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Expanded(
+                        child: Text(widget.username,
+                            maxLines: 1,
+                            overflow: TextOverflow.fade,
+                            softWrap: false,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Theme.of(context)
+                                  .iconTheme
+                                  .color
+                                  .withOpacity(0.95),
+                            )),
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      if(!isFollowing && !(widget.ownerId == currentUserId))
+                      Container(
+                        height: 22,
+                        child: GestureDetector(
+                          onTap: () async {
+                            var lastFollowingDoc = await followingRef
+                                .document(currentUser?.id)
+                                .collection('userFollowing')
+                                .orderBy('order', descending: true)
+                                .limit(1)
+                                .getDocuments();
+                            if (lastFollowingDoc.documents.length == 0) {
+                              followingRef
+                                  .document(currentUser?.id)
+                                  .collection('userFollowing')
+                                  .document()
+                                  .setData({
+                                'order': 1,
+                                'following': [
+                                  widget.ownerId,
+                                ],
+                              }, merge: true);
+                            } else if (lastFollowingDoc.documents.length == 1 &&
+                                lastFollowingDoc.documents.first
+                                        .data['following'].length <
+                                    10000) {
+                              followingRef
+                                  .document(currentUser?.id)
+                                  .collection('userFollowing')
+                                  .document(lastFollowingDoc
+                                      .documents.first.documentID)
+                                  .updateData({
+                                'following':
+                                    FieldValue.arrayUnion([widget.ownerId])
+                              });
+                            } else if (lastFollowingDoc.documents.length == 1 &&
+                                lastFollowingDoc.documents.first.data['following'].length > 10000) {
+                              followingRef
+                                  .document(currentUser?.id)
+                                  .collection('userFollowing')
+                                  .document().setData({
+                                'following':[widget.ownerId],
+                                'order': lastFollowingDoc.documents.first.data['order']+ 1,
+                              });
+                            }
+
+                             var lastFollowersDoc = await followersRef
+                                .document(widget.ownerId)
+                                .collection('userFollowers')
+                                .orderBy('order', descending: true)
+                                .limit(1)
+                                .getDocuments();
+                            if (lastFollowersDoc.documents.length == 0) {
+                              followersRef
+                                  .document(widget.ownerId)
+                                  .collection('userFollowers')
+                                  .document()
+                                  .setData({
+                                'order': 1,
+                                'followers': [
+                                  currentUserId,
+                                ],
+                              }, merge: true);
+                            } else if (lastFollowersDoc.documents.length == 1 &&
+                                lastFollowersDoc.documents.first
+                                        .data['following'].length <
+                                    10000) {
+                              followersRef
+                                  .document(widget.ownerId)
+                                  .collection('userFollowers')
+                                  .document(lastFollowersDoc
+                                      .documents.first.documentID)
+                                  .updateData({
+                                'followers':
+                                    FieldValue.arrayUnion([currentUserId])
+                              });
+                            } else if (lastFollowersDoc.documents.length == 1 &&
+                                lastFollowersDoc.documents.first.data['followers'].length > 10000) {
+                              followersRef
+                                  .document(currentUser?.id)
+                                  .collection('userFollowers')
+                                  .document().setData({
+                                'followers':[widget.ownerId],
+                                'order': lastFollowersDoc.documents.first.data['order']+ 1,
+                              });
+                            }
+                            List<String> followingList = preferences.getStringList('following');
+                            if(!followingList.contains(widget.ownerId))
+                            followingList.add(widget.ownerId);
+                            preferences.setStringList('following',followingList);
+
+                          },
+                          child: Container(
+                              height: 22,
+                              width: 22,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                                color: Colors.blue,
+                              ),
+                              child: Icon(
+                                FluentIcons.add_16_filled,
+                                color: Colors.white,
+                                size: 18,
+                              )),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                tagBarVisible
+                    ? Container(
+                        height: 38,
+                        padding: const EdgeInsets.only(
+                            bottom: 6, left: 15, right: 15, top: 3),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              tagBarVisible = false;
+                            });
+                          },
+                          child: Icon(
+                            FlutterIcons.ios_arrow_up_ion,
+                            size: 22,
+                          ),
+                        ),
+                      )
+                    : Container(
+                        height: 38,
+                        padding: const EdgeInsets.only(
+                            bottom: 6, left: 15, right: 15, top: 3),
+                        child: GestureDetector(
+                          onTap: () async {
+                            setState(() {
+                              tagBarVisible = true;
+                            });
+                          },
+                          child: Icon(
+                            FlutterIcons.ios_arrow_down_ion,
+                            size: 22,
+                          ),
+                        ),
+                      ),
+              ],
+            ),
+          ),
           if (tagBarVisible)
             Container(
-              
               margin: EdgeInsets.only(top: 0, bottom: 0),
               height: 28,
               child: Row(
@@ -298,7 +527,8 @@ class _PostState extends State<Post> {
                           );
                           return InkWell(
                             onTap: () {
-                              Navigator.of(context).pushNamed(TagScreen.routeName,
+                              Navigator.of(context).pushNamed(
+                                  TagScreen.routeName,
                                   arguments: tags[i]);
                             },
                             child: Container(
@@ -323,576 +553,281 @@ class _PostState extends State<Post> {
                 ],
               ),
             ),
-          Container(
-                      color: Theme.of(context).backgroundColor,
-                      margin: EdgeInsets.zero,
-            padding: EdgeInsets.only(left: 13, top: 0, bottom: 0, right: 0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                CircleAvatar(
-                  radius: 15,
-                  backgroundImage: CachedNetworkImageProvider(photoUrl),
-                  backgroundColor: Colors.grey,
-                ),
-                SizedBox(
-                  width: 8,
-                ),
-                Container(
-                  height: 24,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-
-                    username,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                         
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 10,
-                ),
-                Expanded(
-                  child: Container(
-                    height: 24,
-                    child: FittedBox(
-                      fit: BoxFit.none,
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        height: 20,
-                        width: 70,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: Colors.blue,
-                        ),
-                        child: RawMaterialButton(
-                          child: Text(
-                            '+',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          onPressed: null,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                tagBarVisible
-                    ? SizedBox(
-                        height: 40,
-                        width: 40,
-                        child: IconButton(
-                          iconSize: 28,
-                          onPressed: () {
-                            setState(() {
-                              tagBarVisible = false;
-                            });
-                          },
-                          icon: Icon(
-                            Icons.keyboard_arrow_up,
-                          ),
-                        ),
-                      )
-                    : SizedBox(
-                        height: 40,
-                        width: 40,
-                        child: IconButton(
-                          iconSize: 28,
-                          onPressed: () async {
-                            setState(() {
-                              tagBarVisible = true;
-                            });
-                          },
-                          icon: Icon(
-                            Icons.keyboard_arrow_down,
-                          ),
-                        ),
-                      ),
-                isSaved
-                    ? SizedBox(
-                        height: 40,
-                        width: 40,
-                        child: IconButton(
-                          iconSize: 22,
-                          onPressed: () {
-                            setState(() {
-                              isSaved = false;
-                              showSaveBar = false;
-                              savedPostsRef              // TODO
-                                  .document(currentUser?.id)
-                                  .collection('All')
-                                  .document(postId)
-                                  .delete();
-                            });
-                          },
-                          icon: Icon(
-                            Icons.bookmark,
-                            color: Colors.blue,
-
-                          ),
-                        ),
-                      )
-                    : SizedBox(
-                        height: 40,
-                        width: 40,
-                        child: IconButton(
-                          iconSize: 22,
-                          onPressed: () async {
-                            setState(() {
-                              isSaved = true;
-                            });
-                            var lastDoc = await savedPostsRef
-                                .document(currentUser?.id)
-                                .collection('all')
-                                .orderBy('order', descending: true)
-                                .limit(1)
-                                .getDocuments();
-                            if (lastDoc.documents.length == 0) {
-                              savedPostsRef
-                                  .document(currentUser?.id)
-                                  .collection('all')
-                                  .document()
-                                  .setData({
-                                'order': 1,
-                                'posts': [
-                                  postId,
-                                ],
-                              }, merge: true);
-                            } else if (lastDoc.documents.length == 1 &&
-                                lastDoc.documents.first.data['posts'].length <
-                                    2) {
-                              List<dynamic> _postIdList =
-                                  lastDoc.documents.first.data['posts'];
-                              _postIdList.add(postId);
-                              savedPostsRef
-                                  .document(currentUser?.id)
-                                  .collection('all')
-                                  .document(lastDoc.documents.first.documentID)
-                                  .setData({
-                                'posts': _postIdList,
-                              }, merge: true);
-                            } else if (lastDoc.documents.length == 1 &&
-                                lastDoc.documents.first.data['posts'].length >
-                                    1) {
-                              savedPostsRef
-                                  .document(currentUser?.id)
-                                  .collection('all')
-                                  .document()
-                                  .setData({
-                                'order':
-                                    lastDoc.documents.first.data['order'] + 1,
-                                'posts': [
-                                  postId,
-                                ],
-                              }, merge: true);
-                            }
-                            setState(() {
-                              showSaveBar = true;
-                            });
-                            Future.delayed(const Duration(milliseconds: 4000),
-                                () {
-                              setState(() {
-                                showSaveBar = false;
-                              });
-                            });
-                          },
-                          icon: Icon(
-                            Icons.bookmark_border,
-                          ),
-                        ),
-                      ),
-              ],
-            ),
-          ),
-          if (showSaveBar)
+          if (tagBarVisible)
             Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 0, horizontal: 6),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Text(
-                      'Saved!',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    FlatButton(
-                        onPressed: () {
-                          setState(() {
-                            showSaveBar = false;
-                          });
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) =>
-                                SaveDialog(this.widget),
-                          );
-                        },
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        child: Text(
-                          'Save to Collection',
-                          style: TextStyle(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18),
-                        ))
-                  ],
-                ))
+              width: double.infinity,
+              height: 5,
+            ),
         ],
       ),
     );
   }
-  buildCompactPostHeader(){
-     bool isPostOwner = currentUserId == ownerId;
-    return 
-              Stack(
-                children: <Widget>[
-                  Row(crossAxisAlignment: CrossAxisAlignment.start
-        ,
-          children: <Widget>[
-           
-            Expanded(
-                            child: Column(
-                    children: <Widget>[ 
-                     Padding(
-                    padding: EdgeInsets.only(left: 10, top: 5, bottom: 0, right: 0),
-                       child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          CircleAvatar(
-                            radius: 11.5,
-                            backgroundImage: CachedNetworkImageProvider(photoUrl),
-                            backgroundColor: Colors.grey,
-                          ),
-                          SizedBox(
-                            width: 8,
-                          ),
-                          Container(
-                            height: 24,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              username,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                   
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Expanded(
-                            child: Container(
-                              height: 24,
-                              child: FittedBox(
-                                fit: BoxFit.none,
-                                alignment: Alignment.centerLeft,
-                                child: Container(
-                                  height: 18,
-                                  width: 18,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(15),
-                                    color: Colors.blue,
-                                  ),
-                                  child: Icon(Icons.add, color: Colors.white,size: 16,)
-                                ),
-                              ),
-                            ),
-                          ),
-                          tagBarVisible
-                              ? SizedBox(
-                                  height: 30,
-                                  width: 30,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        tagBarVisible = false;
-                                      });
-                                    },
-                                    child: Icon(
-                                      Icons.keyboard_arrow_up,size: 28,
-                                    ),
-                                  ),
-                                )
-                              : SizedBox(
-                                  height: 30,
-                                  width: 30,
-                                  child: GestureDetector(
-                                    onTap: () async {
-                                      setState(() {
-                                        tagBarVisible = true;
-                                      });
-                                    },
-                                    child: Icon(
-                                      Icons.keyboard_arrow_down,size: 28,
-                                    ),
-                                  ),
-                                ),
-                          isSaved
-                              ? SizedBox(
-                                  height: 40,
-                                  width: 40,
-                                  child: GestureDetector(
-                                    
-                                    onTap: () {
-                                      setState(() {
-                                        isSaved = false;
-                                        showSaveBar = false;
-                                        savedPostsRef              // TODO
-                                            .document(currentUser?.id)
-                                            .collection('All')
-                                            .document(postId)
-                                            .delete();
-                                      });
-                                    },
-                                    child: Icon(
-                                      Icons.bookmark,size: 21,
-                                      color: Colors.blue,
 
-                                    ),
-                                  ),
-                                )
-                              : SizedBox(
-                                  height: 30,
-                                  width: 30,
-                                  child: GestureDetector(
-                                    onTap: () async {
-                                      setState(() {
-                                        isSaved = true;
-                                      });
-                                      var lastDoc = await savedPostsRef
-                                          .document(currentUser?.id)
-                                          .collection('all')
-                                          .orderBy('order', descending: true)
-                                          .limit(1)
-                                          .getDocuments();
-                                      if (lastDoc.documents.length == 0) {
-                                        savedPostsRef
-                                            .document(currentUser?.id)
-                                            .collection('all')
-                                            .document()
-                                            .setData({
-                                          'order': 1,
-                                          'posts': [
-                                            postId,
-                                          ],
-                                        }, merge: true);
-                                      } else if (lastDoc.documents.length == 1 &&
-                                          lastDoc.documents.first.data['posts'].length <
-                                              2) {
-                                        List<dynamic> _postIdList =
-                                            lastDoc.documents.first.data['posts'];
-                                        _postIdList.add(postId);
-                                        savedPostsRef
-                                            .document(currentUser?.id)
-                                            .collection('all')
-                                            .document(lastDoc.documents.first.documentID)
-                                            .setData({
-                                          'posts': _postIdList,
-                                        }, merge: true);
-                                      } else if (lastDoc.documents.length == 1 &&
-                                          lastDoc.documents.first.data['posts'].length >
-                                              1) {
-                                        savedPostsRef
-                                            .document(currentUser?.id)
-                                            .collection('all')
-                                            .document()
-                                            .setData({
-                                          'order':
-                                              lastDoc.documents.first.data['order'] + 1,
-                                          'posts': [
-                                            postId,
-                                          ],
-                                        }, merge: true);
-                                      }
-                                      setState(() {
-                                        showSaveBar = true;
-                                      });
-                                      Future.delayed(const Duration(milliseconds: 4000),
-                                          () {
-                                        setState(() {
-                                          showSaveBar = false;
-                                        });
-                                      });
-                                    },
-                                    child: Icon(
-                                      Icons.bookmark_border,size: 21,
-                                    ),
-                                  ),
+  buildCompactPostHeader() {
+    bool isPostOwner = currentUserId == ownerId;
+    return Stack(children: <Widget>[
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Expanded(
+            child: Column(
+              children: <Widget>[
+                Padding(
+                  padding:
+                      EdgeInsets.only(left: 10, top: 5, bottom: 0, right: 0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      CircleAvatar(
+                        radius: 11.5,
+                        backgroundImage: CachedNetworkImageProvider(photoUrl),
+                        backgroundColor: Colors.grey,
+                      ),
+                      SizedBox(
+                        width: 8,
+                      ),
+                      Container(
+                        height: 24,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          username,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Expanded(
+                        child: Container(
+                          height: 24,
+                          child: FittedBox(
+                            fit: BoxFit.none,
+                            alignment: Alignment.centerLeft,
+                            child: Container(
+                                height: 18,
+                                width: 18,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(15),
+                                  color: Colors.blue,
                                 ),
-                        ],
-                    ),
-                     ),
-         
-                            Padding(
-                                padding: EdgeInsets.only(left: 10, top: 0, right: 5, bottom: 3),
-                                                          child: Text(
-                                      widget.title,
-                                      style: TextStyle(
-                                          
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w500),
-                                      maxLines: 4,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                child: Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                  size: 16,
+                                )),
+                          ),
+                        ),
+                      ),
+                      tagBarVisible
+                          ? SizedBox(
+                              height: 30,
+                              width: 30,
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    tagBarVisible = false;
+                                  });
+                                },
+                                child: Icon(
+                                  Icons.keyboard_arrow_up,
+                                  size: 28,
+                                ),
+                              ),
+                            )
+                          : SizedBox(
+                              height: 30,
+                              width: 30,
+                              child: GestureDetector(
+                                onTap: () async {
+                                  setState(() {
+                                    tagBarVisible = true;
+                                  });
+                                },
+                                child: Icon(
+                                  Icons.keyboard_arrow_down,
+                                  size: 28,
+                                ),
+                              ),
                             ),
-                             
-                      
+                      isSaved
+                          ? SizedBox(
+                              height: 40,
+                              width: 40,
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    isSaved = false;
+                                    showSaveBar = false;
+                                    savedPostsRef // TODO
+                                        .document(currentUser?.id)
+                                        .collection('All')
+                                        .document(postId)
+                                        .delete();
+                                  });
+                                },
+                                child: Icon(
+                                  Icons.bookmark,
+                                  size: 21,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                            )
+                          : SizedBox(
+                              height: 30,
+                              width: 30,
+                              child: GestureDetector(
+                                onTap: () async {
+                                  setState(() {
+                                    isSaved = true;
+                                  });
+                                  var lastDoc = await savedPostsRef
+                                      .document(currentUser?.id)
+                                      .collection('all')
+                                      .orderBy('order', descending: true)
+                                      .limit(1)
+                                      .getDocuments();
+                                  if (lastDoc.documents.length == 0) {
+                                    savedPostsRef
+                                        .document(currentUser?.id)
+                                        .collection('all')
+                                        .document()
+                                        .setData({
+                                      'order': 1,
+                                      'posts': [
+                                        postId,
+                                      ],
+                                    }, merge: true);
+                                  } else if (lastDoc.documents.length == 1 &&
+                                      lastDoc.documents.first.data['posts']
+                                              .length <
+                                          2) {
+                                    List<dynamic> _postIdList =
+                                        lastDoc.documents.first.data['posts'];
+                                    _postIdList.add(postId);
+                                    savedPostsRef
+                                        .document(currentUser?.id)
+                                        .collection('all')
+                                        .document(
+                                            lastDoc.documents.first.documentID)
+                                        .setData({
+                                      'posts': _postIdList,
+                                    }, merge: true);
+                                  } else if (lastDoc.documents.length == 1 &&
+                                      lastDoc.documents.first.data['posts']
+                                              .length >
+                                          1) {
+                                    savedPostsRef
+                                        .document(currentUser?.id)
+                                        .collection('all')
+                                        .document()
+                                        .setData({
+                                      'order': lastDoc
+                                              .documents.first.data['order'] +
+                                          1,
+                                      'posts': [
+                                        postId,
+                                      ],
+                                    }, merge: true);
+                                  }
+                                  setState(() {
+                                    showSaveBar = true;
+                                  });
+                                  Future.delayed(
+                                      const Duration(milliseconds: 4000), () {
+                                    setState(() {
+                                      showSaveBar = false;
+                                    });
+                                  });
+                                },
+                                child: Icon(
+                                  Icons.bookmark_border,
+                                  size: 21,
+                                ),
+                              ),
+                            ),
                     ],
                   ),
+                ),
+                Padding(
+                  padding:
+                      EdgeInsets.only(left: 10, top: 0, right: 5, bottom: 3),
+                  child: Text(
+                    widget.title,
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
-            if(thumbnailType == null)
+          ),
+          if (thumbnailType == null)
             Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-
-                    child: Container(
-                      color: Colors.blue,
-                      height: MediaQuery.of(context).size.width*0.20,width: MediaQuery.of(context).size.width*0.20,)),
+              padding: const EdgeInsets.all(8.0),
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    color: Colors.blue,
+                    height: MediaQuery.of(context).size.width * 0.20,
+                    width: MediaQuery.of(context).size.width * 0.20,
+                  )),
             ),
-                  if(thumbnailType == CompactPostThumbnailType.image)
-                  Container(
-                  margin: const EdgeInsets.all(8.0),
-                   height: MediaQuery.of(context).size.width*0.20,width: MediaQuery.of(context).size.width*0.20,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-
-                    child: Container(
-
-                      child: cachedNetworkImage(context, compactPostThumbnailData),
-                      height: MediaQuery.of(context).size.width*0.20,width: MediaQuery.of(context).size.width*0.20,)),
+          if (thumbnailType == CompactPostThumbnailType.image)
+            Container(
+              margin: const EdgeInsets.all(8.0),
+              height: MediaQuery.of(context).size.width * 0.20,
+              width: MediaQuery.of(context).size.width * 0.20,
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    child:
+                        cachedNetworkImage(context, compactPostThumbnailData),
+                    height: MediaQuery.of(context).size.width * 0.20,
+                    width: MediaQuery.of(context).size.width * 0.20,
+                  )),
             ),
-                  if(thumbnailType == CompactPostThumbnailType.video  )
-             Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-
-                    child:  compactPostThumbnailData == null?Container(color: Colors.blue,
-                      height: MediaQuery.of(context).size.width*0.20,width: MediaQuery.of(context).size.width*0.20,
-                    ):Stack(
-                      alignment: Alignment.bottomLeft,
-                      children: <Widget>[
-                        Container(
-                         child:Image.file(File(compactPostThumbnailData),fit: BoxFit.cover,),
-                          height: MediaQuery.of(context).size.width*0.20,width: MediaQuery.of(context).size.width*0.20,),
-                          Padding(
-                            padding: const EdgeInsets.all(3.0),
-                            child: Icon(FlutterIcons.play_fou,size: 26,color: Colors.white,),
-                          )
-                      ],
-                    )),
+          if (thumbnailType == CompactPostThumbnailType.video)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: compactPostThumbnailData == null
+                      ? Container(
+                          color: Colors.blue,
+                          height: MediaQuery.of(context).size.width * 0.20,
+                          width: MediaQuery.of(context).size.width * 0.20,
+                        )
+                      : Stack(
+                          alignment: Alignment.bottomLeft,
+                          children: <Widget>[
+                            Container(
+                              child: Image.file(
+                                File(compactPostThumbnailData),
+                                fit: BoxFit.cover,
+                              ),
+                              height: MediaQuery.of(context).size.width * 0.20,
+                              width: MediaQuery.of(context).size.width * 0.20,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(3.0),
+                              child: Icon(
+                                FlutterIcons.play_fou,
+                                size: 26,
+                                color: Colors.white,
+                              ),
+                            )
+                          ],
+                        )),
             )
-            // if (tagBarVisible)
-            //   Container(
-                    
-            //     margin: EdgeInsets.only(top: 0, bottom: 0),
-            //     height: 28,
-            //     child: Row(
-            //       children: <Widget>[
-            //         Container(
-            //           width: 28,
-            //           color: Theme.of(context).backgroundColor,
-            //           child: Center(
-            //             child: Text(
-            //               '#',
-            //               style: TextStyle(fontSize: 22),
-            //             ),
-            //           ),
-            //         ),
-            //         Expanded(
-            //           child: Container(
-            //             height: 28,
-            //             color: Theme.of(context).canvasColor,
-            //             child: ListView.builder(
-            //               itemCount: tags.length,
-            //               scrollDirection: Axis.horizontal,
-            //               itemBuilder: (_, i) {
-            //                 print(
-            //                   tags[i],
-            //                 );
-            //                 return InkWell(
-            //                   onTap: () {
-            //                     Navigator.of(context).pushNamed(TagScreen.routeName,
-            //                         arguments: tags[i]);
-            //                   },
-            //                   child: Container(
-            //                     padding: EdgeInsets.symmetric(horizontal: 8),
-            //                     margin: EdgeInsets.symmetric(
-            //                         horizontal: 2, vertical: 3),
-            //                     decoration: BoxDecoration(
-            //                         color: Theme.of(context).backgroundColor,
-            //                         borderRadius: BorderRadius.circular(100)),
-            //                     child: Center(
-            //                       child: Text(
-            //                         tags[i],
-            //                         style: TextStyle(fontSize: 14),
-            //                       ),
-            //                     ),
-            //                   ),
-            //                 );
-            //               },
-            //             ),
-            //           ),
-            //         )
-            //       ],
-            //     ),
-            //   ),
-           
-            // if (showSaveBar)
-            //   Container(
-            //       width: double.infinity,
-            //       padding: EdgeInsets.symmetric(vertical: 0, horizontal: 6),
-            //       child: Row(
-            //         mainAxisAlignment: MainAxisAlignment.spaceAround,
-            //         children: <Widget>[
-            //           Text(
-            //             'Saved!',
-            //             style: TextStyle(fontSize: 18),
-            //           ),
-            //           FlatButton(
-            //               onPressed: () {
-            //                 setState(() {
-            //                   showSaveBar = false;
-            //                 });
-            //                 showDialog(
-            //                   context: context,
-            //                   builder: (BuildContext context) =>
-            //                       SaveDialog(this.widget),
-            //                 );
-            //               },
-            //               shape: RoundedRectangleBorder(
-            //                   borderRadius: BorderRadius.circular(10)),
-            //               child: Text(
-            //                 'Save to Collection',
-            //                 style: TextStyle(
-            //                     color: Colors.blue,
-            //                     fontWeight: FontWeight.w600,
-            //                     fontSize: 18),
-            //               ))
-            //         ],
-            //       ))
-          
-          ],
-        ),
-                ])
-    // ))
-    ;
+        ],
+      ),
+    ]);
   }
 
   handleDeletePost(BuildContext parentContext) {
@@ -956,95 +891,136 @@ class _PostState extends State<Post> {
       }
     });
   }
-
-  handleVoteButton() {
-    bool _isUpvoted = upvotes[currentUserId] == true;
-    if (_isUpvoted) {
-      topicPostsDatabase.child(postId).child('upvotes').set(0);
-      postsRef
-          .document(ownerId)
-          .collection('userPosts')
-          .document(postId)
-          .updateData({'upvotes.$currentUserId': false});
-      removeUpvoteFromActivityFeed();
+    handleDownvoteButton()async {
+    if (!isDownvoted) {
       setState(() {
-        upvoteCount -= 1;
-        isUpvoted = false;
-        upvotes[currentUserId] = false;
+        isDownvoted = true;
       });
-    } else if (!_isUpvoted) {
-      topicPostsDatabase.child(postId).child('upvotes').set(1);
-      postsRef
-          .document(ownerId)
-          .collection('userPosts')
-          .document(postId)
-          .updateData({'upvotes.$currentUserId': true});
-      addUpvoteToActivityFeed();
+         var lastVotedDoc = await postsVotersRef
+                                .document(widget.postId)
+                                .collection('userDownvoters')
+                                .orderBy('order', descending: true)
+                                .limit(1)
+                                .getDocuments();
+                            if (lastVotedDoc.documents.length == 0) {
+                            postsVotersRef
+                                  .document(widget.postId)
+                                  .collection('DownUpvoters')
+                                  .document()
+                                  .setData({
+                                'order': 1,
+                                'Downvoters': [
+                                 currentUserId,
+                                ],
+                              }, merge: true);
+                            } else if (lastVotedDoc.documents.length == 1 &&
+                              lastVotedDoc.documents.first
+                                        .data['Downvoters'].length <
+                                    10000) {
+                             postsVotersRef
+                                  .document(widget.postId)
+                                  .collection('userUpvotes')
+                                  .document(lastVotedDoc
+                                      .documents.first.documentID)
+                                  .updateData({
+                                'upvotes':
+                                    FieldValue.arrayUnion([widget.ownerId])
+                              });
+                            } else if (lastVotedDoc.documents.length == 1 &&
+                                lastVotedDoc.documents.first.data['upvoters'].length > 10000) {
+                              followingRef
+                                  .document(currentUser?.id)
+                                  .collection('voters')
+                                  .document().setData({
+                                'upvoters':[currentUserId],
+                                'order': lastVotedDoc.documents.first.data['order']+ 1,
+                              });
+                            }
+
+     } else if (isDownvoted) {
+     QuerySnapshot _doc= await postsVotersRef .document(widget.postId)
+                                .collection('userDownvotes').where('Downvoters',arrayContains: currentUserId).limit(1).getDocuments();
+   bool _isDownvoted = _doc.documents.length == 1; 
+     
+  postsVotersRef  .document(widget.postId)
+                                .collection('userDownvotes').document(_doc.documents.first.documentID).updateData({'downvoters': [currentUserId]});
+
+    }
+  }
+  handleUpvoteButton()async {
+    if(isUpvoted){
+   QuerySnapshot _doc= await postsVotersRef .document(widget.postId)
+                                .collection('userDownvotes').where('Downvoters',arrayContains: currentUserId).limit(1).getDocuments();
+   bool _isUpvoted = _doc.documents.length == 1; 
+     
+  postsVotersRef  .document(widget.postId)
+                                .collection('userDownvotes').document(_doc.documents.first.documentID).updateData({'downvoters': [currentUserId]});
+
+    }  else if (!isUpvoted) {
+     var lastVotedDoc = await postsVotersRef 
+                                .document(widget.postId)
+                                .collection('userUpvotes')
+                                .orderBy('order', descending: true)
+                                .limit(1)
+                                .getDocuments();
+                            if (lastVotedDoc.documents.length == 0) {
+                            postsVotersRef 
+                                  .document(widget.postId)
+                                  .collection('userUpvotes')
+                                  .document()
+                                  .setData({
+                                'order': 1,
+                                'upvoters': [
+                                 currentUserId,
+                                ],
+                              }, merge: true);
+                            } else if (lastVotedDoc.documents.length == 1 &&
+                              lastVotedDoc.documents.first
+                                        .data['upvoters'].length <
+                                    10000) {
+                           postsVotersRef 
+                                  .document(widget.postId)
+                                  .collection('userUpvotes')
+                                  .document(lastVotedDoc
+                                      .documents.first.documentID)
+                                  .updateData({
+                                'upvotes':
+                                    FieldValue.arrayUnion([widget.ownerId])
+                              });
+                            } else if (lastVotedDoc.documents.length == 1 &&
+                                lastVotedDoc.documents.first.data['upvoters'].length > 10000) {
+                              followingRef
+                                  .document(currentUser?.id)
+                                  .collection('voters')
+                                  .document().setData({
+                                'upvoters':[currentUserId],
+                                'order': lastVotedDoc.documents.first.data['order']+ 1,
+                              });
+                            }
+    }
+  }
+
+  getVideoThumbnail(String url) async {
+    if (thumbnailType != CompactPostThumbnailType.video) {
       setState(() {
-        upvoteCount += 1;
-        isUpvoted = true;
-        upvotes[currentUserId] = true;
+        thumbnailType = CompactPostThumbnailType.video;
       });
-    
-    }
-  }
 
-  addUpvoteToActivityFeed() {
-    bool isNotPostOwner = true; //currentUserId != ownerId;
-    if (isNotPostOwner) {
-      activityFeedRef
-          .document(ownerId)
-          .collection('feedItems')
-          .document(postId)
-          .setData({
-        'type': 'upvote',
-        'username': currentUser.username,
-        'userId': currentUser.id,
-        'userProfileImg': currentUser.photoUrl,
-        'postId': postId,
-        'timestamp': timestamp
+      var dir = await getTemporaryDirectory();
+
+      var _thumbnail = await VideoThumbnail.thumbnailFile(
+          video: url,
+          thumbnailPath: dir.path,
+          imageFormat: ImageFormat.WEBP,
+          maxHeight: 200,
+          quality: 75,
+          timeMs: 1000);
+      setState(() {
+        compactPostThumbnailData = _thumbnail;
       });
     }
   }
 
-  removeUpvoteFromActivityFeed() {
-    bool isNotPostOwner = true; //currentUserId != ownerId;
-    if (isNotPostOwner) {
-      activityFeedRef
-          .document(ownerId)
-          .collection('feedItems')
-          .document(postId)
-          .get()
-          .then((doc) {
-        if (doc.exists) {
-          doc.reference.delete();
-        }
-      });
-    }
-  }
-  getVideoThumbnail(String url)async{
-  if( thumbnailType != CompactPostThumbnailType.video){
-    setState(() {
-          thumbnailType = CompactPostThumbnailType.video;
-    });
-          
-           var dir = await   getTemporaryDirectory();
-
-       var _thumbnail  =    await  VideoThumbnail.thumbnailFile(
-  video:         url,
-  thumbnailPath: dir.path,
-  imageFormat: ImageFormat.WEBP,
-  maxHeight: 200, 
-  quality: 75,
-  timeMs: 1000
-);
-  setState(() {
-    compactPostThumbnailData  = _thumbnail;
-  });
-
-                       
-          }
-  }
   bool persistentCallbackAdded = false;
   Timer timer;
   @override
@@ -1057,35 +1033,34 @@ class _PostState extends State<Post> {
       print(contents['$i']);
       print(contentsInfo['$i']);
       if (contentsInfo['$i']['type'] == 'image') {
-          if( thumbnailType != CompactPostThumbnailType.video){
-                            thumbnailType = CompactPostThumbnailType.image;
-                            compactPostThumbnailData =   contents['$i'];
-      }
+        if (thumbnailType != CompactPostThumbnailType.video) {
+          thumbnailType = CompactPostThumbnailType.image;
+          compactPostThumbnailData = contents['$i'];
+        }
         contentsViewList.add(imageContentContainer(
             contents['$i'], contentsInfo['$i']['aspectRatio']));
       } else if (contentsInfo['$i']['type'] == 'video') {
-         compactPostThumbnailData =  contentsInfo['$i']['thumbUrl'];
+        compactPostThumbnailData = contentsInfo['$i']['thumbUrl'];
         thumbnailType = CompactPostThumbnailType.video;
         _controller = VideoPlayerController.network(
           contents['$i'],
         );
         _initializeVideoPlayerFuture = _controller.initialize().then((_) {
-       if(preferences.getBool('autoplay_videos') == null){
-         preferences.setBool('autoplay_videos',false);
-       }
-        bool _autoplay =  preferences.getBool('autoplay_videos');
-    flickManager = FlickManager(
-      videoPlayerController: 
-        _controller ,
-    );
-        contentsViewList.add(
-              Container(child: VideoDisplay(  flickManager,_autoplay)));
+          if (preferences.getBool('autoplay_videos') == null) {
+            preferences.setBool('autoplay_videos', false);
+          }
+          bool _autoplay = preferences.getBool('autoplay_videos');
+          flickManager = FlickManager(
+            videoPlayerController: _controller,
+          );
+          contentsViewList
+              .add(Container(child: VideoDisplay(flickManager, _autoplay)));
         });
       } else if (contentsInfo['$i']['type'] == 'text') {
         contentsViewList.add(textContentContainer(contents['$i']));
       } else if (contentsInfo['$i']['type'] == 'link') {
         contentsViewList.add(linkContentContainer(contents['$i']));
-      } else{
+      } else {
         contentsViewList.add(carouselContentContainer(
             contents['$i'], contentsInfo['$i']['aspectRatio']));
       }
@@ -1128,15 +1103,32 @@ class _PostState extends State<Post> {
   }
 
   Widget textContentContainer(String text) {
-    if(preferences.getBool('serif') == null){
-      preferences.setBool('serif',false);
+    if (preferences.getBool('serif') == null) {
+      preferences.setBool('serif', false);
     }
     return Container(
-      child: Text(text,style: preferences.getBool('serif')?TextStyle(fontFamily: 'Georgia',fontSize: 17,letterSpacing: 0,wordSpacing: 0,height: 1.25,color: Theme.of(context).textSelectionColor):TextStyle(fontSize: 16,letterSpacing: 0,wordSpacing: 0,height: 1.25,color: Theme.of(context).textSelectionColor),),
-      padding: EdgeInsets.symmetric( horizontal: 15,vertical: 5),
+      child: Text(
+        text,
+        style: preferences.getBool('serif')
+            ? TextStyle(
+                fontFamily: 'Georgia',
+                fontSize: 17,
+                letterSpacing: 0,
+                wordSpacing: 0,
+                height: 1.25,
+                color: Theme.of(context).textSelectionColor)
+            : TextStyle(
+                fontSize: 16,
+                letterSpacing: 0,
+                wordSpacing: 0,
+                height: 1.25,
+                color: Theme.of(context).textSelectionColor),
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
     );
   }
-    Container linkContentContainer(String link) {
+
+  Container linkContentContainer(String link) {
     return Container(
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(6),
@@ -1151,94 +1143,205 @@ class _PostState extends State<Post> {
               showMultimedia: true,
             )));
   }
+
   buildPostFooter() {
     return Padding(
-    
-      padding: EdgeInsets.only(
-        top: 5
-      ),
-          child: Column(
+      padding: EdgeInsets.only(top: 5),
+      child: Column(
         children: <Widget>[
+          if (showSaveBar)
+            Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 0, horizontal: 6),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    Text(
+                      'Saved!',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    FlatButton(
+                        onPressed: () {
+                          setState(() {
+                            showSaveBar = false;
+                          });
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) =>
+                                SaveDialog(this.widget),
+                          );
+                        },
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                        child: Text(
+                          'Save to Collection',
+                          style: TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18),
+                        ))
+                  ],
+                )),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               Padding(
                 padding: EdgeInsets.only(left: 13.0),
               ),
-              ownerId == currentUser.id
-                  ? SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: GestureDetector(
-                        onTap: () {
-                          showOptions();
-                        },
-                        child: Icon(
-                          Icons.more_horiz,
-                          size: 22,
-                        ),
-                      ),
-                    )
-                  : SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: GestureDetector(
-                        onTap: () {
-                          showOptions();
-                        },
-                        child: Icon(
-                          Icons.more_horiz,
-                          size: 22,
-                        ),
-                      ),
-                    ),
+              SizedBox(
+                height: 28,
+                width: 30,
+                child: GestureDetector(
+                  onTap: () {},
+                  child: Icon(
+                    FlutterIcons.ios_arrow_down_ion,
+                    size: 28,
+                  ),
+                ),
+              ),
               Expanded(
                 child: Container(),
               ),
-              GestureDetector(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) => RepostDialog(this.widget),
-                  );
-                },
-                child: Icon(Icons.repeat, size: 24.0, color: Colors.grey),
+              isSaved
+                  ? Padding(
+                      padding: const EdgeInsets.only(right: 20),
+                      child: SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              isSaved = false;
+                              showSaveBar = false;
+                              savedPostsRef // TODO
+                                  .document(currentUser?.id)
+                                  .collection('All')
+                                  .document(postId)
+                                  .delete();
+                            });
+                          },
+                          child: Icon(
+                            FluentIcons.bookmark_24_filled,
+                            size: 22,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ),
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.only(right: 20),
+                      child: SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: GestureDetector(
+                          onTap: () async {
+                            setState(() {
+                              isSaved = true;
+                            });
+                            var lastDoc = await savedPostsRef
+                                .document(currentUser?.id)
+                                .collection('all')
+                                .orderBy('order', descending: true)
+                                .limit(1)
+                                .getDocuments();
+                            if (lastDoc.documents.length == 0) {
+                              savedPostsRef
+                                  .document(currentUser?.id)
+                                  .collection('all')
+                                  .document()
+                                  .setData({
+                                'order': 1,
+                                'posts': [
+                                  postId,
+                                ],
+                              }, merge: true);
+                            } else if (lastDoc.documents.length == 1 &&
+                                lastDoc.documents.first.data['posts'].length <
+                                    2) {
+                              List<dynamic> _postIdList =
+                                  lastDoc.documents.first.data['posts'];
+                              _postIdList.add(postId);
+                              savedPostsRef
+                                  .document(currentUser?.id)
+                                  .collection('all')
+                                  .document(lastDoc.documents.first.documentID)
+                                  .setData({
+                                'posts': _postIdList,
+                              }, merge: true);
+                            } else if (lastDoc.documents.length == 1 &&
+                                lastDoc.documents.first.data['posts'].length >
+                                    1) {
+                              savedPostsRef
+                                  .document(currentUser?.id)
+                                  .collection('all')
+                                  .document()
+                                  .setData({
+                                'order':
+                                    lastDoc.documents.first.data['order'] + 1,
+                                'posts': [
+                                  postId,
+                                ],
+                              }, merge: true);
+                            }
+                            setState(() {
+                              showSaveBar = true;
+                            });
+                            Future.delayed(const Duration(milliseconds: 4000),
+                                () {
+                              setState(() {
+                                showSaveBar = false;
+                              });
+                            });
+                          },
+                          child: Icon(
+                            FluentIcons.bookmark_24_regular,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ),
+                    ),
+              Padding(
+                padding: const EdgeInsets.only(right: 20.0),
+                child: GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) =>
+                          RepostDialog(this.widget),
+                    );
+                  },
+                  child: Icon(FluentIcons.share_24_regular,
+                      size: 26.0, color: Colors.blueAccent),
+                ),
               ),
               Padding(
-                padding: EdgeInsets.only(right: 20.0),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0, right: 20.0),
+                padding: const EdgeInsets.only(right: 20.0),
                 child: GestureDetector(
                   onTap: () => showComments(
                     context,
                     post: this.widget,
-
                   ),
                   child: Icon(
-                    Icons.comment,
+                    FluentIcons.comment_24_regular,
                     size: 24.0,
-                    color: Colors.blue[300],
+                    color: Colors.cyan,
                   ),
                 ),
               ),
               GestureDetector(
-                onTap: () => handleVoteButton(),
+                onTap: () => handleUpvoteButton(),
                 child: Icon(
-                    isUpvoted == true
-                        ? FlutterIcons.arrow_up_bold_mco
-                        : FlutterIcons.arrow_up_bold_outline_mco,
-                    size: 26.0,
-                    color: Colors.blue),
+                  isUpvoted == true
+                      ? FluentIcons.keyboard_shift_24_filled
+                      : FluentIcons.keyboard_shift_24_regular,
+                  size: 24.0,
+                ),
               ),
               Container(
                   margin: EdgeInsets.only(left: 8),
                   child: Text(
                     '$upvoteCount',
-                    style: TextStyle(
-                   
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   )),
               SizedBox(width: 13),
             ],
@@ -1259,8 +1362,22 @@ class _PostState extends State<Post> {
   @override
   void dispose() {
     _controller?.dispose();
-      flickManager?.dispose();
+    flickManager?.dispose();
     super.dispose();
+  }
+@override
+  void initState() {
+    List<String> followingList = preferences.getStringList('following');
+    if( followingList == null){
+       followingList = [];
+       preferences.setStringList('following', followingList );
+    }
+   
+    if(followingList.contains(widget.ownerId))
+    setState(() {
+      isFollowing = true;
+    });
+    super.initState();
   }
   @override
   Widget build(BuildContext context) {
@@ -1292,34 +1409,42 @@ class _PostState extends State<Post> {
               ],
             ),
           )
-        : 
-              Material(
-      color: Theme.of(context).backgroundColor,
-      child: InkWell(
-        onTap:widget.isCompact? () {
-         Navigator.of(context).pushNamed(ExplorePostsScreen.routeName,arguments: this.widget);
-        }: null,
-              child:  Column(
-              children: <Widget>[
-                widget.isCompact?buildCompactPostHeader() :buildPostHeader(),
-              if(!widget.isCompact)  ListView.builder(
-                  padding: EdgeInsets.all(0),
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemBuilder: (_, i) {
-                    return contentsViewList[i];
-                  },
-                  itemCount: contents.length,
-                ),
-                buildPostFooter(),
-              ],
-            ),)
-          );
+        : Material(
+            color: Theme.of(context).backgroundColor,
+            child: InkWell(
+              onTap: widget.isCompact
+                  ? () {
+                      Navigator.of(context).pushNamed(
+                          ExplorePostsScreen.routeName,
+                          arguments: this.widget);
+                    }
+                  : null,
+              child: Column(
+                children: <Widget>[
+                  widget.isCompact
+                      ? buildCompactPostHeader()
+                      : buildPostHeader(),
+                  if (!widget.isCompact)
+                    ListView.builder(
+                      padding: EdgeInsets.all(0),
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemBuilder: (_, i) {
+                        return contentsViewList[i];
+                      },
+                      itemCount: contents.length,
+                    ),
+                  buildPostFooter(),
+                ],
+              ),
+            ));
   }
 }
 
-showComments(BuildContext context,
-    {Post post,}) {
+showComments(
+  BuildContext context, {
+  Post post,
+}) {
   Navigator.pushNamed(context, CommentsScreen.routeName, arguments: post);
 }
 
@@ -1351,10 +1476,10 @@ class _VideoContentContainerState extends State<VideoContentContainer> {
   final Future<dynamic> initializeVideoPlayerFuture;
   final VideoPlayerController controller;
   final double aspectRatio;
- _VideoContentContainerState({
-      this.initializeVideoPlayerFuture, this.controller, this.aspectRatio});
-    Widget playbackButton = Container();
-        playOrPauseVideo() {
+  _VideoContentContainerState(
+      {this.initializeVideoPlayerFuture, this.controller, this.aspectRatio});
+  Widget playbackButton = Container();
+  playOrPauseVideo() {
     if (controller.value.isPlaying) {
       setState(() {
         playbackButton = Icon(Icons.play_arrow);
@@ -1365,9 +1490,10 @@ class _VideoContentContainerState extends State<VideoContentContainer> {
         controller.play();
       });
   }
+
   @override
   Widget build(BuildContext context) {
-     bool videoMuted = false;
+    bool videoMuted = false;
     return FutureBuilder(
       future: initializeVideoPlayerFuture,
       builder: (context, snapshot) {
@@ -1412,7 +1538,7 @@ class _VideoContentContainerState extends State<VideoContentContainer> {
         } else {
           return Container(
             color: Colors.grey,
-            height: MediaQuery.of(context).size.width/ aspectRatio,
+            height: MediaQuery.of(context).size.width / aspectRatio,
           );
         }
       },

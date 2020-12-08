@@ -40,20 +40,20 @@ class _HomeScreenState extends State<HomeScreen>
   OverlayEntry toggleBanner() {
     return OverlayEntry(
         builder: (context) => Positioned(
-              left: MediaQuery.of(context).size.width * 0.5 -50,
+              left: MediaQuery.of(context).size.width * 0.5 -60,
               top: 100,
-              width: 100,
-              height: 30,
+              width: 120,
+              height: 40,
               child: 
               
-              Material(borderRadius: BorderRadius.circular(30),
+              Material(borderRadius: BorderRadius.circular(5),
                   elevation: 1.0,
-                  child: ClipRRect(borderRadius: BorderRadius.circular(30),
-                                      child: Container(height: 30,width: 100,
+                  child: ClipRRect(borderRadius: BorderRadius.circular(5),
+                                      child: Container(height: 70,width: 240,
                       child: Text(
-                        followingPosts ? 'Following' : 'Home',style: TextStyle(color: Colors.white,fontSize: 16),
+                        followingPosts ? 'Following' : 'Home',style: TextStyle(color: Colors.white,fontSize: 20),
                       ),
-                      alignment: Alignment.center,decoration: BoxDecoration(  borderRadius: BorderRadius.circular(30),color: Theme.of(context).primaryColor),
+                      alignment: Alignment.center,decoration: BoxDecoration(  borderRadius: BorderRadius.circular(5),color: Theme.of(context).primaryColor),
                      
                      
                     
