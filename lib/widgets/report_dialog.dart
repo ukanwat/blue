@@ -59,7 +59,7 @@ class _ReportDialogState extends State<ReportDialog> {
             SizedBox(height: 20.0),
             InkWell(
               onTap: () async {
-                 postReportsRef.document(widget.postId).updateData({'abusive': FieldValue.increment(1)});
+                 postReportsRef.doc(widget.postId).update({'abusive': FieldValue.increment(1)});
                  Navigator.of(context).pop();
               },
               child: Container(
@@ -81,7 +81,7 @@ class _ReportDialogState extends State<ReportDialog> {
             ),
             InkWell(
               onTap: () async {
-                 postReportsRef.document(widget.postId).updateData({'spam': FieldValue.increment(1),});
+                 postReportsRef.doc(widget.postId).update({'spam': FieldValue.increment(1),});
                  Navigator.of(context).pop();
               },
               child: Container(
@@ -104,8 +104,8 @@ class _ReportDialogState extends State<ReportDialog> {
             InkWell(
               onTap: () async {
                 postReportsRef
-                    .document(widget.postId)
-                    .updateData({'inappropriate': FieldValue.increment(1)});
+                    .doc(widget.postId)
+                    .update({'inappropriate': FieldValue.increment(1)});
                     Navigator.of(context).pop();
               },
               child: Container(

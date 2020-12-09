@@ -25,11 +25,11 @@ class _TopicPopularScreenState extends State<TopicPopularScreen> {
     QuerySnapshot snapshot =
      await postsRef
         .
-       getDocuments();
+       get();
    
         
     setState(() {
-      this.posts =  snapshot.documents.map((doc) => Post.fromDocument(doc)).toList() ;
+      this.posts =  snapshot.docs.map((doc) => Post.fromDocument(doc)).toList() ;
     });
   }
     buildPopular() {

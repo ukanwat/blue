@@ -20,11 +20,11 @@ class _TagsWrapState extends State<TagsWrap> {
   }
 
   getFollowedTags() async {
-    var tagsDoc = await followedTagsRef.document(currentUser.id).get();
+    var tagsDoc = await followedTagsRef.doc(currentUser.id).get();
     List<String> followedTags = [];
     setState(() {
       tagLoading = false;
-      tags = tagsDoc.data.keys.toList();
+      tags = tagsDoc.data().keys;
       for (int i = 0; i < tags.length; i++) {
         followedTags.add(tags[i]);
         tagChips.add(InkWell(

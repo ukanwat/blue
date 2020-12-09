@@ -17,43 +17,43 @@ class _RepostDialogState extends State<RepostDialog> {
 TextEditingController commentController = TextEditingController();
 sharePost()async{
      var lastDoc = await repostsRef
-        .document(currentUser.id)
+        .doc(currentUser.id)
         .collection('userReposts')
         .orderBy('order', descending: true)
         .limit(1)
-        .getDocuments();
+        .get();
 
-     if (lastDoc.documents.length == 0) {
+     if (lastDoc.docs.length == 0) {
      repostsRef
-        .document(currentUser.id)
+        .doc(currentUser.id)
         .collection('userReposts')
-          .document()
-          .setData({
+          .doc()
+          .set({
                         'order' : 1,
         'posts': [widget.post.postId,],
         'comments': [commentController.text,],
       });
-    }else if(lastDoc.documents.length == 1 && lastDoc.documents.first.data['posts'].length < 20){
-      List<dynamic> _postIdList = lastDoc.documents.first.data['posts'];
-       List<dynamic> _commentsList = lastDoc.documents.first.data['comments'];
+    }else if(lastDoc.docs.length == 1 && lastDoc.docs.first.data()['posts'].length < 20){
+      List<dynamic> _postIdList = lastDoc.docs.first.data()['posts'];
+       List<dynamic> _commentsList = lastDoc.docs.first.data()['comments'];
       _postIdList.add(widget.post.postId);
        _commentsList.add(commentController.text);
     repostsRef
-        .document(currentUser.id)
+        .doc(currentUser.id)
         .collection('userReposts')
-          .document(lastDoc.documents.first.documentID)
-          .setData({
+          .doc(lastDoc.docs.first.id)
+          .set({
               'posts': _postIdList,
               'comments': _commentsList,
-      }, merge: true);
+      });
 
 
-  }else if(lastDoc.documents.length == 1 && lastDoc.documents.first.data['posts'].length > 19 ){
+  }else if(lastDoc.docs.length == 1 && lastDoc.docs.first.data()['posts'].length > 19 ){
    repostsRef
-        .document(currentUser.id)
+        .doc(currentUser.id)
         .collection('userReposts')
-          .document()
-          .setData({ 'order' : lastDoc.documents.first.data['order'] + 1 ,
+          .doc()
+          .set({ 'order' : lastDoc.docs.first.data()['order'] + 1 ,
          'posts': [widget.post.postId,],
        'comments': [commentController.text,],
       });

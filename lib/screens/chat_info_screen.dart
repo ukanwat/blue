@@ -73,7 +73,7 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                       : [];
               mutedMessages.add(peer['peerId']);
               preferences.setStringList('muted_messages', mutedMessages);
-              preferencesRef.document(currentUser.id).updateData({
+              preferencesRef.doc(currentUser.id).update({
                 'muted_messages': FieldValue.arrayUnion([peer['peerId']])
               });
             } else {
@@ -83,7 +83,7 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                       : [];
               mutedMessages.remove(peer['peerId']);
               preferences.setStringList('muted_messages', mutedMessages);
-              preferencesRef.document(currentUser.id).updateData({
+              preferencesRef.doc(currentUser.id).update({
                 'muted_messages': FieldValue.arrayRemove([peer['peerId']])
               });
             }
@@ -158,12 +158,12 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                                         'reported_accounts_spam',
                                         reportedAccountsSpam);
                                     accountReportsRef
-                                        .document(peer['peerId'])
-                                        .updateData(
+                                        .doc(peer['peerId'])
+                                        .update(
                                             {'spam': FieldValue.increment(1)});
                                     preferencesRef
-                                        .document(currentUser.id)
-                                        .updateData({
+                                        .doc(currentUser.id)
+                                        .update({
                                       'reported_accounts_spam':
                                           FieldValue.arrayUnion(
                                               [peer['peerId']])
@@ -191,13 +191,13 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                                         'reported_accounts_inappropriate',
                                         reportedAccountsInappropriate);
                                     accountReportsRef
-                                        .document(peer['peerId'])
-                                        .updateData({
+                                        .doc(peer['peerId'])
+                                        .update({
                                       'inappropriate': FieldValue.increment(1)
                                     });
                                     preferencesRef
-                                        .document(currentUser.id)
-                                        .updateData({
+                                        .doc(currentUser.id)
+                                        .update({
                                       'reported_accounts_inappropriate':
                                           FieldValue.arrayUnion(
                                               [peer['peerId']])
@@ -225,14 +225,14 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                                         'reported_accounts_abusive',
                                         reportedAccountsAbusive);
                                     accountReportsRef
-                                        .document(peer['peerId'])
-                                        .updateData({
+                                        .doc(peer['peerId'])
+                                        .update({
                                       // TODO create report document upn new user creation otherwise document update will fail
                                       'abusive': FieldValue.increment(1)
                                     });
                                     preferencesRef
-                                        .document(currentUser.id)
-                                        .updateData({
+                                        .doc(currentUser.id)
+                                        .update({
                                       'reported_accounts_abusive':
                                           FieldValue.arrayUnion(
                                               [peer['peerId']])
@@ -253,7 +253,7 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
           ),
           settingsActionTile(context, isBlocked ? 'Unblock' : 'Block', () {
             if (isBlocked) {
-              preferencesRef.document(currentUser.id).updateData({
+              preferencesRef.doc(currentUser.id).update({
                 'blocked_accounts': FieldValue.arrayRemove([peer['peerId']])
               });
               blockedAccounts.remove(peer['peerId']);
@@ -273,7 +273,7 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                       rightButtonText: 'Block',
                       rightButtonFunction: () {
                         Navigator.pop(context);
-                        preferencesRef.document(currentUser.id).updateData({
+                        preferencesRef.doc(currentUser.id).update({
                           'blocked_accounts':
                               FieldValue.arrayUnion([peer['peerId']])
                         });
@@ -301,15 +301,15 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                     rightButtonFunction: () async {
                       Navigator.pop(context);
                       var lastDocument = await messagesRef
-                          .document(peer['groupChatId'])
+                          .doc(peer['groupChatId'])
                           .collection(peer['groupChatId'])
                           .orderBy('timestamp', descending: true)
                           .limit(1)
-                          .getDocuments();
-                      var lastDocumentId = lastDocument.documents.first
-                          .documentID; // can also get last doc locally
+                          .get();
+                      var lastDocumentId = lastDocument.docs.first
+                          .id; // can also get last doc locally
                       List lastDeletedBy =
-                          lastDocument.documents.first.data['lastDeletedBy'];
+                          lastDocument.docs.first.data()['lastDeletedBy'];
                       if (lastDeletedBy == [currentUser.id])
                         lastDeletedBy = null;
                       if (lastDeletedBy == null)
@@ -319,10 +319,10 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
 
                       if (lastDeletedBy != null) {
                         messagesRef
-                            .document(peer['groupChatId'])
+                            .doc(peer['groupChatId'])
                             .collection(peer['groupChatId'])
-                            .document(lastDocumentId)
-                            .setData({
+                            .doc(lastDocumentId)
+                            .set({
                           'lastDeletedBy': lastDeletedBy //TODO :to test
                         }, merge: true);
                       }

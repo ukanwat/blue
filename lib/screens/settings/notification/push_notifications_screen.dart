@@ -74,39 +74,39 @@ setState(() {
             (newValue) {
               preferences.setBool('push_likes', newValue);
                             likes = newValue;
-              preferencesRef.document(currentUser.id).setData({'push_likes': newValue},merge: true);
+              preferencesRef.doc(currentUser.id).set({'push_likes': newValue},);
             },
           ),
           settingsSwitchListTile('Comments', comments, (newValue) {
                preferences.setBool('push_comments', newValue);
             comments = newValue;
-             preferencesRef.document(currentUser.id).setData({'push_comments': newValue},merge: true);
+             preferencesRef.doc(currentUser.id).set({'push_comments': newValue},merge: true);
           }),
           settingsSwitchListTile('Comment Replies', commentReplies, (newValue) {
                preferences.setBool('push_comment_replies', newValue);
             commentReplies = newValue;
-             preferencesRef.document(currentUser.id).setData({'push_comment_replies': newValue},merge: true);
+             preferencesRef.doc(currentUser.id).set({'push_comment_replies': newValue},merge: true);
           }),
           settingsSwitchListTile('New Followers', newFollowers, (newValue) {
                preferences.setBool('push_new_followers', newValue);
             newFollowers = newValue;
-             preferencesRef.document(currentUser.id).setData({'push_new_followers': newValue},merge: true);
+             preferencesRef.doc(currentUser.id).set({'push_new_followers': newValue},merge: true);
           }),
           settingsSwitchListTile('Direct Requests', directRequests, (newValue) {
                preferences.setBool('push_direct_requests', newValue);
             directRequests = newValue;
-             preferencesRef.document(currentUser.id).setData({'push_direct_requests': newValue},merge: true);
+             preferencesRef.doc(currentUser.id).set({'push_direct_requests': newValue},merge: true);
           }),
           settingsSwitchListTile('New Feature Updates', features, (newValue) {
                preferences.setBool('push_features', newValue);
             features = newValue;
-             preferencesRef.document(currentUser.id).setData({'push_features': newValue},merge: true);
+             preferencesRef.doc(currentUser.id).set({'push_features': newValue},merge: true);
           }),
           settingsSwitchListTile('Notification Reminders', reminders,
               (newValue) {
                    preferences.setBool('push_reminders', newValue);
             reminders = newValue;
-             preferencesRef.document(currentUser.id).setData({'push_reminders': newValue},merge: true);
+             preferencesRef.doc(currentUser.id).set({'push_reminders': newValue},merge: true);
           })
         ],
       ),

@@ -16,12 +16,12 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> with AutomaticK
  
   getActivityFeed() async {
     QuerySnapshot snapshot = await activityFeedRef
-        .document(currentUser.id)
+        .doc(currentUser.id)
         .collection('feedItems')
         .limit(50)
-        .getDocuments();
+        .get();
     List<ActivityFeedItem> feedItems = [];
-    snapshot.documents.forEach((doc) {
+    snapshot.docs.forEach((doc) {
       feedItems.add(ActivityFeedItem.fromDocument(doc));
       // print('Activity Feed Item: ${doc.data}');
     });

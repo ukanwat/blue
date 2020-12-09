@@ -31,6 +31,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
+import 'package:firebase/firebase.dart';
 // import 'package:video_compress/video_compress.dart';
 import 'package:link_previewer/link_previewer.dart';
 import '../services/video_processing.dart';
@@ -266,12 +267,20 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   Future<String> uploadImage(File file) async {
-    StorageUploadTask uploadTask = storageRef
-        .child("post_$imageId.jpg")
-        .putFile(file, StorageMetadata(contentType: 'jpg'));
-    StorageTaskSnapshot storageSnap = await uploadTask.onComplete;
-    String downloadUrl = await storageSnap.ref.getDownloadURL();
-    return downloadUrl;
+
+    //Upload Profile Photo
+    StorageReference _storage = storage().ref("post_$imageId.jpg");
+    UploadTaskSnapshot uploadTaskSnapshot = await _storage.put(file).future;
+    var imageUri = await uploadTaskSnapshot.ref.getDownloadURL();
+    String _url = imageUri.toString();
+    return _url;
+  
+    // StorageUploadTask uploadTask = storageRef
+    //     .child("post_$imageId.jpg")
+    //     .putFile(file, StorageMetadata(contentType: 'jpg'));
+    // StorageTaskSnapshot storageSnap = await uploadTask.onComplete;
+    // String downloadUrl = await storageSnap.ref.getDownloadURL();
+    // return downloadUrl;
   }
 
   Future<List<String>> uploadCarousel(List<File> files) async {
@@ -306,13 +315,13 @@ class _PostScreenState extends State<PostScreen> {
       String topicId,
       List<String> tags}) async {
     var lastDoc = await userPostsRef
-        .document(currentUser.id)
+        .doc(currentUser.id)
         .collection('userPosts')
         .orderBy('order', descending: true)
         .limit(1)
-        .getDocuments();
+        .get();
 
-    postsRef.document(postId).setData({
+    postsRef.doc(postId).set({
       'postId': postId,
       'ownerId': currentUser?.id,
       'username':
@@ -327,36 +336,36 @@ class _PostScreenState extends State<PostScreen> {
       'tags': tags,
       'ownerName': currentUser?.username,
     }); // TODO: check if successful
-    if (lastDoc.documents.length == 0) {
+    if (lastDoc.docs.length == 0) {
       userPostsRef
-          .document(currentUser.id)
+          .doc(currentUser.id)
           .collection('userPosts')
-          .document()
-          .setData({
+          .doc()
+          .set({
         'order': 1,
         'posts': [
           postId,
         ],
       }, merge: true);
-    } else if (lastDoc.documents.length == 1 &&
-        lastDoc.documents.first.data['posts'].length < 2) {
-      List<dynamic> _postIdList = lastDoc.documents.first.data['posts'];
+    } else if (lastDoc.docs.length == 1 &&
+        lastDoc.docs.first.data()['posts'].length < 2) {
+      List<dynamic> _postIdList = lastDoc.docs.first.data()['posts'];
       _postIdList.add(postId);
       userPostsRef
-          .document(currentUser.id)
+          .doc(currentUser.id)
           .collection('userPosts')
-          .document(lastDoc.documents.first.documentID)
-          .setData({
+          .doc(lastDoc.docs.first.id)
+          .set({
         'posts': _postIdList,
       }, merge: true);
-    } else if (lastDoc.documents.length == 1 &&
-        lastDoc.documents.first.data['posts'].length > 1) {
+    } else if (lastDoc.docs.length == 1 &&
+        lastDoc.docs.first.data()['posts'].length > 1) {
       userPostsRef
-          .document(currentUser.id)
+          .doc(currentUser.id)
           .collection('userPosts')
-          .document()
-          .setData({
-        'order': lastDoc.documents.first.data['order'] + 1,
+          .doc()
+          .set({
+        'order': lastDoc.docs.first.data()['order'] + 1,
         'posts': [
           postId,
         ],
@@ -367,12 +376,10 @@ class _PostScreenState extends State<PostScreen> {
   Future<String> _uploadFile(filePath, folderName) async {
     final file = new File(filePath);
     final basename = p.basename(filePath);
-    final StorageReference ref =
-        FirebaseStorage.instance.ref().child(folderName).child(basename);
-    StorageUploadTask uploadTask = ref.putFile(file);
-    StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
-    String videoUrl = await taskSnapshot.ref.getDownloadURL();
-    return videoUrl;
+    final StorageReference _ref = storage().ref().child(folderName).child(basename);
+    UploadTaskSnapshot uploadTaskSnapshot = await _ref.put(file).future;
+    var videoUri = await uploadTaskSnapshot.ref.getDownloadURL();
+    return videoUri.toString();
   }
 
   Future<String> _uploadHLSFiles(dirPath, videoName) async {
@@ -543,7 +550,7 @@ class _PostScreenState extends State<PostScreen> {
       videoId = Uuid().v4();
       firestoreContents = {};
     });
-     postReportsRef.document(postId).setData({'abusive': 0,'inappropriate': 0,'spam': 0,});
+     postReportsRef.doc(postId).set({'abusive': 0,'inappropriate': 0,'spam': 0,});
     Navigator.pop(context);
     Navigator.pop(context);
     Navigator.pop(context);

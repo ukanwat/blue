@@ -29,7 +29,7 @@ class _FontScreenState extends State<FontScreen> {
                setState(() {
                 serif = false;
                   preferences.setBool('serif',false);
-                    preferencesRef.document(currentUser.id).setData({'serif': false},merge: true);
+                    preferencesRef.doc(currentUser.id).set({'serif': false},SetOptions(merge: true));
                });
               }, title: Text('Sans Serif'),
             trailing: Visibility( visible: serif == false,
@@ -40,7 +40,7 @@ class _FontScreenState extends State<FontScreen> {
                setState(() {
                 serif = true;
                   preferences.setBool('serif',true);
-                 preferencesRef.document(currentUser.id).setData({'serif': true},merge: true);
+                 preferencesRef.doc(currentUser.id).set({'serif': true},SetOptions(merge: true));
                });
               }, title: Text('Serif',style: TextStyle(fontFamily: 'Georgia'),),
             trailing: Visibility( visible: serif == true,

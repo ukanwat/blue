@@ -69,7 +69,7 @@ class _TabsScreenState extends State<TabsScreen> {
                 activeIcon: Icon(
  FlutterIcons.home_fea,
                 ),
-                title: Container(height: 0.0),
+            
               ),
 
               BottomNavigationBarItem(
@@ -81,14 +81,13 @@ class _TabsScreenState extends State<TabsScreen> {
                   // FontAwesome.compass,
                  FlutterIcons.compass_fea,size: 26,
                 ),
-                title: Container(height: 0.0),
+            
               ),
 
               BottomNavigationBarItem(
                 icon: Icon(
                  FlutterIcons.edit_fea,
                 ),
-                title: Container(height: 0.0),
               ),
 
               BottomNavigationBarItem(
@@ -98,7 +97,7 @@ class _TabsScreenState extends State<TabsScreen> {
                 activeIcon: Icon(FlutterIcons.notification_ent,
                    size: 23.6,
                 ),
-                title: Container(height: 0.0),
+            
               ),
 
               BottomNavigationBarItem(
@@ -106,7 +105,7 @@ class _TabsScreenState extends State<TabsScreen> {
                   FlutterIcons.user_faw5,
                   size: 23,
                 ),
-                title: Container(height: 0.0),
+            
               ),
             ],
             onTap: navigationTapped,

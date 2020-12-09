@@ -3,7 +3,6 @@ import 'package:flutter_clipboard_manager/flutter_clipboard_manager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:giphy_client/giphy_client.dart';
 
 class GIFsScreen extends StatefulWidget {

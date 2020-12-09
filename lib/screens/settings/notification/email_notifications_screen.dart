@@ -59,7 +59,7 @@ class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
                    
                     feedbacks = newValue;
                          });
-                     preferencesRef.document(currentUser.id).setData({'email_feedbacks': newValue},merge: true);
+                     preferencesRef.doc(currentUser.id).set({'email_feedbacks': newValue},SetOptions(merge: true));
                   },
                   description: 'Give Feedback on app',
                 ),
@@ -73,7 +73,7 @@ class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
                    
                        announcements = newValue;
                      });
-                        preferencesRef.document(currentUser.id).setData({'email_announcements': newValue},merge: true);
+                        preferencesRef.doc(currentUser.id).set({'email_announcements': newValue},SetOptions(merge: true));
                   },
                   description: 'Get new update announcements',
                 ),
@@ -86,7 +86,7 @@ class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
                    
                        activities = newValue;
                             });
-                        preferencesRef.document(currentUser.id).setData({'email_activities': newValue},merge: true);
+                        preferencesRef.doc(currentUser.id).set({'email_activities': newValue},merge: true);
                   },
                   description: 'Get Notifications related to your activity',
                 )

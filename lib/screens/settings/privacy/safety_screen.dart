@@ -32,7 +32,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
               context, 'Blocked Accounts', BlockedAccountsScreen.routeName),
               settingsSwitchListTile('Hide Sensitive Content', sensitiveContent, (newValue){
                 preferences.setBool('hide_sensitive_content',newValue );
-                preferencesRef.document(currentUser.id).updateData({
+                preferencesRef.doc(currentUser.id).update({
                   'hide_sensitive_content': newValue
                 });
                 setState(() {

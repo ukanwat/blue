@@ -53,14 +53,14 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
       isLoading = true;
     });
     QuerySnapshot snapshot = await followedTopicsRef
-        .document('${currentUser.id}')
+        .doc('${currentUser.id}')
         .collection('userFollowedTopics')
-        .getDocuments();
+        .get();
 
     setState(() {
       isLoading = false;
-      noOfFollowedTopicListTiles = snapshot.documents.length;
-      snapshot.documents.forEach((doc) {
+      noOfFollowedTopicListTiles = snapshot.docs.length;
+      snapshot.docs.forEach((doc) {
         followedTopicsListTile.add(
           TopicListTile(doc['name'], doc['imageUrl'], doc['id']),
         );

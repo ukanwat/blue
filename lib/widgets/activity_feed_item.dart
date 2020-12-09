@@ -39,7 +39,7 @@ class ActivityFeedItem extends StatelessWidget {
   });
 
   factory ActivityFeedItem.fromDocument(DocumentSnapshot doc) {
-   activityFeedDocumentId = doc.documentID;
+   activityFeedDocumentId = doc.id;
     return ActivityFeedItem(
       username: doc['username'],
       userId: doc['userId'],
@@ -91,7 +91,7 @@ class ActivityFeedItem extends StatelessWidget {
             color: Colors.transparent,
                       child: InkWell(
                         onTap: () {
-  activityFeedRef.document(currentUser.id).collection('feedItems').document(activityFeedDocumentId).updateData({'seen' : true});
+  activityFeedRef.doc(currentUser.id).collection('feedItems').doc(activityFeedDocumentId).update({'seen' : true});
                                   },
                         child: Padding(
          padding: EdgeInsets.only(bottom: 2.0,top: 8) ,

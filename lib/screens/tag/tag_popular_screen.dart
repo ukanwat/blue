@@ -23,9 +23,9 @@ class _TagPopularScreenState extends State<TagPopularScreen> {
     QuerySnapshot snapshot =
      await topicPostsCollectionGroupRef
      .where("tags", arrayContains: widget.tag).
-       getDocuments();
+       get();
     setState(() {
-      this.posts =  snapshot.documents.map((doc) => Post.fromDocument(doc)).toList() ;
+      this.posts =  snapshot.docs.map((doc) => Post.fromDocument(doc)).toList() ;
     });
   }
     buildPopular() {

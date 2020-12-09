@@ -25,16 +25,16 @@ class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
   }
     getCollections() async {
   snapshot =await collectionsRef
-        .document(currentUser?.id).get();
-        noOfCollections =  snapshot.data.length;
+        .doc(currentUser?.id).get();
+        noOfCollections =  snapshot.data().length;
    }
    saveCollection()async {
      formKey.currentState.validate();
-     if(snapshot != null && noOfCollections != null && !snapshot.data.values.contains(collectionNameController.text) && collectionNameController.text.length > 0 && formKey.currentState.validate()){
+     if(snapshot != null && noOfCollections != null && !snapshot.data().values.contains(collectionNameController.text) && collectionNameController.text.length > 0 && formKey.currentState.validate()){
    
        formKey.currentState.save();
          await collectionsRef
-        .document(currentUser?.id).setData({ noOfCollections.toString(): collectionNameController.text },merge: true);
+        .doc(currentUser?.id).set({ noOfCollections.toString(): collectionNameController.text },merge: true);
         Navigator.pop(context);
      }
      
@@ -94,7 +94,7 @@ class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
 
              },
                            validator: (value){
-              if(snapshot.data.values.contains(value)){
+              if(snapshot.data().values.contains(value)){
                 return 'Collection already exists';
               }
                if(value.length == 0 ){

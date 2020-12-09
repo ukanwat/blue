@@ -2,17 +2,11 @@ import 'package:blue/screens/following_posts_screen.dart';
 import 'package:blue/widgets/tags_wrap.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-
-import 'package:blue/screens/search_results_screen.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import '../widgets/header.dart';
-import '../models/user.dart';
 import './home.dart';
 import '../widgets/post.dart';
 import '../widgets/progress.dart';
 import 'package:blue/main.dart';
-import 'tag_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -64,10 +58,10 @@ class _HomeScreenState extends State<HomeScreen>
 
   getTimeline() async {
     print(currentUser);
-    QuerySnapshot snapshot = await postsRef.getDocuments();
+    QuerySnapshot snapshot = await postsRef.get();
 
     setState(() {
-      posts = snapshot.documents.map((doc) => Post.fromDocument(doc)).toList();
+      posts = snapshot.docs.map((doc) => Post.fromDocument(doc)).toList();
     });
   }
 

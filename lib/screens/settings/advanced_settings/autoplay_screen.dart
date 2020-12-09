@@ -32,13 +32,13 @@ class _AutoplayScreenState extends State<AutoplayScreen> {
               'Autoplay Videos', autoplayVideos, (newValue) {setState(() {
                   preferences.setBool('autoplay_videos', newValue);
                  autoplayVideos = newValue;
-                     preferencesRef.document(currentUser.id).setData({'autoplay_videos': newValue},merge: true);
+                     preferencesRef.doc(currentUser.id).set({'autoplay_videos': newValue},SetOptions(merge: true));
               });},description: 'Autoplay Videos which appear in Posts'),
               settingsSwitchListTile(
               'Autoplay GIFs', autoplayGIFs,  (newValue) {setState(() {
                  preferences.setBool('autoplay_GIFs', newValue);
                  autoplayGIFs = newValue;
-                   preferencesRef.document(currentUser.id).setData({'autoplay_GIFs': newValue},merge: true);
+                   preferencesRef.doc(currentUser.id).set({'autoplay_GIFs': newValue},SetOptions(merge: true));
               });},description: 'Autoplay GIF messages'),
         ],
       ),

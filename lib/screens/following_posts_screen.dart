@@ -16,10 +16,10 @@ class _FollowingPostsScreenState extends State<FollowingPostsScreen>
    getFollowingPosts() async {
     print(currentUser);
     QuerySnapshot snapshot = await postsRef
-        .getDocuments();
+        .get();
 
     setState(() {
-      posts = snapshot.documents.map((doc) => Post.fromDocument(doc)).toList();
+      posts = snapshot.docs.map((doc) => Post.fromDocument(doc)).toList();
     });
   }
 

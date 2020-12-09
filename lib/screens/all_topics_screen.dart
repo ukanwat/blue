@@ -33,11 +33,11 @@ class _AllTopicsScreenState extends State<AllTopicsScreen> {
 
   getFollowedTags() async {
     screenWidth = MediaQuery.of(context).size.width;
-    var tagsDoc = await followedTagsRef.document(currentUser.id).get();
+    var tagsDoc = await followedTagsRef.doc(currentUser.id).get();
     List<String> followedTags = [];
     setState(() {
       tagLoading = false;
-      tags = tagsDoc.data.keys.toList();
+      tags = tagsDoc.data().keys.toList();
       for (int i = 0; i < tags.length; i++) {
         followedTags.add(tags[i]);
         tagChips.add(InkWell(
@@ -75,29 +75,7 @@ class _AllTopicsScreenState extends State<AllTopicsScreen> {
         body: tagLoading == false && topicLoading == false
             ? Column(
                 children: <Widget>[
-                  // Container(
-                  //   padding: EdgeInsets.only(
-                  //     top: 5,
-                  //     left: 5,
-                  //     right: 5,
-                  //   ),
-                  //   child: GridView.count(
-                  //     crossAxisCount: 3,
-                  //     children: topics,
-                  //     shrinkWrap: true,
-                  //     crossAxisSpacing: 0,
-                  //     mainAxisSpacing: 0,
-                  //     addAutomaticKeepAlives: true,
-                  //   ),
-                  // ),
-                  // Padding(
-                  //   child: Text(
-                  //     'Tags you Follow',
-                  //     style:
-                  //         TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  //   ),
-                  //   padding: const EdgeInsets.only(top: 10),
-                  // ),
+                  
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -16,9 +16,9 @@ class PostViewScreen extends StatelessWidget { final String userId;
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: postsRef
-          .document(userId)
+          .doc(userId)
           .collection('userPosts')
-          .document(postId)
+          .doc(postId)
           .get(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {

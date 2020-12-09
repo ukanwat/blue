@@ -33,15 +33,15 @@ getAllSavedPosts(String collectionName) async {
       loading = true;
     });
     var _postGroup = await savedPostsRef
-        .document(currentUser.id)
+        .doc(currentUser.id)
         .collection('userCollections')
-        .document(collectionName)
+        .doc(collectionName)
         .collection('collectionPosts')
         .orderBy('order', descending: false)
-        .getDocuments();
+        .get();
     List _postList = [];
-    for (int l = 0; l < _postGroup.documents.length; l++) {
-      _postList.add(_postGroup.documents.elementAt(l).data['posts']);
+    for (int l = 0; l < _postGroup.docs.length; l++) {
+      _postList.add(_postGroup.docs.elementAt(l).data()['posts']);
     }
     List _postFullList = [];
     for (int i = 0; i < _postList.length; i++) {
@@ -52,11 +52,11 @@ getAllSavedPosts(String collectionName) async {
     List<Future> postFutures = [];
     if (lastPostDocument == null) {
       for (int k = 0; k < _postFullList.length; k++) {
-        postFutures.add(postsRef.document(_postFullList[k]).get());
+        postFutures.add(postsRef.doc(_postFullList[k]).get());
       }
     } else {
       for (int k = 0; k < _postFullList.length; k++) {
-        postFutures.add(postsRef.document(_postFullList[k]).get());
+        postFutures.add(postsRef.doc(_postFullList[k]).get());
       }
     }
     postDocSnapshots = await Future.wait(postFutures);

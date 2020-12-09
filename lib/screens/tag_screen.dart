@@ -53,7 +53,7 @@ class _TagScreenState extends State<TagScreen> {
  preferences.setStringList('followed_tags',followedTags);
 
                         }); 
-           await   followedTagsRef.document(currentUser.id).updateData({tag: FieldValue.delete()});
+           await   followedTagsRef.doc(currentUser.id).update({tag: FieldValue.delete()});
             // print(tag);
             // print( followedTagsMap.data.containsKey(tag));
             //         followedTagsMap.data.removeWhere((key, value) => key == tag);
@@ -70,7 +70,7 @@ class _TagScreenState extends State<TagScreen> {
 
                     onPressed: () async { // TODO
 
-                        followedTagsRef.document(currentUser.id).setData({
+                        followedTagsRef.doc(currentUser.id).set({
                           tag: DateTime.now(),
                         }, merge: true);
                          

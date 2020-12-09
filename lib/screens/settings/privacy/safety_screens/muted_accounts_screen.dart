@@ -30,7 +30,7 @@ class _MutedAccountsScreenState extends State<MutedAccountsScreen> {
      List<Future> accountFutures = [];
      List accountsDocSnapshots;
     mutedAccounts.forEach((account) {
-             accountFutures.add(usersRef.document(account).get());
+             accountFutures.add(usersRef.doc(account).get());
     });
        
 accountsDocSnapshots = await Future.wait(accountFutures);

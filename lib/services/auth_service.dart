@@ -6,7 +6,7 @@ import 'package:blue/screens/home.dart';
 import 'package:blue/screens/sign_in_view_screen.dart';
 import 'package:blue/screens/tabs_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../screens/sign_in_screen.dart';
@@ -14,11 +14,14 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 
 class AuthService {
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final auth.FirebaseAuth _firebaseAuth = auth.FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
-  Stream<String> get onAuthStateChanged => _firebaseAuth.onAuthStateChanged.map(
-        (FirebaseUser user) => user?.uid,
-      );
+  Stream<auth.User> get onAuthStateChanged => _firebaseAuth.authStateChanges();
+
+  // GET UID
+  Future<String> getCurrentUID() async {
+    return _firebaseAuth.currentUser.uid;
+  }
 
   // Email & Password Sign Up
   Future<String> createUserWithEmailAndPassword(
@@ -29,9 +32,7 @@ class AuthService {
     );
 
     // Update the username
-    var userUpdateInfo = UserUpdateInfo();
-    userUpdateInfo.displayName = name;
-    await currentUser.user.updateProfile(userUpdateInfo);
+    await currentUser.user.updateProfile(displayName: name);
     await currentUser.user.reload();
     return currentUser.user.uid;
   }
@@ -61,11 +62,11 @@ class AuthService {
   }
 
   Future changePassword(String newPassword,String password) async {
-    var firebaseUser = await _firebaseAuth.currentUser();
+    auth.User firebaseUser = _firebaseAuth.currentUser;
 SharedPreferences preferences = await SharedPreferences.getInstance();
      String _accountType =  preferences.getString('accountType');
     if (firebaseUser != null && _accountType !=  'google') { 
-        final AuthCredential credential = EmailAuthProvider.getCredential(email: currentUser.email, password: password);
+        final auth.AuthCredential credential = auth.EmailAuthProvider.credential(email: currentUser.email, password: password);
          firebaseUser.reauthenticateWithCredential(credential);
        firebaseUser.updatePassword(newPassword);
         firebaseUser.reload();
@@ -73,16 +74,16 @@ SharedPreferences preferences = await SharedPreferences.getInstance();
     }
   }
     Future changeEmail(String email,String password) async {
-    var firebaseUser = await _firebaseAuth.currentUser();
+    var firebaseUser =  _firebaseAuth.currentUser;
 SharedPreferences preferences = await SharedPreferences.getInstance();
      String _accountType =  preferences.getString('accountType');
     if (firebaseUser != null && _accountType !=  'google') { 
       try{
-        final AuthCredential credential = EmailAuthProvider.getCredential(email: currentUser.email, password: password);
+        final auth.AuthCredential credential = auth.EmailAuthProvider.credential(email: currentUser.email, password: password);
          firebaseUser.reauthenticateWithCredential(credential);
        firebaseUser.updateEmail(email);
         firebaseUser.reload();
-       usersRef.document(currentUser.id).setData({'email': email},merge: true);
+       usersRef.doc(currentUser.id).set({'email': email},SetOptions(merge: true));
       var currentUserString =  preferences.getString('currentUser');
       var currentUserMap = json.decode(currentUserString);
       currentUserMap['email'] = email;
@@ -105,32 +106,32 @@ SharedPreferences preferences = await SharedPreferences.getInstance();
   signInWithGoogle(BuildContext context) async {
     final GoogleSignInAccount account = await _googleSignIn.signIn();
     final GoogleSignInAuthentication _googleAuth = await account.authentication;
-    final AuthCredential credential = GoogleAuthProvider.getCredential(
+    final auth.AuthCredential credential = auth.GoogleAuthProvider.credential(
       idToken: _googleAuth.idToken,
       accessToken: _googleAuth.accessToken,
     );
     var user = (await _firebaseAuth.signInWithCredential(credential)).user;
-    DocumentSnapshot doc = await usersRef.document(account.id).get();
+    DocumentSnapshot doc = await usersRef.doc(account.id).get();
     var username;
     if (!doc.exists) {
       username = await Navigator.of(context)
           .pushNamed(SignInScreen.googleSignInRouteName);
-      usersRef.document(account.id).setData({
+      usersRef.doc(account.id).set({
         'id': account.id,
         'username': username,
-        'photoUrl': user.photoUrl,
+        'photoUrl': user.photoURL,
         'email': user.email,
         'displayName': user.displayName,
         'bio': "",
         'timestamp': timestamp,
         'website': ""
       });
-      doc = await usersRef.document(account.id).get();
+      doc = await usersRef.doc(account.id).get();
     }
     Map currentUserMap = {
       'id': account.id,
       'username': username,
-      'photoUrl': user.photoUrl,
+      'photoUrl': user.photoURL,
       'email': user.email,
       'displayName': user.displayName,
       'bio': "",

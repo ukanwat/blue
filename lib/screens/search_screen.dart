@@ -23,13 +23,13 @@ class _SearchScreenState extends State<SearchScreen> {
     Future<QuerySnapshot> people = usersRef
         .where('displayName', isGreaterThanOrEqualTo: query)
         .limit(5)
-        .getDocuments();
+        .get();
     setState(() {
       peopleResultsFuture = people;
     });
     Future<QuerySnapshot> posts = postsCollectionGroupRef
         .where('title', isGreaterThanOrEqualTo: query)
-        .getDocuments();
+        .get();
     setState(() {
       postsResultsFuture = posts;
     });

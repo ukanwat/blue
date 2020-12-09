@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:blue/screens/home.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase/firebase.dart' as base;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -74,11 +75,11 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   getChatMessagesFuture(){
    setState((){
       chatMessagesFuture = messagesRef
-          .document(groupChatId)
+          .doc(groupChatId)
           .collection(groupChatId)
           .orderBy('timestamp', descending: true)
          // .where('hide',isEqualTo: )           TODO 
-          .getDocuments();
+          .get();
     });
   }
 
@@ -93,7 +94,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         messageController.clear();
       });
     
-     await messagesRef.document(groupChatId).collection(groupChatId).add({
+     await messagesRef.doc(groupChatId).collection(groupChatId).add({
         'idFrom': currentUser.id,
         'idTo': peerUser.id,
         'timestamp': dateTime,
@@ -144,7 +145,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
           sendingStateMap['state'] = 'Sending';
             sendingStateMap['count'] = sendingStateMap['count']+1;
       });
-          messagesRef.document(groupChatId).collection(groupChatId).add({
+          messagesRef.doc(groupChatId).collection(groupChatId).add({
             'idFrom': currentUser.id,
             'idTo': peerUser.id,
             'timestamp': dateTime,
@@ -206,13 +207,15 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         final Im.Image imageFile = Im.decodeImage(image.readAsBytesSync());
         final compressedImageFile = File('$path/img_$imageId.jpg')
           ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
-        StorageUploadTask uploadTask = storageRef
-            .child("chat_$imageId.jpg")
-            .putFile(compressedImageFile, StorageMetadata(contentType: 'jpg'));
-        StorageTaskSnapshot storageSnap = await uploadTask.onComplete;
 
-        String downloadUrl = await storageSnap.ref.getDownloadURL();
-        messagesRef.document(groupChatId).collection(groupChatId).add({
+
+           base.StorageReference _storage = storageRef
+            .child("chat_$imageId.jpg");
+    base.UploadTaskSnapshot uploadTaskSnapshot = await _storage.put(compressedImageFile).future;
+    // Wait until the file is uploaded then store the download url
+    var imageUri = await uploadTaskSnapshot.ref.getDownloadURL();
+  String downloadUrl = imageUri.toString();
+        messagesRef.doc(groupChatId).collection(groupChatId).add({
           'idFrom': currentUser.id,
           'idTo': peerUser.id,
           'timestamp': dateTime ,
@@ -361,16 +364,15 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                                 if (myText) {
                                   try {
                                     await messagesRef
-                                        .document(groupChatId)
+                                        .doc(groupChatId)
                                         .collection(groupChatId)
-                                        .document(doc.documentID)
+                                        .doc(doc.documentID)
                                         .delete();
                                     if (messageItem.type == 'image') {
-                                      StorageReference storageRef =
-                                          await FirebaseStorage.instance
-                                              .getReferenceFromUrl(
+                                      base.StorageReference storageRef =
+                                         base.storage()
+                                              .refFromURL(
                                                   messageItem.message);
-                                      print(storageRef);
                                       storageRef.delete();
                                     }
                                   } catch (e) {
@@ -378,10 +380,10 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                                   }
                                 } else {
                                   await messagesRef
-                                      .document(groupChatId)
+                                      .doc(groupChatId)
                                       .collection(groupChatId)
-                                      .document(doc.documentID)
-                                      .setData({'hide': true}, merge: true);
+                                      .doc(doc.documentID)
+                                      .set({'hide': true}, merge: true);
                                 }
                                 getChatMessagesFuture();
                               },

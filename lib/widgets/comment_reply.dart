@@ -93,10 +93,10 @@ class CommentReply extends StatelessWidget {
                         onSelected: (selectedValue) async {
                           if (selectedValue == 'Report') {
                             commentsRef
-                                  .document(postId)
+                                  .doc(postId)
                                   .collection('userComments')
-                                  .document(commentId)
-                                  .updateData( {'replies.$id.reports': FieldValue.increment(1)});
+                                  .doc(commentId)
+                                  .update( {'replies.$id.reports': FieldValue.increment(1)});
                           }
                         },
                     ),

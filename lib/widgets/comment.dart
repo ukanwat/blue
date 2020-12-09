@@ -38,7 +38,7 @@ class Comment extends StatefulWidget {
   factory Comment.fromDocument(DocumentSnapshot doc, String postId) {
     print( doc['timestamp'] );
     return Comment(
-      id: doc.documentID,
+      id: doc.id,
       username: doc['username'],
       userId: doc['userId'],
       comment: doc['comment'],
@@ -148,10 +148,10 @@ class _CommentState extends State<Comment> {
                             if (selectedValue == 'Report') {
                               notifier.focusNode.unfocus();
                            commentsRef
-                                  .document(widget.postId)
+                                  .doc(widget.postId)
                                   .collection('userComments')
-                                  .document(widget.id)
-                                  .updateData( {'reports': FieldValue.increment(1)});
+                                  .doc(widget.id)
+                                  .update( {'reports': FieldValue.increment(1)});
                             
                             }
                           },

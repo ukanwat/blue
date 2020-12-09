@@ -110,9 +110,9 @@ void dispose() {
   checkIfFollowing() async {
     if (currentUserId != widget.profileId) {
       DocumentSnapshot doc = await followersRef
-          .document(widget.profileId)
+          .doc(widget.profileId)
           .collection('userFollowers')
-          .document(currentUserId)
+          .doc(currentUserId)
           .get();
       setState(() {
         isFollowing = doc.exists;
@@ -122,21 +122,21 @@ void dispose() {
 
   getFollowers() async {
     QuerySnapshot snapshot = await followersRef
-        .document(widget.profileId)
+        .doc(widget.profileId)
         .collection('userFollowers')
-        .getDocuments();
+        .get();
     setState(() {
-      followerCount = snapshot.documents.length;
+      followerCount = snapshot.docs.length;
     });
   }
 
   getFollowing() async {
     QuerySnapshot snapshot = await followingRef
-        .document(widget.profileId)
+        .doc(widget.profileId)
         .collection('userFollowing')
-        .getDocuments();
+        .get();
     setState(() {
-      followingCount = snapshot.documents.length;
+      followingCount = snapshot.docs.length;
     });
   }
 
@@ -152,13 +152,13 @@ void dispose() {
       postsAreLoading = true;
     });
     var _postGroup = await userPostsRef
-        .document(currentUser.id)
+        .doc(currentUser.id)
         .collection('userPosts')
         .orderBy('order', descending: false)
-        .getDocuments();
+        .get();
     List _postList = [];
-    for (int l = 0; l < _postGroup.documents.length; l++) {
-      _postList.add(_postGroup.documents.elementAt(l).data['posts']);
+    for (int l = 0; l < _postGroup.docs.length; l++) {
+      _postList.add(_postGroup.docs.elementAt(l).data()['posts']);
     }
     List _postFullList = [];
     for (int i = 0; i < _postList.length; i++) {
@@ -169,11 +169,11 @@ void dispose() {
     List<Future> postFutures = [];
     if (lastPostDocument == null) {
       for (int k = 0; k < _postFullList.length; k++) {
-        postFutures.add(postsRef.document(_postFullList[k]).get());
+        postFutures.add(postsRef.doc(_postFullList[k]).get());
       }
     } else {
       for (int k = 0; k < _postFullList.length; k++) {
-        postFutures.add(postsRef.document(_postFullList[k]).get());
+        postFutures.add(postsRef.doc(_postFullList[k]).get());
       }
     }
     postDocSnapshots = await Future.wait(postFutures);
@@ -207,13 +207,13 @@ void dispose() {
       repostsAreLoading = true;
     });
     var _repostGroup = await repostsRef
-        .document(currentUser.id)
+        .doc(currentUser.id)
         .collection('userReposts')
         .orderBy('order', descending: false)
-        .getDocuments();
+        .get();
     List _repostList = [];
-    for (int l = 0; l < _repostGroup.documents.length; l++) {
-      _repostList.add(_repostGroup.documents.elementAt(l).data['posts']);
+    for (int l = 0; l < _repostGroup.docs.length; l++) {
+      _repostList.add(_repostGroup.docs.elementAt(l).data()['posts']);
     }
     List _repostFullList = [];
     for (int i = 0; i < _repostList.length; i++) {
@@ -224,11 +224,11 @@ void dispose() {
     List<Future> repostFutures = [];
     if (lastPostDocument == null) {
       for (int k = 0; k < _repostFullList.length; k++) {
-        repostFutures.add(postsRef.document(_repostFullList[k]).get());
+        repostFutures.add(postsRef.doc(_repostFullList[k]).get());
       }
     } else {
       for (int k = 0; k < _repostFullList.length; k++) {
-        repostFutures.add(postsRef.document(_repostFullList[k]).get());
+        repostFutures.add(postsRef.doc(_repostFullList[k]).get());
       }
     }
     repostDocSnapshots = await Future.wait(repostFutures);
@@ -350,9 +350,9 @@ void dispose() {
       isFollowing = false;
     });
     followersRef
-        .document(widget.profileId)
+        .doc(widget.profileId)
         .collection('userFollowers')
-        .document(currentUserId)
+        .doc(currentUserId)
         .get()
         .then((doc) {
       if (doc.exists) {
@@ -360,9 +360,9 @@ void dispose() {
       }
     });
     followingRef
-        .document(currentUserId)
+        .doc(currentUserId)
         .collection('userFollowing')
-        .document(widget.profileId)
+        .doc(widget.profileId)
         .get()
         .then((doc) {
       if (doc.exists) {
@@ -370,9 +370,9 @@ void dispose() {
       }
     });
     activityFeedRef
-        .document(widget.profileId)
+        .doc(widget.profileId)
         .collection('feedItems')
-        .document(currentUserId)
+        .doc(currentUserId)
         .get()
         .then((doc) {
       if (doc.exists) {
@@ -386,20 +386,20 @@ void dispose() {
       isFollowing = true;
     });
     followersRef
-        .document(widget.profileId)
+        .doc(widget.profileId)
         .collection('userFollowers')
-        .document(currentUserId)
-        .setData({});
+        .doc(currentUserId)
+        .set({});
     followingRef
-        .document(currentUserId)
+        .doc(currentUserId)
         .collection('userFollowing')
-        .document(widget.profileId)
-        .setData({});
+        .doc(widget.profileId)
+        .set({});
     activityFeedRef
-        .document(widget.profileId)
+        .doc(widget.profileId)
         .collection('feedItems')
-        .document(currentUserId)
-        .setData({
+        .doc(currentUserId)
+        .set({
       'type': 'follow',
       'ownerId': widget.profileId,
       'username': currentUser.username,
@@ -434,7 +434,7 @@ void dispose() {
 
   buildProfileHeaderTemp() {
     return FutureBuilder(
-      future: usersRef.document(widget.profileId).get(),
+      future: usersRef.doc(widget.profileId).get(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return circularProgress();

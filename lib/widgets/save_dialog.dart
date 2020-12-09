@@ -19,58 +19,58 @@ TextEditingController commentController = TextEditingController();
 bool isLoading = true;
 List<InkWell> collectionList = [];
 savePost(String collectionName)async{
-  var lastDoc = await savedPostsRef
-                                .document(currentUser?.id)
+ QuerySnapshot lastDoc = await savedPostsRef
+                                .doc(currentUser?.id)
                                 .collection('userCollections')
-                                .document(collectionName)
+                                .doc(collectionName)
                                 .collection('collectionPosts')
                                 .orderBy('order', descending: true)
                                 .limit(1)
-                                .getDocuments();
-                            if (lastDoc.documents.length == 0) {
+                                .get();
+                            if (lastDoc.docs.length == 0) {
                               savedPostsRef
-                       .document(currentUser?.id)
+                       .doc(currentUser?.id)
                                 .collection('userCollections')
-                                .document(collectionName)
+                                .doc(collectionName)
                                 .collection('collectionPosts')
-                                  .document()
-                                  .setData({
+                                  .doc()
+                                  .set({
                                 'order': 1,
                                 'posts': [
                                   widget.post.postId,
                                 ],
-                              }, merge: true);
-                            } else if (lastDoc.documents.length == 1 &&
-                                lastDoc.documents.first.data['posts'].length <
+                              },SetOptions(merge: true ));
+                            } else if (lastDoc.docs.length == 1 &&
+                                lastDoc.docs.first.data()['posts'].length <
                                     20) {
                               List<dynamic> _postIdList =
-                                  lastDoc.documents.first.data['posts'];
+                                  lastDoc.docs.first.data()['posts'];
                               _postIdList.add(widget.post.postId);
                               savedPostsRef
-                                   .document(currentUser?.id)
+                                   .doc(currentUser?.id)
                                 .collection('userCollections')
-                                .document(collectionName)
+                                .doc(collectionName)
                                 .collection('collectionPosts')
-                                  .document(lastDoc.documents.first.documentID)
-                                  .setData({
+                                  .doc(lastDoc.docs.first.id)
+                                  .set({
                                 'posts': _postIdList,
-                              }, merge: true);
-                            } else if (lastDoc.documents.length == 1 &&
-                                lastDoc.documents.first.data['posts'].length >
+                              },SetOptions(merge: true ) );
+                            } else if (lastDoc.docs.length == 1 &&
+                                lastDoc.docs.first.data()['posts'].length >
                                     19) {
                               savedPostsRef
-                                    .document(currentUser?.id)
+                                    .doc(currentUser?.id)
                                 .collection('userCollections')
-                                .document(collectionName)
+                                .doc(collectionName)
                                 .collection('collectionPosts')
-                                  .document()
-                                  .setData({
+                                  .doc()
+                                  .set({
                                 'order':
-                                    lastDoc.documents.first.data['order'] + 1,
+                                    lastDoc.docs.first.data()['order'] + 1,
                                 'posts': [
                                   widget.post.postId,
                                 ],
-                              }, merge: true);
+                              },SetOptions(merge: true ));
                             }
 
 }  
@@ -81,10 +81,10 @@ savePost(String collectionName)async{
   }
   getCollections()async{
     DocumentSnapshot snapshot =await collectionsRef
-        .document(currentUser?.id).get();
+        .doc(currentUser?.id).get();
     setState(() {
 
-    if(snapshot != null) {snapshot.data.forEach((key, value) {
+    if(snapshot != null) {snapshot.data().forEach((key, value) {
          collectionList.insert(int.parse(key), InkWell(
 onTap: ()async {
   await savePost(value);

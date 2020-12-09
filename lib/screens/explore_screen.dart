@@ -3,7 +3,6 @@ import 'package:blue/screens/category_posts_screen.dart';
 import 'package:blue/screens/search_screen.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/tags_wrap.dart';
-import 'package:blue/widgets/topic_card.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -36,9 +35,9 @@ class _ExploreScreenState extends State<ExploreScreen>
   }
 
   getExplore() async {
-    QuerySnapshot snapshot = await postsRef.limit(5).getDocuments();
+    QuerySnapshot snapshot = await postsRef.limit(5).get();
     List<Post> posts =
-        snapshot.documents.map((doc) => Post.fromDocument(doc)).toList();
+        snapshot.docs.map((doc) => Post.fromDocument(doc)).toList();
     setState(() {
       this.posts = posts;
       loading = false;
@@ -88,14 +87,14 @@ class _ExploreScreenState extends State<ExploreScreen>
   }
   getFollowedTopics() async {
     QuerySnapshot snapshot = await followedTopicsRef
-        .document('${currentUser.id}')
+        .doc('${currentUser.id}')
         .collection('userFollowedTopics')
-        .getDocuments();
+        .get();
 
-    print(snapshot.documents.length);
+    print(snapshot.docs.length);
     setState(() {
-      noOfFollowedTopicCards = snapshot.documents.length;
-      snapshot.documents.forEach((doc) {
+      noOfFollowedTopicCards = snapshot.docs.length;
+      snapshot.docs.forEach((doc) {
         topicTabs.add(
           Tab(text: doc['name'],)
         );

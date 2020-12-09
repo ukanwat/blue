@@ -25,7 +25,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
   }
       getCollections() async {
 snapshot =await collectionsRef
-        .document(currentUser?.id).get();
+        .doc(currentUser?.id).get();
         setState((){
           loading  = false;
         });
@@ -76,7 +76,7 @@ snapshot =await collectionsRef
            if(i== -1){
               Navigator.of(context).pushNamed( AllSavedPostsScreen.routeName);
            }else{
-              Navigator.of(context).pushNamed( CollectionPostsScreen.routeName,arguments: snapshot.data['$i' ]);
+              Navigator.of(context).pushNamed( CollectionPostsScreen.routeName,arguments: snapshot.data()['$i' ]);
            }
              },
                       child: Container(
@@ -90,7 +90,7 @@ borderRadius: BorderRadius.circular(5),
             
               ), child: Center(
                child: Text(i== -1? 'All Saved':
-                snapshot.data['$i' ],maxLines: 1,overflow: TextOverflow.ellipsis,
+                snapshot.data()['$i' ],maxLines: 1,overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                
                   fontSize: 25,
@@ -101,7 +101,7 @@ borderRadius: BorderRadius.circular(5),
             ),
           );
       },
-      itemCount: snapshot.data.length + 1,
+      itemCount: snapshot.data().length + 1,
       )
     );
   }

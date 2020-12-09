@@ -46,6 +46,7 @@ class Post extends StatefulWidget {
   final dynamic upvotes;
   final List<dynamic> tags;
   final bool isCompact;
+  final bool commentsShown;
   // final PostInteractions postInteractions;
 
   Post(
@@ -60,12 +61,14 @@ class Post extends StatefulWidget {
       this.contentsInfo,
       this.upvotes,
       this.tags,
-      this.isCompact
-      // this.postInteractions
+      this.isCompact,
+      this.commentsShown // this.postInteractions
       });
 
-  factory Post.fromDocument(DocumentSnapshot doc, {bool isCompact}) {
+  factory Post.fromDocument(DocumentSnapshot doc,
+      {bool isCompact, bool commentsShown}) {
     if (isCompact == null) isCompact = false;
+    if (commentsShown == null) commentsShown = false;
     return Post(
       postId: doc['postId'],
       ownerId: doc['ownerId'],
@@ -79,6 +82,7 @@ class Post extends StatefulWidget {
       upvotes: doc['upvotes'],
       tags: doc['tags'],
       isCompact: isCompact,
+      commentsShown: commentsShown,
     );
   }
   int getUpVoteCount(upvotes) {
@@ -158,13 +162,15 @@ class _PostState extends State<Post> {
   bool isFollowing = false;
   bool isDownvoted = false;
   FlickManager flickManager;
+  final GlobalKey _contentsKey = GlobalKey();
+  double contentsHeight;
+  bool constraintContent = true;
   showOptions() {
     overlayOptions = createOverlayOptions();
     Overlay.of(context).insert(overlayOptions);
   }
 
   OverlayEntry createOverlayOptions() {
-
     return OverlayEntry(
         builder: (context) => Stack(
               children: <Widget>[
@@ -209,15 +215,16 @@ class _PostState extends State<Post> {
                         child: Column(
                           children: <Widget>[
                             ListTile(
-                              onTap: (){
+                              onTap: () {
                                 setState(() {
                                   overlayOptions?.remove();
                                 });
                                 showDialog(
-        context: context,
-        builder: (context) {
-          return ReportDialog(widget.postId, widget.title);
-        });
+                                    context: context,
+                                    builder: (context) {
+                                      return ReportDialog(
+                                          widget.postId, widget.title);
+                                    });
                               },
                               dense: true,
                               leading: Icon(
@@ -251,25 +258,51 @@ class _PostState extends State<Post> {
                               ),
                               title: Text('Downvote'),
                             ),
-                             if(isFollowing)
-                             ListTile(
-                              dense: true,
-                              leading: Icon(
+                            if (isFollowing)
+                              ListTile(
+                                dense: true,
+                                leading: Icon(
                                   FluentIcons.channel_unfollow_24_regular,
                                   color: Theme.of(context).iconTheme.color,
-                                
-                              ),onTap: ()async{
-                             QuerySnapshot followersDoc = await followersRef.document(widget.ownerId).collection('userFollowers').where('followers',arrayContains: currentUserId).getDocuments(); 
-                             followersDoc.documents.forEach((doc) {
-                              followersRef.document(widget.ownerId).collection('userFollowers').document(doc.documentID).updateData({'followers': FieldValue.arrayRemove([currentUserId])}); 
-                             });
-                             QuerySnapshot followingDoc = await followingRef.document(currentUserId).collection('userFollowing').where('following',arrayContains: widget.ownerId).getDocuments();
-                              followingDoc.documents.forEach((doc) {
-                              followingRef.document(currentUserId).collection('userFollowers').document(doc.documentID).updateData({'followers': FieldValue.arrayRemove([widget.ownerId])}); 
-                             });
-                              },
-                              title: Text('Unfollow'),
-                            )
+                                ),
+                                onTap: () async {
+                                  QuerySnapshot followersDoc =
+                                      await followersRef
+                                          .document(widget.ownerId)
+                                          .collection('userFollowers')
+                                          .where('followers',
+                                              arrayContains: currentUserId)
+                                          .getDocuments();
+                                  followersDoc.documents.forEach((doc) {
+                                    followersRef
+                                        .document(widget.ownerId)
+                                        .collection('userFollowers')
+                                        .document(doc.documentID)
+                                        .updateData({
+                                      'followers': FieldValue.arrayRemove(
+                                          [currentUserId])
+                                    });
+                                  });
+                                  QuerySnapshot followingDoc =
+                                      await followingRef
+                                          .document(currentUserId)
+                                          .collection('userFollowing')
+                                          .where('following',
+                                              arrayContains: widget.ownerId)
+                                          .getDocuments();
+                                  followingDoc.documents.forEach((doc) {
+                                    followingRef
+                                        .document(currentUserId)
+                                        .collection('userFollowers')
+                                        .document(doc.documentID)
+                                        .updateData({
+                                      'followers': FieldValue.arrayRemove(
+                                          [widget.ownerId])
+                                    });
+                                  });
+                                },
+                                title: Text('Unfollow'),
+                              )
                           ],
                         ),
                       ),
@@ -353,112 +386,127 @@ class _PostState extends State<Post> {
                       SizedBox(
                         width: 10,
                       ),
-                      if(!isFollowing && !(widget.ownerId == currentUserId))
-                      Container(
-                        height: 22,
-                        child: GestureDetector(
-                          onTap: () async {
-                            var lastFollowingDoc = await followingRef
-                                .document(currentUser?.id)
-                                .collection('userFollowing')
-                                .orderBy('order', descending: true)
-                                .limit(1)
-                                .getDocuments();
-                            if (lastFollowingDoc.documents.length == 0) {
-                              followingRef
-                                  .document(currentUser?.id)
+                      if (!isFollowing && !(widget.ownerId == currentUserId))
+                        Container(
+                          height: 22,
+                          child: GestureDetector(
+                            onTap: () async {
+                              var lastFollowingDoc = await followingRef
+                                  .doc(currentUser?.id)
                                   .collection('userFollowing')
-                                  .document()
-                                  .setData({
-                                'order': 1,
-                                'following': [
-                                  widget.ownerId,
-                                ],
-                              }, merge: true);
-                            } else if (lastFollowingDoc.documents.length == 1 &&
-                                lastFollowingDoc.documents.first
-                                        .data['following'].length <
-                                    10000) {
-                              followingRef
-                                  .document(currentUser?.id)
-                                  .collection('userFollowing')
-                                  .document(lastFollowingDoc
-                                      .documents.first.documentID)
-                                  .updateData({
-                                'following':
-                                    FieldValue.arrayUnion([widget.ownerId])
-                              });
-                            } else if (lastFollowingDoc.documents.length == 1 &&
-                                lastFollowingDoc.documents.first.data['following'].length > 10000) {
-                              followingRef
-                                  .document(currentUser?.id)
-                                  .collection('userFollowing')
-                                  .document().setData({
-                                'following':[widget.ownerId],
-                                'order': lastFollowingDoc.documents.first.data['order']+ 1,
-                              });
-                            }
+                                  .orderBy('order', descending: true)
+                                  .limit(1)
+                                  .get();
+                              if (lastFollowingDoc.docs.length == 0) {
+                                followingRef
+                                    .doc(currentUser?.id)
+                                    .collection('userFollowing')
+                                    .doc()
+                                    .set({
+                                  'order': 1,
+                                  'following': [
+                                    widget.ownerId,
+                                  ],
+                                },  SetOptions(merge: true));
+                              } else if (lastFollowingDoc.docs.length ==
+                                      1 &&
+                                  lastFollowingDoc.docs.first
+                                          .data()['following'].length <
+                                      10000) {
+                                followingRef
+                                    .doc(currentUser?.id)
+                                    .collection('userFollowing')
+                                    .doc(lastFollowingDoc
+                                        .docs.first.id)
+                                    .update({
+                                  'following':
+                                      FieldValue.arrayUnion([widget.ownerId])
+                                });
+                              } else if (lastFollowingDoc.docs.length ==
+                                      1 &&
+                                  lastFollowingDoc.docs.first
+                                          .data()['following'].length >
+                                      10000) {
+                                followingRef
+                                    .doc(currentUser?.id)
+                                    .collection('userFollowing')
+                                    .doc()
+                                    .set({
+                                  'following': [widget.ownerId],
+                                  'order': lastFollowingDoc
+                                          .docs.first.data()['order'] +
+                                      1,
+                                });
+                              }
 
-                             var lastFollowersDoc = await followersRef
-                                .document(widget.ownerId)
-                                .collection('userFollowers')
-                                .orderBy('order', descending: true)
-                                .limit(1)
-                                .getDocuments();
-                            if (lastFollowersDoc.documents.length == 0) {
-                              followersRef
-                                  .document(widget.ownerId)
+                              var lastFollowersDoc = await followersRef
+                                  .doc(widget.ownerId)
                                   .collection('userFollowers')
-                                  .document()
-                                  .setData({
-                                'order': 1,
-                                'followers': [
-                                  currentUserId,
-                                ],
-                              }, merge: true);
-                            } else if (lastFollowersDoc.documents.length == 1 &&
-                                lastFollowersDoc.documents.first
-                                        .data['following'].length <
-                                    10000) {
-                              followersRef
-                                  .document(widget.ownerId)
-                                  .collection('userFollowers')
-                                  .document(lastFollowersDoc
-                                      .documents.first.documentID)
-                                  .updateData({
-                                'followers':
-                                    FieldValue.arrayUnion([currentUserId])
-                              });
-                            } else if (lastFollowersDoc.documents.length == 1 &&
-                                lastFollowersDoc.documents.first.data['followers'].length > 10000) {
-                              followersRef
-                                  .document(currentUser?.id)
-                                  .collection('userFollowers')
-                                  .document().setData({
-                                'followers':[widget.ownerId],
-                                'order': lastFollowersDoc.documents.first.data['order']+ 1,
-                              });
-                            }
-                            List<String> followingList = preferences.getStringList('following');
-                            if(!followingList.contains(widget.ownerId))
-                            followingList.add(widget.ownerId);
-                            preferences.setStringList('following',followingList);
-
-                          },
-                          child: Container(
-                              height: 22,
-                              width: 22,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(15),
-                                color: Colors.blue,
-                              ),
-                              child: Icon(
-                                FluentIcons.add_16_filled,
-                                color: Colors.white,
-                                size: 18,
-                              )),
+                                  .orderBy('order', descending: true)
+                                  .limit(1)
+                                  .get();
+                              if (lastFollowersDoc.docs.length == 0) {
+                                followersRef
+                                    .doc(widget.ownerId)
+                                    .collection('userFollowers')
+                                    .doc()
+                                    .set({
+                                  'order': 1,
+                                  'followers': [
+                                    currentUserId,
+                                  ],
+                                }, SetOptions(merge: true));
+                              } else if (lastFollowersDoc.docs.length ==
+                                      1 &&
+                                  lastFollowersDoc.docs.first
+                                          .data()['following'].length <
+                                      10000) {
+                                followersRef
+                                    .doc(widget.ownerId)
+                                    .collection('userFollowers')
+                                    .doc(lastFollowersDoc
+                                        .docs.first.id)
+                                    .update({
+                                  'followers':
+                                      FieldValue.arrayUnion([currentUserId])
+                                });
+                              } else if (lastFollowersDoc.docs.length ==
+                                      1 &&
+                                  lastFollowersDoc.docs.first
+                                          .data()['followers'].length >
+                                      10000) {
+                                followersRef
+                                    .doc(currentUser?.id)
+                                    .collection('userFollowers')
+                                    .doc()
+                                    .set({
+                                  'followers': [widget.ownerId],
+                                  'order': lastFollowersDoc
+                                          .docs.first.data()['order'] +
+                                      1,
+                                });
+                              }
+                              List<String> followingList =
+                                  preferences.getStringList('following');
+                              if (!followingList.contains(widget.ownerId))
+                                followingList.add(widget.ownerId);
+                              preferences.setStringList(
+                                  'following', followingList);
+                            },
+                            child: Container(
+                                height: 22,
+                                width: 22,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(15),
+                                  color: Colors.blue,
+                                ),
+                                child: Icon(
+                                  FluentIcons.add_16_filled,
+                                  color: Colors.white,
+                                  size: 18,
+                                )),
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -687,53 +735,53 @@ class _PostState extends State<Post> {
                                     isSaved = true;
                                   });
                                   var lastDoc = await savedPostsRef
-                                      .document(currentUser?.id)
+                                      .doc(currentUser?.id)
                                       .collection('all')
                                       .orderBy('order', descending: true)
                                       .limit(1)
-                                      .getDocuments();
-                                  if (lastDoc.documents.length == 0) {
+                                      .get();
+                                  if (lastDoc.docs.length == 0) {
                                     savedPostsRef
-                                        .document(currentUser?.id)
+                                        .doc(currentUser?.id)
                                         .collection('all')
-                                        .document()
-                                        .setData({
+                                        .doc()
+                                        .set({
                                       'order': 1,
                                       'posts': [
                                         postId,
                                       ],
-                                    }, merge: true);
-                                  } else if (lastDoc.documents.length == 1 &&
-                                      lastDoc.documents.first.data['posts']
+                                    },  SetOptions(merge: true));
+                                  } else if (lastDoc.docs.length == 1 &&
+                                      lastDoc.docs.first.data()['posts']
                                               .length <
                                           2) {
                                     List<dynamic> _postIdList =
-                                        lastDoc.documents.first.data['posts'];
+                                        lastDoc.docs.first.data()['posts'];
                                     _postIdList.add(postId);
                                     savedPostsRef
-                                        .document(currentUser?.id)
+                                        .doc(currentUser?.id)
                                         .collection('all')
-                                        .document(
-                                            lastDoc.documents.first.documentID)
-                                        .setData({
+                                        .doc(
+                                            lastDoc.docs.first.id)
+                                        .set({
                                       'posts': _postIdList,
-                                    }, merge: true);
-                                  } else if (lastDoc.documents.length == 1 &&
-                                      lastDoc.documents.first.data['posts']
+                                    }, SetOptions(merge: true));
+                                  } else if (lastDoc.docs.length == 1 &&
+                                      lastDoc.docs.first.data()['posts']
                                               .length >
                                           1) {
                                     savedPostsRef
-                                        .document(currentUser?.id)
+                                        .doc(currentUser?.id)
                                         .collection('all')
-                                        .document()
-                                        .setData({
+                                        .doc()
+                                        .set({
                                       'order': lastDoc
-                                              .documents.first.data['order'] +
+                                              .docs.first.data()['order'] +
                                           1,
                                       'posts': [
                                         postId,
                                       ],
-                                    }, merge: true);
+                                    },  SetOptions(merge: true));
                                   }
                                   setState(() {
                                     showSaveBar = true;
@@ -891,112 +939,123 @@ class _PostState extends State<Post> {
       }
     });
   }
-    handleDownvoteButton()async {
+
+  handleDownvoteButton() async {
     if (!isDownvoted) {
       setState(() {
         isDownvoted = true;
       });
-         var lastVotedDoc = await postsVotersRef
-                                .document(widget.postId)
-                                .collection('userDownvoters')
-                                .orderBy('order', descending: true)
-                                .limit(1)
-                                .getDocuments();
-                            if (lastVotedDoc.documents.length == 0) {
-                            postsVotersRef
-                                  .document(widget.postId)
-                                  .collection('DownUpvoters')
-                                  .document()
-                                  .setData({
-                                'order': 1,
-                                'Downvoters': [
-                                 currentUserId,
-                                ],
-                              }, merge: true);
-                            } else if (lastVotedDoc.documents.length == 1 &&
-                              lastVotedDoc.documents.first
-                                        .data['Downvoters'].length <
-                                    10000) {
-                             postsVotersRef
-                                  .document(widget.postId)
-                                  .collection('userUpvotes')
-                                  .document(lastVotedDoc
-                                      .documents.first.documentID)
-                                  .updateData({
-                                'upvotes':
-                                    FieldValue.arrayUnion([widget.ownerId])
-                              });
-                            } else if (lastVotedDoc.documents.length == 1 &&
-                                lastVotedDoc.documents.first.data['upvoters'].length > 10000) {
-                              followingRef
-                                  .document(currentUser?.id)
-                                  .collection('voters')
-                                  .document().setData({
-                                'upvoters':[currentUserId],
-                                'order': lastVotedDoc.documents.first.data['order']+ 1,
-                              });
-                            }
+      var lastVotedDoc = await postsVotersRef
+          .doc(widget.postId)
+          .collection('userDownvoters')
+          .orderBy('order', descending: true)
+          .limit(1)
+          .get();
+      if (lastVotedDoc.docs.length == 0) {
+        postsVotersRef
+            .doc(widget.postId)
+            .collection('DownUpvoters')
+            .doc()
+            .set({
+          'order': 1,
+          'Downvoters': [
+            currentUserId,
+          ],
+        }, SetOptions(merge: true));
+      } else if (lastVotedDoc.docs.length == 1 &&
+          lastVotedDoc.docs.first.data()['Downvoters'].length < 10000) {
+        postsVotersRef
+            .doc(widget.postId)
+            .collection('userUpvotes')
+            .doc(lastVotedDoc.docs.first.id)
+            .update({
+          'upvotes': FieldValue.arrayUnion([widget.ownerId])
+        });
+      } else if (lastVotedDoc.docs.length == 1 &&
+          lastVotedDoc.docs.first.data()['upvoters'].length > 10000) {
+        followingRef
+            .doc(currentUser?.id)
+            .collection('voters')
+            .doc()
+            .set({
+          'upvoters': [currentUserId],
+          'order': lastVotedDoc.docs.first.data()['order'] + 1,
+        });
+      }
+    } else if (isDownvoted) {
+      QuerySnapshot _doc = await postsVotersRef
+          .doc(widget.postId)
+          .collection('userDownvotes')
+          .where('Downvoters', arrayContains: currentUserId)
+          .limit(1)
+          .get();
+      bool _isDownvoted = _doc.docs.length == 1;
 
-     } else if (isDownvoted) {
-     QuerySnapshot _doc= await postsVotersRef .document(widget.postId)
-                                .collection('userDownvotes').where('Downvoters',arrayContains: currentUserId).limit(1).getDocuments();
-   bool _isDownvoted = _doc.documents.length == 1; 
-     
-  postsVotersRef  .document(widget.postId)
-                                .collection('userDownvotes').document(_doc.documents.first.documentID).updateData({'downvoters': [currentUserId]});
-
+      postsVotersRef
+          .doc(widget.postId)
+          .collection('userDownvotes')
+          .doc(_doc.docs.first.id)
+          .update({
+        'downvoters': [currentUserId]
+      });
     }
   }
-  handleUpvoteButton()async {
-    if(isUpvoted){
-   QuerySnapshot _doc= await postsVotersRef .document(widget.postId)
-                                .collection('userDownvotes').where('Downvoters',arrayContains: currentUserId).limit(1).getDocuments();
-   bool _isUpvoted = _doc.documents.length == 1; 
-     
-  postsVotersRef  .document(widget.postId)
-                                .collection('userDownvotes').document(_doc.documents.first.documentID).updateData({'downvoters': [currentUserId]});
 
-    }  else if (!isUpvoted) {
-     var lastVotedDoc = await postsVotersRef 
-                                .document(widget.postId)
-                                .collection('userUpvotes')
-                                .orderBy('order', descending: true)
-                                .limit(1)
-                                .getDocuments();
-                            if (lastVotedDoc.documents.length == 0) {
-                            postsVotersRef 
-                                  .document(widget.postId)
-                                  .collection('userUpvotes')
-                                  .document()
-                                  .setData({
-                                'order': 1,
-                                'upvoters': [
-                                 currentUserId,
-                                ],
-                              }, merge: true);
-                            } else if (lastVotedDoc.documents.length == 1 &&
-                              lastVotedDoc.documents.first
-                                        .data['upvoters'].length <
-                                    10000) {
-                           postsVotersRef 
-                                  .document(widget.postId)
-                                  .collection('userUpvotes')
-                                  .document(lastVotedDoc
-                                      .documents.first.documentID)
-                                  .updateData({
-                                'upvotes':
-                                    FieldValue.arrayUnion([widget.ownerId])
-                              });
-                            } else if (lastVotedDoc.documents.length == 1 &&
-                                lastVotedDoc.documents.first.data['upvoters'].length > 10000) {
-                              followingRef
-                                  .document(currentUser?.id)
-                                  .collection('voters')
-                                  .document().setData({
-                                'upvoters':[currentUserId],
-                                'order': lastVotedDoc.documents.first.data['order']+ 1,
-                              });
-                            }
+  handleUpvoteButton() async {
+    if (isUpvoted) {
+      QuerySnapshot _doc = await postsVotersRef
+          .doc(widget.postId)
+          .collection('userDownvotes')
+          .where('Downvoters', arrayContains: currentUserId)
+          .limit(1)
+          .get();
+      bool _isUpvoted = _doc.docs.length == 1;
+
+      postsVotersRef
+          .doc(widget.postId)
+          .collection('userDownvotes')
+          .doc(_doc.docs.first.id)
+          .update({
+        'downvoters': [currentUserId]
+      });
+    } else if (!isUpvoted) {
+      var lastVotedDoc = await postsVotersRef
+          .doc(widget.postId)
+          .collection('userUpvotes')
+          .orderBy('order', descending: true)
+          .limit(1)
+          .get();
+      if (lastVotedDoc.docs.length == 0) {
+        postsVotersRef
+            .doc(widget.postId)
+            .collection('userUpvotes')
+            .doc()
+            .set({
+          'order': 1,
+          'upvoters': [
+            currentUserId,
+          ],
+        },  SetOptions(merge: true));
+      } else if (lastVotedDoc.docs.length == 1 &&
+          lastVotedDoc.docs.first.data()['upvoters'].length < 10000) {
+        postsVotersRef
+            .doc(widget.postId)
+            .collection('userUpvotes')
+            .doc(lastVotedDoc.docs.first.id)
+            .update({
+          'upvotes': FieldValue.arrayUnion([widget.ownerId])
+        });
+      } else if (lastVotedDoc.docs.length == 1 &&
+          lastVotedDoc.docs.first.data()['upvoters'].length > 10000) {
+        followingRef
+            .doc(currentUser?.id)
+            .collection('voters')
+            .doc()
+            .set({
+          'upvoters': [currentUserId],
+          'order': lastVotedDoc.docs.first.data()['order'] + 1,
+        });
+      }
     }
   }
 
@@ -1065,6 +1124,9 @@ class _PostState extends State<Post> {
             contents['$i'], contentsInfo['$i']['aspectRatio']));
       }
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getContentSize();
+    });
     super.didChangeDependencies();
   }
 
@@ -1188,17 +1250,35 @@ class _PostState extends State<Post> {
               Padding(
                 padding: EdgeInsets.only(left: 13.0),
               ),
-              SizedBox(
-                height: 28,
-                width: 30,
-                child: GestureDetector(
-                  onTap: () {},
-                  child: Icon(
-                    FlutterIcons.ios_arrow_down_ion,
-                    size: 28,
+              if (contentsHeight != null)
+                if (contentsHeight ==
+                        MediaQuery.of(context).size.height * 0.6 ||
+                    contentsHeight > MediaQuery.of(context).size.height * 0.6)
+                  SizedBox(
+                    height: 28,
+                    width: 30,
+                    child: GestureDetector(
+                      onTap: () {
+                        if (!constraintContent) {
+                          setState(() {
+                            constraintContent = true;
+                            getContentSize();
+                          });
+                        } else {
+                          setState(() {
+                            constraintContent = false;
+                            getContentSize();
+                          });
+                        }
+                      },
+                      child: Icon(
+                        constraintContent
+                            ? FlutterIcons.ios_arrow_down_ion
+                            : FlutterIcons.ios_arrow_up_ion,
+                        size: 28,
+                      ),
+                    ),
                   ),
-                ),
-              ),
               Expanded(
                 child: Container(),
               ),
@@ -1214,9 +1294,9 @@ class _PostState extends State<Post> {
                               isSaved = false;
                               showSaveBar = false;
                               savedPostsRef // TODO
-                                  .document(currentUser?.id)
+                                  .doc(currentUser?.id)
                                   .collection('All')
-                                  .document(postId)
+                                  .doc(postId)
                                   .delete();
                             });
                           },
@@ -1239,49 +1319,49 @@ class _PostState extends State<Post> {
                               isSaved = true;
                             });
                             var lastDoc = await savedPostsRef
-                                .document(currentUser?.id)
+                                .doc(currentUser?.id)
                                 .collection('all')
                                 .orderBy('order', descending: true)
                                 .limit(1)
-                                .getDocuments();
-                            if (lastDoc.documents.length == 0) {
+                                .get();
+                            if (lastDoc.docs.length == 0) {
                               savedPostsRef
-                                  .document(currentUser?.id)
+                                  .doc(currentUser?.id)
                                   .collection('all')
-                                  .document()
-                                  .setData({
+                                  .doc()
+                                  .set({
                                 'order': 1,
                                 'posts': [
                                   postId,
                                 ],
-                              }, merge: true);
-                            } else if (lastDoc.documents.length == 1 &&
-                                lastDoc.documents.first.data['posts'].length <
+                              },  SetOptions(merge: true));
+                            } else if (lastDoc.docs.length == 1 &&
+                                lastDoc.docs.first.data()['posts'].length <
                                     2) {
                               List<dynamic> _postIdList =
-                                  lastDoc.documents.first.data['posts'];
+                                  lastDoc.docs.first.data()['posts'];
                               _postIdList.add(postId);
                               savedPostsRef
-                                  .document(currentUser?.id)
+                                  .doc(currentUser?.id)
                                   .collection('all')
-                                  .document(lastDoc.documents.first.documentID)
-                                  .setData({
+                                  .doc(lastDoc.docs.first.id)
+                                  .set({
                                 'posts': _postIdList,
-                              }, merge: true);
-                            } else if (lastDoc.documents.length == 1 &&
-                                lastDoc.documents.first.data['posts'].length >
+                              }, SetOptions(merge: true));
+                            } else if (lastDoc.docs.length == 1 &&
+                                lastDoc.docs.first.data()['posts'].length >
                                     1) {
                               savedPostsRef
-                                  .document(currentUser?.id)
+                                  .doc(currentUser?.id)
                                   .collection('all')
-                                  .document()
-                                  .setData({
+                                  .doc()
+                                  .set({
                                 'order':
-                                    lastDoc.documents.first.data['order'] + 1,
+                                    lastDoc.docs.first.data()['order'] + 1,
                                 'posts': [
                                   postId,
                                 ],
-                              }, merge: true);
+                              }, SetOptions(merge: true));
                             }
                             setState(() {
                               showSaveBar = true;
@@ -1314,20 +1394,35 @@ class _PostState extends State<Post> {
                       size: 26.0, color: Colors.blueAccent),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(right: 20.0),
-                child: GestureDetector(
-                  onTap: () => showComments(
-                    context,
-                    post: this.widget,
-                  ),
-                  child: Icon(
-                    FluentIcons.comment_24_regular,
-                    size: 24.0,
-                    color: Colors.cyan,
+              if (!widget.commentsShown)
+                Padding(
+                  padding: const EdgeInsets.only(right: 20.0),
+                  child: GestureDetector(
+                    onTap: () => showComments(
+                      context,
+                      post: Post(
+                        commentsShown: true,
+                        contents: this.widget.contents,
+                        contentsInfo: this.widget.contentsInfo,
+                        isCompact: false,
+                        ownerId: this.widget.ownerId
+                        ,photoUrl: this.widget.ownerId,
+                        postId: this.widget.postId,
+                        tags: this.widget.tags,
+                        title: this.widget.title,
+                        topicId: this.widget.topicId,
+                        topicName: this.widget.topicName,
+                        upvotes: this.widget.upvotes,
+                        username: this.widget.username,
+                      ),
+                    ),
+                    child: Icon(
+                      FluentIcons.comment_24_regular,
+                      size: 24.0,
+                      color: Colors.cyan,
+                    ),
                   ),
                 ),
-              ),
               GestureDetector(
                 onTap: () => handleUpvoteButton(),
                 child: Icon(
@@ -1365,20 +1460,31 @@ class _PostState extends State<Post> {
     flickManager?.dispose();
     super.dispose();
   }
-@override
+
+  @override
   void initState() {
     List<String> followingList = preferences.getStringList('following');
-    if( followingList == null){
-       followingList = [];
-       preferences.setStringList('following', followingList );
+    if (followingList == null) {
+      followingList = [];
+      preferences.setStringList('following', followingList);
     }
-   
-    if(followingList.contains(widget.ownerId))
-    setState(() {
-      isFollowing = true;
-    });
+
+    if (followingList.contains(widget.ownerId))
+      setState(() {
+        isFollowing = true;
+      });
+
     super.initState();
   }
+
+  getContentSize() {
+    RenderBox _contentsBox = _contentsKey.currentContext.findRenderObject();
+    print(_contentsBox);
+    setState(() {
+      contentsHeight = _contentsBox.size.height;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
@@ -1425,14 +1531,28 @@ class _PostState extends State<Post> {
                       ? buildCompactPostHeader()
                       : buildPostHeader(),
                   if (!widget.isCompact)
-                    ListView.builder(
-                      padding: EdgeInsets.all(0),
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemBuilder: (_, i) {
-                        return contentsViewList[i];
-                      },
-                      itemCount: contents.length,
+                    ConstrainedBox(
+                      constraints: constraintContent
+                          ? BoxConstraints(
+                              maxHeight:
+                                  MediaQuery.of(context).size.height * 0.6)
+                          : BoxConstraints(),
+                      child: Stack(
+                        clipBehavior: Clip.antiAlias,
+                        alignment: AlignmentDirectional.topStart,
+                        children: [
+                          ListView.builder(
+                            key: _contentsKey,
+                            padding: EdgeInsets.all(0),
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemBuilder: (_, i) {
+                              return contentsViewList[i];
+                            },
+                            itemCount: contents.length,
+                          ),
+                        ],
+                      ),
                     ),
                   buildPostFooter(),
                 ],

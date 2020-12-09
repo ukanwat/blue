@@ -1,3 +1,4 @@
+import 'package:firebase/firebase.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -11,37 +12,37 @@ import './create_account.dart';
 import '../models/user.dart';
 
 final GoogleSignIn googleSignIn = GoogleSignIn();
-final StorageReference storageRef = FirebaseStorage.instance.ref();
-final preferencesRef = Firestore.instance.collection('preferences');
-final usersRef = Firestore.instance.collection('users');
-final postsRef = Firestore.instance.collection('posts');
-final postsVotersRef = Firestore.instance.collection('votes');
-final repostsRef = Firestore.instance.collection('reposts');
-final savedPostsRef = Firestore.instance.collection('saved-posts');
-final collectionsRef = Firestore.instance.collection('collections');
-final commentsRef = Firestore.instance.collection('comments');
-final activityFeedRef = Firestore.instance.collection('activityFeed');
-final followersRef = Firestore.instance.collection('followers');
-final followingRef = Firestore.instance.collection('following');
-final messagesRef = Firestore.instance.collection('messages');
+final StorageReference storageRef = storage().ref();
+final preferencesRef = FirebaseFirestore.instance.collection('preferences');
+final usersRef = FirebaseFirestore.instance.collection('users');
+final postsRef = FirebaseFirestore.instance.collection('posts');
+final postsVotersRef = FirebaseFirestore.instance.collection('votes');
+final repostsRef = FirebaseFirestore.instance.collection('reposts');
+final savedPostsRef = FirebaseFirestore.instance.collection('saved-posts');
+final collectionsRef = FirebaseFirestore.instance.collection('collections');
+final commentsRef = FirebaseFirestore.instance.collection('comments');
+final activityFeedRef = FirebaseFirestore.instance.collection('activityFeed');
+final followersRef = FirebaseFirestore.instance.collection('followers');
+final followingRef = FirebaseFirestore.instance.collection('following');
+final messagesRef = FirebaseFirestore.instance.collection('messages');
 final timelineRef =
-    Firestore.instance.collection('timeline'); //**fix timeline posts
-final communitiesRef = Firestore.instance.collection('communities');
-final followedTopicsRef = Firestore.instance.collection('followed-topics');
-final followedTagsRef = Firestore.instance.collection('followed-tags');
-final topicsRef = Firestore.instance.collection('topics');
-final postsCollectionGroupRef = Firestore.instance.collectionGroup('userPosts');
+    FirebaseFirestore.instance.collection('timeline'); //**fix timeline posts
+final communitiesRef = FirebaseFirestore.instance.collection('communities');
+final followedTopicsRef = FirebaseFirestore.instance.collection('followed-topics');
+final followedTagsRef = FirebaseFirestore.instance.collection('followed-tags');
+final topicsRef = FirebaseFirestore.instance.collection('topics');
+final postsCollectionGroupRef = FirebaseFirestore.instance.collectionGroup('userPosts');
 final topicPostsCollectionGroupRef =
-    Firestore.instance.collectionGroup('topicPosts');
-final userPostsRef = Firestore.instance.collection('user-posts');
-final accountReportsRef = Firestore.instance.collection('account-reports');
-final commentReportsRef = Firestore.instance.collection('comment-reports');
-final suggestionsRef = Firestore.instance.collection('suggestions');
-final bugsRef = Firestore.instance.collection('bugs');
+    FirebaseFirestore.instance.collectionGroup('topicPosts');
+final userPostsRef = FirebaseFirestore.instance.collection('user-posts');
+final accountReportsRef = FirebaseFirestore.instance.collection('account-reports');
+final commentReportsRef = FirebaseFirestore.instance.collection('comment-reports');
+final suggestionsRef = FirebaseFirestore.instance.collection('suggestions');
+final bugsRef = FirebaseFirestore.instance.collection('bugs');
 final usersDatabase = FirebaseDatabase.instance.reference().child('users');
 final topicPostsDatabase =
     FirebaseDatabase.instance.reference().child('topic-posts');
-final postReportsRef = Firestore.instance.collection('post-reports');
+final postReportsRef = FirebaseFirestore.instance.collection('post-reports');
 final Timestamp timestamp = Timestamp.now();
 
 FirebaseAuth firebaseAuth;

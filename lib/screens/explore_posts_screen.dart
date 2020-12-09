@@ -32,7 +32,7 @@ class _ExplorePostsScreenState extends State<ExplorePostsScreen>
   buildComments(Post data) {
     return StreamBuilder(
       stream: commentsRef
-          .document(data.postId)
+          .doc(data.postId)
           .collection('userComments')
           .snapshots(),
       builder: (context, snapshot) {
@@ -70,7 +70,7 @@ class _ExplorePostsScreenState extends State<ExplorePostsScreen>
   }
  
   addComments(Post data) {
-    commentsRef.document(data.postId).collection('userComments').add({
+    commentsRef.doc(data.postId).collection('userComments').add({
       'username': currentUser.username,
       'comment': commentsController.text,
       'timeStamp': timestamp,
@@ -82,7 +82,7 @@ class _ExplorePostsScreenState extends State<ExplorePostsScreen>
     // TODO data['postInteractions'].postInteractions[data['postId']] = PostInteraction( data['ownerId'], false, true, false, false);
     bool isNotPostOwner = currentUser.id == data.ownerId;
     if (isNotPostOwner) {
-      activityFeedRef.document(data.ownerId).collection('feedItems').add({
+      activityFeedRef.doc(data.ownerId).collection('feedItems').add({
         'type': 'comment',
         'commentData': commentsController.text,
         'username': currentUser.username,
@@ -98,7 +98,7 @@ class _ExplorePostsScreenState extends State<ExplorePostsScreen>
   }
   addReply(Post data, String commentId,String ownerId,{String referName}){
       if(referName != null){
-   commentsRef.document(data.postId).collection('userComments').document(commentId).updateData({'replies.$timestamp': {
+   commentsRef.doc(data.postId).collection('userComments').doc(commentId).update({'replies.$timestamp': {
             'username': currentUser.username,
       'comment': commentsController.text,
       'timeStamp': timestamp,
@@ -115,7 +115,7 @@ class _ExplorePostsScreenState extends State<ExplorePostsScreen>
        
        );
       }else{
-           commentsRef.document(data.postId).collection('userComments').document(commentId).updateData({'replies.$timestamp': {
+           commentsRef.doc(data.postId).collection('userComments').doc(commentId).update({'replies.$timestamp': {
             'username': currentUser.username,
       'comment': commentsController.text,
       'timeStamp': timestamp,
@@ -134,7 +134,7 @@ class _ExplorePostsScreenState extends State<ExplorePostsScreen>
     
            bool isNotPostOwner = currentUser.id == ownerId;
     if (isNotPostOwner) {
-      activityFeedRef.document(ownerId).collection('feedItems').add({
+      activityFeedRef.doc(ownerId).collection('feedItems').add({
         'type': 'comment reply',
         'commentData': commentsController.text,
         'username': currentUser.username,

@@ -34,7 +34,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   settingsSwitchListTile('Set your profile private', setPrivate, (newValue){
                  //TODO
                                 preferences.setBool('set_private',newValue );
-                preferencesRef.document(currentUser.id).updateData({
+                preferencesRef.doc(currentUser.id).update({
                   'set_private': newValue
                 });
                 setState(() {
@@ -44,7 +44,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
               settingsSwitchListTile('Personalised recommendations based on your activity', trackActivity, (newValue){
                 
                                 preferences.setBool('track_activity',newValue );
-                preferencesRef.document(currentUser.id).updateData({
+                preferencesRef.doc(currentUser.id).update({
                   'track_activity': newValue
                 });
                 setState(() {

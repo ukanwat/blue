@@ -43,18 +43,18 @@ class _CommentVoteButtonState extends State<CommentVoteButton> {
                           });
                           if(widget.type == CommentType.reply){
                             commentsRef
-                                  .document(widget.postId)
+                                  .doc(widget.postId)
                                   .collection('userComments')
-                                  .document(widget.commentId)
-                                  .updateData( widget.vote == Vote.upvote ?{ 'replies.${widget.id}.upvotes':FieldValue.increment(1)}:
+                                  .doc(widget.commentId)
+                                  .update( widget.vote == Vote.upvote ?{ 'replies.${widget.id}.upvotes':FieldValue.increment(1)}:
                                   { 'replies.${widget.id}.downvotes':FieldValue.increment(1)}
                                   );
                           }else{
                                 commentsRef
-                                  .document(widget.postId)
+                                  .doc(widget.postId)
                                   .collection('userComments')
-                                  .document(widget.commentId)
-                                  .updateData( widget.vote == Vote.upvote ?{ 'upvotes':FieldValue.increment(1)}:
+                                  .doc(widget.commentId)
+                                  .update( widget.vote == Vote.upvote ?{ 'upvotes':FieldValue.increment(1)}:
                                   { 'downvotes':FieldValue.increment(1)}
                                   );
                           }

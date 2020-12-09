@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:blue/main.dart';
 import 'package:blue/screens/profile_image_crop_screen.dart';
 import 'package:blue/widgets/custom_image.dart';
+import 'package:firebase/firebase.dart' as base;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,7 +15,7 @@ import 'package:image/image.dart' as Im;
 import 'package:path_provider/path_provider.dart';
 
 import './home.dart';
-import '../models/user.dart';
+import '../models/user.dart'; 
 import '../widgets/progress.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -47,7 +48,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       isLoading = true;
     });
 
-    DocumentSnapshot doc = await usersRef.document(currentUser.id).get();
+    DocumentSnapshot doc = await usersRef.doc(currentUser.id).get();
     user = User.fromDocument(doc);
     displayNameController.text = user.displayName;
     bioController.text = user.bio;
@@ -102,13 +103,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
         final compressedHeaderFile = File('$path/img_$headerId.jpg')
           ..writeAsBytesSync(Im.encodeJpg(headerFile, quality: 85));
-        StorageUploadTask headerUploadTask = storageRef
-            .child("profile_$headerId.jpg")
-            .putFile(compressedHeaderFile, StorageMetadata(contentType: 'jpg'));
-        StorageTaskSnapshot headerStorageSnap =
-            await headerUploadTask.onComplete;
-        String headerDownloadUrl = await headerStorageSnap.ref.getDownloadURL();
-        headerUrl = headerDownloadUrl;
+
+         base.StorageReference _headerStorage = base.storage().ref().child("profile_$headerId.jpg");
+    base.UploadTaskSnapshot uploadHeaderTaskSnapshot = await _headerStorage.put(compressedHeaderFile).future;
+    var  headerDownloadUri = await uploadHeaderTaskSnapshot.ref.getDownloadURL();
+   headerUrl =headerDownloadUri.toString();
+
       }
 
       final Im.Image imageFile = Im.decodeImage(croppedImage.readAsBytesSync());
@@ -121,23 +121,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final compressedAvatarFile = File('$path/img_$avatarId.jpg')
         ..writeAsBytesSync(Im.encodeJpg(avatarFile, quality: 85));
 
-      StorageUploadTask imageUploadTask = storageRef
-          .child("profile_$imageId.jpg")
-          .putFile(compressedImageFile, StorageMetadata(contentType: 'jpg'));
-      StorageUploadTask avatarUploadTask = storageRef
-          .child("profile_$avatarId.jpg")
-          .putFile(compressedAvatarFile, StorageMetadata(contentType: 'jpg'));
+ base.StorageReference _imageStorage = base.storage().ref().child("profile_$imageId.jpg");
+    base.UploadTaskSnapshot imageUploadTaskSnapshot = await _imageStorage.put(compressedImageFile).future;
+    var  imageDownloadUri = await imageUploadTaskSnapshot.ref.getDownloadURL();
+   String imageDownloadUrl =imageDownloadUri.toString();
 
-      StorageTaskSnapshot imageStorageSnap = await imageUploadTask.onComplete;
-      StorageTaskSnapshot avatarStorageSnap = await avatarUploadTask.onComplete;
 
-      String imageDownloadUrl = await imageStorageSnap.ref.getDownloadURL();
-      String avatarDownloadUrl = await avatarStorageSnap.ref.getDownloadURL();
+
+ base.StorageReference _avatarStorage = base.storage().ref().child("profile_$avatarId.jpg");
+    base.UploadTaskSnapshot avatarUploadTaskSnapshot = await _avatarStorage.put(compressedAvatarFile).future;
+    var  avatarDownloadUri = await avatarUploadTaskSnapshot.ref.getDownloadURL();
+   String avatarDownloadUrl =avatarDownloadUri.toString();
 
       profilePictureUrl = imageDownloadUrl;
       avatarUrl = avatarDownloadUrl;
       if (headerUrl == null) {
-        await usersRef.document(currentUser.id).updateData(
+        await usersRef.doc(currentUser.id).update(
           {
             'displayName': displayNameController.text,
             'bio': bioController.text,
@@ -147,7 +146,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           },
         );
       } else {
-        await usersRef.document(currentUser.id).updateData(
+        await usersRef.doc(currentUser.id).update(
           {
             'displayName': displayNameController.text,
             'bio': bioController.text,
@@ -179,22 +178,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
         final compressedHeaderFile = File('$path/img_$headerId.jpg')
           ..writeAsBytesSync(Im.encodeJpg(headerFile, quality: 85));
-        StorageUploadTask headerUploadTask = storageRef
-            .child("profile_$headerId.jpg")
-            .putFile(compressedHeaderFile, StorageMetadata(contentType: 'jpg'));
-        StorageTaskSnapshot headerStorageSnap =
-            await headerUploadTask.onComplete;
-        String headerDownloadUrl = await headerStorageSnap.ref.getDownloadURL();
-        headerUrl = headerDownloadUrl;
+          
+    base.StorageReference _storageRef = base.storage().ref().child("profile_$headerId.jpg");
+    base.UploadTaskSnapshot uploadTaskSnapshot = await storageRef.put(compressedHeaderFile).future;
+    var headerDownloadUri = await uploadTaskSnapshot.ref.getDownloadURL();
+    headerUrl = headerDownloadUri.toString();
+
       }
       if (headerUrl == null) {
-        await usersRef.document(currentUser.id).updateData({
+        await usersRef.doc(currentUser.id).update({
           'displayName': displayNameController.text,
           'bio': bioController.text,
           'website': websiteController.text.trim(),
         });
       } else {
-        await usersRef.document(currentUser.id).updateData({
+        await usersRef.doc(currentUser.id).update({
           'displayName': displayNameController.text,
           'bio': bioController.text,
           'website': websiteController.text.trim(),

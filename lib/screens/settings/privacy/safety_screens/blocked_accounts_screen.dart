@@ -30,7 +30,7 @@ class _BlockedAccountsScreenState extends State<BlockedAccountsScreen> {
      List<Future> accountFutures = [];
      List accountsDocSnapshots;
     blockedAccounts.forEach((account) {
-             accountFutures.add(usersRef.document(account).get());
+             accountFutures.add(usersRef.doc(account).get());
     });
        
 accountsDocSnapshots = await Future.wait(accountFutures);
