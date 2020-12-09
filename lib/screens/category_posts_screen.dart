@@ -1,7 +1,5 @@
-import 'package:blue/screens/topic/topic_popular_screen.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:blue/main.dart';
@@ -27,10 +25,10 @@ class _CategoryPostsScreenState extends State<CategoryPostsScreen> with Automati
     print(currentUser);
     QuerySnapshot snapshot = await postsRef
     .where('topicName',isEqualTo: widget.name)
-        .getDocuments(); 
+        .get(); 
   
     setState(() {
-      posts =  snapshot.documents.map((doc) => Post.fromDocument(doc,isCompact: true,)).toList();
+      posts =  snapshot.docs.map((doc) => Post.fromDocument(doc.data(),isCompact: true,)).toList();
          loading = false;
     });
   }

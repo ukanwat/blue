@@ -1,10 +1,6 @@
-import 'dart:async';
-
 import 'package:blue/models/topic_list_tile.dart';
 import 'package:blue/providers/submit_state.dart';
-import 'package:blue/providers/theme.dart';
 import 'package:blue/screens/search_tag_screen.dart';
-import 'package:blue/widgets/custom_image.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';

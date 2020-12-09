@@ -72,7 +72,7 @@ class _TagScreenState extends State<TagScreen> {
 
                         followedTagsRef.doc(currentUser.id).set({
                           tag: DateTime.now(),
-                        }, merge: true);
+                        }, SetOptions(merge: true));
                          
                         setState(() {
                                  List<String> followedTags =          preferences.getStringList('followed_tags');

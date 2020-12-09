@@ -1,41 +1,20 @@
 import 'package:blue/screens/about_screen.dart';
 import 'package:blue/screens/all_saved_posts_screen.dart';
-import 'package:blue/services/fade_on_scroll.dart';
-import 'package:blue/widgets/custom_image.dart';
-import 'package:carousel_pro/carousel_pro.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:blue/main.dart';
-
 import '../widgets/post.dart';
 import '../models/user.dart';
-import '../widgets/header.dart';
 import '../widgets/progress.dart';
 import './home.dart';
 import './edit_profile_screen.dart';
 import './settings_screen.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
-// class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-//   final AppBar appBar;
 
-//   CustomAppBar({Widget flexibleSpace,List<Widget> actions, bool centerTitle, Text title,double elevation }): appBar = new AppBar(flexibleSpace: flexibleSpace,actions: actions, centerTitle: centerTitle, title: title,elevation: elevation,);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return new Theme(
-//       child: appBar,
-//       data: new ThemeData(primaryColor: Colors.transparent)
-//     );
-//   }
-
-//   @override
-//   Size get preferredSize => appBar.preferredSize;
-// }
 
 class ProfileScreen extends StatefulWidget {
   final String profileId;
@@ -191,7 +170,7 @@ void dispose() {
       postCount = postDocSnapshots.length;
       print(postDocSnapshots);
       posts = posts +
-          postDocSnapshots.map((doc) => Post.fromDocument(doc)).toList();
+          postDocSnapshots.map((doc) => Post.fromDocument(doc.data())).toList();
     });
   }
 
@@ -244,7 +223,7 @@ void dispose() {
       repostsAreLoading = false;
       repostCount = repostDocSnapshots.length;
       reposts = reposts +
-          repostDocSnapshots.map((doc) => Post.fromDocument(doc)).toList();
+          repostDocSnapshots.map((doc) => Post.fromDocument(doc.data())).toList();
     });
   }
 
@@ -435,11 +414,11 @@ void dispose() {
   buildProfileHeaderTemp() {
     return FutureBuilder(
       future: usersRef.doc(widget.profileId).get(),
-      builder: (context, snapshot) {
+      builder: (context,AsyncSnapshot<DocumentSnapshot> snapshot) {
         if (!snapshot.hasData) {
           return circularProgress();
         }
-        User user = User.fromDocument(snapshot.data);
+        User user = User.fromDocument( snapshot.data.data());
         return Column(
           children: <Widget>[
             Container(

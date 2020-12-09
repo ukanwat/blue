@@ -1,5 +1,4 @@
 import 'package:blue/providers/comment.dart';
-import 'package:blue/widgets/custom_image.dart';
 import 'package:blue/widgets/header.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
@@ -55,9 +54,9 @@ class _CommentsScreenState extends State<CommentsScreen> {
                 dense: true,
               ))
         ];
-        snapshot.data.documents.forEach((doc) {
+        snapshot.data.documents.forEach((QueryDocumentSnapshot doc) {
           print(doc);
-          comments.add(Comment.fromDocument(doc, data.postId));
+          comments.add(Comment.fromDocument(doc.data(), data.postId,doc.id));
           print('d');
         });
         print(snapshot.data.documents.length);

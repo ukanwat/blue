@@ -1,4 +1,3 @@
-import 'package:blue/widgets/settings_widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +33,7 @@ class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
    
        formKey.currentState.save();
          await collectionsRef
-        .doc(currentUser?.id).set({ noOfCollections.toString(): collectionNameController.text },merge: true);
+        .doc(currentUser?.id).set({ noOfCollections.toString(): collectionNameController.text },SetOptions(merge: true));
         Navigator.pop(context);
      }
      

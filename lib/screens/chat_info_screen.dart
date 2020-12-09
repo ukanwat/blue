@@ -324,7 +324,7 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                             .doc(lastDocumentId)
                             .set({
                           'lastDeletedBy': lastDeletedBy //TODO :to test
-                        }, merge: true);
+                        }, SetOptions(merge: true));
                       }
                     }));
           }),

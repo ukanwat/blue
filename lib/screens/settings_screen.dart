@@ -1,9 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
-
 import 'package:blue/main.dart';
 import 'package:blue/screens/license_screen.dart';
-import 'package:blue/screens/settings/about/acknowledgements_screen.dart';
 import 'package:blue/screens/settings/about/privacy_policy_screen.dart';
 import 'package:blue/screens/settings/about/terms_of_service_screen.dart';
 import 'package:blue/screens/settings/advanced_settings/font_screen.dart';
@@ -23,7 +21,6 @@ import 'package:device_info/device_info.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';

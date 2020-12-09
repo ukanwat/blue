@@ -20,7 +20,7 @@ User({
   this.headerUrl
 });
 
-factory User.fromDocument(DocumentSnapshot doc){
+factory User.fromDocument(Map doc){
   return User(
     id: doc['id'],
     email: doc['email'],

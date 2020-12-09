@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:developer' show Timeline, Flow;
-
 import 'package:blue/screens/package_licenses_screen.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:flutter/foundation.dart';

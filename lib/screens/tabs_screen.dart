@@ -1,8 +1,5 @@
-import 'package:blue/models/user.dart';
-import 'package:blue/providers/provider_widget.dart';
 import 'package:blue/screens/communication_tabbar_screen.dart';
 import 'package:blue/screens/post_screen.dart';
-import 'package:blue/widgets/progress.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'home_screen.dart';
@@ -54,14 +51,14 @@ class _TabsScreenState extends State<TabsScreen> {
           
         ),
         child: SizedBox(
-          height: 50,
-                  child: BottomNavigationBar(iconSize: 25,elevation: 10,
-            type: BottomNavigationBarType.fixed,
+          height: 56,
+                  child: BottomNavigationBar(iconSize: 24,elevation: 10,
+            type: BottomNavigationBarType.fixed,showSelectedLabels: false,showUnselectedLabels: false,
             unselectedItemColor: Color.fromRGBO(200, 200, 200, 1),
             selectedItemColor:  Color.fromRGBO(250, 250, 250, 1),
-
             items: <BottomNavigationBarItem>[
               BottomNavigationBarItem(
+           label: 'Home',
                 icon: Icon(
                  FlutterIcons.home_fea,
                  size: 26,
@@ -72,7 +69,7 @@ class _TabsScreenState extends State<TabsScreen> {
             
               ),
 
-              BottomNavigationBarItem(
+              BottomNavigationBarItem(     label: 'Explore',
                 icon: Icon(
                 FlutterIcons.compass_fea,size: 26,
                 // size: 34,
@@ -84,13 +81,13 @@ class _TabsScreenState extends State<TabsScreen> {
             
               ),
 
-              BottomNavigationBarItem(
+              BottomNavigationBarItem(     label: 'Post',
                 icon: Icon(
                  FlutterIcons.edit_fea,
                 ),
               ),
 
-              BottomNavigationBarItem(
+              BottomNavigationBarItem(     label: 'Notifications',
                 icon: Icon(FlutterIcons.notification_ent,
                    size: 23.6,
                 ),
@@ -100,7 +97,8 @@ class _TabsScreenState extends State<TabsScreen> {
             
               ),
 
-              BottomNavigationBarItem(
+              BottomNavigationBarItem(    
+                label: 'Profile',
                 icon: Icon(
                   FlutterIcons.user_faw5,
                   size: 23,

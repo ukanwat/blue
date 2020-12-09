@@ -29,7 +29,7 @@ class _TopicPopularScreenState extends State<TopicPopularScreen> {
    
         
     setState(() {
-      this.posts =  snapshot.docs.map((doc) => Post.fromDocument(doc)).toList() ;
+      this.posts =  snapshot.docs.map((doc) => Post.fromDocument(doc.data())).toList() ;
     });
   }
     buildPopular() {

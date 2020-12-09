@@ -48,7 +48,7 @@ class _CreateAccountState extends State<CreateAccount> {
                   padding: EdgeInsets.all(16.0),
                   child: Container(
                     child: Form(
-                      autovalidate: true,// TODO
+                      autovalidateMode: AutovalidateMode.always,// TODO
                       key: _formKey,
                       child: TextFormField(
                         validator: (val) {

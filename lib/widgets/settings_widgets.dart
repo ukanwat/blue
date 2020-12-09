@@ -2,7 +2,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-PreferredSize settingsHeader(BuildContext context, String title) {
+PreferredSize settingsHeader(BuildContext context, String title){
   return PreferredSize(
       preferredSize: Size.fromHeight(50),
       child: AppBar(titleSpacing: 0,

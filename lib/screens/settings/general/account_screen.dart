@@ -1,10 +1,7 @@
 import 'package:blue/main.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../edit_profile_screen.dart';
-import 'account_screens/deactivate_account_screen.dart';
 import 'account_screens/email_screen.dart';
 import 'account_screens/logins.dart';
 import 'account_screens/password_screen.dart';

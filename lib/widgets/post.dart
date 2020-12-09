@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:blue/models/post_interaction.dart';
 import 'package:blue/screens/explore_posts_screen.dart';
 import 'package:blue/screens/profile_screen.dart';
 import 'package:blue/services/link_preview.dart';
 import 'package:blue/services/video_controls.dart';
-import 'package:blue/services/video_thumbnail_generator.dart';
 import 'package:blue/widgets/report_dialog.dart';
 import 'package:blue/widgets/repost_dialog.dart';
 import 'package:blue/widgets/save_dialog.dart';
@@ -65,7 +63,7 @@ class Post extends StatefulWidget {
       this.commentsShown // this.postInteractions
       });
 
-  factory Post.fromDocument(DocumentSnapshot doc,
+  factory Post.fromDocument(Map doc,
       {bool isCompact, bool commentsShown}) {
     if (isCompact == null) isCompact = false;
     if (commentsShown == null) commentsShown = false;
@@ -1124,6 +1122,7 @@ class _PostState extends State<Post> {
             contents['$i'], contentsInfo['$i']['aspectRatio']));
       }
     }
+    if(!widget.isCompact)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       getContentSize();
     });
@@ -1406,7 +1405,7 @@ class _PostState extends State<Post> {
                         contentsInfo: this.widget.contentsInfo,
                         isCompact: false,
                         ownerId: this.widget.ownerId
-                        ,photoUrl: this.widget.ownerId,
+                        ,photoUrl: this.widget.photoUrl,
                         postId: this.widget.postId,
                         tags: this.widget.tags,
                         title: this.widget.title,
@@ -1557,7 +1556,7 @@ class _PostState extends State<Post> {
                   buildPostFooter(),
                 ],
               ),
-            ));
+            ),);
   }
 }
 

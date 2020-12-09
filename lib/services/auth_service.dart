@@ -1,10 +1,6 @@
 import 'dart:convert';
-
-import 'package:blue/models/user.dart';
-import 'package:blue/providers/provider_widget.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/screens/sign_in_view_screen.dart';
-import 'package:blue/screens/tabs_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:google_sign_in/google_sign_in.dart';

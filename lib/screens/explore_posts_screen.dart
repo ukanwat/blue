@@ -56,9 +56,9 @@ class _ExplorePostsScreenState extends State<ExplorePostsScreen>
           )
       
         )];
-        snapshot.data.documents.forEach((doc) {
+        snapshot.data.documents.forEach(( doc) {
           print(doc);
-          comments.add(Comment.fromDocument(doc,data.postId));
+          comments.add(Comment.fromDocument(doc.data(),data.postId,doc.id));
           print('d');
         });
         print(snapshot.data.documents.length);

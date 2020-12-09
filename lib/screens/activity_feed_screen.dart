@@ -22,7 +22,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> with AutomaticK
         .get();
     List<ActivityFeedItem> feedItems = [];
     snapshot.docs.forEach((doc) {
-      feedItems.add(ActivityFeedItem.fromDocument(doc));
+      feedItems.add(ActivityFeedItem.fromDocument(doc.data()));
       // print('Activity Feed Item: ${doc.data}');
     });
     return feedItems;

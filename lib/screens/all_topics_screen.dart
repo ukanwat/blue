@@ -1,8 +1,6 @@
 import 'package:blue/screens/tag_screen.dart';
 import 'package:blue/widgets/header.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:blue/widgets/topic_card.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:blue/main.dart';

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import './home.dart';
 import '../widgets/progress.dart';
 import '../widgets/post.dart';

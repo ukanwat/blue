@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:blue/widgets/header.dart';
 import 'package:flutter/material.dart';
 import 'package:simple_image_crop/simple_image_crop.dart';

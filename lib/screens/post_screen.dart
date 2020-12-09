@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:blue/providers/submit_state.dart';
 import 'package:blue/services/link_preview.dart';
 import 'package:blue/widgets/show_dialog.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:blue/screens/select_topic_screen.dart';
@@ -12,32 +13,23 @@ import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:flutter_link_preview/flutter_link_preview.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:video_compress/video_compress.dart' as Vc;
-import 'package:flutter_video_compress/flutter_video_compress.dart' as Fvc;
-import 'package:visibility_detector/visibility_detector.dart';
 import 'package:zefyr/zefyr.dart';
 import 'dart:io';
 import './home.dart';
 import 'package:http/http.dart';
-import 'package:blue/widgets/post_screen_common_widget.dart';
 import 'package:blue/main.dart';
 import 'package:path/path.dart' as p;
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image/image.dart' as Im;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
-import 'package:firebase/firebase.dart';
-// import 'package:video_compress/video_compress.dart';
-import 'package:link_previewer/link_previewer.dart';
 import '../services/video_processing.dart';
 import 'package:path/path.dart' as Path;
-import 'package:quill_delta/quill_delta.dart';
-import 'package:zefyr/src/widgets/field.dart';
+import '../services/file_storage.dart';
+
 enum ContentInsertOptions { Device, Camera, Carousel }
 
 class PostScreen extends StatefulWidget {
@@ -47,7 +39,8 @@ class PostScreen extends StatefulWidget {
 }
 
 class _PostScreenState extends State<PostScreen> {
-  List<Widget> contents = [                            //**choose btween container and widget due to zefyr
+  List<Widget> contents = [
+    //**choose btween container and widget due to zefyr
     Container(),
   ];
   List<File> videos = [];
@@ -61,7 +54,7 @@ class _PostScreenState extends State<PostScreen> {
   VideoPlayerController _cameraVideoPlayerController;
   TextEditingController titleController = TextEditingController();
   // List<TextEditingController> textControllers = List();
-   List<ZefyrController> textControllers = List();
+  List<ZefyrController> textControllers = List();
   List<FocusNode> textFocusNodes = List();
   List<TextEditingController> linkControllers = List();
   Map<int, dynamic> contentsMap = {};
@@ -267,44 +260,25 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   Future<String> uploadImage(File file) async {
-
     //Upload Profile Photo
-    StorageReference _storage = storage().ref("post_$imageId.jpg");
-    UploadTaskSnapshot uploadTaskSnapshot = await _storage.put(file).future;
-    var imageUri = await uploadTaskSnapshot.ref.getDownloadURL();
-    String _url = imageUri.toString();
+    String _url =  await FileStorage.upload('posts/$postId','image_$imageId',file );
     return _url;
-  
-    // StorageUploadTask uploadTask = storageRef
-    //     .child("post_$imageId.jpg")
-    //     .putFile(file, StorageMetadata(contentType: 'jpg'));
-    // StorageTaskSnapshot storageSnap = await uploadTask.onComplete;
-    // String downloadUrl = await storageSnap.ref.getDownloadURL();
-    // return downloadUrl;
   }
 
   Future<List<String>> uploadCarousel(List<File> files) async {
     List<String> downloadUrls = [];
-    StorageTaskSnapshot storageSnap;
-    String downloadUrl;
     for (int i = 0; i < files.length; i++) {
-      imageId = Uuid().v4();
-      StorageUploadTask uploadTask = storageRef
-          .child("post_$imageId.jpg")
-          .putFile(files[i], StorageMetadata(contentType: 'jpg'));
-      storageSnap = await uploadTask.onComplete;
-      downloadUrl = await storageSnap.ref.getDownloadURL();
-      downloadUrls.add(downloadUrl);
+      String _imageId = Uuid().v4();
+          String _url =  await FileStorage.upload('posts/$postId','carousel_$_imageId',files[i] );
+      downloadUrls.add(_url);
     }
     return downloadUrls;
   }
 
   Future<String> uploadVideo(dynamic mediaInfo) async {
-    StorageUploadTask uploadTask =
-        storageRef.child('video_$videoId.mp4').putFile(mediaInfo.file);
-    StorageTaskSnapshot storageSnap = await uploadTask.onComplete;
-    String downloadUrl = await storageSnap.ref.getDownloadURL();
-    return downloadUrl;
+          String _videoId = Uuid().v4();
+        String _url =  await FileStorage.upload('posts/$postId','video_$_videoId',mediaInfo.file );
+    return _url;
   }
 
   createPostInFirestore(
@@ -337,16 +311,12 @@ class _PostScreenState extends State<PostScreen> {
       'ownerName': currentUser?.username,
     }); // TODO: check if successful
     if (lastDoc.docs.length == 0) {
-      userPostsRef
-          .doc(currentUser.id)
-          .collection('userPosts')
-          .doc()
-          .set({
+      userPostsRef.doc(currentUser.id).collection('userPosts').doc().set({
         'order': 1,
         'posts': [
           postId,
         ],
-      }, merge: true);
+      }, SetOptions(merge: true));
     } else if (lastDoc.docs.length == 1 &&
         lastDoc.docs.first.data()['posts'].length < 2) {
       List<dynamic> _postIdList = lastDoc.docs.first.data()['posts'];
@@ -357,29 +327,23 @@ class _PostScreenState extends State<PostScreen> {
           .doc(lastDoc.docs.first.id)
           .set({
         'posts': _postIdList,
-      }, merge: true);
+      }, SetOptions(merge: true));
     } else if (lastDoc.docs.length == 1 &&
         lastDoc.docs.first.data()['posts'].length > 1) {
-      userPostsRef
-          .doc(currentUser.id)
-          .collection('userPosts')
-          .doc()
-          .set({
+      userPostsRef.doc(currentUser.id).collection('userPosts').doc().set({
         'order': lastDoc.docs.first.data()['order'] + 1,
         'posts': [
           postId,
         ],
-      }, merge: true);
+      }, SetOptions(merge: true));
     }
   }
 
   Future<String> _uploadFile(filePath, folderName) async {
     final file = new File(filePath);
     final basename = p.basename(filePath);
-    final StorageReference _ref = storage().ref().child(folderName).child(basename);
-    UploadTaskSnapshot uploadTaskSnapshot = await _ref.put(file).future;
-    var videoUri = await uploadTaskSnapshot.ref.getDownloadURL();
-    return videoUri.toString();
+    String videoUrl = await FileStorage.upload('posts/$postId/$folderName', basename, file);
+    return videoUrl;
   }
 
   Future<String> _uploadHLSFiles(dirPath, videoName) async {
@@ -472,10 +436,6 @@ class _PostScreenState extends State<PostScreen> {
     await _encoder
         .execute(tempArguments)
         .then((rc) => print("FFmpeg process exited with rc $rc"));
-    // return;
-    // final outDirPath = '${extDir.path}/Videos/$videoName';
-    // final videosDir = new Directory(outDirPath);
-    // videosDir.createSync(recursive: true);
 
     String thumbFilePath = await VideoProcessing.getThumb(
         file.path,
@@ -486,17 +446,6 @@ class _PostScreenState extends State<PostScreen> {
     final String videoUrl = await _uploadHLSFiles(outDir, 'video_$postId');
     print('$thumbUrl  $videoUrl');
     return {'thumbUrl': thumbUrl, 'videoUrl': videoUrl};
-
-    // final videoInfo = VideoInfo(
-    //   videoUrl: videoUrl,
-    //   thumbUrl: thumbUrl,
-    //   coverUrl: thumbUrl,
-    //   aspectRatio: aspectRatio,
-    //   uploadedAt: DateTime.now().millisecondsSinceEpoch,
-    //   videoName: videoName,
-    // );
-
-    // await FirebaseProvider.saveVideo(videoInfo);
   }
 
   handleSubmit(String topicName, String topicId, List<String> tags) async {
@@ -550,15 +499,20 @@ class _PostScreenState extends State<PostScreen> {
       videoId = Uuid().v4();
       firestoreContents = {};
     });
-     postReportsRef.doc(postId).set({'abusive': 0,'inappropriate': 0,'spam': 0,});
+    postReportsRef.doc(postId).set({
+      'abusive': 0,
+      'inappropriate': 0,
+      'spam': 0,
+    });
     Navigator.pop(context);
     Navigator.pop(context);
     Navigator.pop(context);
   }
 
-  Widget textDisplay(ZefyrController textController,
-    // TextEditingController textController,
-   int index,
+  Widget textDisplay(
+      ZefyrController textController,
+      // TextEditingController textController,
+      int index,
       FocusNode textFocusNode) {
     Map infoMap = {};
     infoMap['type'] = 'text';
@@ -566,17 +520,21 @@ class _PostScreenState extends State<PostScreen> {
     contentsMap[index] = textController;
     contentType.add('text');
     print(contentsMap);
-    return 
-    Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15,vertical: 10),
-      child: ZefyrField( height: 300,
-        decoration: InputDecoration(border: InputBorder.none, hintText: 'Text...',),
-        controller: textController,key: UniqueKey(),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+      child: ZefyrField(
+        height: 300,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          hintText: 'Text...',
+        ),
+        controller: textController,
+        key: UniqueKey(),
         focusNode: textFocusNode,
         autofocus: true,
         imageDelegate: CustomImageDelegate(),
         physics: AlwaysScrollableScrollPhysics(),
-          ),
+      ),
     );
   }
 
@@ -661,11 +619,6 @@ class _PostScreenState extends State<PostScreen> {
           }
           return false;
         })['widget'] = linkImageDisplay(linkController.text);
-        //      contentsData.add({
-        //   'info': {'type':'link'},
-        //   'content':   linkController,
-        //   'widget':linkDisplay(linkController, fileIndex)
-        // });
       });
     } else {
       setState(() {
@@ -982,7 +935,7 @@ class _PostScreenState extends State<PostScreen> {
                         onPressed: () {
                           // TextEditingController textController =
                           //     TextEditingController();
-                                ZefyrController textController =
+                          ZefyrController textController =
                               ZefyrController(NotusDocument());
                           FocusNode textFocusNode = FocusNode();
                           setState(() {
@@ -1038,11 +991,10 @@ class _PostScreenState extends State<PostScreen> {
             backgroundColor: Theme.of(context).canvasColor //TODO blue gradient
             ),
         body: ZefyrScaffold(
-                  child: SingleChildScrollView(
+          child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-             
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
                   width: double.infinity,
@@ -1054,8 +1006,10 @@ class _PostScreenState extends State<PostScreen> {
                     decoration: InputDecoration(
                       hintText: "Title",
                       hintStyle: TextStyle(
-                          color:
-                              Theme.of(context).iconTheme.color.withOpacity(0.8)),
+                          color: Theme.of(context)
+                              .iconTheme
+                              .color
+                              .withOpacity(0.8)),
                       border: InputBorder.none,
                     ),
                   ),
@@ -1225,7 +1179,6 @@ class _PostScreenState extends State<PostScreen> {
             ));
   }
 }
-
 
 class CustomImageDelegate implements ZefyrImageDelegate<ImageSource> {
   @override

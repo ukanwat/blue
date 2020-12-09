@@ -1,18 +1,7 @@
-
-import 'dart:io' as Io;
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:image_downloader/image_downloader.dart';
-import 'package:path_provider/path_provider.dart';
-
-import 'package:blue/screens/chat_messages_screen.dart';
-import 'package:blue/widgets/progress.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:blue/main.dart';
-
-import 'package:blue/screens/home.dart';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:full_screen_image/full_screen_image.dart';
 
@@ -30,7 +19,7 @@ class Message extends StatelessWidget {
     this.type,
   });
 
-  factory Message.fromDocument(DocumentSnapshot doc) {
+  factory Message.fromDocument(Map doc) {
     return Message(
       idTo: doc['idTo'],
       idFrom: doc['idFrom'],

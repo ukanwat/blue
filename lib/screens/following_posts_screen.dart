@@ -19,7 +19,7 @@ class _FollowingPostsScreenState extends State<FollowingPostsScreen>
         .get();
 
     setState(() {
-      posts = snapshot.docs.map((doc) => Post.fromDocument(doc)).toList();
+      posts = snapshot.docs.map((doc) => Post.fromDocument(doc.data())).toList();
     });
   }
 

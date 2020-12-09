@@ -1,18 +1,9 @@
-import 'package:firebase/firebase.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/material.dart';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-
-import '../screens/tabs_screen.dart';
-import './create_account.dart';
-import '../models/user.dart';
 
 final GoogleSignIn googleSignIn = GoogleSignIn();
-final StorageReference storageRef = storage().ref();
 final preferencesRef = FirebaseFirestore.instance.collection('preferences');
 final usersRef = FirebaseFirestore.instance.collection('users');
 final postsRef = FirebaseFirestore.instance.collection('posts');

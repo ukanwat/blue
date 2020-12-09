@@ -37,7 +37,7 @@ class _ExploreScreenState extends State<ExploreScreen>
   getExplore() async {
     QuerySnapshot snapshot = await postsRef.limit(5).get();
     List<Post> posts =
-        snapshot.docs.map((doc) => Post.fromDocument(doc)).toList();
+        snapshot.docs.map((doc) => Post.fromDocument(doc.data())).toList();
     setState(() {
       this.posts = posts;
       loading = false;
@@ -104,14 +104,6 @@ class _ExploreScreenState extends State<ExploreScreen>
      tabController = new TabController(length:  noOfFollowedTopicCards , vsync: this);
     });
   }
-  // getPopularPosts() async {
-  //   QuerySnapshot snapshot = await popularPostsRef.getDocuments();
-  //   List<Post> posts =
-  //       snapshot.documents.map((doc) => Post.fromDocument(doc)).toList();
-  //   setState(() {
-  //     this.posts = posts;
-  //   });
-  // }
   bool get wantKeepAlive => true;
   @override
   Widget build(BuildContext context) {

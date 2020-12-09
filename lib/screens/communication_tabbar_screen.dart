@@ -1,6 +1,5 @@
 import 'package:blue/screens/activity_feed_screen.dart';
 import 'package:blue/screens/chats_screen.dart';
-import 'package:blue/screens/home.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:blue/main.dart';

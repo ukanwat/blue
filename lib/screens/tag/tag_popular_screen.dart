@@ -25,7 +25,7 @@ class _TagPopularScreenState extends State<TagPopularScreen> {
      .where("tags", arrayContains: widget.tag).
        get();
     setState(() {
-      this.posts =  snapshot.docs.map((doc) => Post.fromDocument(doc)).toList() ;
+      this.posts =  snapshot.docs.map((doc) => Post.fromDocument(doc.data())).toList() ;
     });
   }
     buildPopular() {

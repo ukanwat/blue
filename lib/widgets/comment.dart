@@ -1,14 +1,10 @@
-import 'package:blue/main.dart';
 import 'package:blue/providers/comment.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/widgets/comment_reply.dart';
 import 'package:blue/widgets/comment_vote_button.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -35,10 +31,10 @@ class Comment extends StatefulWidget {
       this.postId,
       this.replies});
 
-  factory Comment.fromDocument(DocumentSnapshot doc, String postId) {
+  factory Comment.fromDocument(Map doc, String postId, String docId) {
     print( doc['timestamp'] );
     return Comment(
-      id: doc.id,
+      id: docId,
       username: doc['username'],
       userId: doc['userId'],
       comment: doc['comment'],

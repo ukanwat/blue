@@ -54,8 +54,8 @@ class _ChatsScreenState extends State<ChatsScreen>
           return circularProgress();
         }
         List<Container> chatUsers = [];
-        snapshot.data.documents.forEach((doc) {
-          User user = User.fromDocument(doc);
+        snapshot.data.docs.forEach((QueryDocumentSnapshot doc) {
+          User user = User.fromDocument(doc.data());
           Container userChat = chatUserListTile(user);
           chatUsers.add(userChat);
         });

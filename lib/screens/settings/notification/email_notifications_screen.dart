@@ -1,5 +1,6 @@
 import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/settings_widgets.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -86,7 +87,7 @@ class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
                    
                        activities = newValue;
                             });
-                        preferencesRef.doc(currentUser.id).set({'email_activities': newValue},merge: true);
+                        preferencesRef.doc(currentUser.id).set({'email_activities': newValue},SetOptions(merge: true));
                   },
                   description: 'Get Notifications related to your activity',
                 )

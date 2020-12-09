@@ -1,13 +1,8 @@
-import 'dart:convert';
-
-import 'package:blue/main.dart';
 import 'package:blue/providers/comment.dart';
 import 'package:blue/screens/home.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart'  as timeago; 
 import 'comment_vote_button.dart';

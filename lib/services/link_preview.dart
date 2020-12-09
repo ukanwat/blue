@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart' hide Element;
 import 'package:flutter_icons/flutter_icons.dart';

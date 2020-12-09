@@ -1,7 +1,5 @@
 import 'dart:io';
-
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
-import 'package:path_provider/path_provider.dart';
 
 class VideoProcessing {
   static final FlutterFFmpeg _encoder = FlutterFFmpeg();

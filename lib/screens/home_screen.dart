@@ -7,7 +7,6 @@ import './home.dart';
 import '../widgets/post.dart';
 import '../widgets/progress.dart';
 import 'package:blue/main.dart';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -61,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen>
     QuerySnapshot snapshot = await postsRef.get();
 
     setState(() {
-      posts = snapshot.docs.map((doc) => Post.fromDocument(doc)).toList();
+      posts = snapshot.docs.map((doc) => Post.fromDocument(doc.data())).toList();
     });
   }
 

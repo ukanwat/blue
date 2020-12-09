@@ -1,11 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
-
+import '../services/file_storage.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase/firebase.dart' as base;
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -207,13 +205,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         final Im.Image imageFile = Im.decodeImage(image.readAsBytesSync());
         final compressedImageFile = File('$path/img_$imageId.jpg')
           ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
-
-
-           base.StorageReference _storage = storageRef
-            .child("chat_$imageId.jpg");
-    base.UploadTaskSnapshot uploadTaskSnapshot = await _storage.put(compressedImageFile).future;
-    // Wait until the file is uploaded then store the download url
-    var imageUri = await uploadTaskSnapshot.ref.getDownloadURL();
+    var imageUri = await FileStorage.upload('chat','chat_$imageId.jpg', compressedImageFile);
   String downloadUrl = imageUri.toString();
         messagesRef.doc(groupChatId).collection(groupChatId).add({
           'idFrom': currentUser.id,
@@ -264,9 +256,9 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         List<Widget> messageItems = [];
         int length = snapshot.data.documents.length;
         int i = 0;
-        snapshot.data.documents.forEach((doc) {
+        snapshot.data.docs.forEach((QueryDocumentSnapshot doc) {
           i++;
-          Message messageItem = Message.fromDocument(doc);
+          Message messageItem = Message.fromDocument(doc.data());
           if (i == 1) {
              messageItems.add(Visibility(
                visible: sendingStateMap['id'] != {},
@@ -338,7 +330,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                   style: TextStyle(color: Colors.grey, fontSize: 12),
                 ))));
           bool myText = currentUser.id == messageItem.idFrom;
-          if(doc.data['hide'] != true ||  myText)
+          if(doc.data()['hide'] != true ||  myText)
           messageItems.add(InkWell(
            //TODO
               onLongPress: () {
@@ -366,14 +358,11 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                                     await messagesRef
                                         .doc(groupChatId)
                                         .collection(groupChatId)
-                                        .doc(doc.documentID)
+                                        .doc(doc.id)
                                         .delete();
                                     if (messageItem.type == 'image') {
-                                      base.StorageReference storageRef =
-                                         base.storage()
-                                              .refFromURL(
-                                                  messageItem.message);
-                                      storageRef.delete();
+                                    await  FileStorage.delete( messageItem.message);
+                                     
                                     }
                                   } catch (e) {
                                     print(e);
@@ -382,8 +371,8 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                                   await messagesRef
                                       .doc(groupChatId)
                                       .collection(groupChatId)
-                                      .doc(doc.documentID)
-                                      .set({'hide': true}, merge: true);
+                                      .doc(doc.id)
+                                      .set({'hide': true},SetOptions(merge: true));
                                 }
                                 getChatMessagesFuture();
                               },

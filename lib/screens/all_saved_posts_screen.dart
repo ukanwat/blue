@@ -68,7 +68,7 @@ getAllSavedPosts() async {
     setState(() {
       loading = false;
       posts = posts +
-          postDocSnapshots.map((doc) => Post.fromDocument(doc)).toList();
+          postDocSnapshots.map((doc) => Post.fromDocument(doc.data())).toList();
     });
   }
   

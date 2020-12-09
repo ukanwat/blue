@@ -3,7 +3,6 @@ import 'package:blue/screens/profile_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-
 class UserTile extends StatelessWidget {
   final User user;
   UserTile(this.user);

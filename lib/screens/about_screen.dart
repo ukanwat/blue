@@ -1,10 +1,8 @@
 import 'package:blue/models/user.dart';
-import 'package:blue/widgets/custom_image.dart';
 import 'package:blue/widgets/header.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:url_launcher/url_launcher.dart';
 class AboutScreen extends StatelessWidget {
