@@ -21,6 +21,7 @@ final timelineRef =
 final communitiesRef = FirebaseFirestore.instance.collection('communities');
 final followedTopicsRef = FirebaseFirestore.instance.collection('followed-topics');
 final followedTagsRef = FirebaseFirestore.instance.collection('followed-tags');
+final openedTagsRef = FirebaseFirestore.instance.collection('opened-tags');
 final topicsRef = FirebaseFirestore.instance.collection('topics');
 final postsCollectionGroupRef = FirebaseFirestore.instance.collectionGroup('userPosts');
 final topicPostsCollectionGroupRef =

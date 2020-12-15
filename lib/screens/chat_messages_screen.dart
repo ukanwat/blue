@@ -28,13 +28,14 @@ enum MessageType { image, gif }
 
 class ChatMessagesScreen extends StatefulWidget {
   static const routeName = 'chat-messages';
+  final User peerUser;
+   ChatMessagesScreen({this.peerUser});
   @override
   _ChatMessagesScreenState createState() => _ChatMessagesScreenState();
 }
 
 class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
  var focusNode = new FocusNode();
-  User peerUser;
   String groupChatId;
   Map sendingStateMap = {
     'count': 0,
@@ -57,14 +58,10 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   }
   @override
   void didChangeDependencies() {
-    print('$sendingStateMap 123d'  );
-    var peerUserMap =
-        ModalRoute.of(context).settings.arguments as Map<String, dynamic>;
-    peerUser = peerUserMap['user'];
-    if (currentUser.id.hashCode <= peerUser.id.hashCode) {
-      groupChatId = '${currentUser.id}-${peerUser.id}';
+    if (currentUser.id.hashCode <= widget.peerUser.id.hashCode) {
+      groupChatId = '${currentUser.id}-${widget.peerUser.id}';
     } else {
-      groupChatId = '${peerUser.id}-${currentUser.id}';
+      groupChatId = '${widget.peerUser.id}-${currentUser.id}';
     }
     getChatMessagesFuture();
     super.didChangeDependencies();
@@ -94,7 +91,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     
      await messagesRef.doc(groupChatId).collection(groupChatId).add({
         'idFrom': currentUser.id,
-        'idTo': peerUser.id,
+        'idTo': widget.peerUser.id,
         'timestamp': dateTime,
         'message': textMessage,
         'type': 'text'
@@ -145,7 +142,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
       });
           messagesRef.doc(groupChatId).collection(groupChatId).add({
             'idFrom': currentUser.id,
-            'idTo': peerUser.id,
+            'idTo': widget.peerUser.id,
             'timestamp': dateTime,
             'message': value,
             'type': 'gif'
@@ -209,7 +206,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   String downloadUrl = imageUri.toString();
         messagesRef.doc(groupChatId).collection(groupChatId).add({
           'idFrom': currentUser.id,
-          'idTo': peerUser.id,
+          'idTo': widget.peerUser.id,
           'timestamp': dateTime ,
           'message': downloadUrl,
           'type': 'image'
@@ -307,7 +304,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
               lastMessage = '${MessageType.gif}';
             else
               lastMessage = '${messageItem.message}';
-            directMap[peerUser.id] = {
+            directMap[widget.peerUser.id] = {
               'seen': true,
               'message': lastMessage,
               'time': messageItem.timestamp.toDate().toString(),
@@ -443,8 +440,8 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
               onPressed: () {
                 Navigator.of(context)
                     .pushNamed(ChatInfoScreen.routeName, arguments: {
-                  'peerId': peerUser.id,
-                  'peerUsername': peerUser.username,
+                  'peerId': widget.peerUser.id,
+                  'peerUsername': widget.peerUser.username,
                   'groupChatId': groupChatId,
                 });
               }),
@@ -455,12 +452,12 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                     left: 0, right: 15, bottom: 5, top: 5),
                 child: CircleAvatar(
                   backgroundImage:
-                      CachedNetworkImageProvider(peerUser.photoUrl),
+                      CachedNetworkImageProvider(widget.peerUser.photoUrl),
                 ),
               ),
               Expanded(
                 child: Text(
-                  peerUser.displayName,
+                  widget.peerUser.displayName,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),

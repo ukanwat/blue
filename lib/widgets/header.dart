@@ -6,11 +6,13 @@ PreferredSize header(context,
     Widget title,
     bool centerTitle,
     double elevation,
+  bool implyLeading
     }) {
   bool textTitleExists = title != null;
   bool centerTitleExists = centerTitle != null;
   bool actionButtonExists = actionButton != null;
   bool actionButton2Exists = actionButton2 != null;
+    bool implyLeadingExists = implyLeading!= null;
   return PreferredSize(
     preferredSize: Size.fromHeight(50.0),
     child: AppBar(
@@ -25,7 +27,7 @@ PreferredSize header(context,
             ),
       elevation: elevation == null?1: elevation,
       centerTitle: centerTitleExists ? centerTitle : true,
-      
+      automaticallyImplyLeading: implyLeadingExists?implyLeading:true,
     ),
   );
 }

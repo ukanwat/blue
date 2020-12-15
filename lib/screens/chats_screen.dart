@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:animations/animations.dart';
+import 'package:blue/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import '../main.dart';
@@ -23,7 +25,7 @@ class _ChatsScreenState extends State<ChatsScreen>
   Map directMap = {};
   @override
   void initState() {
-    chatUsers = usersRef.getDocuments();
+    chatUsers = usersRef.get();
     var direct = preferences.getString('direct');
     directMap = direct == null ? {} : json.decode(direct);
     print(directMap);
@@ -53,10 +55,22 @@ class _ChatsScreenState extends State<ChatsScreen>
         if (!snapshot.hasData) {
           return circularProgress();
         }
-        List<Container> chatUsers = [];
+        List<Widget> chatUsers = [];
         snapshot.data.docs.forEach((QueryDocumentSnapshot doc) {
           User user = User.fromDocument(doc.data());
-          Container userChat = chatUserListTile(user);
+          print(user);
+         Widget userChat =
+      OpenContainer<bool>(
+              transitionType: ContainerTransitionType.fadeThrough,
+              openBuilder: (BuildContext _, VoidCallback openContainer) {
+                return ChatMessagesScreen(peerUser:user);
+              },
+              onClosed: null,
+              tappable: false,
+              closedShape: const RoundedRectangleBorder(),
+              closedElevation: 0.0,
+              closedBuilder: (BuildContext _, VoidCallback openContainer) {
+                return chatUserListTile(user,openContainer);});
           chatUsers.add(userChat);
         });
 
@@ -70,65 +84,60 @@ class _ChatsScreenState extends State<ChatsScreen>
     );
   }
 
-  Container chatUserListTile(User user) {
-    return Container(
-      color: Theme.of(context).backgroundColor,
-      child: Column(
-        children: <Widget>[
-          GestureDetector(
-            onTap: () {
-              Navigator.of(context).pushNamed(ChatMessagesScreen.routeName,
-                  arguments: {'user': user});
-            },
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundImage: CachedNetworkImageProvider(user.photoUrl),
-              ),
-              title: Text(
-                user.displayName,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
+  InkWell chatUserListTile(User user,VoidCallback openContainer) {
+    
+    return InkWell(onTap: openContainer,
+              child: 
+             ListTile(
+               tileColor:  Theme.of(context).backgroundColor,
+                leading: CircleAvatar(
+                  backgroundImage: CachedNetworkImageProvider(user.photoUrl),
+                ),
+                title: Text(
+                  user.displayName,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                     child:   directMap.containsKey(user.id)
+                            ? (directMap[user.id]['message'] ==
+                                    '${MessageType.gif}'
+                                ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    Icon(FlutterIcons.play_box_outline_mco,size: 16,
+                                    color: Colors.grey,
+                                    ),
+                                    Text(' GIF')
+                                  ],
+                                ) 
+                                : (directMap[user.id]['message'] ==
+                                        '${MessageType.image}'
+                                    ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    Icon(FlutterIcons.image_fea,size: 15,
+                                    color: Colors.grey,),
+                                    Text(' Image')
+                                  ],
+                                ) 
+                                    : Text(directMap[user.id]['message'],maxLines: 1,overflow: TextOverflow.ellipsis,)))
+                            : Text(user.username,maxLines: 1,),
+                      ),
+                    ),
+                    Text(directMap.containsKey(user.id)
+                        ? '${timeago.format(DateTime.parse(directMap[user.id]['time']))}'
+                        : ''),
+                  ],
                 ),
               ),
-              subtitle: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Container(
-                   child:   directMap.containsKey(user.id)
-                          ? (directMap[user.id]['message'] ==
-                                  '${MessageType.gif}'
-                              ? Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Icon(FlutterIcons.play_box_outline_mco,size: 16,
-                                  color: Colors.grey,
-                                  ),
-                                  Text(' GIF')
-                                ],
-                              ) 
-                              : (directMap[user.id]['message'] ==
-                                      '${MessageType.image}'
-                                  ? Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Icon(FlutterIcons.image_fea,size: 15,
-                                  color: Colors.grey,),
-                                  Text(' Image')
-                                ],
-                              ) 
-                                  : Text(directMap[user.id]['message'],maxLines: 1,overflow: TextOverflow.ellipsis,)))
-                          : Text(user.username,maxLines: 1,),
-                    ),
-                  ),
-                  Text(directMap.containsKey(user.id)
-                      ? '${timeago.format(DateTime.parse(directMap[user.id]['time']))}'
-                      : ''),
-                ],
-              ),
-            ),
-          )
-        ],
-      ),
+            
+          
+      
     );
   }
 }

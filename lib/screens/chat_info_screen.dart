@@ -4,6 +4,7 @@ import 'package:blue/widgets/header.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:blue/widgets/show_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -249,7 +250,7 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                           ),
                         ),
                       ));
-            },
+            },FluentIcons.chat_warning_24_regular
           ),
           settingsActionTile(context, isBlocked ? 'Unblock' : 'Block', () {
             if (isBlocked) {
@@ -289,7 +290,7 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                         print(isBlocked);
                       }));
             }
-          }),
+          },FluentIcons.block_24_regular),
           settingsActionTile(context, 'Delete Messages', () {
             showDialog(
                 context: context,
@@ -327,7 +328,7 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                         }, SetOptions(merge: true));
                       }
                     }));
-          }),
+          },FluentIcons.delete_24_regular),
         ],
       ),
     );

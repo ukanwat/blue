@@ -56,7 +56,6 @@ dependencies:
   visibility_detector: ^0.1.5
   flutter_link_preview: ^1.2.11
   fluentui_system_icons: ^1.1.85
-  keyboard_visibility: ^0.5.6
   zefyr: ^0.12.0
   quill_delta: ^1.0.0
   animations: ^1.1.2
@@ -64,6 +63,11 @@ dependencies:
   hive_flutter: ^0.3.1
   firebase_dynamic_links: ^0.6.3
   firebase_core: ^0.5.3
+  package_info: ^0.4.3+2
+  page_transition: ^1.1.7+3
+  sortedmap: ^0.4.2+1
+  workmanager: ^0.2.0
+  background_fetch: '^0.5.1'
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

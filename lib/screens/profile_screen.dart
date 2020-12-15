@@ -419,106 +419,108 @@ void dispose() {
           return circularProgress();
         }
         User user = User.fromDocument( snapshot.data.data());
-        return Column(
-          children: <Widget>[
-            Container(
-              child: CachedNetworkImage(
-                imageUrl: user.headerUrl,
-                fit: BoxFit.cover,
+        return Container(color: Theme.of(context).backgroundColor,
+          child: Column(
+            children: <Widget>[
+              Container(color: Theme.of(context).backgroundColor,
+                child:user.headerUrl == null?Container(height: 130,width: double.infinity,color: Theme.of(context).cardColor,): CachedNetworkImage(
+                  imageUrl: user.headerUrl,
+                  fit: BoxFit.cover,
+                  height: 130,
+                ),
                 height: 130,
+                width: double.infinity,
               ),
-              height: 130,
-              width: double.infinity,
-            ),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                SizedBox(
-                  width: 20,
-                ),
-                Stack(
-                  overflow: Overflow.visible,
-                  children: <Widget>[
-                    Container(
-                      height: 50,
-                      width: 130,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      child: CircleAvatar(
-                        radius: 65.0,
-                        backgroundColor: Theme.of(context).backgroundColor,
-                        backgroundImage:
-                            CachedNetworkImageProvider(user.photoUrl),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  width: 10,
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  SizedBox(
+                    width: 20,
+                  ),
+                  Stack(
+                    overflow: Overflow.visible,
                     children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        mainAxisSize: MainAxisSize.max,
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.all(5.0),
-                            child: Text(
-                              '${user.username}',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500, fontSize: 18),
-                            ),
-                          ),
-                          Expanded(
-                            child: Container(),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).pushNamed(
-                                  AboutScreen.routeName,
-                                  arguments: user);
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 5, horizontal: 8),
-                              child: Icon(
-                                Icons.arrow_forward_ios,
-                                size: 18,
-                              ),
-                            ),
-                          )
-                        ],
+                      Container(
+                        height: 50,
+                        width: 130,
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 0),
-                        child: Text(
-                          '$followerCount Followers',
-                          style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context)
-                                  .iconTheme
-                                  .color
-                                  .withOpacity(0.6)),
-                        ), //TODO fix follower count
-                      )
+                      Positioned(
+                        bottom: 0,
+                        child: CircleAvatar(
+                          radius: 65.0,
+                          backgroundColor: Theme.of(context).backgroundColor,
+                          backgroundImage:
+                              CachedNetworkImageProvider(user.photoUrl),
+                        ),
+                      ),
                     ],
                   ),
-                )
-              ],
-            ),
-            buildProfileButton(),
-            Divider(
-              color: Colors.grey,
-              height: 0.3,
-              thickness: 0.3,
-            ),
-          ],
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisSize: MainAxisSize.max,
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: Text(
+                                '${user.username}',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500, fontSize: 18),
+                              ),
+                            ),
+                            Expanded(
+                              child: Container(),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).pushNamed(
+                                    AboutScreen.routeName,
+                                    arguments: user);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 5, horizontal: 8),
+                                child: Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 18,
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 0),
+                          child: Text(
+                            '$followerCount Followers',
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context)
+                                    .iconTheme
+                                    .color
+                                    .withOpacity(0.6)),
+                          ), //TODO fix follower count
+                        )
+                      ],
+                    ),
+                  )
+                ],
+              ),
+              buildProfileButton(),
+              Divider(
+                color: Colors.grey,
+                height: 0.3,
+                thickness: 0.3,
+              ),
+            ],
+          ),
         );
       },
     );
@@ -586,17 +588,8 @@ void dispose() {
     barOpacity =controller.offset/ (0.2*screenHeight);
      if(barOpacity > 1) barOpacity = 1;
        if(barOpacity <0 ) barOpacity = 0;
-        return AppBar(
-                flexibleSpace: Container(
-        //   decoration: BoxDecoration(
-        //     gradient: LinearGradient(
-        //       begin: Alignment(0,-0.5),
-        //         end: Alignment(0,1),
-        //         colors: <Color>[
-        //       Theme.of(context).backgroundColor,
-        //        Theme.of(context).canvasColor.withOpacity(barOpacity),
-        //     ])          
-        //  ),        
+        return AppBar(automaticallyImplyLeading: false,
+                flexibleSpace: Container(   
      ), 
      backgroundColor: Theme.of(context).backgroundColor,
                 centerTitle: false,
@@ -636,7 +629,7 @@ void dispose() {
           body: Column(
             children: <Widget>[
               Container(
-                  color: Theme.of(context).canvasColor,
+               color: Theme.of(context).backgroundColor,
                   height: 45,
                   width: double.infinity,
                   child: Row(

@@ -52,7 +52,7 @@ class _TabsScreenState extends State<TabsScreen> {
         ),
         child: SizedBox(
           height: 56,
-                  child: BottomNavigationBar(iconSize: 24,elevation: 10,
+                  child: BottomNavigationBar(iconSize: 26,elevation: 10,
             type: BottomNavigationBarType.fixed,showSelectedLabels: false,showUnselectedLabels: false,
             unselectedItemColor: Color.fromRGBO(200, 200, 200, 1),
             selectedItemColor:  Color.fromRGBO(250, 250, 250, 1),

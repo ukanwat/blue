@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:blue/screens/explore_posts_screen.dart';
 import 'package:blue/screens/profile_screen.dart';
@@ -63,8 +64,7 @@ class Post extends StatefulWidget {
       this.commentsShown // this.postInteractions
       });
 
-  factory Post.fromDocument(Map doc,
-      {bool isCompact, bool commentsShown}) {
+  factory Post.fromDocument(Map doc, {bool isCompact, bool commentsShown}) {
     if (isCompact == null) isCompact = false;
     if (commentsShown == null) commentsShown = false;
     return Post(
@@ -163,12 +163,14 @@ class _PostState extends State<Post> {
   final GlobalKey _contentsKey = GlobalKey();
   double contentsHeight;
   bool constraintContent = true;
-  showOptions() {
-    overlayOptions = createOverlayOptions();
+  showOptions(BuildContext context) {
+    overlayOptions = createOverlayOptions(context);
     Overlay.of(context).insert(overlayOptions);
   }
 
-  OverlayEntry createOverlayOptions() {
+  OverlayEntry createOverlayOptions(BuildContext context) {
+    RenderBox getBox = context.findRenderObject();
+    Offset position = getBox.localToGlobal(Offset.zero);
     return OverlayEntry(
         builder: (context) => Stack(
               children: <Widget>[
@@ -187,8 +189,8 @@ class _PostState extends State<Post> {
                   ),
                 )),
                 Positioned(
-                  left: 0,
-                  top: 85,
+                  left: position.dx + 0,
+                  top: position.dy + 10,
                   width: 250,
                   child: Material(
                     color: Colors.transparent,
@@ -266,34 +268,34 @@ class _PostState extends State<Post> {
                                 onTap: () async {
                                   QuerySnapshot followersDoc =
                                       await followersRef
-                                          .document(widget.ownerId)
+                                          .doc(widget.ownerId)
                                           .collection('userFollowers')
                                           .where('followers',
                                               arrayContains: currentUserId)
-                                          .getDocuments();
-                                  followersDoc.documents.forEach((doc) {
+                                          .get();
+                                  followersDoc.docs.forEach((doc) {
                                     followersRef
-                                        .document(widget.ownerId)
+                                        .doc(widget.ownerId)
                                         .collection('userFollowers')
-                                        .document(doc.documentID)
-                                        .updateData({
+                                        .doc(doc.id)
+                                        .update({
                                       'followers': FieldValue.arrayRemove(
                                           [currentUserId])
                                     });
                                   });
                                   QuerySnapshot followingDoc =
                                       await followingRef
-                                          .document(currentUserId)
+                                          .doc(currentUserId)
                                           .collection('userFollowing')
                                           .where('following',
                                               arrayContains: widget.ownerId)
-                                          .getDocuments();
-                                  followingDoc.documents.forEach((doc) {
+                                          .get();
+                                  followingDoc.docs.forEach((doc) {
                                     followingRef
-                                        .document(currentUserId)
+                                        .doc(currentUserId)
                                         .collection('userFollowers')
-                                        .document(doc.documentID)
-                                        .updateData({
+                                        .doc(doc.id)
+                                        .update({
                                       'followers': FieldValue.arrayRemove(
                                           [widget.ownerId])
                                     });
@@ -332,9 +334,9 @@ class _PostState extends State<Post> {
                   child: Padding(
                     padding: const EdgeInsets.only(left: 10),
                     child: Text(
-                        'Hope you weren’t planning to watchiiiii Wonder Woman 1984 with an HBO Max free trial', ///////******/
+                        // 'Hope you weren’t planning to watchiiiii Wonder Woman 1984 with an HBO Max free trial', ///////******/
 
-                        //  widget.title,
+                        widget.title,
                         style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontFamily: 'OpenSans',
@@ -361,7 +363,7 @@ class _PostState extends State<Post> {
                       ),
                     ),
                     onTap: () {
-                      showOptions();
+                      showOptions(context);
                     }),
                 Expanded(
                   child: Row(
@@ -405,25 +407,24 @@ class _PostState extends State<Post> {
                                   'following': [
                                     widget.ownerId,
                                   ],
-                                },  SetOptions(merge: true));
-                              } else if (lastFollowingDoc.docs.length ==
-                                      1 &&
+                                }, SetOptions(merge: true));
+                              } else if (lastFollowingDoc.docs.length == 1 &&
                                   lastFollowingDoc.docs.first
-                                          .data()['following'].length <
+                                          .data()['following']
+                                          .length <
                                       10000) {
                                 followingRef
                                     .doc(currentUser?.id)
                                     .collection('userFollowing')
-                                    .doc(lastFollowingDoc
-                                        .docs.first.id)
+                                    .doc(lastFollowingDoc.docs.first.id)
                                     .update({
                                   'following':
                                       FieldValue.arrayUnion([widget.ownerId])
                                 });
-                              } else if (lastFollowingDoc.docs.length ==
-                                      1 &&
+                              } else if (lastFollowingDoc.docs.length == 1 &&
                                   lastFollowingDoc.docs.first
-                                          .data()['following'].length >
+                                          .data()['following']
+                                          .length >
                                       10000) {
                                 followingRef
                                     .doc(currentUser?.id)
@@ -431,8 +432,8 @@ class _PostState extends State<Post> {
                                     .doc()
                                     .set({
                                   'following': [widget.ownerId],
-                                  'order': lastFollowingDoc
-                                          .docs.first.data()['order'] +
+                                  'order': lastFollowingDoc.docs.first
+                                          .data()['order'] +
                                       1,
                                 });
                               }
@@ -454,24 +455,23 @@ class _PostState extends State<Post> {
                                     currentUserId,
                                   ],
                                 }, SetOptions(merge: true));
-                              } else if (lastFollowersDoc.docs.length ==
-                                      1 &&
+                              } else if (lastFollowersDoc.docs.length == 1 &&
                                   lastFollowersDoc.docs.first
-                                          .data()['following'].length <
+                                          .data()['following']
+                                          .length <
                                       10000) {
                                 followersRef
                                     .doc(widget.ownerId)
                                     .collection('userFollowers')
-                                    .doc(lastFollowersDoc
-                                        .docs.first.id)
+                                    .doc(lastFollowersDoc.docs.first.id)
                                     .update({
                                   'followers':
                                       FieldValue.arrayUnion([currentUserId])
                                 });
-                              } else if (lastFollowersDoc.docs.length ==
-                                      1 &&
+                              } else if (lastFollowersDoc.docs.length == 1 &&
                                   lastFollowersDoc.docs.first
-                                          .data()['followers'].length >
+                                          .data()['followers']
+                                          .length >
                                       10000) {
                                 followersRef
                                     .doc(currentUser?.id)
@@ -479,8 +479,8 @@ class _PostState extends State<Post> {
                                     .doc()
                                     .set({
                                   'followers': [widget.ownerId],
-                                  'order': lastFollowersDoc
-                                          .docs.first.data()['order'] +
+                                  'order': lastFollowersDoc.docs.first
+                                          .data()['order'] +
                                       1,
                                 });
                               }
@@ -572,10 +572,21 @@ class _PostState extends State<Post> {
                             tags[i],
                           );
                           return InkWell(
-                            onTap: () {
+                            onTap: () async {
                               Navigator.of(context).pushNamed(
                                   TagScreen.routeName,
                                   arguments: tags[i]);
+                                String tagOpenInfo = preferences.getString('tags_open_info');
+                                if(tagOpenInfo == null){
+                                preferences.setString('tags_open_info', json.encode( {}));
+                                tagOpenInfo =  json.encode( {}); }
+                                Map tagOpenMap = json.decode(tagOpenInfo);
+                                if(tagOpenMap.containsKey(tags[i]))
+                                tagOpenMap[tags[i]] =  tagOpenMap[tags[i]]+1;
+                                else
+                                tagOpenMap[tags[i]] = 1;
+                                preferences.setString('tags_open_info', json.encode( tagOpenMap));
+                             
                             },
                             child: Container(
                               padding: EdgeInsets.symmetric(horizontal: 8),
@@ -748,9 +759,10 @@ class _PostState extends State<Post> {
                                       'posts': [
                                         postId,
                                       ],
-                                    },  SetOptions(merge: true));
+                                    }, SetOptions(merge: true));
                                   } else if (lastDoc.docs.length == 1 &&
-                                      lastDoc.docs.first.data()['posts']
+                                      lastDoc.docs.first
+                                              .data()['posts']
                                               .length <
                                           2) {
                                     List<dynamic> _postIdList =
@@ -759,13 +771,13 @@ class _PostState extends State<Post> {
                                     savedPostsRef
                                         .doc(currentUser?.id)
                                         .collection('all')
-                                        .doc(
-                                            lastDoc.docs.first.id)
+                                        .doc(lastDoc.docs.first.id)
                                         .set({
                                       'posts': _postIdList,
                                     }, SetOptions(merge: true));
                                   } else if (lastDoc.docs.length == 1 &&
-                                      lastDoc.docs.first.data()['posts']
+                                      lastDoc.docs.first
+                                              .data()['posts']
                                               .length >
                                           1) {
                                     savedPostsRef
@@ -773,13 +785,13 @@ class _PostState extends State<Post> {
                                         .collection('all')
                                         .doc()
                                         .set({
-                                      'order': lastDoc
-                                              .docs.first.data()['order'] +
-                                          1,
+                                      'order':
+                                          lastDoc.docs.first.data()['order'] +
+                                              1,
                                       'posts': [
                                         postId,
                                       ],
-                                    },  SetOptions(merge: true));
+                                    }, SetOptions(merge: true));
                                   }
                                   setState(() {
                                     showSaveBar = true;
@@ -903,12 +915,7 @@ class _PostState extends State<Post> {
 
   deletePost() async {
     // delete post itself
-    postsRef
-        .document(ownerId)
-        .collection('userPosts')
-        .document(postId)
-        .get()
-        .then((doc) {
+    postsRef.doc(ownerId).collection('userPosts').doc(postId).get().then((doc) {
       if (doc.exists) {
         doc.reference.delete();
       }
@@ -917,21 +924,19 @@ class _PostState extends State<Post> {
     // storageRef.child("post_$postId.jpg").delete();  // TODO: delete stored media
     // then delete all activity feed notifications
     QuerySnapshot activityFeedSnapshot = await activityFeedRef
-        .document(ownerId)
+        .doc(ownerId)
         .collection("feedItems")
         .where('postId', isEqualTo: postId)
-        .getDocuments();
-    activityFeedSnapshot.documents.forEach((doc) {
+        .get();
+    activityFeedSnapshot.docs.forEach((doc) {
       if (doc.exists) {
         doc.reference.delete();
       }
     });
     // then delete all comments
-    QuerySnapshot commentsSnapshot = await commentsRef
-        .document(postId)
-        .collection('comments')
-        .getDocuments();
-    commentsSnapshot.documents.forEach((doc) {
+    QuerySnapshot commentsSnapshot =
+        await commentsRef.doc(postId).collection('comments').get();
+    commentsSnapshot.docs.forEach((doc) {
       if (doc.exists) {
         doc.reference.delete();
       }
@@ -950,11 +955,7 @@ class _PostState extends State<Post> {
           .limit(1)
           .get();
       if (lastVotedDoc.docs.length == 0) {
-        postsVotersRef
-            .doc(widget.postId)
-            .collection('DownUpvoters')
-            .doc()
-            .set({
+        postsVotersRef.doc(widget.postId).collection('DownUpvoters').doc().set({
           'order': 1,
           'Downvoters': [
             currentUserId,
@@ -971,11 +972,7 @@ class _PostState extends State<Post> {
         });
       } else if (lastVotedDoc.docs.length == 1 &&
           lastVotedDoc.docs.first.data()['upvoters'].length > 10000) {
-        followingRef
-            .doc(currentUser?.id)
-            .collection('voters')
-            .doc()
-            .set({
+        followingRef.doc(currentUser?.id).collection('voters').doc().set({
           'upvoters': [currentUserId],
           'order': lastVotedDoc.docs.first.data()['order'] + 1,
         });
@@ -1024,16 +1021,12 @@ class _PostState extends State<Post> {
           .limit(1)
           .get();
       if (lastVotedDoc.docs.length == 0) {
-        postsVotersRef
-            .doc(widget.postId)
-            .collection('userUpvotes')
-            .doc()
-            .set({
+        postsVotersRef.doc(widget.postId).collection('userUpvotes').doc().set({
           'order': 1,
           'upvoters': [
             currentUserId,
           ],
-        },  SetOptions(merge: true));
+        }, SetOptions(merge: true));
       } else if (lastVotedDoc.docs.length == 1 &&
           lastVotedDoc.docs.first.data()['upvoters'].length < 10000) {
         postsVotersRef
@@ -1045,11 +1038,7 @@ class _PostState extends State<Post> {
         });
       } else if (lastVotedDoc.docs.length == 1 &&
           lastVotedDoc.docs.first.data()['upvoters'].length > 10000) {
-        followingRef
-            .doc(currentUser?.id)
-            .collection('voters')
-            .doc()
-            .set({
+        followingRef.doc(currentUser?.id).collection('voters').doc().set({
           'upvoters': [currentUserId],
           'order': lastVotedDoc.docs.first.data()['order'] + 1,
         });
@@ -1122,10 +1111,10 @@ class _PostState extends State<Post> {
             contents['$i'], contentsInfo['$i']['aspectRatio']));
       }
     }
-    if(!widget.isCompact)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      getContentSize();
-    });
+    if (!widget.isCompact)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        getContentSize();
+      });
     super.didChangeDependencies();
   }
 
@@ -1333,10 +1322,9 @@ class _PostState extends State<Post> {
                                 'posts': [
                                   postId,
                                 ],
-                              },  SetOptions(merge: true));
+                              }, SetOptions(merge: true));
                             } else if (lastDoc.docs.length == 1 &&
-                                lastDoc.docs.first.data()['posts'].length <
-                                    2) {
+                                lastDoc.docs.first.data()['posts'].length < 2) {
                               List<dynamic> _postIdList =
                                   lastDoc.docs.first.data()['posts'];
                               _postIdList.add(postId);
@@ -1348,15 +1336,13 @@ class _PostState extends State<Post> {
                                 'posts': _postIdList,
                               }, SetOptions(merge: true));
                             } else if (lastDoc.docs.length == 1 &&
-                                lastDoc.docs.first.data()['posts'].length >
-                                    1) {
+                                lastDoc.docs.first.data()['posts'].length > 1) {
                               savedPostsRef
                                   .doc(currentUser?.id)
                                   .collection('all')
                                   .doc()
                                   .set({
-                                'order':
-                                    lastDoc.docs.first.data()['order'] + 1,
+                                'order': lastDoc.docs.first.data()['order'] + 1,
                                 'posts': [
                                   postId,
                                 ],
@@ -1404,8 +1390,8 @@ class _PostState extends State<Post> {
                         contents: this.widget.contents,
                         contentsInfo: this.widget.contentsInfo,
                         isCompact: false,
-                        ownerId: this.widget.ownerId
-                        ,photoUrl: this.widget.photoUrl,
+                        ownerId: this.widget.ownerId,
+                        photoUrl: this.widget.photoUrl,
                         postId: this.widget.postId,
                         tags: this.widget.tags,
                         title: this.widget.title,
@@ -1556,7 +1542,8 @@ class _PostState extends State<Post> {
                   buildPostFooter(),
                 ],
               ),
-            ),);
+            ),
+          );
   }
 }
 

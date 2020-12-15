@@ -1,14 +1,17 @@
+import 'package:animations/animations.dart';
 import 'package:blue/screens/following_posts_screen.dart';
 import 'package:blue/widgets/tags_wrap.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+import 'package:provider/provider.dart';
 import '../widgets/header.dart';
 import './home.dart';
 import '../widgets/post.dart';
 import '../widgets/progress.dart';
 import 'package:blue/main.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';                                                                                                           
+                                                                                                                                                                       
 class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -17,7 +20,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with
         AutomaticKeepAliveClientMixin<HomeScreen>,
-        SingleTickerProviderStateMixin {
+        SingleTickerProviderStateMixin {                                                        
   List<Post> posts;
   bool followingPosts = false;
   bool topicLoading = true;
@@ -33,23 +36,26 @@ class _HomeScreenState extends State<HomeScreen>
   OverlayEntry toggleBanner() {
     return OverlayEntry(
         builder: (context) => Positioned(
-              left: MediaQuery.of(context).size.width * 0.5 -60,
+              left: MediaQuery.of(context).size.width * 0.5 - 60,                                                               
               top: 100,
               width: 120,
               height: 40,
-              child: 
-              
-              Material(borderRadius: BorderRadius.circular(5),
+              child: Material(
+                  borderRadius: BorderRadius.circular(5),
                   elevation: 1.0,
-                  child: ClipRRect(borderRadius: BorderRadius.circular(5),
-                                      child: Container(height: 70,width: 240,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(5),
+                    child: Container(
+                      height: 70,
+                      width: 240,
                       child: Text(
-                        followingPosts ? 'Following' : 'Home',style: TextStyle(color: Colors.white,fontSize: 20),
+                        followingPosts ? 'Following' : 'Home',
+                        style: TextStyle(color: Colors.white, fontSize: 20),
                       ),
-                      alignment: Alignment.center,decoration: BoxDecoration(  borderRadius: BorderRadius.circular(5),color: Theme.of(context).primaryColor),
-                     
-                     
-                    
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          color: Theme.of(context).primaryColor),
                     ),
                   )),
             ));
@@ -60,7 +66,8 @@ class _HomeScreenState extends State<HomeScreen>
     QuerySnapshot snapshot = await postsRef.get();
 
     setState(() {
-      posts = snapshot.docs.map((doc) => Post.fromDocument(doc.data())).toList();
+      posts =
+          snapshot.docs.map((doc) => Post.fromDocument(doc.data())).toList();
     });
   }
 
@@ -74,34 +81,12 @@ class _HomeScreenState extends State<HomeScreen>
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(10), topRight: Radius.circular(10)),
         child: Container(
-          height: 240,
+          height: 300,
           width: MediaQuery.of(context).size.width,
           decoration: new BoxDecoration(
             color: Theme.of(context).canvasColor,
           ),
-          child: Column(
-            children: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 15, horizontal: 20),
-                    child: Text('Tags you Follow',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w500, fontSize: 17)),
-                  ),
-                  IconButton(
-                      icon: Icon(Icons.keyboard_arrow_down,
-                          size: 26, color: Theme.of(context).iconTheme.color),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      })
-                ],
-              ),
-              Expanded(child: TagsWrap()),
-            ],
-          ),
+          child: TagsWrap()
         ),
       ),
     );
@@ -122,121 +107,71 @@ class _HomeScreenState extends State<HomeScreen>
   Widget build(context) {
     super.build(context);
     return Scaffold(
-      backgroundColor: Theme.of(context).canvasColor,
-      appBar: header(
-        context,
-        title: Text(
-          'FlipBoard',
-          style: TextStyle(
-            fontSize: 26,
-            fontFamily: 'Techna Sans Regular',
+        backgroundColor: Theme.of(context).canvasColor,
+        appBar: header(
+          context,implyLeading: false,
+          title: Text(
+            'FlipBoard',
+            style: TextStyle(
+              fontSize: 26,
+              fontFamily: 'Techna Sans Regular',
+            ),
           ),
-        ),
-        actionButton2: IconButton(
+          actionButton2: IconButton(
+              icon: Icon(
+                followingPosts
+                    ? FluentIcons.person_24_regular
+                    : FluentIcons.new_24_regular,
+                size: 26,
+              ),
+              onPressed: () {
+                setState(() {
+                  followingPosts = !followingPosts;
+                  banner = !banner;
+                  if (banner)
+                    Overlay.of(context).insert(tabToggleBanner);
+                  else
+                    tabToggleBanner?.remove();
+                });
+                Future.delayed(const Duration(milliseconds: 1800), () {
+                  setState(() {
+                    if (banner) {
+                      tabToggleBanner?.remove();
+                      banner = false;
+                    }
+                  });
+                });
+              }),
+          actionButton: IconButton(
             icon: Icon(
-              followingPosts
-                  ? FluentIcons.person_24_regular
-                  : FluentIcons.new_24_regular,
-              size: 26,
+              FluentIcons.add_24_regular,
+              size: 27,
             ),
             onPressed: () {
-              setState(() {
-                followingPosts = !followingPosts;
-                banner = !banner;
-                if (banner)
-                  Overlay.of(context).insert(tabToggleBanner);
-                else
-                  tabToggleBanner?.remove();
-              });
-              Future.delayed(const Duration(milliseconds: 1800), () {
-                setState(() {
-                  if (banner) {
-                    tabToggleBanner?.remove();
-                    banner = false;
-                  }
-                });
-              });
-            }),
-        actionButton: IconButton(
-          icon: Icon(
-            FluentIcons.add_24_regular,
-            size: 27,
+              showTagsSheet();
+            },
           ),
-          onPressed: () {
-            showTagsSheet();
-          },
+          centerTitle: false,
         ),
-        centerTitle: false,
-      ),
-      body: followingPosts
-          ? FollowingPostsScreen()
-          : RefreshIndicator(
-              onRefresh: () => getTimeline(),
-              child: buildTimeline(),
-            ),
-    );
+        body: PageTransitionSwitcher(
+          transitionBuilder: (
+            Widget child,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,                                                                                             
+          ) {
+            return FadeThroughTransition(
+              animation: animation,
+              secondaryAnimation: secondaryAnimation,
+              child: child,                                                                                                     
+            );
+          },
+          child: followingPosts
+              ? FollowingPostsScreen()
+              : RefreshIndicator(
+                  onRefresh: () => getTimeline(),
+                  child: buildTimeline(),
+                ),
+        ));
   }
 }
-
-// class TagsWrap extends StatefulWidget {
-//   @override
-//   _TagsWrapState createState() => _TagsWrapState();
-// }
-
-// class _TagsWrapState extends State<TagsWrap> {
-//   List<String> tags = [];
-//   List<Widget> tagChips = [];
-//   bool tagLoading = true;
-
-//   @override
-//   void initState() {
-//     getFollowedTags();
-//     super.initState();
-//   }
-
-//   getFollowedTags() async {
-//     var tagsDoc = await followedTagsRef.document(currentUser.id).get();
-//     List<String> followedTags = [];
-//     setState(() {
-//       tagLoading = false;
-//       tags = tagsDoc.data.keys.toList();
-//       for (int i = 0; i < tags.length; i++) {
-//         followedTags.add(tags[i]);
-//         tagChips.add(InkWell(
-//           onTap: () {
-//             Navigator.of(context)
-//                 .pushNamed(TagScreen.routeName, arguments: tags[i]);
-//           },
-//           child: Chip(
-//             padding: EdgeInsets.all(12),
-//             label: Text(
-//               tags[i],
-//               style: TextStyle(
-//                   color: Theme.of(context).iconTheme.color, fontSize: 18),
-//             ),
-//             backgroundColor: Theme.of(context).cardColor,
-//           ),
-//         ));
-//       }
-//     });
-//     if (preferences == null)
-//       preferences = await SharedPreferences.getInstance();
-//     preferences.setStringList('followed_tags', followedTags);
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return tagLoading
-//         ? circularProgress()
-//         : Container(
-//             padding: const EdgeInsets.symmetric(horizontal: 5.0),
-//             child: SingleChildScrollView(
-//               child: Wrap(
-//                 spacing: 10,
-//                 runSpacing: 12,
-//                 children: tagChips,
-//               ),
-//             ),
-//           );
-//   }
-// }
+                                                      

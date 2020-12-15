@@ -59,24 +59,34 @@ InkWell settingsPageNavigationTile(
     },
     child: Container(width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-      child: Text(
-            title,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+      child:  
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                    title,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                  ),Icon(FluentIcons.ios_chevron_right_20_filled)
+            ],
           ),
+      
     ),
   );
 }
  
 InkWell settingsActionTile(
-    BuildContext context, String title, Function function) {
+    BuildContext context, String title, Function function,IconData iconData) {
   return InkWell(
     onTap: function,
     child: Container(alignment: Alignment.centerLeft,width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       child: 
-          Text(
-            title,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+              ),Icon(iconData)
+            ],
           ),
     ),
   );

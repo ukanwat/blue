@@ -26,9 +26,10 @@ class _CategoryPostsScreenState extends State<CategoryPostsScreen> with Automati
     QuerySnapshot snapshot = await postsRef
     .where('topicName',isEqualTo: widget.name)
         .get(); 
-  
+
     setState(() {
-      posts =  snapshot.docs.map((doc) => Post.fromDocument(doc.data(),isCompact: true,)).toList();
+      posts =  snapshot.docs.map((doc) {                                      //TODO:fix ownername and username
+         Post.fromDocument(doc.data(),isCompact: true,);}).toList();
          loading = false;
     });
   }
@@ -39,6 +40,5 @@ class _CategoryPostsScreenState extends State<CategoryPostsScreen> with Automati
   Widget build(BuildContext context) {
     super.build(context);
     return loading? circularProgress():ListView(children: posts);
-    
     }
 }

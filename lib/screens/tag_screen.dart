@@ -20,7 +20,6 @@ class _TagScreenState extends State<TagScreen> {
     tag = ModalRoute.of(context).settings.arguments;
     super.didChangeDependencies();
   }
-
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -30,7 +29,7 @@ class _TagScreenState extends State<TagScreen> {
         appBar: AppBar(
           elevation: 0,
           actions: <Widget>[
-            preferences.getStringList('followed_tags').contains(tag)
+            preferences.getStringList('followed_tags').contains(tag) 
                 ?  PopupMenuButton(
                       padding: EdgeInsets.zero,
                       
@@ -54,11 +53,7 @@ class _TagScreenState extends State<TagScreen> {
 
                         }); 
            await   followedTagsRef.doc(currentUser.id).update({tag: FieldValue.delete()});
-            // print(tag);
-            // print( followedTagsMap.data.containsKey(tag));
-            //         followedTagsMap.data.removeWhere((key, value) => key == tag);
-            //         print(followedTagsMap.data.keys );
-            //          followedTagsRef.document(currentUser.id).setData(followedTagsMap.data);
+           
                         }
                       },
                     )

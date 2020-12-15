@@ -72,7 +72,7 @@ bool get wantKeepAlive => true;
         appBar: PreferredSize(
           preferredSize:
               Size.fromHeight(54 + buildTabbar().preferredSize.height),
-          child: AppBar(
+          child: AppBar(automaticallyImplyLeading: false,
             backgroundColor: Theme.of(context).canvasColor,
             elevation: 0,
             title: Row(
