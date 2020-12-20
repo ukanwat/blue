@@ -1,7 +1,8 @@
-import 'package:firebase_database/firebase_database.dart';
+import 'package:blue/main.dart';
+import 'package:blue/widgets/empty_state.dart';
+import 'package:blue/widgets/progress.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:blue/main.dart';
 import './home.dart';
 import './search_results_screen.dart';
 
@@ -15,10 +16,13 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  List _list;
+    QuerySnapshot searches;
   TextEditingController searchController = TextEditingController();
   Future<QuerySnapshot> peopleResultsFuture;
   Future<QuerySnapshot> postsResultsFuture;
   bool recentSearchesLoading = false;
+  Widget recentSearchesWidget;
   handleSearch(String query) {
     Future<QuerySnapshot> people = usersRef
         .where('displayName', isGreaterThanOrEqualTo: query)
@@ -33,59 +37,75 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       postsResultsFuture = posts;
     });
-    usersDatabase
-        .child(currentUser.id)
-        .child('recent-searches')
-        .child(searchController.text)
-        .set({'text': searchController.text,
-        'time': ServerValue.timestamp
-        });
-  }
- List items = [];
+   
+       searchesRef.doc(currentUser.id).collection('userSearches').doc().set({
+        'order':1,
+        'searches': [{query:DateTime.now()}],
+      });
+    
+    if(_list.length>1999 ){
+      searchesRef.doc(currentUser.id).collection('userSearches').doc().set({
+        'order':searches.docs.first.data()['order']+1,
+        'searches': [{query:DateTime.now()}],
+      });
+    }else{
+       searchesRef.doc(currentUser.id).collection('userSearches').doc(searches.docs.first.reference.id).update({
+        'searches': FieldValue.arrayUnion([{query:DateTime.now()}]),
+      });
+    }
  
- Widget getRecentSearches(){
-    var recentSearches = usersDatabase
-        .child(currentUser.id)
-        .child('recent-searches');
-   return FutureBuilder(
-        future: recentSearches
-        .limitToFirst(10).once(),
-        builder: (context, snapshot) {
-           if (snapshot.hasData) {
-        items.clear();
-        Map<dynamic, dynamic> values = snapshot.data.value;
-       if(values == null){
-         return Container();
-       }
-        values.forEach((key, values) {
-            items.add(values);
-        });
-        return new ListView.builder(
+  }
+ bool loading= true;
+getRecentSearches()async{
+    
+  searches = await searchesRef.doc(currentUser.id).collection('userSearches').orderBy('order',descending: true).limit(1).get();
+    List _fullList = searches.docs.first.data()['searches'];
+     List _timeList = [];
+     _list.forEach((element) {
+    _fullList .add(element.values.first);
+     _list.add(element.keys.first);
+      });
+    if(_list == null || _list.length == 0){
+   recentSearchesWidget = Container(height: 100,width: double.infinity,child: Center(child:Text('No Recent searches Found!',)));
+    }else{
+int start = _list.length-4;
+    if(start < 0)
+    start = 0;
+    List _recentSearches =  _list.sublist(start,_list.length);
+     List _timeposts =  _timeList.sublist(start,_list.length);
+  
+    
+     recentSearchesWidget = new ListView.builder(
             shrinkWrap: true,
-            itemCount: items.length,
+            itemCount: _recentSearches.length,
             itemBuilder: (BuildContext context, int index) {
                 return ListTile(
                     key: UniqueKey(),
-                title: Text(items[index]['text'],
+                title: Text(_recentSearches[index],
                 
                 ),trailing: IconButton(icon: Icon(Icons.clear,
                 color: Theme.of(context).iconTheme.color,
                 ),
-                onPressed: (){
+                onPressed: ()async{
                   setState(() {
-               recentSearches.child(items[index]['text']).set(null);
-             items.removeAt(index);       
+           
+                 searchesRef..doc(currentUser.id).collection('userSearches').doc(searches.docs.first.id).update({
+                   'searches': FieldValue.arrayRemove([{_recentSearches[index]:_timeposts[index]}]) ,
+                 });  
+           _recentSearches[index].removeAt(index);       
                   });
                 },
                 ),
                 );
             });
+    }
+    setState(() {
+      loading = false;
+    });
+          
         }
-        return CircularProgressIndicator();
 
- 
-        });
-  }
+  
 
   clearSearch() {
     WidgetsBinding.instance
@@ -121,12 +141,12 @@ class _SearchScreenState extends State<SearchScreen> {
           child: Container(
             height: 38,
             alignment: Alignment.center,
-            child: TextFormField(
+            child: TextFormField(maxLength: 100,
               textAlignVertical: TextAlignVertical.bottom,
               style: TextStyle(fontSize: 18),
               controller: searchController,
               decoration: InputDecoration(
-                hintText: 'Search',
+                hintText: 'Search',counterText: '',
                 hintStyle: TextStyle(
                   color:  Theme.of(context).iconTheme.color.withOpacity(0.8),
                 ),
@@ -154,7 +174,14 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                 ),
               ),
-              onFieldSubmitted: handleSearch,
+              onFieldSubmitted: (search){
+                  // if((_list != null && _list.length != 0)||searches.docs.length == 0|| true)// TODO check for 0 due to some error
+                   {
+  handleSearch(search);
+                print('sfsf');
+                  }         
+              
+                },
             ),
           ),
         ),
@@ -184,7 +211,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ],
           ),
        peopleResultsFuture == null && postsResultsFuture == null
-          ?   getRecentSearches()  : Container()
+          ?   recentSearchesWidget  : Container()
         ],
       ),
     );
@@ -196,7 +223,14 @@ class _SearchScreenState extends State<SearchScreen> {
       backgroundColor: Theme.of(context).backgroundColor,
       appBar: buildSearchField(context),
       body: peopleResultsFuture == null && postsResultsFuture == null
-          ? recentSearches()
+          ? (loading? circularProgress():Column(
+            children: [
+              Container(
+                height: 200,
+                child: recentSearchesWidget),
+                Expanded(child: emptyState(context, "Search something new!", 'Searching'))
+            ],
+          ))
           :
           searchResultsScreen(
               peopleResultsFuture, postsResultsFuture, searchController,

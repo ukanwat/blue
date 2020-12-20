@@ -25,7 +25,9 @@ fontFamily: 'Techna Sans Regular'
 
 Container settingsSectionTitle(String title, Icon icon,BuildContext context) {
   return Container(
-      padding: EdgeInsets.only(top: 15, bottom: 12, left: 14),
+    width: double.infinity,
+    color: Theme.of(context).iconTheme.color == Colors.white?Theme.of(context).backgroundColor:Theme.of(context).canvasColor,
+      padding: EdgeInsets.only(top: 24, bottom: 10, left: 14),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -33,31 +35,35 @@ Container settingsSectionTitle(String title, Icon icon,BuildContext context) {
           icon,  SizedBox(width: 5),
           Text(
             title,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700,color: Theme.of(context).iconTheme.color.withOpacity(0.8)),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700,color: Theme.of(context).iconTheme.color.withOpacity(0.7)),
           ),
         
         ],        ),);
 }
 
-SwitchListTile settingsSwitchListTile(
+Container settingsSwitchListTile(
 
     String title,bool currentValue, Function updateValue, {String description} ) {
-  return SwitchListTile(
-    activeColor: Colors.blue,
-    value: currentValue,
-    onChanged: updateValue,
-    title: Text(title),
-    subtitle: description == null ? null:Text(description),
+  return Container(
+    child: SwitchListTile(
+      activeColor: Colors.blue,
+      value: currentValue,
+      onChanged: updateValue,
+      title: Text(title),
+      subtitle: description == null ? null:Text(description),
+    ),
   );
 }
 
 InkWell settingsPageNavigationTile(
-    BuildContext context, String title, String routeName) {
+    BuildContext context, String title, String routeName,{bool removeBorder}) {
+         if(removeBorder == null)
+     removeBorder = false;
   return InkWell(
     onTap: () {
       Navigator.pushNamed(context, routeName);
     },
-    child: Container(width: double.infinity,
+    child: Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width:removeBorder? 0:1),)),
       padding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       child:  
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -74,7 +80,11 @@ InkWell settingsPageNavigationTile(
 }
  
 InkWell settingsActionTile(
-    BuildContext context, String title, Function function,IconData iconData) {
+    BuildContext context, String title, Function function,IconData iconData,{bool isRed,bool removeBorder} ) {
+      if(isRed == null)
+      isRed = false;
+       if(removeBorder == null)
+     removeBorder = false;
   return InkWell(
     onTap: function,
     child: Container(alignment: Alignment.centerLeft,width: double.infinity,
@@ -84,10 +94,11 @@ InkWell settingsActionTile(
             children: [
               Text(
                 title,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-              ),Icon(iconData)
+                style: isRed? TextStyle(fontSize: 16, fontWeight: FontWeight.w400,color: Colors.red):TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+              ),isRed?Icon(iconData,color: Colors.red,):Icon(iconData,color: Theme.of(context).iconTheme.color.withOpacity(0.9),)
             ],
           ),
+          decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width:removeBorder? 0:1),)),
     ),
   );
 } 

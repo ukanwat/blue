@@ -1,6 +1,7 @@
 import 'package:blue/screens/activity_feed_screen.dart';
 import 'package:blue/screens/chats_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:blue/main.dart';
 
@@ -74,7 +75,7 @@ bool get wantKeepAlive => true;
               Size.fromHeight(54 + buildTabbar().preferredSize.height),
           child: AppBar(automaticallyImplyLeading: false,
             backgroundColor: Theme.of(context).canvasColor,
-            elevation: 0,
+            elevation: 0.3,
             title: Row(
               children: <Widget>[
                 Padding(
@@ -109,10 +110,10 @@ bool get wantKeepAlive => true;
                 indicatorColor: Theme.of(context).iconTheme.color,
                 tabs: <Widget>[
                   Tab(
-                    icon: Icon(Icons.inbox),
+                    icon: Icon(FluentIcons.mail_inbox_24_filled,size: 26,),
                   ),
                   Tab(
-                    icon: Icon(Icons.chat_bubble),
+                    icon: Icon(FluentIcons.chat_24_filled,size: 26,),
                   ),
                 ],
               ),

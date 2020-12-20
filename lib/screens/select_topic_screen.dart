@@ -1,4 +1,3 @@
-import 'package:blue/models/topic_list_tile.dart';
 import 'package:blue/providers/submit_state.dart';
 import 'package:blue/screens/search_tag_screen.dart';
 import 'package:blue/widgets/progress.dart';
@@ -19,52 +18,46 @@ class SelectTopicScreen extends StatefulWidget {
 class _SelectTopicScreenState extends State<SelectTopicScreen> {
   String contentCategoryValue;
   bool isSwitched = false;
-  bool isLoading = false;
+  bool isLoading = true;
   int noOfFollowedTopicListTiles;
-  List<TopicListTile> followedTopicsListTile = [];
   bool topicSelected = false;
   bool postSubmitting = false;
   List<Widget> tagChips = [];
   List<String> tags = [];
+    List topics ;
   @override
   void initState() {
-    getFollowedTopics();
+    getTopics();
     super.initState();
   }
 
   addTag() async {
     Navigator.of(context).pushNamed(SearchTagScreen.routeName).then((value) {
-      if(value != null)
-      setState(() {
-        tags.add(value);
-        tagChips.add(Chip(
-          label: Text(value,style: TextStyle(color: Theme.of(context).iconTheme.color.withOpacity(0.8)),),
-        ));
-      });
+      if (value != null)
+        setState(() {
+          tags.add(value);
+          tagChips.add(Chip(
+            label: Text(
+              value,
+              style: TextStyle(
+                  color: Theme.of(context).iconTheme.color.withOpacity(0.8)),
+            ),
+          ));
+        });
     });
   }
 
-  getFollowedTopics() async {
-    setState(() {
-      isLoading = true;
-    });
-    QuerySnapshot snapshot = await followedTopicsRef
-        .doc('${currentUser.id}')
-        .collection('userFollowedTopics')
-        .get();
+  getTopics() async {
+    QuerySnapshot snapshot = await topicsRef.get();
+   topics = snapshot.docs.first.data()['topics'];
 
     setState(() {
       isLoading = false;
-      noOfFollowedTopicListTiles = snapshot.docs.length;
-      snapshot.docs.forEach((doc) {
-        followedTopicsListTile.add(
-          TopicListTile(doc['name'], doc['imageUrl'], doc['id']),
-        );
-      });
+      noOfFollowedTopicListTiles = topics.length;
     });
   }
 
-  TopicListTile selectedTopicTile;
+  String selectedTopicTile;
   @override
   Widget build(BuildContext context) {
     final postData =
@@ -76,99 +69,107 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
         child: AppBar(
           elevation: 0,
           centerTitle: true,
-        
           backgroundColor: Theme.of(context).canvasColor,
           title: Text(
             'Post Settings',
             style: TextStyle(),
           ),
           leading: IconButton(
-              icon: Icon(FlutterIcons.ios_arrow_back_ion,size: 30,
-                  color: Theme.of(context).primaryColor),
+            icon: Icon(FlutterIcons.ios_arrow_back_ion,
+                size: 30, color: Theme.of(context).primaryColor),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            color: Colors.grey,
+          ),
+          actions: <Widget>[
+            FlatButton(
               onPressed: () {
-                Navigator.pop(context);
-              },
-              color: Colors.grey,
-            ),
-          
-          actions: <Widget>[ FlatButton(
-                onPressed: () {
-                  if (selectedTopicTile != null) {
-                    setState(() {
-                      showDialog(
+                if (selectedTopicTile != null) {
+                  setState(() {
+                    showDialog(
                         barrierDismissible: true,
                         // useRootNavigator: false,
                         context: context,
-                        builder: (BuildContext context) =>
-                         WillPopScope(
-                          onWillPop: () async {
-                            return true;
-                          },
-                          child: Dialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            elevation: 0.0,
-                            backgroundColor: Colors.transparent,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 25, horizontal: 15),
-                              decoration: new BoxDecoration(
-                                color: Theme.of(context).canvasColor,
-                                shape: BoxShape.rectangle,
-                                borderRadius: BorderRadius.circular(15),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 10.0,
-                                    offset: const Offset(0.0, 10.0),
+                        builder: (BuildContext context) => WillPopScope(
+                              onWillPop: () async {
+                                return true;
+                              },
+                              child: Dialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                elevation: 0.0,
+                                backgroundColor: Colors.transparent,
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 25, horizontal: 15),
+                                  decoration: new BoxDecoration(
+                                    color: Theme.of(context).canvasColor,
+                                    shape: BoxShape.rectangle,
+                                    borderRadius: BorderRadius.circular(15),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black26,
+                                        blurRadius: 10.0,
+                                        offset: const Offset(0.0, 10.0),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 30),
-                                    child: Icon(FlutterIcons.cloud_upload_sli,size: 80,),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 30),
+                                        child: Icon(
+                                          FlutterIcons.cloud_upload_sli,
+                                          size: 80,
+                                        ),
+                                      ),
+                                      Container(
+                                        height: 4,
+                                        width:
+                                            MediaQuery.of(context).size.width -
+                                                140,
+                                        decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(10)),
+                                        child: LinearProgressIndicator(
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                  Colors.blue),
+                                          backgroundColor: Colors.transparent,
+                                        ),
+                                      ),
+                                      SizedBox(height: 15),
+                                      SubmitText(),
+                                    ],
                                   ),
-                                  Container(
-                                    height: 4,width: MediaQuery.of(context).size.width-140,
-                                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
-                                    child: LinearProgressIndicator( valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-backgroundColor: Colors.transparent,),
-                                  ), 
-                                  SizedBox(height: 15),
-                                  SubmitText(),
-                                ],
+                                ),
                               ),
-                            ),
-                          ),
-                        )
-                      );
-                    });
+                            ));
+                  });
 
-                        
-                    postData['post-function'](
-                        selectedTopicTile.name, selectedTopicTile.id, tags);
-                  }
-                },
-                child: Text(
-                  'Post',
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: selectedTopicTile == null
-                          ? Colors.grey
-                          : Theme.of(context).primaryColor),
-                ),
+                  postData['post-function'](
+                      selectedTopicTile,  tags);
+                }
+              },
+              child: Text(
+                'Post',
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: selectedTopicTile == null
+                        ? Colors.grey
+                        : Theme.of(context).primaryColor),
               ),
-            
+            ),
           ],
         ),
       ),
       body: SingleChildScrollView(
-              child: Column(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             SizedBox(
@@ -185,47 +186,59 @@ backgroundColor: Colors.transparent,),
                 ),
                 SizedBox(
                   width: 8,
-                ),GestureDetector(
-                  onTap: (){
+                ),
+                GestureDetector(
+                  onTap: () {
                     addTag();
                   },
-                                child: Container(
-                      height: 26,
-                      width: 26,
-                      decoration: BoxDecoration(color: Colors.blue,borderRadius: BorderRadius.circular(5)),
-                      child: Icon(
-                          Icons.add,
-                          size: 24,color: Colors.white
-                        ),
-                      
-                    ),
+                  child: Container(
+                    height: 26,
+                    width: 26,
+                    decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(5)),
+                    child: Icon(Icons.add, size: 24, color: Colors.white),
+                  ),
                 ),
-                
               ],
-            ), if(tagChips.length >0)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Wrap(
-                spacing: 6,
-                children: tagChips,
+            ),
+            if (tagChips.length > 0)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Wrap(
+                  spacing: 6,
+                  children: tagChips,
+                ),
+              )
+            else
+              Container(
+                height: 120,
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Icon(
+                        FlutterIcons.tag_ant,
+                        size: 25,
+                      ),
+                    ),
+                    Text(
+                      'Add Tags (atleast 1)',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
               ),
-            )           
-else
-Container(
-  height: 120,
-  alignment: Alignment.center,
-  child: Column(mainAxisSize: MainAxisSize.min,
-    children: <Widget>[Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Icon(FlutterIcons.tag_ant,size: 25,),
-    ),
-        Text('Add Tags (atleast 1)',style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500),),
-    ],
-  ),),
             SizedBox(
               height: 10,
             ),
-            Divider(color: Colors.grey,height: 0.3,),
+            Divider(
+              color: Colors.grey,
+              height: 0.3,
+            ),
             SizedBox(
               height: 10,
             ),
@@ -245,12 +258,13 @@ Container(
                     shrinkWrap: true,
                     itemBuilder: (_, i) {
                       return ListTile(
-                        enabled: true,dense: true,
+                        enabled: true,
+                        dense: true,
                         title: Text(
-                          followedTopicsListTile[i].name,
-                          style: TextStyle( fontSize: 20),
+                          topics[i],
+                          style: TextStyle(fontSize: 20),
                         ),
-                        trailing: selectedTopicTile == followedTopicsListTile[i]
+                        trailing: selectedTopicTile == topics[i]
                             ? Icon(
                                 Icons.check,
                                 color: Colors.blue,
@@ -258,16 +272,17 @@ Container(
                             : null,
                         onTap: () {
                           setState(() {
-                            if (selectedTopicTile == followedTopicsListTile[i]) {
+                            if (selectedTopicTile ==
+                                topics[i]) {
                               selectedTopicTile = null;
                             } else {
-                              selectedTopicTile = followedTopicsListTile[i];
+                              selectedTopicTile = topics[i];
                             }
                           });
                         },
                       );
                     },
-                    itemCount: followedTopicsListTile.length,
+                    itemCount: topics.length,
                   )
           ],
         ),
@@ -275,7 +290,6 @@ Container(
     );
   }
 }
-
 
 class SubmitText extends StatefulWidget {
   @override
@@ -286,6 +300,7 @@ class _SubmitTextState extends State<SubmitText> {
   @override
   Widget build(BuildContext context) {
     String submitState = Provider.of<SubmitState>(context).state;
-              return  Text(submitState ,style: TextStyle(fontSize: 17,fontWeight: FontWeight.w500)
-      );
-}}
+    return Text(submitState,
+        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500));
+  }
+}

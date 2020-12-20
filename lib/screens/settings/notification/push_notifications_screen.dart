@@ -82,7 +82,7 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15)),
                   ),
-                ),
+                ),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
                 settingsSwitchListTile(
                   'Likes',
                   likes,
@@ -137,7 +137,7 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
                   reminders = newValue;
                   preferencesRef.doc(currentUser.id).set(
                       {'push_reminders': newValue}, SetOptions(merge: true));
-                })
+                }),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
               ],
             ),
     );

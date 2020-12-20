@@ -36,7 +36,6 @@ class _TabsScreenState extends State<TabsScreen> {
           Container(),
          CommunicationTabbarScreen(),
           ProfileScreen(profileId: currentUser.id,
-          profileName: currentUser.displayName,
           ),
         ],
       ),

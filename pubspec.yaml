@@ -56,19 +56,13 @@ dependencies:
   visibility_detector: ^0.1.5
   flutter_link_preview: ^1.2.11
   fluentui_system_icons: ^1.1.85
-  zefyr: ^0.12.0
-  quill_delta: ^1.0.0
   animations: ^1.1.2
-  hive: ^1.4.4+1
-  hive_flutter: ^0.3.1
   firebase_dynamic_links: ^0.6.3
   firebase_core: ^0.5.3
   package_info: ^0.4.3+2
   page_transition: ^1.1.7+3
   sortedmap: ^0.4.2+1
-  workmanager: ^0.2.0
-  background_fetch: '^0.5.1'
-
+  flutter_svg: ^0.18.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
@@ -98,6 +92,12 @@ flutter:
    - assets/icons/seperation_dot_icon.svg
    - assets/images/GIPHY_light.png
    - assets/images/GIPHY_dark.png
+   - assets/images/Earth and Moon.svg
+   - assets/images/Bad Gateway.svg
+   - assets/images/No messages.svg
+   - assets/images/Welcome.svg
+   - assets/images/Message Sent.svg
+   - assets/images/Searching.svg
   #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

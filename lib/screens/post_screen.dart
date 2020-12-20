@@ -15,7 +15,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:zefyr/zefyr.dart';
 import 'dart:io';
 import './home.dart';
 import 'package:http/http.dart';
@@ -53,8 +52,9 @@ class _PostScreenState extends State<PostScreen> {
   VideoPlayerController _videoPlayerController;
   VideoPlayerController _cameraVideoPlayerController;
   TextEditingController titleController = TextEditingController();
-  // List<TextEditingController> textControllers = List();
-  List<ZefyrController> textControllers = List();
+   TextEditingController currentTextController = TextEditingController();
+  List<TextEditingController> textControllers = List();
+  bool editingText = false;
   List<FocusNode> textFocusNodes = List();
   List<TextEditingController> linkControllers = List();
   Map<int, dynamic> contentsMap = {};
@@ -261,7 +261,8 @@ class _PostScreenState extends State<PostScreen> {
 
   Future<String> uploadImage(File file) async {
     //Upload Profile Photo
-    String _url =  await FileStorage.upload('posts/$postId','image_$imageId',file );
+    String _url =
+        await FileStorage.upload('posts/$postId', 'image_$imageId', file);
     return _url;
   }
 
@@ -269,15 +270,17 @@ class _PostScreenState extends State<PostScreen> {
     List<String> downloadUrls = [];
     for (int i = 0; i < files.length; i++) {
       String _imageId = Uuid().v4();
-          String _url =  await FileStorage.upload('posts/$postId','carousel_$_imageId',files[i] );
+      String _url = await FileStorage.upload(
+          'posts/$postId', 'carousel_$_imageId', files[i]);
       downloadUrls.add(_url);
     }
     return downloadUrls;
   }
 
   Future<String> uploadVideo(dynamic mediaInfo) async {
-          String _videoId = Uuid().v4();
-        String _url =  await FileStorage.upload('posts/$postId','video_$_videoId',mediaInfo.file );
+    String _videoId = Uuid().v4();
+    String _url = await FileStorage.upload(
+        'posts/$postId', 'video_$_videoId', mediaInfo.file);
     return _url;
   }
 
@@ -342,7 +345,8 @@ class _PostScreenState extends State<PostScreen> {
   Future<String> _uploadFile(filePath, folderName) async {
     final file = new File(filePath);
     final basename = p.basename(filePath);
-    String videoUrl = await FileStorage.upload('posts/$postId/$folderName', basename, file);
+    String videoUrl =
+        await FileStorage.upload('posts/$postId/$folderName', basename, file);
     return videoUrl;
   }
 
@@ -448,7 +452,7 @@ class _PostScreenState extends State<PostScreen> {
     return {'thumbUrl': thumbUrl, 'videoUrl': videoUrl};
   }
 
-  handleSubmit(String topicName, String topicId, List<String> tags) async {
+  handleSubmit(String topicName, List<String> tags) async {
     setState(() {
       isUploading = true;
     });
@@ -488,7 +492,6 @@ class _PostScreenState extends State<PostScreen> {
         title: titleController.text,
         contentsInfo: firestoreContentsInfo,
         topicName: topicName,
-        topicId: topicId,
         tags: tags);
 
     titleController.clear();
@@ -509,10 +512,7 @@ class _PostScreenState extends State<PostScreen> {
     Navigator.pop(context);
   }
 
-  Widget textDisplay(
-      ZefyrController textController,
-      // TextEditingController textController,
-      int index,
+  Widget textDisplay(TextEditingController textController, int index,
       FocusNode textFocusNode) {
     Map infoMap = {};
     infoMap['type'] = 'text';
@@ -520,22 +520,21 @@ class _PostScreenState extends State<PostScreen> {
     contentsMap[index] = textController;
     contentType.add('text');
     print(contentsMap);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-      child: ZefyrField(
-        height: 300,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: 'Text...',
-        ),
-        controller: textController,
-        key: UniqueKey(),
-        focusNode: textFocusNode,
-        autofocus: true,
-        imageDelegate: CustomImageDelegate(),
-        physics: AlwaysScrollableScrollPhysics(),
-      ),
-    );
+    return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+        child:
+         TextField(controller: textController,focusNode: textFocusNode,keyboardType: TextInputType.multiline,decoration: InputDecoration(hintText: 'Text...',border: InputBorder.none)
+         ,maxLines: null,
+         onTap: (){
+           if(editingText = false){
+setState(() {
+             editingText = true;
+             currentTextController = textController;
+           });
+           }
+          
+         },)
+        );
   }
 
   Container linkDisplay(TextEditingController linkController, bool isLoading,
@@ -782,276 +781,274 @@ class _PostScreenState extends State<PostScreen> {
     }
 
     return Scaffold(
-        backgroundColor: Theme.of(context).backgroundColor,
-        appBar: AppBar(
-            elevation: 0.5,
-            leading: IconButton(
-                icon: Icon(
-                  Icons.clear,
-                ),
-                onPressed: () {
-                  if (isDrafted) {
-                    Navigator.pop(context);
-                  } else {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) => ShowDialog(
-                        title: "Save as Draft",
-                        description: "Do you want to save your work as Draft?",
-                        rightButtonText: "Save Draft",
-                        leftButtonText: "Cancel",
-                        rightButtonFunction: () async {
-                          List<Map> _modifiedContentsData = contentsData;
-                          Directory appDocDir;
-                          // Directory(_storageInfo[0].rootDir + '/MyCreatedFolder').create();
-                          for (int i = 0;
-                              i < _modifiedContentsData.length;
-                              i++) {
-                            _modifiedContentsData[i].remove('widget');
-                            switch (_modifiedContentsData[i]['info']['type']) {
-                              case 'image':
-                                final _fileName = Path.basename(
-                                    _modifiedContentsData[i]['content'].path);
-                                if (appDocDir == null)
-                                  appDocDir =
-                                      await getApplicationDocumentsDirectory();
-                                String _path =
-                                    appDocDir.path + '/$postId/$_fileName';
-                                await _modifiedContentsData[i]['content']
-                                    .copy(_path);
-                                _modifiedContentsData[i]['content'] = _path;
-                                break;
-                              case 'video':
-                                final _fileName = Path.basename(
-                                    _modifiedContentsData[i]['content'].path);
-                                if (appDocDir == null)
-                                  appDocDir =
-                                      await getApplicationDocumentsDirectory();
-                                String _path =
-                                    appDocDir.path + '/$postId/$_fileName';
-                                await _modifiedContentsData[i]['content']
-                                    .copy(_path);
-                                _modifiedContentsData[i]['content'] = _path;
-                                break;
-                              case 'carousel':
-                                if (appDocDir == null)
-                                  appDocDir =
-                                      await getApplicationDocumentsDirectory();
-                                String _path = appDocDir.path + '/$postId';
-                                List _paths = [];
-                                for (int f = 0;
-                                    f <
-                                        _modifiedContentsData[i]['content']
-                                            .length;
-                                    f++) {
-                                  var _fileName = Path.basename(
-                                      _modifiedContentsData[i]['content'][f]
-                                          .path);
-                                  await _modifiedContentsData[i]['content'][f]
-                                      .copy(_path + '/$_fileName');
-                                  _paths.add(_path + '/$_fileName');
-                                }
-                                _modifiedContentsData[i]['content'] = _paths;
-                                break;
-                              case 'text':
-                                _modifiedContentsData[i]['content'] =
-                                    contentsData[i]['content'].text;
-                                break;
-                              case 'link':
-                                _modifiedContentsData[i]['content'] =
-                                    contentsData[i]['content'].text;
-                                break;
-                              default:
-                            }
+      backgroundColor: Theme.of(context).backgroundColor,
+      appBar: AppBar(
+          elevation: 0.5,
+          leading: IconButton(
+              icon: Icon(
+                Icons.clear,
+              ),
+              onPressed: () {
+                if (isDrafted) {
+                  Navigator.pop(context);
+                } else {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) => ShowDialog(
+                      title: "Save as Draft",
+                      description: "Do you want to save your work as Draft?",
+                      rightButtonText: "Save Draft",
+                      leftButtonText: "Cancel",
+                      rightButtonFunction: () async {
+                        List<Map> _modifiedContentsData = contentsData;
+                        Directory appDocDir;
+                        // Directory(_storageInfo[0].rootDir + '/MyCreatedFolder').create();
+                        for (int i = 0; i < _modifiedContentsData.length; i++) {
+                          _modifiedContentsData[i].remove('widget');
+                          switch (_modifiedContentsData[i]['info']['type']) {
+                            case 'image':
+                              final _fileName = Path.basename(
+                                  _modifiedContentsData[i]['content'].path);
+                              if (appDocDir == null)
+                                appDocDir =
+                                    await getApplicationDocumentsDirectory();
+                              String _path =
+                                  appDocDir.path + '/$postId/$_fileName';
+                              await _modifiedContentsData[i]['content']
+                                  .copy(_path);
+                              _modifiedContentsData[i]['content'] = _path;
+                              break;
+                            case 'video':
+                              final _fileName = Path.basename(
+                                  _modifiedContentsData[i]['content'].path);
+                              if (appDocDir == null)
+                                appDocDir =
+                                    await getApplicationDocumentsDirectory();
+                              String _path =
+                                  appDocDir.path + '/$postId/$_fileName';
+                              await _modifiedContentsData[i]['content']
+                                  .copy(_path);
+                              _modifiedContentsData[i]['content'] = _path;
+                              break;
+                            case 'carousel':
+                              if (appDocDir == null)
+                                appDocDir =
+                                    await getApplicationDocumentsDirectory();
+                              String _path = appDocDir.path + '/$postId';
+                              List _paths = [];
+                              for (int f = 0;
+                                  f <
+                                      _modifiedContentsData[i]['content']
+                                          .length;
+                                  f++) {
+                                var _fileName = Path.basename(
+                                    _modifiedContentsData[i]['content'][f]
+                                        .path);
+                                await _modifiedContentsData[i]['content'][f]
+                                    .copy(_path + '/$_fileName');
+                                _paths.add(_path + '/$_fileName');
+                              }
+                              _modifiedContentsData[i]['content'] = _paths;
+                              break;
+                            case 'text':
+                              _modifiedContentsData[i]['content'] =
+                                  contentsData[i]['content'].text;
+                              break;
+                            case 'link':
+                              _modifiedContentsData[i]['content'] =
+                                  contentsData[i]['content'].text;
+                              break;
+                            default:
                           }
-                          var drafts = preferences.get('drafts');
-                          if (drafts == null) {
-                            drafts = jsonEncode({});
-                            preferences.setString('drafts', drafts);
-                          }
+                        }
+                        var drafts = preferences.get('drafts');
+                        if (drafts == null) {
+                          drafts = jsonEncode({});
+                          preferences.setString('drafts', drafts);
+                        }
 
-                          Map _drafts = jsonDecode(drafts);
-                          _drafts[postId] = {
-                            'title': titleController.text,
-                            'contentsData': _modifiedContentsData
-                          };
-                          preferences.setString('drafts', jsonEncode(_drafts));
-                          print(_drafts);
-                          Navigator.of(context).pop();
-                          Navigator.of(context).pop();
-                        },
-                        leftButtonFunction: () {
-                          Navigator.of(context).pop();
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    );
-                  }
-                }),
-            centerTitle: true,
-            title: Card(
-                margin: EdgeInsets.symmetric(vertical: 10),
-                elevation: 1,
-                semanticContainer: false,
-                color: Theme.of(context).backgroundColor,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25)),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    IconButton(
-                      icon: Icon(FlutterIcons.image_fea),
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) => postItemsDialog({
-                            'Camera': handleTakePhoto,
-                            'Device': handleChooseImageFromGallery,
-                            'Multiple': handleCreateCarousel,
-                          }, context),
-                        );
+                        Map _drafts = jsonDecode(drafts);
+                        _drafts[postId] = {
+                          'title': titleController.text,
+                          'contentsData': _modifiedContentsData
+                        };
+                        preferences.setString('drafts', jsonEncode(_drafts));
+                        print(_drafts);
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                      },
+                      leftButtonFunction: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
                       },
                     ),
-                    IconButton(
-                      padding: EdgeInsets.only(top: 2),
+                  );
+                }
+              }),
+          centerTitle: true,
+          title: Card(
+              margin: EdgeInsets.symmetric(vertical: 10),
+              elevation: 1,
+              semanticContainer: false,
+              color: Theme.of(context).backgroundColor,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  IconButton(
+                    icon: Icon(FlutterIcons.image_fea),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) => postItemsDialog({
+                          'Camera': handleTakePhoto,
+                          'Device': handleChooseImageFromGallery,
+                          'Multiple': handleCreateCarousel,
+                        }, context),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    padding: EdgeInsets.only(top: 2),
+                    icon: Icon(
+                      FlutterIcons.video_fea,
+                      size: 25.5,
+                    ),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) => postItemsDialog({
+                          'Camera': handleTakeVideo,
+                          'Device': handleChooseVideoFromGallery,
+                        }, context),
+                      );
+                    },
+                  ),
+                  IconButton(
                       icon: Icon(
-                        FlutterIcons.video_fea,
-                        size: 25.5,
+                        FlutterIcons.text_ent,
                       ),
                       onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) => postItemsDialog({
-                            'Camera': handleTakeVideo,
-                            'Device': handleChooseVideoFromGallery,
-                          }, context),
-                        );
-                      },
-                    ),
-                    IconButton(
-                        icon: Icon(
-                          FlutterIcons.text_ent,
-                        ),
-                        onPressed: () {
-                          // TextEditingController textController =
-                          //     TextEditingController();
-                          ZefyrController textController =
-                              ZefyrController(NotusDocument());
-                          FocusNode textFocusNode = FocusNode();
-                          setState(() {
-                            textControllers.add(textController);
-                            textFocusNodes.add(textFocusNode);
-                            fileIndex++;
-                            contentsData.add({
-                              'info': {'type': 'text'},
-                              'content': textController,
-                              'widget': textDisplay(
-                                  textController, fileIndex, textFocusNode)
-                            });
-                            contents.add(textDisplay(
-                                textController, fileIndex, textFocusNode));
+                        TextEditingController textController =
+                            TextEditingController();
+                        FocusNode textFocusNode = FocusNode();
+                        setState(() {
+                          textControllers.add(textController);
+                          textFocusNodes.add(textFocusNode);
+                          fileIndex++;
+                          contentsData.add({
+                            'info': {'type': 'text'},
+                            'content': textController,
+                            'widget': textDisplay(
+                                textController, fileIndex, textFocusNode)
                           });
-                        }),
-                    IconButton(
-                        icon: Icon(
-                          FlutterIcons.link_fea,
-                          size: 21,
-                        ),
-                        onPressed: () {
-                          TextEditingController linkController =
-                              TextEditingController();
-                          setState(() {
-                            linkControllers.add(linkController);
-                            fileIndex++;
-                            contentsData.add({
-                              'info': {'type': 'link'},
-                              'content': linkController,
-                              'widget': linkDisplay(linkController, false)
-                            });
+                          contents.add(textDisplay(
+                              textController, fileIndex, textFocusNode));
+                        });
+                      }),
+                  IconButton(
+                      icon: Icon(
+                        FlutterIcons.link_fea,
+                        size: 21,
+                      ),
+                      onPressed: () {
+                        TextEditingController linkController =
+                            TextEditingController();
+                        setState(() {
+                          linkControllers.add(linkController);
+                          fileIndex++;
+                          contentsData.add({
+                            'info': {'type': 'link'},
+                            'content': linkController,
+                            'widget': linkDisplay(linkController, false)
                           });
-                        }),
-                  ],
-                )),
-            actions: <Widget>[
-              IconButton(
-                onPressed: () {
-                  print(contentsData);
-                  Navigator.of(context)
-                      .pushNamed(SelectTopicScreen.routeName, arguments: {
-                    'post-function': handleSubmit,
-                  });
-                },
-                icon: Icon(
-                  FlutterIcons.ios_arrow_forward_ion,
-                  color: Colors.blue,
-                  size: 30,
-                ),
-              )
-            ],
-            backgroundColor: Theme.of(context).canvasColor //TODO blue gradient
-            ),
-        body: ZefyrScaffold(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-                  width: double.infinity,
-                  child: TextField(
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                    maxLines: 2,
-                    minLines: 1,
-                    controller: titleController,
-                    decoration: InputDecoration(
-                      hintText: "Title",
-                      hintStyle: TextStyle(
-                          color: Theme.of(context)
-                              .iconTheme
-                              .color
-                              .withOpacity(0.8)),
-                      border: InputBorder.none,
-                    ),
-                  ),
-                ),
-                Divider(
-                  color: Colors.grey,
-                  height: 1,
-                  thickness: 0.3,
-                ),
-                if (_contents.length > 0)
-                  Column(
-                    children: _contents,
-                  )
-                else
-                  Container(
-                    height: MediaQuery.of(context).size.height * 0.35,
-                    alignment: Alignment.bottomCenter,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Icon(
-                            FluentIcons.collections_add_24_regular,
-                            size: 45,
-                          ),
-                        ),
-                        Text(
-                          'Add Content',
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w500),
-                        ),
-                      ],
-                    ),
-                  ),
-                SizedBox(
-                  height: 30,
-                )
-              ],
-            ),
+                        });
+                      }),
+                ],
+              )),
+          actions: <Widget>[
+            IconButton(
+              onPressed: () {
+                print(contentsData);
+                Navigator.of(context)
+                    .pushNamed(SelectTopicScreen.routeName, arguments: {
+                  'post-function': handleSubmit,
+                });
+              },
+              icon: Icon(
+                FlutterIcons.ios_arrow_forward_ion,
+                color: Colors.blue,
+                size: 30,
+              ),
+            )
+          ],
+          backgroundColor: Theme.of(context).canvasColor //TODO blue gradient
           ),
-        ));
+      body: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                    width: double.infinity,
+                    child: TextField(
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                      maxLines: 2,
+                      minLines: 1,
+                      controller: titleController,
+                      decoration: InputDecoration(
+                        hintText: "Title",
+                        hintStyle: TextStyle(
+                            color: Theme.of(context)
+                                .iconTheme
+                                .color
+                                .withOpacity(0.8)),
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                  Divider(
+                    color: Colors.grey,
+                    height: 1,
+                    thickness: 0.3,
+                  ),
+                  if (_contents.length > 0)
+                    Column(
+                      children: _contents,
+                    )
+                  else
+                    Container(
+                      height: MediaQuery.of(context).size.height * 0.35,
+                      alignment: Alignment.bottomCenter,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Icon(
+                              FluentIcons.collections_add_24_regular,
+                              size: 45,
+                            ),
+                          ),
+                          Text(
+                            'Add Content',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                    ),
+                  SizedBox(
+                    height: 30,
+                  )
+                ],
+              ),
+            ),
+          )
+        
+    ;
   }
 
   postItemsDialog(Map functions, BuildContext context) {
@@ -1177,35 +1174,5 @@ class _PostScreenState extends State<PostScreen> {
                 ),
               ),
             ));
-  }
-}
-
-class CustomImageDelegate implements ZefyrImageDelegate<ImageSource> {
-  @override
-  ImageSource get cameraSource => ImageSource.camera;
-
-  @override
-  ImageSource get gallerySource => ImageSource.gallery;
-
-  @override
-  Future<String> pickImage(ImageSource source) async {
-    final picker = ImagePicker();
-    final file = await picker.getImage(source: source);
-    if (file == null) return null;
-    return file.path;
-  }
-
-  @override
-  Widget buildImage(BuildContext context, String key) {
-    // We use custom "asset" scheme to distinguish asset images from other files.
-    if (key.startsWith('asset://')) {
-      final asset = AssetImage(key.replaceFirst('asset://', ''));
-      return Image(image: asset);
-    } else {
-      // Otherwise assume this is a file stored locally on user's device.
-      final file = File.fromUri(Uri.parse(key));
-      final image = FileImage(file);
-      return Image(image: image);
-    }
   }
 }

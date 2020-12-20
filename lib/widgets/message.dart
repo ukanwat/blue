@@ -55,12 +55,14 @@ class Message extends StatelessWidget {
                               child: InkWell(
                                 onTap: () async {
                                   Navigator.pop(context);
-                                  await ImageDownloader.downloadImage(
-          message,
-            destination: AndroidDestinationType.custom(directory: '/Pictures/Scrible'),
-            outputMimeType: type == 'image'?"image/jpg":"image/gif",
-            
-          );
+                                  await ImageDownloader.downloadImage( // might not work after changing rules
+                                    message,
+                                    destination: AndroidDestinationType.custom(  
+                                        directory: '/Pictures/Scrible'),
+                                    outputMimeType: type == 'image'
+                                        ? "image/jpg"
+                                        : "image/gif",
+                                  );
                                 },
                                 child: Container(
                                     padding: EdgeInsets.symmetric(
@@ -138,9 +140,13 @@ class Message extends StatelessWidget {
                       maxWidth: MediaQuery.of(context).size.width * .76),
                   padding: EdgeInsets.symmetric(vertical: 6, horizontal: 9),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    color: myText ? Colors.blue : Theme.of(context).cardColor,
-                  ),
+                      borderRadius: BorderRadius.circular(14),
+                      color: myText
+                          ? Colors.blue
+                          : Theme.of(context).backgroundColor,
+                      border: Border.all(
+                          color: myText ? Colors.blue : Colors.grey,
+                          width: 0.6)),
                   child: Text(
                     message,
                     style: TextStyle(

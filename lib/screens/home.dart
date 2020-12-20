@@ -27,7 +27,9 @@ final postsCollectionGroupRef = FirebaseFirestore.instance.collectionGroup('user
 final topicPostsCollectionGroupRef =
     FirebaseFirestore.instance.collectionGroup('topicPosts');
 final userPostsRef = FirebaseFirestore.instance.collection('user-posts');
+final searchesRef = FirebaseFirestore.instance.collection('searches');
 final accountReportsRef = FirebaseFirestore.instance.collection('account-reports');
+final userReportsRef = FirebaseFirestore.instance.collection('user-reports');
 final commentReportsRef = FirebaseFirestore.instance.collection('comment-reports');
 final suggestionsRef = FirebaseFirestore.instance.collection('suggestions');
 final bugsRef = FirebaseFirestore.instance.collection('bugs');

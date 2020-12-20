@@ -1,17 +1,16 @@
 import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
+import 'package:blue/services/go_to.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import '../screens/profile_screen.dart';
-import '../screens/post_view_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 String activityItemText;
 String activityItemTextData;
 String activityFeedDocumentId;
-
-class ActivityFeedItem extends StatelessWidget {
+//TODO activity feed item only uploads user id of heisenberg
+class ActivityFeedItem extends StatefulWidget {
   final String username;
   final String displayName;
   final String userId;
@@ -48,18 +47,24 @@ class ActivityFeedItem extends StatelessWidget {
         timestamp: doc['timestamp'],
         seen: doc['seen']);
   }
+
+  @override
+  _ActivityFeedItemState createState() => _ActivityFeedItemState();
+}
+
+class _ActivityFeedItemState extends State<ActivityFeedItem> {
   configureTextPreview() {
-    activityItemTextData = "$commentData";
-    if (type == 'upvote') {
+    activityItemTextData = "${widget.commentData}";
+    if (widget.type == 'upvote') {
       activityItemText = 'upvoted your post';
-    } else if (type == 'follow') {
+    } else if (widget.type == 'follow') {
       activityItemText = 'is following you';
-    } else if (type == 'comment') {
+    } else if (widget.type == 'comment') {
       activityItemText = 'commented on your post: \n';
-    } else if (type == 'comment reply') {
+    } else if (widget.type == 'comment reply') {
       activityItemText = 'replied on your comment: \n';
     } else {
-      activityItemText = '$type \n';
+      activityItemText = '${widget.type} \n';
     }
   }
 
@@ -67,8 +72,8 @@ class ActivityFeedItem extends StatelessWidget {
   Widget build(BuildContext context) {
     configureTextPreview();
 
-    bool seen = this.seen;
-    if (this.seen == null) seen = false;
+    bool seen = this.widget.seen;
+    if (this.widget.seen == null) seen = false;
     return Container(
       decoration: BoxDecoration(
         border: Border(
@@ -100,7 +105,7 @@ class ActivityFeedItem extends StatelessWidget {
                         ),
                         children: [
                           TextSpan(
-                              text: username,
+                              text: widget.username,
                               style: TextStyle(fontWeight: FontWeight.bold)),
                           TextSpan(
                               text: 'username todo',
@@ -126,26 +131,33 @@ class ActivityFeedItem extends StatelessWidget {
                                       .withOpacity(seen ? 0.8 : 1)))
                         ]),
                   ),
-                  leading: CircleAvatar(
-                    maxRadius: 22,
-                    minRadius: 22,
-                    backgroundImage: CachedNetworkImageProvider(userProfileImg),
+                  leading: Container(
+                    child: GestureDetector(onTap: (){
+                      GoTo().profileScreen(context, widget.userId);
+                    },
+                                        child: CircleAvatar(
+                        maxRadius: 22,
+                        minRadius: 22,
+                        backgroundImage: CachedNetworkImageProvider(widget.userProfileImg),
+                      ),
+                    ),
                   ),
                 ),
+               if(widget.type != 'follow')
                 Padding(
                   padding:
-                      EdgeInsets.only(top: 4, bottom: 8, left: 12, right: 12),
+                      EdgeInsets.only(top: 0, bottom: 8, left: 12, right: 12),
                   child: Row(
                     children: <Widget>[
                       Expanded(
                         child: Center(
                           child: Text(
-                            '$title',
+                            '${widget.title}',
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w400,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
                                 color: Theme.of(context)
                                     .iconTheme
                                     .color
@@ -159,10 +171,10 @@ class ActivityFeedItem extends StatelessWidget {
                           FluentIcons.open_24_regular,
                           color: Colors.blue.withOpacity(0.8),
                         ),
-                        onPressed: () {},
+                        onPressed: () {GoTo().showPost(context,widget.postId,);},
                         iconSize: 24,
                         padding: EdgeInsets.all(0),
-                      ))
+                      ),)
                     ],
                   ),
                 )
@@ -175,26 +187,6 @@ class ActivityFeedItem extends StatelessWidget {
   }
 }
 
-showProfile(BuildContext context, {String profileId, String username}) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => ProfileScreen(
-        profileId: profileId,
-        profileUsername: username,
-      ),
-    ),
-  );
-}
 
-showPost(BuildContext context, {String postId, String userId}) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => PostViewScreen(
-        postId: postId,
-        userId: userId,
-      ),
-    ),
-  );
-}
+
+

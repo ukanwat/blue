@@ -1,3 +1,4 @@
+import 'package:blue/widgets/empty_state.dart';
 import 'package:flutter/material.dart';
 
 import './home.dart';
@@ -17,7 +18,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> with AutomaticK
   getActivityFeed() async {
     QuerySnapshot snapshot = await activityFeedRef
         .doc(currentUser.id)
-        .collection('feedItems')
+        .collection('feedItems').orderBy('timestamp',descending: true)
         .limit(50)
         .get();
     List<ActivityFeedItem> feedItems = [];
@@ -33,9 +34,13 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen> with AutomaticK
     super.build(context);
     return FutureBuilder(
           future: getActivityFeed(),
-          builder: (context,snapshot){
+          builder: (context, snapshot){
             if(!snapshot.hasData){
               return circularProgress();
+            }
+            if(snapshot.data.length == 0){
+              return emptyState(context, 'No notifications yet','No messages',subtitle: 'Stay tuned! Notifications about your activity will show up here');
+
             }
             return ListView(children: snapshot.data,);
           },

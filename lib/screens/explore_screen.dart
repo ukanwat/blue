@@ -1,4 +1,3 @@
-import 'package:blue/screens/all_topics_screen.dart';
 import 'package:blue/screens/category_posts_screen.dart';
 import 'package:blue/screens/search_screen.dart';
 import 'package:blue/widgets/progress.dart';
@@ -7,9 +6,6 @@ import 'package:blue/widgets/post.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:blue/main.dart';
-
-import 'package:blue/widgets/header.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 import 'home.dart';
@@ -20,88 +16,70 @@ class ExploreScreen extends StatefulWidget {
 }
 
 class _ExploreScreenState extends State<ExploreScreen>
-    with AutomaticKeepAliveClientMixin<ExploreScreen> ,SingleTickerProviderStateMixin{
+    with AutomaticKeepAliveClientMixin<ExploreScreen> ,TickerProviderStateMixin{
   List<Post> posts = [];
-  int noOfFollowedTopicCards = 0;
   List<Tab> topicTabs = [];
     List<Widget> topicViews = [];
  bool  loading = true; 
  TabController tabController;
+   List<String> t = ['Humor','Art & Design','Technology','News','Entertainment','Lifestyle','Science'];
   @override
   void initState() {
-    getFollowedTopics();
+       
+      t.forEach((topic) {
+        topicTabs.add(
+          Tab(text: topic,)
+        );
+        topicViews.add( CategoryPostsScreen( topic));
+      });
+
+     tabController = new TabController(length: 7 , vsync: this);
+    getTopics();
     getExplore();
     super.initState();
   }
 
   getExplore() async {
     QuerySnapshot snapshot = await postsRef.limit(5).get();
-    List<Post> posts =
-        snapshot.docs.map((doc) => Post.fromDocument(doc.data())).toList();
+    List<Post> posts = snapshot.docs.map((doc) => Post.fromDocument(doc.data())).toList();
     setState(() {
       this.posts = posts;
       loading = false;
     });
   }
+ 
    showTagsSheet() {
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0),
+        borderRadius: BorderRadius.circular(15.0),
       ),
-      builder: (context) => ClipRRect(
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(10), topRight: Radius.circular(10)),
-        child: Container(
-          height: 240,
-          width: MediaQuery.of(context).size.width,
-          decoration: new BoxDecoration(
-            color: Theme.of(context).canvasColor,
-          ),
-          child: Column(
-            children: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 15, horizontal: 20),
-                    child: Text('Tags you Follow',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w500, fontSize: 17)),
-                  ),
-                  IconButton(
-                      icon: Icon(Icons.keyboard_arrow_down,
-                          size: 26, color: Theme.of(context).iconTheme.color),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      })
-                ],
-              ),
-              Expanded(child: TagsWrap()),
-            ],
-          ),
-        ),
-      ),
+      builder: (context) => TagsWrap()
     );
   }
-  getFollowedTopics() async {
-    QuerySnapshot snapshot = await followedTopicsRef
-        .doc('${currentUser.id}')
-        .collection('userFollowedTopics')
+  getTopics() async {
+    QuerySnapshot snapshot = await topicsRef
         .get();
-
-    print(snapshot.docs.length);
+      
     setState(() {
-      noOfFollowedTopicCards = snapshot.docs.length;
-      snapshot.docs.forEach((doc) {
-        topicTabs.add(
-          Tab(text: doc['name'],)
+      List _topics =  snapshot.docs.first.data()['topics'];
+      print(_topics);
+      if (_topics !=  t){
+         List<Tab> _topicTabs = [];
+            List<Widget> _topicViews = [];
+      _topics.forEach((topic) {
+        _topicTabs.add(
+          Tab(text: topic,)
         );
-        topicViews.add( CategoryPostsScreen( doc['name']));
+       
+        _topicViews.add( CategoryPostsScreen( topic));
       });
+      topicViews = _topicViews;
+      topicTabs =_topicTabs;
 
-     tabController = new TabController(length:  noOfFollowedTopicCards , vsync: this);
+     tabController = new TabController(length: 7 , vsync: this);
+      }
+       
     });
   }
   bool get wantKeepAlive => true;

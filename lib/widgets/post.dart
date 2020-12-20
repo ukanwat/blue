@@ -19,7 +19,7 @@ import 'package:blue/screens/tag_screen.dart';
 import 'package:blue/main.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:path_provider/path_provider.dart';
-
+import 'dart:math' as math;
 import './custom_image.dart';
 import '../screens/home.dart';
 import '../screens/comments_screen.dart';
@@ -391,105 +391,7 @@ class _PostState extends State<Post> {
                           height: 22,
                           child: GestureDetector(
                             onTap: () async {
-                              var lastFollowingDoc = await followingRef
-                                  .doc(currentUser?.id)
-                                  .collection('userFollowing')
-                                  .orderBy('order', descending: true)
-                                  .limit(1)
-                                  .get();
-                              if (lastFollowingDoc.docs.length == 0) {
-                                followingRef
-                                    .doc(currentUser?.id)
-                                    .collection('userFollowing')
-                                    .doc()
-                                    .set({
-                                  'order': 1,
-                                  'following': [
-                                    widget.ownerId,
-                                  ],
-                                }, SetOptions(merge: true));
-                              } else if (lastFollowingDoc.docs.length == 1 &&
-                                  lastFollowingDoc.docs.first
-                                          .data()['following']
-                                          .length <
-                                      10000) {
-                                followingRef
-                                    .doc(currentUser?.id)
-                                    .collection('userFollowing')
-                                    .doc(lastFollowingDoc.docs.first.id)
-                                    .update({
-                                  'following':
-                                      FieldValue.arrayUnion([widget.ownerId])
-                                });
-                              } else if (lastFollowingDoc.docs.length == 1 &&
-                                  lastFollowingDoc.docs.first
-                                          .data()['following']
-                                          .length >
-                                      10000) {
-                                followingRef
-                                    .doc(currentUser?.id)
-                                    .collection('userFollowing')
-                                    .doc()
-                                    .set({
-                                  'following': [widget.ownerId],
-                                  'order': lastFollowingDoc.docs.first
-                                          .data()['order'] +
-                                      1,
-                                });
-                              }
-
-                              var lastFollowersDoc = await followersRef
-                                  .doc(widget.ownerId)
-                                  .collection('userFollowers')
-                                  .orderBy('order', descending: true)
-                                  .limit(1)
-                                  .get();
-                              if (lastFollowersDoc.docs.length == 0) {
-                                followersRef
-                                    .doc(widget.ownerId)
-                                    .collection('userFollowers')
-                                    .doc()
-                                    .set({
-                                  'order': 1,
-                                  'followers': [
-                                    currentUserId,
-                                  ],
-                                }, SetOptions(merge: true));
-                              } else if (lastFollowersDoc.docs.length == 1 &&
-                                  lastFollowersDoc.docs.first
-                                          .data()['following']
-                                          .length <
-                                      10000) {
-                                followersRef
-                                    .doc(widget.ownerId)
-                                    .collection('userFollowers')
-                                    .doc(lastFollowersDoc.docs.first.id)
-                                    .update({
-                                  'followers':
-                                      FieldValue.arrayUnion([currentUserId])
-                                });
-                              } else if (lastFollowersDoc.docs.length == 1 &&
-                                  lastFollowersDoc.docs.first
-                                          .data()['followers']
-                                          .length >
-                                      10000) {
-                                followersRef
-                                    .doc(currentUser?.id)
-                                    .collection('userFollowers')
-                                    .doc()
-                                    .set({
-                                  'followers': [widget.ownerId],
-                                  'order': lastFollowersDoc.docs.first
-                                          .data()['order'] +
-                                      1,
-                                });
-                              }
-                              List<String> followingList =
-                                  preferences.getStringList('following');
-                              if (!followingList.contains(widget.ownerId))
-                                followingList.add(widget.ownerId);
-                              preferences.setStringList(
-                                  'following', followingList);
+                              followOwner();
                             },
                             child: Container(
                                 height: 22,
@@ -545,71 +447,7 @@ class _PostState extends State<Post> {
             ),
           ),
           if (tagBarVisible)
-            Container(
-              margin: EdgeInsets.only(top: 0, bottom: 0),
-              height: 28,
-              child: Row(
-                children: <Widget>[
-                  Container(
-                    width: 28,
-                    color: Theme.of(context).backgroundColor,
-                    child: Center(
-                      child: Text(
-                        '#',
-                        style: TextStyle(fontSize: 22),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      height: 28,
-                      color: Theme.of(context).canvasColor,
-                      child: ListView.builder(
-                        itemCount: tags.length,
-                        scrollDirection: Axis.horizontal,
-                        itemBuilder: (_, i) {
-                          print(
-                            tags[i],
-                          );
-                          return InkWell(
-                            onTap: () async {
-                              Navigator.of(context).pushNamed(
-                                  TagScreen.routeName,
-                                  arguments: tags[i]);
-                                String tagOpenInfo = preferences.getString('tags_open_info');
-                                if(tagOpenInfo == null){
-                                preferences.setString('tags_open_info', json.encode( {}));
-                                tagOpenInfo =  json.encode( {}); }
-                                Map tagOpenMap = json.decode(tagOpenInfo);
-                                if(tagOpenMap.containsKey(tags[i]))
-                                tagOpenMap[tags[i]] =  tagOpenMap[tags[i]]+1;
-                                else
-                                tagOpenMap[tags[i]] = 1;
-                                preferences.setString('tags_open_info', json.encode( tagOpenMap));
-                             
-                            },
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 8),
-                              margin: EdgeInsets.symmetric(
-                                  horizontal: 2, vertical: 3),
-                              decoration: BoxDecoration(
-                                  color: Theme.of(context).backgroundColor,
-                                  borderRadius: BorderRadius.circular(100)),
-                              child: Center(
-                                child: Text(
-                                  tags[i],
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
+           tagBar(),
           if (tagBarVisible)
             Container(
               width: double.infinity,
@@ -621,17 +459,17 @@ class _PostState extends State<Post> {
   }
 
   buildCompactPostHeader() {
-    bool isPostOwner = currentUserId == ownerId;
     return Stack(children: <Widget>[
       Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Expanded(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Padding(
                   padding:
-                      EdgeInsets.only(left: 10, top: 5, bottom: 0, right: 0),
+                      EdgeInsets.only(left: 10, top: 5, bottom: 8, right: 0),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -658,157 +496,35 @@ class _PostState extends State<Post> {
                         ),
                       ),
                       SizedBox(
-                        width: 10,
+                        width: 5,
                       ),
-                      Expanded(
-                        child: Container(
-                          height: 24,
-                          child: FittedBox(
-                            fit: BoxFit.none,
-                            alignment: Alignment.centerLeft,
+                      if (!isFollowing && !(widget.ownerId == currentUserId))
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              followOwner();
+                            },
                             child: Container(
-                                height: 18,
-                                width: 18,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(15),
-                                  color: Colors.blue,
-                                ),
-                                child: Icon(
-                                  Icons.add,
-                                  color: Colors.white,
-                                  size: 16,
-                                )),
+                              height: 24,
+                              child: FittedBox(
+                                fit: BoxFit.none,
+                                alignment: Alignment.centerRight,
+                                child: Container(
+                                    height: 18,
+                                    width: 18,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(15),
+                                      color: Colors.blue,
+                                    ),
+                                    child: Icon(
+                                      Icons.add,
+                                      color: Colors.white,
+                                      size: 16,
+                                    )),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                      tagBarVisible
-                          ? SizedBox(
-                              height: 30,
-                              width: 30,
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    tagBarVisible = false;
-                                  });
-                                },
-                                child: Icon(
-                                  Icons.keyboard_arrow_up,
-                                  size: 28,
-                                ),
-                              ),
-                            )
-                          : SizedBox(
-                              height: 30,
-                              width: 30,
-                              child: GestureDetector(
-                                onTap: () async {
-                                  setState(() {
-                                    tagBarVisible = true;
-                                  });
-                                },
-                                child: Icon(
-                                  Icons.keyboard_arrow_down,
-                                  size: 28,
-                                ),
-                              ),
-                            ),
-                      isSaved
-                          ? SizedBox(
-                              height: 40,
-                              width: 40,
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    isSaved = false;
-                                    showSaveBar = false;
-                                    savedPostsRef // TODO
-                                        .document(currentUser?.id)
-                                        .collection('All')
-                                        .document(postId)
-                                        .delete();
-                                  });
-                                },
-                                child: Icon(
-                                  Icons.bookmark,
-                                  size: 21,
-                                  color: Colors.blue,
-                                ),
-                              ),
-                            )
-                          : SizedBox(
-                              height: 30,
-                              width: 30,
-                              child: GestureDetector(
-                                onTap: () async {
-                                  setState(() {
-                                    isSaved = true;
-                                  });
-                                  var lastDoc = await savedPostsRef
-                                      .doc(currentUser?.id)
-                                      .collection('all')
-                                      .orderBy('order', descending: true)
-                                      .limit(1)
-                                      .get();
-                                  if (lastDoc.docs.length == 0) {
-                                    savedPostsRef
-                                        .doc(currentUser?.id)
-                                        .collection('all')
-                                        .doc()
-                                        .set({
-                                      'order': 1,
-                                      'posts': [
-                                        postId,
-                                      ],
-                                    }, SetOptions(merge: true));
-                                  } else if (lastDoc.docs.length == 1 &&
-                                      lastDoc.docs.first
-                                              .data()['posts']
-                                              .length <
-                                          2) {
-                                    List<dynamic> _postIdList =
-                                        lastDoc.docs.first.data()['posts'];
-                                    _postIdList.add(postId);
-                                    savedPostsRef
-                                        .doc(currentUser?.id)
-                                        .collection('all')
-                                        .doc(lastDoc.docs.first.id)
-                                        .set({
-                                      'posts': _postIdList,
-                                    }, SetOptions(merge: true));
-                                  } else if (lastDoc.docs.length == 1 &&
-                                      lastDoc.docs.first
-                                              .data()['posts']
-                                              .length >
-                                          1) {
-                                    savedPostsRef
-                                        .doc(currentUser?.id)
-                                        .collection('all')
-                                        .doc()
-                                        .set({
-                                      'order':
-                                          lastDoc.docs.first.data()['order'] +
-                                              1,
-                                      'posts': [
-                                        postId,
-                                      ],
-                                    }, SetOptions(merge: true));
-                                  }
-                                  setState(() {
-                                    showSaveBar = true;
-                                  });
-                                  Future.delayed(
-                                      const Duration(milliseconds: 4000), () {
-                                    setState(() {
-                                      showSaveBar = false;
-                                    });
-                                  });
-                                },
-                                child: Icon(
-                                  Icons.bookmark_border,
-                                  size: 21,
-                                ),
-                              ),
-                            ),
                     ],
                   ),
                 ),
@@ -817,7 +533,11 @@ class _PostState extends State<Post> {
                       EdgeInsets.only(left: 10, top: 0, right: 5, bottom: 3),
                   child: Text(
                     widget.title,
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
                     maxLines: 4,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -886,6 +606,72 @@ class _PostState extends State<Post> {
         ],
       ),
     ]);
+  }
+
+  followOwner() async {
+    var lastFollowingDoc = await followingRef
+        .doc(currentUser?.id)
+        .collection('userFollowing')
+        .orderBy('order', descending: true)
+        .limit(1)
+        .get();
+    if (lastFollowingDoc.docs.length == 0) {
+      followingRef.doc(currentUser?.id).collection('userFollowing').doc().set({
+        'order': 1,
+        'following': [
+          widget.ownerId,
+        ],
+      }, SetOptions(merge: true));
+    } else if (lastFollowingDoc.docs.length == 1 &&
+        lastFollowingDoc.docs.first.data()['following'].length < 10000) {
+      followingRef
+          .doc(currentUser?.id)
+          .collection('userFollowing')
+          .doc(lastFollowingDoc.docs.first.id)
+          .update({
+        'following': FieldValue.arrayUnion([widget.ownerId])
+      });
+    } else if (lastFollowingDoc.docs.length == 1 &&
+        lastFollowingDoc.docs.first.data()['following'].length > 10000) {
+      followingRef.doc(currentUser?.id).collection('userFollowing').doc().set({
+        'following': [widget.ownerId],
+        'order': lastFollowingDoc.docs.first.data()['order'] + 1,
+      });
+    }
+
+    var lastFollowersDoc = await followersRef
+        .doc(widget.ownerId)
+        .collection('userFollowers')
+        .orderBy('order', descending: true)
+        .limit(1)
+        .get();
+    if (lastFollowersDoc.docs.length == 0) {
+      followersRef.doc(widget.ownerId).collection('userFollowers').doc().set({
+        'order': 1,
+        'followers': [
+          currentUserId,
+        ],
+      }, SetOptions(merge: true));
+    } else if (lastFollowersDoc.docs.length == 1 &&
+        lastFollowersDoc.docs.first.data()['following'].length < 10000) {
+      followersRef
+          .doc(widget.ownerId)
+          .collection('userFollowers')
+          .doc(lastFollowersDoc.docs.first.id)
+          .update({
+        'followers': FieldValue.arrayUnion([currentUserId])
+      });
+    } else if (lastFollowersDoc.docs.length == 1 &&
+        lastFollowersDoc.docs.first.data()['followers'].length > 10000) {
+      followersRef.doc(currentUser?.id).collection('userFollowers').doc().set({
+        'followers': [widget.ownerId],
+        'order': lastFollowersDoc.docs.first.data()['order'] + 1,
+      });
+    }
+    List<String> followingList = preferences.getStringList('following');
+    if (!followingList.contains(widget.ownerId))
+      followingList.add(widget.ownerId);
+    preferences.setStringList('following', followingList);
   }
 
   handleDeletePost(BuildContext parentContext) {
@@ -984,7 +770,7 @@ class _PostState extends State<Post> {
           .where('Downvoters', arrayContains: currentUserId)
           .limit(1)
           .get();
-      bool _isDownvoted = _doc.docs.length == 1;
+      // bool _isDownvoted = _doc.docs.length == 1;
 
       postsVotersRef
           .doc(widget.postId)
@@ -1004,7 +790,7 @@ class _PostState extends State<Post> {
           .where('Downvoters', arrayContains: currentUserId)
           .limit(1)
           .get();
-      bool _isUpvoted = _doc.docs.length == 1;
+      // bool _isUpvoted = _doc.docs.length == 1;
 
       postsVotersRef
           .doc(widget.postId)
@@ -1067,6 +853,86 @@ class _PostState extends State<Post> {
     }
   }
 
+Container  tagBar(){
+return  Container(
+              margin: EdgeInsets.only(top: 0, bottom: 0),
+              height: 28,
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    width: 28,
+                    color: Theme.of(context).backgroundColor,
+                    child: Center(
+                      child: Text(
+                        '#',
+                        style: TextStyle(fontSize: 22),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      height: 28,
+                      color: Theme.of(context).canvasColor,
+                      child: ListView.builder(
+                        itemCount: tags.length,
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (_, i) {
+                          print(
+                            tags[i],
+                          );
+                          return InkWell(
+                            onTap: () async {
+                              Navigator.of(context).pushNamed(
+                                  TagScreen.routeName,
+                                  arguments: tags[i]);
+                              String tagOpenInfo =
+                                  preferences.getString('tags_open_info');
+                              if (tagOpenInfo == null) {
+                                preferences.setString(
+                                    'tags_open_info', json.encode({}));
+                                tagOpenInfo = json.encode({});
+                              }
+                              DateTime nowTime = DateTime.now();
+                              String todayTime = DateTime.parse(
+                                      "${nowTime.year}-${nowTime.month}-${nowTime.day}")
+                                  .toString();
+                              Map tagOpenMap = json.decode(tagOpenInfo);
+                              if (tagOpenMap.containsKey(todayTime)) {
+                                if (tagOpenMap[todayTime].containsKey(tags[i]))
+                                  tagOpenMap[todayTime][tags[i]] =
+                                      tagOpenMap[todayTime][tags[i]] + 1;
+                                else
+                                  tagOpenMap[todayTime][tags[i]] = 1;
+                              } else {
+                                tagOpenMap[todayTime] = {tags[i]: 1};
+                              }
+                              print(tagOpenMap);
+                              preferences.setString(
+                                  'tags_open_info', json.encode(tagOpenMap));
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 8),
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 2, vertical: 3),
+                              decoration: BoxDecoration(
+                                  color: Theme.of(context).backgroundColor,
+                                  borderRadius: BorderRadius.circular(100)),
+                              child: Center(
+                                child: Text(
+                                  tags[i],
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            );
+  }
   bool persistentCallbackAdded = false;
   Timer timer;
   @override
@@ -1202,74 +1068,120 @@ class _PostState extends State<Post> {
           if (showSaveBar)
             Container(
                 width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 0, horizontal: 6),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Text(
-                      'Saved!',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    FlatButton(
-                        onPressed: () {
-                          setState(() {
-                            showSaveBar = false;
-                          });
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) =>
-                                SaveDialog(this.widget),
-                          );
-                        },
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        child: Text(
-                          'Save to Collection',
-                          style: TextStyle(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18),
-                        ))
-                  ],
+                padding: EdgeInsets.symmetric(vertical: 5, horizontal: 6),
+                child: Container(margin:  EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(15),color: Colors.blue.withOpacity(0.15)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: <Widget>[
+                      Text(
+                        'Saved!',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      FlatButton(
+                          onPressed: () {
+                            setState(() {
+                              showSaveBar = false;
+                            });
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) =>
+                                  SaveDialog(this.widget),
+                            );
+                          },
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          child: Text(
+                            'Save to Collection',
+                            style: TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 18),
+                          ))
+                    ],
+                  ),
                 )),
+                if(widget.isCompact)
+                if(tagBarVisible)
+                tagBar(),
           Row(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisSize: MainAxisSize.max,
             children: <Widget>[
-              Padding(
-                padding: EdgeInsets.only(left: 13.0),
-              ),
-              if (contentsHeight != null)
-                if (contentsHeight ==
-                        MediaQuery.of(context).size.height * 0.6 ||
-                    contentsHeight > MediaQuery.of(context).size.height * 0.6)
-                  SizedBox(
-                    height: 28,
-                    width: 30,
-                    child: GestureDetector(
-                      onTap: () {
-                        if (!constraintContent) {
-                          setState(() {
-                            constraintContent = true;
-                            getContentSize();
-                          });
-                        } else {
-                          setState(() {
-                            constraintContent = false;
-                            getContentSize();
-                          });
-                        }
-                      },
-                      child: Icon(
-                        constraintContent
-                            ? FlutterIcons.ios_arrow_down_ion
-                            : FlutterIcons.ios_arrow_up_ion,
-                        size: 28,
+              if(widget.isCompact)
+                 tagBarVisible
+                    ? Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10,),
+                      child: SizedBox(height: 24,width: 24,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                tagBarVisible = false;
+                              });
+                            },
+                            child: Icon(
+                              FlutterIcons.ios_arrow_up_ion,
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                    )
+                    :Padding(
+                     padding: const EdgeInsets.symmetric(horizontal: 10,),
+                      child: SizedBox(
+                        height: 24,width: 24,
+                          child: GestureDetector(
+                            onTap: () async {
+                              setState(() {
+                                tagBarVisible = true;
+                              });
+                            },
+                            child: Icon(
+                              FlutterIcons.ios_arrow_down_ion,
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                    ),
+              if (!widget.isCompact)
+                if (contentsHeight != null)
+                  if (contentsHeight ==
+                          MediaQuery.of(context).size.height * 0.8 ||
+                      contentsHeight > MediaQuery.of(context).size.height * 0.8)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 13),
+                      child:  SizedBox(
+                          height: 28,
+                          width: 30,
+                          child: GestureDetector(
+                            onTap: () {
+                              if (!constraintContent) {
+                                setState(() {
+                                  constraintContent = true;
+                                  getContentSize();
+                                });
+                              } else {
+                                setState(() {
+                                  constraintContent = false;
+                                  getContentSize();
+                                });
+                              }
+                            },
+                            child: Transform.rotate(angle:29.8,
+                                              child:Icon(
+                              constraintContent
+                                  ? FluentIcons.arrow_previous_24_regular
+                                  : FluentIcons.arrow_next_24_regular,
+                              size: 28,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-              Expanded(
-                child: Container(),
-              ),
+              if (!widget.isCompact)
+                Expanded(
+                  child: Container(),
+                ),
               isSaved
                   ? Padding(
                       padding: const EdgeInsets.only(right: 20),
@@ -1417,23 +1329,22 @@ class _PostState extends State<Post> {
                   size: 24.0,
                 ),
               ),
-              Container(
-                  margin: EdgeInsets.only(left: 8),
-                  child: Text(
-                    '$upvoteCount',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  )),
-              SizedBox(width: 13),
+              Padding(
+                padding: const EdgeInsets.only(right: 13),
+                child: Container(
+                    margin: EdgeInsets.only(left: 8),
+                    child: Text(
+                      '$upvoteCount',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    )),
+              ),
             ],
           ),
           Padding(
             padding: EdgeInsets.only(bottom: 13),
           ),
-          Divider(
-            thickness: 3,
-            color: Theme.of(context).canvasColor,
-            height: 3,
-          ),
+         
         ],
       ),
     );
@@ -1500,50 +1411,59 @@ class _PostState extends State<Post> {
               ],
             ),
           )
-        : Material(
-            color: Theme.of(context).backgroundColor,
-            child: InkWell(
-              onTap: widget.isCompact
-                  ? () {
-                      Navigator.of(context).pushNamed(
-                          ExplorePostsScreen.routeName,
-                          arguments: this.widget);
-                    }
-                  : null,
-              child: Column(
-                children: <Widget>[
-                  widget.isCompact
-                      ? buildCompactPostHeader()
-                      : buildPostHeader(),
-                  if (!widget.isCompact)
-                    ConstrainedBox(
-                      constraints: constraintContent
-                          ? BoxConstraints(
-                              maxHeight:
-                                  MediaQuery.of(context).size.height * 0.6)
-                          : BoxConstraints(),
-                      child: Stack(
-                        clipBehavior: Clip.antiAlias,
-                        alignment: AlignmentDirectional.topStart,
-                        children: [
-                          ListView.builder(
-                            key: _contentsKey,
-                            padding: EdgeInsets.all(0),
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemBuilder: (_, i) {
-                              return contentsViewList[i];
-                            },
-                            itemCount: contents.length,
+        : Column(
+          children: [
+            Material(
+                color: Theme.of(context).backgroundColor,
+                child: InkWell(
+                  onTap: widget.isCompact
+                      ? () {
+                          Navigator.of(context).pushNamed(
+                              ExplorePostsScreen.routeName,
+                              arguments: this.widget);
+                        }
+                      : null,
+                  child: Column(
+                    children: <Widget>[
+                      widget.isCompact
+                          ? buildCompactPostHeader()
+                          : buildPostHeader(),
+                      if (!widget.isCompact)
+                        ConstrainedBox(
+                          constraints: constraintContent
+                              ? BoxConstraints(
+                                  maxHeight:
+                                      MediaQuery.of(context).size.height * 0.8)
+                              : BoxConstraints(),
+                          child: Stack(
+                            clipBehavior: Clip.antiAlias,
+                            alignment: AlignmentDirectional.topStart,
+                            children: [
+                              ListView.builder(
+                                key: _contentsKey,
+                                padding: EdgeInsets.all(0),
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                itemBuilder: (_, i) {
+                                  return contentsViewList[i];
+                                },
+                                itemCount: contents.length,
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-                  buildPostFooter(),
-                ],
-              ),
-            ),
-          );
+                        ),
+                      buildPostFooter(),
+                      
+                    ],
+                  ),
+                ),
+              ), Divider(
+            thickness: 4,
+            color: Theme.of(context).cardColor,
+            height: 4,
+          ),
+          ],
+        );
   }
 }
 

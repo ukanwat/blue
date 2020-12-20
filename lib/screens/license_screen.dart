@@ -124,10 +124,10 @@ class _LicenseScreenState extends State<LicenseScreen> {
       width: 100,
       height: 100,
     );
-    final String applicationLegalese = '© 2020 Scrible. All Rights Reserved';
+    final String applicationLegalese = '© 2020 Feed. All Rights Reserved';
 
     return Scaffold(
-      appBar: settingsHeader(context, 'Open Source Licenses'),
+      appBar: settingsHeader(context, 'Acknowledgements'),
       // All of the licenses page text is English. We don't want localized text
       // or text direction.
       body: Localizations.override(

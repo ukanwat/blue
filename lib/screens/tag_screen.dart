@@ -1,6 +1,8 @@
 import 'package:blue/screens/home.dart';
 import 'package:blue/screens/tag/tag_popular_screen.dart';
 import 'package:blue/screens/tag/tag_recent_screen.dart';
+import 'package:blue/services/preferences_update.dart';
+import 'package:blue/services/preferences_update.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +38,6 @@ class _TagScreenState extends State<TagScreen> {
                       color: Theme.of(context).canvasColor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
-                          side: BorderSide(width: 0)
                       ),
                       itemBuilder: (_) => [
                         PopupMenuItem(
@@ -47,9 +48,7 @@ class _TagScreenState extends State<TagScreen> {
                       onSelected: (selectedValue) async {
                         if (selectedValue == 'Unfollow') {
                              setState(() {
-                 List<String> followedTags =          preferences.getStringList('followed_tags');
-                       followedTags.remove(tag);
- preferences.setStringList('followed_tags',followedTags);
+                               PreferencesUpdate().removeStringFromList('followed_tags', tag);
 
                         }); 
            await   followedTagsRef.doc(currentUser.id).update({tag: FieldValue.delete()});
@@ -70,9 +69,7 @@ class _TagScreenState extends State<TagScreen> {
                         }, SetOptions(merge: true));
                          
                         setState(() {
-                                 List<String> followedTags =          preferences.getStringList('followed_tags');
-                       followedTags.add(tag);
- preferences.setStringList('followed_tags',followedTags);
+                          PreferencesUpdate().addStringToList('followed_tags', tag);
                         });
                       
                     },

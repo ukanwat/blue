@@ -1,3 +1,4 @@
+import 'package:blue/services/go_to.dart';
 import 'package:blue/widgets/post.dart' as p;
 import 'package:flutter/material.dart';
 
@@ -177,7 +178,7 @@ class UserResult extends StatelessWidget {
       child: Column(
         children: <Widget>[
           GestureDetector(
-            onTap: () => showProfile(context, profileId: user.id,username: user.username),
+            onTap: () => GoTo().profileScreen(context, user.id,),
             child: ListTile(
               leading: CircleAvatar(
                 backgroundImage: CachedNetworkImageProvider(user.photoUrl),

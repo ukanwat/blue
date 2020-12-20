@@ -36,7 +36,7 @@ class _FontScreenState extends State<FontScreen> {
             trailing: Visibility( visible: serif == false,
                         child: Icon(FlutterIcons.check_circle_faw5s,
               color: Colors.blue),
-            ),),
+            ),),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
               ListTile( onTap: (){
                setState(() {
                 serif = true;
@@ -47,7 +47,7 @@ class _FontScreenState extends State<FontScreen> {
             trailing: Visibility( visible: serif == true,
                         child: Icon(FlutterIcons.check_circle_faw5s,
               color: Colors.blue),
-            ),),
+            ),),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
         ],
       ),
     );

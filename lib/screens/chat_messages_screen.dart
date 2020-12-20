@@ -1,12 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
+import 'package:blue/services/go_to.dart';
+import 'package:blue/widgets/empty_state.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+
 import '../services/file_storage.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
@@ -29,33 +33,26 @@ enum MessageType { image, gif }
 class ChatMessagesScreen extends StatefulWidget {
   static const routeName = 'chat-messages';
   final User peerUser;
-   ChatMessagesScreen({this.peerUser});
+  ChatMessagesScreen({this.peerUser});
   @override
   _ChatMessagesScreenState createState() => _ChatMessagesScreenState();
 }
 
 class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
- var focusNode = new FocusNode();
+  var focusNode = new FocusNode();
   String groupChatId;
-  Map sendingStateMap = {
-    'count': 0,
-    'id': {},
-    'state': ''
-  };
-    Map deletingStateMap = {
-        'count': 0,
-    'lastId': '',
-     'state': ''
-    };
+  Map sendingStateMap = {'count': 0, 'id': {}, 'state': ''};
+  Map deletingStateMap = {'count': 0, 'lastId': '', 'state': ''};
   Future<QuerySnapshot> chatMessagesFuture;
   TextEditingController messageController = TextEditingController();
   @override
   void dispose() {
-        sendingStateMap['id'] = {};
-          sendingStateMap['state'] = '';
-              sendingStateMap['count'] = 0;
+    sendingStateMap['id'] = {};
+    sendingStateMap['state'] = '';
+    sendingStateMap['count'] = 0;
     super.dispose();
   }
+
   @override
   void didChangeDependencies() {
     if (currentUser.id.hashCode <= widget.peerUser.id.hashCode) {
@@ -67,29 +64,29 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     super.didChangeDependencies();
   }
 
-  getChatMessagesFuture(){
-   setState((){
+  getChatMessagesFuture() {
+    setState(() {
       chatMessagesFuture = messagesRef
           .doc(groupChatId)
           .collection(groupChatId)
           .orderBy('timestamp', descending: true)
-         // .where('hide',isEqualTo: )           TODO 
+          // .where('hide',isEqualTo: )           TODO
           .get();
     });
   }
 
-  sendMessage()async {
+  sendMessage() async {
     if (messageController.text != '') {
-        DateTime dateTime = DateTime.now();
-        String textMessage =  messageController.text;
+      DateTime dateTime = DateTime.now();
+      String textMessage = messageController.text;
       setState(() {
         sendingStateMap['id'][dateTime.toString()] = false;
         sendingStateMap['state'] = 'Sending';
-                sendingStateMap['count'] = sendingStateMap['count']+1;
+        sendingStateMap['count'] = sendingStateMap['count'] + 1;
         messageController.clear();
       });
-    
-     await messagesRef.doc(groupChatId).collection(groupChatId).add({
+
+      await messagesRef.doc(groupChatId).collection(groupChatId).add({
         'idFrom': currentUser.id,
         'idTo': widget.peerUser.id,
         'timestamp': dateTime,
@@ -97,31 +94,32 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         'type': 'text'
       });
 
-           sendingStateMap['id'][dateTime.toString()] = true;
-       bool valid = true;
-         sendingStateMap['id'].forEach((k,v){
-            if(v == false)
-            valid = false;
-         });
-         print(valid);
-       
-      getChatMessagesFuture();
-      Future.delayed(const Duration(milliseconds: 1000), () {    setState(() {
-              if( valid){
-                   print(sendingStateMap['count']);
-          sendingStateMap['state'] = sendingStateMap['count']> 1?'All Sent':'Sent';
-          }
-      });});
-      Future.delayed(const Duration(milliseconds: 5000), () {
-  setState(() {
-  if( valid){
-               sendingStateMap['id'] = {};
-          sendingStateMap['state'] = '';
-           sendingStateMap['count'] = 0;
-          }
-  });
+      sendingStateMap['id'][dateTime.toString()] = true;
+      bool valid = true;
+      sendingStateMap['id'].forEach((k, v) {
+        if (v == false) valid = false;
+      });
+      print(valid);
 
-});
+      getChatMessagesFuture();
+      Future.delayed(const Duration(milliseconds: 1000), () {
+        setState(() {
+          if (valid) {
+            print(sendingStateMap['count']);
+            sendingStateMap['state'] =
+                sendingStateMap['count'] > 1 ? 'All Sent' : 'Sent';
+          }
+        });
+      });
+      Future.delayed(const Duration(milliseconds: 5000), () {
+        setState(() {
+          if (valid) {
+            sendingStateMap['id'] = {};
+            sendingStateMap['state'] = '';
+            sendingStateMap['count'] = 0;
+          }
+        });
+      });
     }
   }
 
@@ -129,17 +127,17 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     FocusScope.of(context).unfocus();
     try {
       DateTime dateTime = DateTime.now();
-      
-    Navigator.of(context)
+
+      Navigator.of(context)
           .pushNamed(GIFsScreen.routeName)
           .catchError((e) {})
           .then((value) {
         if (value != null) {
-                setState(() {
+          setState(() {
             sendingStateMap['id'][dateTime.toString()] = false;
-          sendingStateMap['state'] = 'Sending';
-            sendingStateMap['count'] = sendingStateMap['count']+1;
-      });
+            sendingStateMap['state'] = 'Sending';
+            sendingStateMap['count'] = sendingStateMap['count'] + 1;
+          });
           messagesRef.doc(groupChatId).collection(groupChatId).add({
             'idFrom': currentUser.id,
             'idTo': widget.peerUser.id,
@@ -147,28 +145,30 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
             'message': value,
             'type': 'gif'
           }).then((_) {
-                 sendingStateMap['id'][dateTime.toString()] = true;
-                  bool valid = true;
-         sendingStateMap['id'].forEach((k,v){
-            if(v == false)
-            valid = false;
-         });
-      Future.delayed(const Duration(milliseconds: 5000), () {    setState(() {
-        print('assfsz gif');
-              if( valid){
-                   print(sendingStateMap['count']);
-          sendingStateMap['state'] = sendingStateMap['count']> 1?'All Sent':'Sent';
-          }
-      });});
-      Future.delayed(const Duration(milliseconds: 5000), () {
-  setState(() {
-  if(valid){
-        sendingStateMap['id'] = {};
-          sendingStateMap['state'] = '';
-               sendingStateMap['count'] = 0;
-          }
-  });
-});
+            sendingStateMap['id'][dateTime.toString()] = true;
+            bool valid = true;
+            sendingStateMap['id'].forEach((k, v) {
+              if (v == false) valid = false;
+            });
+            Future.delayed(const Duration(milliseconds: 5000), () {
+              setState(() {
+                print('assfsz gif');
+                if (valid) {
+                  print(sendingStateMap['count']);
+                  sendingStateMap['state'] =
+                      sendingStateMap['count'] > 1 ? 'All Sent' : 'Sent';
+                }
+              });
+            });
+            Future.delayed(const Duration(milliseconds: 5000), () {
+              setState(() {
+                if (valid) {
+                  sendingStateMap['id'] = {};
+                  sendingStateMap['state'] = '';
+                  sendingStateMap['count'] = 0;
+                }
+              });
+            });
             getChatMessagesFuture();
           });
         }
@@ -179,9 +179,9 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   }
 
   sendMedia() async {
-      FocusScope.of(context).unfocus();
+    FocusScope.of(context).unfocus();
     try {
-       DateTime dateTime = DateTime.now();
+      DateTime dateTime = DateTime.now();
       File image;
       var picker = ImagePicker();
       var pickedFile = await picker.getImage(
@@ -189,10 +189,10 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         maxHeight: 1080,
         maxWidth: 1080,
       );
-         setState(() {
-           sendingStateMap['id'][dateTime.toString()] = false;
-          sendingStateMap['state'] = 'Sending';
-                  sendingStateMap['count'] = sendingStateMap['count']+1;
+      setState(() {
+        sendingStateMap['id'][dateTime.toString()] = false;
+        sendingStateMap['state'] = 'Sending';
+        sendingStateMap['count'] = sendingStateMap['count'] + 1;
       });
       if (pickedFile != null) {
         image = File(pickedFile.path); // TODO
@@ -202,39 +202,40 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         final Im.Image imageFile = Im.decodeImage(image.readAsBytesSync());
         final compressedImageFile = File('$path/img_$imageId.jpg')
           ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
-    var imageUri = await FileStorage.upload('chat','chat_$imageId.jpg', compressedImageFile);
-  String downloadUrl = imageUri.toString();
+        var imageUri = await FileStorage.upload(
+            'chat', 'chat_$imageId.jpg', compressedImageFile);
+        String downloadUrl = imageUri.toString();
         messagesRef.doc(groupChatId).collection(groupChatId).add({
           'idFrom': currentUser.id,
           'idTo': widget.peerUser.id,
-          'timestamp': dateTime ,
+          'timestamp': dateTime,
           'message': downloadUrl,
           'type': 'image'
         });
-         sendingStateMap['id'][dateTime.toString()] = true;
-                 bool valid = true;
-         sendingStateMap['id'].forEach((k,v){
-            if(v == false)
-            valid = false;
-         });
-         Future.delayed(const Duration(milliseconds: 1000), () {    setState(() {
-              if( valid){
-                print(sendingStateMap['count']);
-          sendingStateMap['state'] = sendingStateMap['count']> 1?'All Sent':'Sent';
-         
-          }
-      });});
-      Future.delayed(const Duration(milliseconds: 5000), () {
-  setState(() {
-  if( valid){
-               sendingStateMap['id'] = {};
-          sendingStateMap['state'] = '';
+        sendingStateMap['id'][dateTime.toString()] = true;
+        bool valid = true;
+        sendingStateMap['id'].forEach((k, v) {
+          if (v == false) valid = false;
+        });
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          setState(() {
+            if (valid) {
+              print(sendingStateMap['count']);
+              sendingStateMap['state'] =
+                  sendingStateMap['count'] > 1 ? 'All Sent' : 'Sent';
+            }
+          });
+        });
+        Future.delayed(const Duration(milliseconds: 5000), () {
+          setState(() {
+            if (valid) {
+              sendingStateMap['id'] = {};
+              sendingStateMap['state'] = '';
               sendingStateMap['count'] = 0;
-          }
-  });
-
-});
-       getChatMessagesFuture();
+            }
+          });
+        });
+        getChatMessagesFuture();
       }
     } catch (e) {
       print(e);
@@ -252,49 +253,68 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         }
         List<Widget> messageItems = [];
         int length = snapshot.data.documents.length;
+        if(length == 0){
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Expanded(child: emptyState(context,'Say Hi!', "Welcome")),
+              Container(width: double.infinity,
+                margin: EdgeInsets.symmetric(horizontal: 10,vertical: 80),
+                padding: EdgeInsets.symmetric(horizontal: 12,vertical: 20),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(15),color: Colors.blue.withOpacity(0.24)),
+child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+  children: [Text('COMMUNITY RULES',style: TextStyle(fontSize: 14,fontWeight: FontWeight.w800),),SizedBox(height: 10,),
+  Text('😊 Be friendly and polite\n🙈 Keep it safe for work/appropriate for all ages\n🚫 Offensive behaviour, Spamming, harassment or bullying is forbidden\n👮‍♂️ Users who violate the rules will be blocked',style: TextStyle(fontSize: 15,fontWeight: FontWeight.w400,height: 1.7),)
+  ],),
+              ),
+            ],
+          );
+        }
         int i = 0;
         snapshot.data.docs.forEach((QueryDocumentSnapshot doc) {
           i++;
           Message messageItem = Message.fromDocument(doc.data());
           if (i == 1) {
-             messageItems.add(Visibility(
-               visible: sendingStateMap['id'] != {},
-               child: Container(
-                 alignment: Alignment.centerLeft,
-                 padding: EdgeInsets.only(left: 8),
-                 width: double.infinity,
-                 child: Row(
-                   mainAxisSize: MainAxisSize.min,
-                   children: <Widget>[
-
-                     Text(  sendingStateMap['state'],
-                     style: TextStyle(fontSize: 16,color: Theme.of(context).iconTheme.color,
-                     fontWeight: FontWeight.w500),
-                     ),
-                     if(sendingStateMap['state'] == 'Sending')
-                    Container(
-                      height: 20,
-                      width: 20,
-                      padding: const EdgeInsets.all(3.0),
-                      child: CircularProgressIndicator(
-                        
-                       strokeWidth: 2,
-      valueColor: AlwaysStoppedAnimation(
-        Colors.blue
-      ),
-    ),
-    
+            messageItems.add(Visibility(
+              visible: sendingStateMap['id'] != {},
+              child: Container(
+                alignment: Alignment.centerLeft,
+                padding: EdgeInsets.only(left: 8),
+                width: double.infinity,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      sendingStateMap['state'],
+                      style: TextStyle(
+                          fontSize: 16,
+                          color: Theme.of(context).iconTheme.color,
+                          fontWeight: FontWeight.w500),
                     ),
-                      if(sendingStateMap['state'] == 'Sent')
-                    Container(
-                      height: 20,
-                      width: 20,
-                      child: Icon(Icons.check,
-                      color: Colors.blue,
-                      size: 20,),),
-                   ],
-                 ),),
-             ));
+                    if (sendingStateMap['state'] == 'Sending')
+                      Container(
+                        height: 20,
+                        width: 20,
+                        padding: const EdgeInsets.all(3.0),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation(Colors.blue),
+                        ),
+                      ),
+                    if (sendingStateMap['state'] == 'Sent')
+                      Container(
+                        height: 20,
+                        width: 20,
+                        child: Icon(
+                          Icons.check,
+                          color: Colors.blue,
+                          size: 20,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ));
             String lastMessage = '';
             var direct = preferences.getString('direct');
             Map directMap = direct == null ? {} : json.decode(direct);
@@ -327,82 +347,84 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                   style: TextStyle(color: Colors.grey, fontSize: 12),
                 ))));
           bool myText = currentUser.id == messageItem.idFrom;
-          if(doc.data()['hide'] != true ||  myText)
-          messageItems.add(InkWell(
-           //TODO
-              onLongPress: () {
-                 FocusScope.of(context).unfocus();
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) => Dialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        elevation: 0.0,
-                        backgroundColor: Colors.transparent,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text('Sent on ${date(lastTimestamp.toDate())}, ${DateFormat.jm().format(lastTimestamp.toDate())}'),
-                            ),
-                            InkWell(
-                              onTap: () async {
-                                Navigator.pop(context);
-                                if (myText) {
-                                  try {
+          if (doc.data()['hide'] != true || myText)
+            messageItems.add(InkWell(
+                //TODO
+                onLongPress: () {
+                  FocusScope.of(context).unfocus();
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) => Dialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          elevation: 0.0,
+                          backgroundColor: Colors.transparent,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                    'Sent on ${date(lastTimestamp.toDate())}, ${DateFormat.jm().format(lastTimestamp.toDate())}',style: TextStyle(color: Colors.white),),
+                              ),
+                              InkWell(
+                                onTap: () async {
+                                  Navigator.pop(context);
+                                  if (myText) {
+                                    try {
+                                      await messagesRef
+                                          .doc(groupChatId)
+                                          .collection(groupChatId)
+                                          .doc(doc.id)
+                                          .delete();
+                                      if (messageItem.type == 'image') {
+                                        await FileStorage.delete(
+                                            messageItem.message);
+                                      }
+                                    } catch (e) {
+                                      print(e);
+                                    }
+                                  } else {
                                     await messagesRef
                                         .doc(groupChatId)
                                         .collection(groupChatId)
                                         .doc(doc.id)
-                                        .delete();
-                                    if (messageItem.type == 'image') {
-                                    await  FileStorage.delete( messageItem.message);
-                                     
-                                    }
-                                  } catch (e) {
-                                    print(e);
+                                        .set({'hide': true},
+                                            SetOptions(merge: true));
                                   }
-                                } else {
-                                  await messagesRef
-                                      .doc(groupChatId)
-                                      .collection(groupChatId)
-                                      .doc(doc.id)
-                                      .set({'hide': true},SetOptions(merge: true));
-                                }
-                                getChatMessagesFuture();
-                              },
-                              child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 15, horizontal: 20),
-                                  decoration: new BoxDecoration(
-                                    color: Theme.of(context).canvasColor,
-                                    shape: BoxShape.rectangle,
-                                    borderRadius: BorderRadius.circular(10),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black26,
-                                        blurRadius: 10.0,
-                                        offset: const Offset(0.0, 10.0),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Container(
-                                    height: 20,
-                                    child: Center(
-                                        child: Text(
-                                      myText
-                                          ? 'Delete this Message'
-                                          : 'Delete for me',
-                                      style: TextStyle(fontSize: 16),
+                                  getChatMessagesFuture();
+                                },
+                                child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 15, horizontal: 20),
+                                    decoration: new BoxDecoration(
+                                      color: Theme.of(context).canvasColor,
+                                      shape: BoxShape.rectangle,
+                                      borderRadius: BorderRadius.circular(10),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black26,
+                                          blurRadius: 10.0,
+                                          offset: const Offset(0.0, 10.0),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Container(
+                                      height: 20,
+                                      child: Center(
+                                          child: Text(
+                                        myText
+                                            ? 'Delete this Message'
+                                            : 'Delete for me',
+                                        style: TextStyle(fontSize: 16),
+                                      )),
                                     )),
-                                  )),
-                            ),
-                          ],
-                        )));
-              },
-              child: messageItem));
+                              ),
+                            ],
+                          )));
+                },
+                child: messageItem));
 
           lastTimestamp = messageItem.timestamp;
           if (length == i) {
@@ -415,7 +437,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                 ))));
           }
         });
-        return ListView.builder(
+        return ListView.builder(padding: EdgeInsets.only(top: 0,left: 0,right: 0,bottom: 70),
           itemBuilder: (_, i) {
             return messageItems[i];
           },
@@ -431,11 +453,11 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     return Scaffold(
         backgroundColor: Theme.of(context).canvasColor,
         appBar: header(
-          context,
+          context,elevation: 0.5,
           leadingButton: CupertinoNavigationBarBackButton(),
           actionButton: IconButton(
               icon: Icon(
-                Icons.info_outline,
+               FluentIcons.info_24_regular,
               ),
               onPressed: () {
                 Navigator.of(context)
@@ -443,16 +465,22 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                   'peerId': widget.peerUser.id,
                   'peerUsername': widget.peerUser.username,
                   'groupChatId': groupChatId,
+                  'peerImageUrl': widget.peerUser.photoUrl,
+                  'peerName':widget.peerUser.displayName,
                 });
               }),
           title: Row(
             children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(
-                    left: 0, right: 15, bottom: 5, top: 5),
-                child: CircleAvatar(
-                  backgroundImage:
-                      CachedNetworkImageProvider(widget.peerUser.photoUrl),
+              GestureDetector(onTap: (){
+                GoTo().profileScreen(context,widget.peerUser.id);
+              },
+                              child: Padding(
+                  padding: const EdgeInsets.only(
+                      left: 0, right: 15, bottom: 5, top: 5),
+                  child: CircleAvatar(
+                    backgroundImage:
+                        CachedNetworkImageProvider(widget.peerUser.photoUrl),
+                  ),
                 ),
               ),
               Expanded(
@@ -466,97 +494,89 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         ),
         body: Container(
           color: Theme.of(context).backgroundColor,
-          child: Column(
-            children: <Widget>[
-              Expanded(child: Container(
-                child: chatMessages(chatMessagesFuture))),
-              Container(
-                color: Theme.of(context).canvasColor,
-                padding: EdgeInsets.only(bottom: 5, top: 7, left: 1, right: 1),
-                child: Row(
-                  children: <Widget>[
-                    Container(
-                      // height: ,
-                      margin:
-                          EdgeInsets.only(top: 0, bottom: 4, right: 0, left: 0),
-                      child: GestureDetector(
-                          child: Container(
-                              margin: EdgeInsets.symmetric(horizontal: 2),
-                              padding: EdgeInsets.all(5),
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            children: [
+              Container(child:  chatMessages(chatMessagesFuture)),
+              Container( margin: EdgeInsets.symmetric(horizontal: 8, vertical: 6),  
+                child: ClipRRect(  borderRadius: BorderRadius.circular(18),
+                child: new BackdropFilter(
+                  filter: new ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),child:Container(
+                
+                  color: Theme.of(context).backgroundColor == Colors.white?Colors.grey.shade200.withOpacity(0.5):Colors.grey.shade700.withOpacity(0.5),
+                  padding: EdgeInsets.only(bottom: 5, top: 7, left: 1, right: 1),
+                  child: Row(
+                    children: <Widget>[
+                      Container(
+                        child: GestureDetector(
+                            child: Container(
+                                padding: EdgeInsets.only(left: 4),
+                                child: Icon(
+                                  FluentIcons.image_24_filled,
+                                  size: 32,
+                                  color: Colors.deepOrange,
+                                )),
+                            onTap: sendMedia),
+                      ),
+                      Container(
+                        height: 40,
+                        child: GestureDetector(
+                            child: Padding(
+                              padding: EdgeInsets.only(right: 5),
                               child: Icon(
-                                FlutterIcons.image_fea,
-                                size: 28,
-                              )),
-                          onTap: sendMedia),
-                    ),
-                    Container(
-                      height: 40,
-                      margin:
-                          EdgeInsets.only(top: 0, bottom: 4, right: 8, left: 0),
-                      child: GestureDetector(
-                          child: Container(
-                            margin: EdgeInsets.symmetric(
-                                horizontal: 0, vertical: 7.8),
-                            decoration: BoxDecoration(
-                                color: Colors.transparent,
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(
-                                    color: Theme.of(context).iconTheme.color,
-                                    width: 2.2)),
-                            child: Icon(
-                              FlutterIcons.gif_mco,
-                              color: Theme.of(context).iconTheme.color,
-                              size: 21,
-                            ),
-                          ),
-                          onTap: sendGIF),
-                    ),
-                    Expanded(
-                      child: Container(
-                        // height: 45,
-                        padding: EdgeInsets.only(bottom: 2),
-                        child: TextField(
-                          
-                         focusNode: focusNode,
-                          controller: messageController,
-                          style: TextStyle(
-                              fontSize: 18,
-                              color: Theme.of(context).iconTheme.color),
-                          maxLines: 4,
-                          minLines: 1,
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.only(top: 8, left: 10),
-                            hintText: 'Message',
-                            hintStyle: TextStyle(
-                                fontSize: 18,
-                                color: Theme.of(context)
-                                    .iconTheme
-                                    .color
-                                    .withOpacity(0.8)),
-                            fillColor: Theme.of(context).cardColor,
-                            filled: true,
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              borderSide: BorderSide(
-                                width: 0,
-                                color: Theme.of(context).cardColor,
+                                FluentIcons.gif_24_filled,
+                                size: 34,
+                                color: Colors.red,
                               ),
                             ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              borderSide: BorderSide(
-                                width: 0,
-                                color: Theme.of(context).cardColor,
+                            onTap: sendGIF),
+                      ),
+                      Expanded(
+                        child: Container(
+                          padding: EdgeInsets.only(bottom: 2),
+                          child: TextField(
+                            focusNode: focusNode,
+                            controller: messageController,
+                            style: TextStyle(
+                                fontSize: 18,
+                                color: Theme.of(context).iconTheme.color),
+                            maxLines: 4,
+                            minLines: 1,
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.only(top: 8, left: 10),
+                              hintText: 'Message',
+                              hintStyle: TextStyle(
+                                  fontSize: 18,
+                                  color: Theme.of(context)
+                                      .iconTheme
+                                      .color
+                                      .withOpacity(0.8)),
+                              fillColor: Theme.of(context)
+                                      .canvasColor,
+                              filled: true,
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                                borderSide: BorderSide(
+                                  width: 0,
+                                  color: Theme.of(context).cardColor,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                                borderSide: BorderSide(
+                                  width: 0,
+                                  color: Theme.of(context).cardColor,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    sendButton(sendFunction: sendMessage)
-                  ],
-                ),
-              ),
+                      sendButton(sendFunction: sendMessage)
+                    ],
+                  ),
+                ),)),
+              )
             ],
           ),
         ));

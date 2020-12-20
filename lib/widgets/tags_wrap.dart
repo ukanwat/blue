@@ -1,15 +1,11 @@
-import 'dart:collection';
 import 'dart:convert';
-
 import 'package:blue/main.dart';
-import 'package:blue/screens/home.dart';
 import 'package:blue/screens/tag_screen.dart';
+import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sortedmap/sortedmap.dart';
 
 class TagsWrap extends StatefulWidget {
@@ -25,64 +21,52 @@ class _TagsWrapState extends State<TagsWrap> {
   List<Widget> tagListTiles = [];
   bool tagLoading = true;
   @override
-  void initState() {
+  void didChangeDependencies() {
     getFollowedTags();
-    wrapped = preferences.getBool('isWrapped');
+    wrapped = PreferencesUpdate().getBool('isWrapped');
     if (wrapped == null) {
       wrapped = true;
-      preferences.setBool('isWrapped', true);
+    PreferencesUpdate().updateBool('isWrapped', true);
     }
-    super.initState();
+    super.didChangeDependencies();
   }
 
-  getFollowedTags() async {
-    DocumentSnapshot tagsDoc = await followedTagsRef.doc(currentUser.id).get();
-   
-    if(tagsDoc.data() != null)
-    tags = tagsDoc.data().keys.toList();
-    else
-    tags = [];
-    var priorityInfo = await openedTagsRef.doc(currentUser.id).get();
-     SortedMap priorityMap = new SortedMap(Ordering.byValue());
-    if(  priorityInfo.data() != null){
-    priorityInfo.data().forEach((key, value) {
-      value.forEach((k, v) {
-         if(tags.contains(k)){
-        if (priorityMap[k] == null) {
-          priorityMap[k] = 1;
-        } else {
-          priorityMap[k] = priorityMap[k] + 1;
-        }
-
-        }
-      });
-    });}
  
+  getFollowedTags() async {
+    tags =  PreferencesUpdate().getStringList('followed_tags');
+print(tags);
+    Map priorityInfo = json.decode(PreferencesUpdate().getString('tags_open_info'));
+    SortedMap priorityMap = new SortedMap(Ordering.byValue());
+    if (priorityInfo != null) {
+      priorityInfo.forEach((key, value) {
+        value.forEach((k, v) {
+          if (tags.contains(k)) {
+            if (priorityMap[k] == null) {
+              priorityMap[k] = v;
+            } else {
+              priorityMap[k] = priorityMap[k] + v;
+            }
+          }
+        });
+      });
+    }
+
     List sortedPriorityList = priorityMap.keys.toList();
+    print(priorityInfo);
     setState(() {
       tagLoading = false;
 
       for (int i = 0; i < sortedPriorityList.length; i++) {
         tagChips.add(InkWell(
           onTap: () async {
-              Navigator.of(context).pushNamed(
-                                  TagScreen.routeName,
-                                  arguments: sortedPriorityList[i]);
-              String tagOpenInfo = preferences.getString('tags_open_info');
-                                if(tagOpenInfo == null){
-                                preferences.setString('tags_open_info', json.encode( {}));
-                                tagOpenInfo =  json.encode( {}); }
-                                Map tagOpenMap = json.decode(tagOpenInfo);
-                                if(tagOpenMap.containsKey(sortedPriorityList[i]))
-                                tagOpenMap[sortedPriorityList[i]] =  tagOpenMap[sortedPriorityList[i]]+1;
-                                else
-                                tagOpenMap[sortedPriorityList[i]] = 1;
-                                preferences.setString('tags_open_info', json.encode( tagOpenMap));
+            Navigator.of(context).pushNamed(TagScreen.routeName,
+                arguments: sortedPriorityList[i]);
+           tagsInfoUpdate(sortedPriorityList, i);
           },
           child: Chip(
             padding: EdgeInsets.all(12),
             label: Text(
-             sortedPriorityList[i],
+              sortedPriorityList[i],
               style: TextStyle(
                   color: Theme.of(context).iconTheme.color, fontSize: 18),
             ),
@@ -92,49 +76,9 @@ class _TagsWrapState extends State<TagsWrap> {
 
         tagListTiles.add(InkWell(
           onTap: () async {
-            DateTime timeNow = DateTime.now();
-            int year = timeNow.year;
-            int month = timeNow.month;
-            int day = timeNow.day;
-            Navigator.of(context)
-                .pushNamed(TagScreen.routeName, arguments: sortedPriorityList[i]);
-            DocumentSnapshot _doc =
-                await openedTagsRef.doc(currentUser.id).get();
-            if (_doc.data() == null) {
-              openedTagsRef.doc(currentUser.id).set(
-                {
-                  DateTime.parse("$year-$month-$day").toIso8601String(): {
-                    sortedPriorityList[i]: 1
-                  }
-                },
-              );
-            } else if (_doc.data()[
-                    DateTime.parse("$year-$month-$day").toIso8601String()] ==
-                null) {
-              openedTagsRef.doc(currentUser.id).set(
-                {
-                  DateTime.parse("$year-$month-$day").toIso8601String(): {
-                    sortedPriorityList[i]: 1
-                  }
-                },
-              );
-            } else if (_doc.data()[DateTime.parse("$year-$month-$day")
-                    .toIso8601String()][sortedPriorityList[i]] ==
-                null) {
-              openedTagsRef.doc(currentUser.id).set({
-                DateTime.parse("$year-$month-$day").toIso8601String(): {
-                  sortedPriorityList[i]: 1
-                },
-              }, SetOptions(merge: true));
-            } else {
-              openedTagsRef.doc(currentUser.id).set({
-                DateTime.parse("$year-$month-$day").toIso8601String(): {
-                  sortedPriorityList[i]: _doc.data()[DateTime.parse("$year-$month-$day")
-                          .toIso8601String()][sortedPriorityList[i]] +
-                      1
-                }
-              }, SetOptions(merge: true));
-            }
+        Navigator.of(context).pushNamed(TagScreen.routeName,
+                arguments: sortedPriorityList[i]);
+            tagsInfoUpdate(sortedPriorityList, i);
           },
           child: Container(
             alignment: Alignment.center,
@@ -142,7 +86,7 @@ class _TagsWrapState extends State<TagsWrap> {
             margin: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
             padding: EdgeInsets.all(12),
             child: Text(
-             sortedPriorityList[i],
+              sortedPriorityList[i],
               style: TextStyle(
                   color: Theme.of(context).iconTheme.color, fontSize: 18),
             ),
@@ -214,4 +158,28 @@ class _TagsWrapState extends State<TagsWrap> {
       ],
     );
   }
+tagsInfoUpdate(List sortedPriorityList,int i){
+ String tagOpenInfo = preferences.getString('tags_open_info');
+            if (tagOpenInfo == null) {
+              preferences.setString('tags_open_info', json.encode({}));
+              tagOpenInfo = json.encode({});
+            }
+            DateTime nowTime = DateTime.now();
+            String todayTime = DateTime.parse(
+                "${nowTime.year}-${nowTime.month}-${nowTime.day}").toString();
+            Map tagOpenMap = json.decode(tagOpenInfo);
+            if (tagOpenMap.containsKey(todayTime)) {
+              if (tagOpenMap[todayTime].containsKey(sortedPriorityList[i]))
+                tagOpenMap[todayTime][sortedPriorityList[i]] =
+                    tagOpenMap[todayTime][sortedPriorityList[i]] + 1;
+              else
+                tagOpenMap[todayTime][sortedPriorityList[i]] = 1;
+            } else {
+              tagOpenMap[todayTime] = {
+                sortedPriorityList[i]: 1
+              };
+            }
+            print(tagOpenMap);
+            preferences.setString('tags_open_info', json.encode(tagOpenMap));
+}
 }

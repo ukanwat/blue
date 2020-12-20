@@ -67,7 +67,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
             color: Colors.blue
             ),
           ),
-        ),
+        ), Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
            ListTile( onTap: (){
              setState(() {
               themeMode = 'Light Mode';
@@ -78,7 +78,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
           trailing: Visibility( visible: themeMode == 'Light Mode',
                       child: Icon(FlutterIcons.check_circle_faw5s,
             color: Colors.blue),
-          ),),
+          ),),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
               ListTile( onTap: (){
                 setState(() {
               themeMode = 'Dark Mode';
@@ -92,7 +92,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                       child: Icon(FlutterIcons.check_circle_faw5s,
             color: Colors.blue
                 ),
-          ),)
+          ),),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
 
         ],
       ),)

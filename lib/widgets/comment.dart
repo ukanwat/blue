@@ -19,6 +19,7 @@ class Comment extends StatefulWidget {
   final int downvotes;
   final String postId;
   final Map replies;
+  final bool showReplies;
   Comment(
       {this.id,
       this.username,
@@ -29,10 +30,13 @@ class Comment extends StatefulWidget {
       this.upvotes,
       this.downvotes,
       this.postId,
-      this.replies});
+      this.replies,
+      this.showReplies});
 
-  factory Comment.fromDocument(Map doc, String postId, String docId) {
-    print( doc['timestamp'] );
+  factory Comment.fromDocument(Map doc, String postId, String docId, bool showReplies) {
+    if(showReplies == null){
+      showReplies = false;
+    }
     return Comment(
       id: docId,
       username: doc['username'],
@@ -44,6 +48,7 @@ class Comment extends StatefulWidget {
       downvotes: doc['downvotes'],
       postId: postId,
       replies: doc['replies'],
+      showReplies: showReplies,
     );
   }
 
@@ -60,6 +65,7 @@ class _CommentState extends State<Comment> {
   toggleReplies() {
     setState(() {
       if (repliesLoaded == false) {
+        if(widget.replies != null){
         widget.replies.forEach((key, value) {
           replyWidgets.add(CommentReply(
             avatarUrl: value['avatarUrl'],
@@ -74,7 +80,7 @@ class _CommentState extends State<Comment> {
             referName: value['referName'],
             timestamp: value['timeStamp'],
           ));
-        });
+        });}
         repliesLoaded = true;
       } else {
         replyWidgets = [];
@@ -82,18 +88,19 @@ class _CommentState extends State<Comment> {
       }
     });
   }
- 
+ @override
+  void initState() {
+    if(widget.showReplies == true){
+       toggleReplies();
+    }
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     int votes = widget.upvotes - widget.downvotes;
     return Consumer<CommentNotifier>(
         builder: (context, notifier, child) => Column(
               children: <Widget>[
-                Divider(
-                  color: Colors.grey,
-                  height: 4,
-                  thickness: 0.2,
-                ),
                 SizedBox(height: 8,),
                 ListTile(
                   title: Row(
@@ -304,6 +311,8 @@ class _CommentState extends State<Comment> {
                   // subtitle: Text(timestamp.toDate().toString())//timeago.format(timestamp.toDate()))
                 ),
                 ...replyWidgets,
+                Container(width: double.infinity,  color: Colors.grey[400],height: 0.4,),
+                
               ],
             ));
   }

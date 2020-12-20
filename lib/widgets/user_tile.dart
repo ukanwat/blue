@@ -41,7 +41,6 @@ showProfile(BuildContext context, {String profileId,String username}) {
     MaterialPageRoute(
       builder: (context) => ProfileScreen(
         profileId: profileId,
-        profileUsername: username,
       ),
     ),
   );

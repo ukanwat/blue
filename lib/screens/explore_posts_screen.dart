@@ -16,7 +16,7 @@ class ExplorePostsScreen extends StatefulWidget {
 }
 
 class _ExplorePostsScreenState extends State<ExplorePostsScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   Post post;
   Post _post;
   List<Widget> widgets = [];
@@ -58,7 +58,7 @@ class _ExplorePostsScreenState extends State<ExplorePostsScreen>
         )];
         snapshot.data.documents.forEach(( doc) {
           print(doc);
-          comments.add(Comment.fromDocument(doc.data(),data.postId,doc.id));
+          comments.add(Comment.fromDocument(doc.data(),data.postId,doc.id,showReplies));
           print('d');
         });
         print(snapshot.data.documents.length);
@@ -180,7 +180,7 @@ class _ExplorePostsScreenState extends State<ExplorePostsScreen>
       topicId: post.topicId,
       topicName: post.topicName,
       upvotes: post.upvotes,
-      username: post.username,
+      username: post.username,commentsShown: true,
     );
  widgets = <Widget>[
       _post,

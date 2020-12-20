@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:animations/animations.dart';
 import 'package:blue/screens/settings_screen.dart';
+import 'package:blue/widgets/empty_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import '../main.dart';
@@ -42,7 +43,6 @@ class _ChatsScreenState extends State<ChatsScreen>
              var direct = preferences.getString('direct');
     directMap = direct == null ? {} : json.decode(direct);
         });
-        
         return Future.value();
       },
       child: chatsList(chatUsers));
@@ -73,6 +73,8 @@ class _ChatsScreenState extends State<ChatsScreen>
                 return chatUserListTile(user,openContainer);});
           chatUsers.add(userChat);
         });
+if(chatUsers ==  null)  //TODO check
+  return emptyState(context, 'No new Messages','Message Sent',subtitle: 'Any new messages will appear here' );
 
         return ListView.builder(
           itemBuilder: (_,i){

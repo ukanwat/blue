@@ -34,13 +34,13 @@ class _AutoplayScreenState extends State<AutoplayScreen> {
                   preferences.setBool('autoplay_videos', newValue);
                  autoplayVideos = newValue;
                      preferencesRef.doc(currentUser.id).set({'autoplay_videos': newValue},SetOptions(merge: true));
-              });},description: 'Autoplay Videos which appear in Posts'),
+              });},description: 'Autoplay Videos which appear in Posts'),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
               settingsSwitchListTile(
               'Autoplay GIFs', autoplayGIFs,  (newValue) {setState(() {
                  preferences.setBool('autoplay_GIFs', newValue);
                  autoplayGIFs = newValue;
                    preferencesRef.doc(currentUser.id).set({'autoplay_GIFs': newValue},SetOptions(merge: true));
-              });},description: 'Autoplay GIF messages'),
+              });},description: 'Autoplay GIF messages'),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
         ],
       ),
     );

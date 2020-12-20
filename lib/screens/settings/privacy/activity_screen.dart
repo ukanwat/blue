@@ -39,7 +39,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 });
                 setState(() {
                     setPrivate = newValue;
-                });}),     
+                });}),  Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),   
 
               settingsSwitchListTile('Personalised recommendations based on your activity', trackActivity, (newValue){
                 
@@ -49,7 +49,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 });
                 setState(() {
                     trackActivity = newValue;
-                });})
+                });}),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
         ],
       ),
     );

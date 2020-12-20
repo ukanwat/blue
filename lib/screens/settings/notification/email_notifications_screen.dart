@@ -63,7 +63,7 @@ class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
                      preferencesRef.doc(currentUser.id).set({'email_feedbacks': newValue},SetOptions(merge: true));
                   },
                   description: 'Give Feedback on app',
-                ),
+                ),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
                 settingsSwitchListTile(
                   'Announcement Emails',
                   announcements,
@@ -77,7 +77,7 @@ class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
                         preferencesRef.doc(currentUser.id).set({'email_announcements': newValue},SetOptions(merge: true));
                   },
                   description: 'Get new update announcements',
-                ),
+                ),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
                 settingsSwitchListTile(
                   'Activity Emails',
                   activities,
@@ -90,7 +90,7 @@ class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
                         preferencesRef.doc(currentUser.id).set({'email_activities': newValue},SetOptions(merge: true));
                   },
                   description: 'Get Notifications related to your activity',
-                )
+                ),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
               ],
             ),
     );

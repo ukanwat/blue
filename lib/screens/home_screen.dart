@@ -98,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen>
     } else if (posts.isEmpty) {
       return Container();
     } else {
-      return ListView(children: posts);
+      return ListView(children: [...posts,Container(height: 100,)]);
     }
   }
 
@@ -107,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen>
   Widget build(context) {
     super.build(context);
     return Scaffold(
-        backgroundColor: Theme.of(context).canvasColor,
+        backgroundColor: Theme.of(context).cardColor,
         appBar: header(
           context,implyLeading: false,
           title: Text(

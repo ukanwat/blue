@@ -1,3 +1,4 @@
+import 'package:blue/widgets/empty_state.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,26 +13,48 @@ class CategoryPostsScreen extends StatefulWidget {
   _CategoryPostsScreenState createState() => _CategoryPostsScreenState();
 }
 
-class _CategoryPostsScreenState extends State<CategoryPostsScreen> with AutomaticKeepAliveClientMixin<CategoryPostsScreen> {
+class _CategoryPostsScreenState extends State<CategoryPostsScreen>
+    with AutomaticKeepAliveClientMixin<CategoryPostsScreen> {
   List<Post> posts = [];
-  bool loading = true; 
-   @override
-  void initState() {
-    super.initState();
-    getPosts();
+  bool loading = true;
+  bool blank = false;
+  @override
+  void didChangeDependencies() async{
+   await getPosts();
+    super.didChangeDependencies();
   }
+
+  
 
   getPosts() async {
     print(currentUser);
-    QuerySnapshot snapshot = await postsRef
-    .where('topicName',isEqualTo: widget.name)
-        .get(); 
+    QuerySnapshot snapshot =
+        await postsRef.where('topicName', isEqualTo: widget.name).get();
+        print(snapshot.docs.length );
+    if (snapshot.docs.length != 0) {
+      setState(() {
+       snapshot.docs.forEach((doc) {
+         posts.add(Post.fromDocument(
+            doc.data(),
+            isCompact: true,
+          ));
+        });
+        loading = false;
+      });
+    } else {
+      setState(() {
+        blank = true;
+      });
+    }
+  }
 
-    setState(() {
-      posts =  snapshot.docs.map((doc) {                                      //TODO:fix ownername and username
-         Post.fromDocument(doc.data(),isCompact: true,);}).toList();
-         loading = false;
-    });
+Widget  postList() {
+    if (blank)
+      return emptyState(context,  "Can't find any posts", 'Bad Gateway');
+    else if (loading)
+      return circularProgress();
+    else
+      return ListView(children: posts);
   }
 
   @override
@@ -39,6 +62,6 @@ class _CategoryPostsScreenState extends State<CategoryPostsScreen> with Automati
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return loading? circularProgress():ListView(children: posts);
-    }
+    return postList();
+  }
 }

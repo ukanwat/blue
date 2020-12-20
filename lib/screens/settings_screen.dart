@@ -67,14 +67,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool dark = Theme.of(context).iconTheme.color == Colors.white;
     return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
+      backgroundColor: dark
+          ? Theme.of(context).backgroundColor
+          : Theme.of(context).canvasColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Container(
+                  color: dark
+                      ? Theme.of(context).backgroundColor
+                      : Theme.of(context).canvasColor,
                   width: MediaQuery.of(context).size.width,
                   child: Row(
                     children: [
@@ -97,73 +103,171 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ],
                   )),
-              Container(
-                height: 5,
-              ),
+
               settingsSectionTitle(
-                  'General', Icon(FluentIcons.content_settings_20_regular,color: Colors.blueAccent,), context),
-              settingsPageNavigationTile(
-                  context, 'Account', AccountScreen.routeName),
-              settingsPageNavigationTile(
-                  context, 'Appearance', AppearanceScreen.routeName),
-              settingsPageNavigationTile(
-                  context, 'Collections', CollectionsScreen.routeName),
-              settingsPageNavigationTile(
-                  context, 'Drafts', DraftsScreen.routeName),
-              Divider(
-                thickness: 6,
-                height: 20,
-                color: Theme.of(context).canvasColor,
+                  'General',
+                  Icon(
+                    FluentIcons.content_settings_20_regular,
+                    color: Colors.blueAccent,
+                  ),
+                  context),
+             
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Material(
+                  borderRadius: BorderRadius.circular(12),
+                  color: dark
+                      ? Theme.of(context).canvasColor
+                      : Theme.of(context).backgroundColor,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      children: [
+                        settingsPageNavigationTile(
+                            context, 'Account', AccountScreen.routeName),
+                        settingsPageNavigationTile(
+                            context, 'Appearance', AppearanceScreen.routeName),
+                        settingsPageNavigationTile(context, 'Collections',
+                            CollectionsScreen.routeName),
+                        settingsPageNavigationTile(
+                            context, 'Drafts', DraftsScreen.routeName,removeBorder: true),
+                      ],
+                    ),
+                  ),
+                ),
               ),
+         
+
               settingsSectionTitle(
-                  'Notifications', Icon(FluentIcons.alert_20_regular,color: Colors.blueAccent,), context),
-              settingsPageNavigationTile(context, 'Email Notifications',
+                  'Notifications',
+                  Icon(
+                    FluentIcons.alert_20_regular,
+                    color: Colors.blueAccent,
+                  ),
+                  context),
+           
+                  Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Material(
+                  borderRadius: BorderRadius.circular(12),
+                  color: dark
+                      ? Theme.of(context).canvasColor
+                      : Theme.of(context).backgroundColor,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      children: [
+                         settingsPageNavigationTile(context, 'Email Notifications',
                   EmailNotificationsScreen.routeName),
               settingsPageNavigationTile(context, 'Push Notifications',
-                  PushNotificationsScreen.routeName),
-              Divider(
-                thickness: 6,
-                height: 20,
-                color: Theme.of(context).canvasColor,
+                  PushNotificationsScreen.routeName,removeBorder: true),
+                      ],
+                    ),
+                  ),
+                ),
               ),
+          
               settingsSectionTitle(
-                  'Advanced Settings', Icon(FluentIcons.more_circle_20_regular,color: Colors.blueAccent,), context),
-              settingsPageNavigationTile(
+                  'Advanced Settings',
+                  Icon(
+                    FluentIcons.more_circle_20_regular,
+                    color: Colors.blueAccent,
+                  ),
+                  context),
+                      Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Material(
+                  borderRadius: BorderRadius.circular(12),
+                  color: dark
+                      ? Theme.of(context).canvasColor
+                      : Theme.of(context).backgroundColor,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      children: [
+                         settingsPageNavigationTile(
                   context, 'Autoplay', AutoplayScreen.routeName),
               settingsPageNavigationTile(context, 'Font', FontScreen.routeName),
-              
-              settingsPageNavigationTile(context, 'Content Cache',ContentCacheScreen.routeName),
-              
-              Divider(
-                thickness: 6,
-                height: 20,
-                color: Theme.of(context).canvasColor,
-              ),
-              settingsSectionTitle(
-                  'Privacy', Icon(FluentIcons.person_20_regular,color: Colors.blueAccent,), context),
+
               settingsPageNavigationTile(
+                  context, 'Content Cache', ContentCacheScreen.routeName,removeBorder: true),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+         
+
+              // Divider(
+              //   thickness: 6,
+              //   height: 20,
+              //   color: Theme.of(context).canvasColor,
+              // ),
+              settingsSectionTitle(
+                  'Privacy',
+                  Icon(
+                    FluentIcons.person_20_regular,
+                    color: Colors.blueAccent,
+                  ),
+                  context),
+                      Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Material(
+                  borderRadius: BorderRadius.circular(12),
+                  color: dark
+                      ? Theme.of(context).canvasColor
+                      : Theme.of(context).backgroundColor,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      children: [
+                     settingsPageNavigationTile(
                   context, 'Safety', SafetyScreen.routeName),
               settingsPageNavigationTile(
-                  context, 'Activity', ActivityScreen.routeName),
-              Divider(
-                thickness: 6,
-                height: 20,
-                color: Theme.of(context).canvasColor,
+                  context, 'Activity', ActivityScreen.routeName,removeBorder: true),
+                      ],
+                    ),
+                  ),
+                ),
               ),
+         
+              // Divider(
+              //   thickness: 6,
+              //   height: 20,
+              //   color: Theme.of(context).canvasColor,
+              // ),
               settingsSectionTitle(
-                  'Support & Feedback', Icon(FluentIcons.person_support_20_regular,color: Colors.blueAccent,), context),
-              settingsActionTile(context, 'Give a Suggestion', () {
+                  'Support & Feedback',
+                  Icon(
+                    FluentIcons.person_support_20_regular,
+                    color: Colors.blueAccent,
+                  ),
+                  context),
+
+                 Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Material(
+                  borderRadius: BorderRadius.circular(12),
+                  color: dark
+                      ? Theme.of(context).canvasColor
+                      : Theme.of(context).backgroundColor,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      children: [
+                     settingsActionTile(context, 'Give a Suggestion', () {
                 Navigator.of(context)
                     .pushNamed(GiveASuggestionScreen.routeName);
               }, FluentIcons.person_feedback_24_regular),
-              settingsActionTile(
-                context,
-                'Report a Bug',
-               () {
-                Navigator.of(context)
-                    .pushNamed(ReportABugScreen.routeName);
-              },FluentIcons.bug_24_regular
-              ),
+
+              settingsActionTile(context, 'Report a Bug', () {
+                Navigator.of(context).pushNamed(ReportABugScreen.routeName);
+              }, FluentIcons.bug_24_regular),
               settingsActionTile(context, 'Get Help', () async {
                 Map<String, dynamic> deviceData;
                 try {
@@ -194,14 +298,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 );
 
                 await FlutterEmailSender.send(email);
-              }, FluentIcons.chat_help_24_regular),
-              Divider(
-                thickness: 6,
-                height: 20,
-                color: Theme.of(context).canvasColor,
+              }, FluentIcons.chat_help_24_regular,removeBorder: true),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-              settingsSectionTitle('About', Icon(FluentIcons.info_24_regular,color: Colors.blueAccent,), context),
-              settingsActionTile(
+          
+              // Divider(
+              //   thickness: 6,
+              //   height: 20,
+              //   color: Theme.of(context).canvasColor,
+              // ),
+              settingsSectionTitle(
+                  'About',
+                  Icon(
+                    FluentIcons.info_24_regular,
+                    color: Colors.blueAccent,
+                  ),
+                  context),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Material(
+                  borderRadius: BorderRadius.circular(12),
+                  color: dark
+                      ? Theme.of(context).canvasColor
+                      : Theme.of(context).backgroundColor,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      children: [
+                         settingsActionTile(
                 context,
                 'Terms of Use',
                 () {
@@ -215,14 +343,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               }, FluentIcons.lock_24_regular),
               settingsActionTile(context, 'acknowledgements', () {
                 Navigator.of(context).pushNamed(LicenseScreen.routeName);
-              }, FluentIcons.ribbon_24_regular),
+              }, FluentIcons.ribbon_24_regular,removeBorder: true),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+         
               Container(
-                margin: EdgeInsets.only(top: 8),
+                padding: EdgeInsets.only(top: 8),
                 width: double.infinity,
-                color: Theme.of(context).canvasColor,
+                color: dark?Theme.of(context).backgroundColor  :Theme.of(context).canvasColor,
                 height: 40,
                 child: Center(
-                  child: Text('ABC v1.0'),
+                  child: Text('v1.0'),
                 ),
               )
             ],
