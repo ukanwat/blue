@@ -1,3 +1,4 @@
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 Widget emptyState(BuildContext context,String title,String svgName,{String subtitle,} ){
@@ -7,7 +8,26 @@ Widget emptyState(BuildContext context,String title,String svgName,{String subti
 children: [
   Container(color: Colors.transparent,height: MediaQuery.of(context).size.width*0.4,
   padding: EdgeInsets.all(15),
-    child: SvgPicture.asset(
+    child: 
+    svgName == 'none'?
+    Container(
+      height: MediaQuery.of(context).size.width*0.4,
+      width:  MediaQuery.of(context).size.width*0.4,
+      child: Center(child:
+       Stack(
+                  children: <Widget>[
+                    Positioned(
+                      left: 1.2,
+                      top: 1.8,
+                      child: Icon(Icons.inbox_rounded, color: Colors.black38,size: 55,),
+                    ),
+                    Icon(Icons.inbox_rounded, color: Theme.of(context).iconTheme.color.withOpacity(0.6),size: 55,),
+                  ],
+                ),
+       ),
+      decoration: BoxDecoration(shape: BoxShape.circle,color: Theme.of(context).cardColor,),
+    ):
+    SvgPicture.asset(
   'assets/images/$svgName.svg',
 
   allowDrawingOutsideViewBox: true,

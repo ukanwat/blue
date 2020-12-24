@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:blue/providers/provider_widget.dart' as PW;
 import 'package:blue/providers/theme.dart';
 import 'package:blue/screens/about_screen.dart';
@@ -39,8 +40,10 @@ import 'package:blue/screens/settings/privacy/safety_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screens/blocked_accounts_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screens/muted_accounts_screen.dart';
 import 'package:blue/services/auth_service.dart';
+import 'package:blue/services/preferences_update.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:blue/screens/chat_info_screen.dart';
@@ -48,7 +51,10 @@ import 'package:blue/screens/gifs_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:blue/screens/chat_messages_screen.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:hive/hive.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import './screens/search_screen.dart';
@@ -59,13 +65,15 @@ import './screens/settings_screen.dart';
 import 'models/user.dart';
 import 'screens/settings/general/account_screens/email_screen.dart';
 
-void callbackDispatcher() {}
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await getCurrentUser();
-  await getPreferences();
 
+  await getCurrentUser();                                              ////////check all
+  await getPreferences();
+  await openBoxes();
+
+ 
   uploadTagsInfo();
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       //TODO
@@ -75,6 +83,34 @@ void main() async {
   runApp(MyApp());
 }
 
+ Box voteBox;
+ 
+   loadVotes()async {
+     if(currentUser.id == null)
+     return;
+     if(PreferencesUpdate().getBool('votes_downloaded',def: false))
+     return;
+    QuerySnapshot query;
+     try{
+query = await postsVotersRef.doc(currentUser.id).collection('userVotes').
+        get(GetOptions(source: Source.server));
+     }catch(e){
+       return;
+     }
+        
+        if(query.docs.length != 0)
+        query.docs.forEach((doc) {
+          List<String> ids =  doc.data()['ids'];
+
+          List<bool> votes =  doc.data()['votes'];
+         for(int i = 0; i< ids.length; i++){
+            voteBox.put(ids,votes);
+         }
+});
+
+         PreferencesUpdate().updateBool('votes_downloaded', true);
+       
+  }
 uploadTagsInfo() {
   DateTime nowTime = DateTime.now();
   DateTime todayTime =
@@ -136,17 +172,41 @@ Future getCurrentUser() async {
   } catch (e) {
     print(e);
   }
-}
 
+}
+  bool   boxesOpened ;
+Future openBoxes() async {
+  try{
+ var dir = await getApplicationDocumentsDirectory();
+  Hive.init(dir.path);
+  voteBox =  await Hive.openBox('votes');
+  boxesOpened = true;
+    loadVotes();
+  }catch(e){
+    
+  }
+ 
+
+}
 SharedPreferences preferences;
 User currentUser;
 String accountType;
 
-class FakeFocusIntent extends Intent {
-  const FakeFocusIntent();
+class MyApp extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return MyAppState();
+  }
 }
 
-class MyApp extends StatelessWidget {
+Future<dynamic> myBackgroundHandler(Map<String, dynamic> message) {
+  return MyAppState()._showNotification(message);
+}
+class MyAppState extends State<MyApp> {
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+ 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -156,18 +216,6 @@ class MyApp extends StatelessWidget {
           return PW.Provider(
             auth: AuthService(),
             child: MaterialApp(
-                shortcuts:
-                    Map<LogicalKeySet, Intent>.from(WidgetsApp.defaultShortcuts)
-                      ..addAll(<LogicalKeySet, Intent>{
-                        LogicalKeySet(LogicalKeyboardKey.arrowLeft):
-                            const FakeFocusIntent(),
-                        LogicalKeySet(LogicalKeyboardKey.arrowRight):
-                            const FakeFocusIntent(),
-                        LogicalKeySet(LogicalKeyboardKey.arrowDown):
-                            const FakeFocusIntent(),
-                        LogicalKeySet(LogicalKeyboardKey.arrowUp):
-                            const FakeFocusIntent(),
-                      }),
                 debugShowCheckedModeBanner: false,
                 title: 'Scrible',
                 theme: notifier.darkTheme == true
@@ -385,6 +433,94 @@ class MyApp extends StatelessWidget {
         },
       ),
     );
+  }
+
+
+    Future _showNotification(Map<String, dynamic> message) async {                    //TODO for IOS
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+      'channel id',
+      'channel name',
+      'channel desc', 
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    var platformChannelSpecifics =
+        new NotificationDetails(android: androidPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      'new message arived',
+      'i want ${message['data']['title']} for ${message['data']['price']}',
+      platformChannelSpecifics,
+      payload: 'Default_Sound',
+    );
+  }
+
+  Future selectNotification(String payload) async {
+    await flutterLocalNotificationsPlugin.cancelAll();
+  }
+
+    
+  getTokenz() async {
+    String token = await _firebaseMessaging.getToken();
+    print(token);
+  }
+
+  // Future selectNotification(String payload) async {
+  //   await flutterLocalNotificationsPlugin.cancelAll();
+  // }
+
+  @override
+  void initState() {
+      String host = Platform.isAndroid ? '10.0.2.2:8080' : 'localhost:8080';
+
+Settings(   host: host,
+      sslEnabled: false,
+      persistenceEnabled: false,
+      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED);
+  
+
+    const AndroidInitializationSettings initializationSettingsAndroid =
+    AndroidInitializationSettings('@mipmap/ic_launcher');
+// final IOSInitializationSettings initializationSettingsIOS =
+//     IOSInitializationSettings(
+//         onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+// final MacOSInitializationSettings initializationSettingsMacOS =
+//     MacOSInitializationSettings();
+final InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,iOS: null
+    // iOS: initializationSettingsIOS,
+    // macOS: initializationSettingsMacOS
+    );
+flutterLocalNotificationsPlugin.initialize(initializationSettings,
+    onSelectNotification: selectNotification);
+    super.initState();
+
+    _firebaseMessaging.configure(
+      onBackgroundMessage: myBackgroundHandler,
+      onMessage: (Map<String, dynamic> message) async {
+        print("onMessage: $message");
+        showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text('new message arived'),
+                content: Text(
+                    'i want ${message['notification']['title']} for ${message['notification']['body']}'),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text('Ok'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },);
+      },
+    );
+
+    getTokenz();
   }
 }
 

@@ -5,7 +5,7 @@ import 'package:blue/screens/profile_screen.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:flutter/material.dart';
 
-class GoTo {
+class GoTo{
    profileScreen(BuildContext context,String profileId) {
     Navigator.push(
       context,

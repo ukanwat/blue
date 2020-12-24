@@ -312,6 +312,9 @@ class _PostScreenState extends State<PostScreen> {
       'topicName': topicName,
       'tags': tags,
       'ownerName': currentUser?.username,
+      'upvotes':0,
+      'downvotes':0,
+      'votes':0
     }); // TODO: check if successful
     if (lastDoc.docs.length == 0) {
       userPostsRef.doc(currentUser.id).collection('userPosts').doc().set({

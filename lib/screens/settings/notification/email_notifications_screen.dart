@@ -1,3 +1,4 @@
+import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,7 +18,7 @@ class EmailNotificationsScreen extends StatefulWidget {
 class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
   bool feedbacks = true;
   bool announcements = true;
-  bool activities = true;
+  // bool activities = true;
   SharedPreferences preferences;
   bool loading = true;
   @override
@@ -30,19 +31,21 @@ class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
     preferences = await SharedPreferences.getInstance();
 
     setState(() {
-      feedbacks = preferences.getBool('email_feedbacks') != null
-          ? preferences.getBool('email_feedbacks')
-          : true;
-      announcements = preferences.getBool('email_announcements') != null
-          ? preferences.getBool('email_announcements')
-          : true;
-      activities = preferences.getBool('email_activities') != null
-          ? preferences.getBool('email_activities')
-          : true;
+      feedbacks= PreferencesUpdate().getBool('email_feedbacks',def: true);
+      announcements = PreferencesUpdate().getBool('email_announcements',def: true);
+    
+      // activities = preferences.getBool('email_activities') != null
+      //     ? preferences.getBool('email_activities')
+      //     : true;
       loading = false;
     });
   }
-
+       saveNotifPref(String name, bool value,){
+                PreferencesUpdate().updateBool(name, value);
+                  preferencesRef.doc(currentUser.id).set(
+                      {name: value},
+                      SetOptions(merge: true));
+       }
   @override
   Widget build(BuildContext context) {
     return Scaffold(backgroundColor: Theme.of(context).backgroundColor,
@@ -55,12 +58,12 @@ class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
                   'FeedBack Emails',
                   feedbacks,
                   (newValue) {
-                     preferences.setBool('email_feedbacks', newValue);
                       setState(() {
                    
                     feedbacks = newValue;
                          });
-                     preferencesRef.doc(currentUser.id).set({'email_feedbacks': newValue},SetOptions(merge: true));
+                          saveNotifPref('email_feedbacks',newValue);
+                    
                   },
                   description: 'Give Feedback on app',
                 ),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
@@ -68,29 +71,27 @@ class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
                   'Announcement Emails',
                   announcements,
                   (newValue) {
-                    
-                     preferences.setBool('email_announcements', newValue);
                      setState(() {
                    
-                       announcements = newValue;
-                     });
-                        preferencesRef.doc(currentUser.id).set({'email_announcements': newValue},SetOptions(merge: true));
+                  announcements = newValue;
+                         });
+                          saveNotifPref('email_announcements',newValue);
+                 
                   },
                   description: 'Get new update announcements',
                 ),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
-                settingsSwitchListTile(
-                  'Activity Emails',
-                  activities,
-                  (newValue) {
-                     preferences.setBool('email_activities', newValue);
-                      setState(() {
-                   
-                       activities = newValue;
-                            });
-                        preferencesRef.doc(currentUser.id).set({'email_activities': newValue},SetOptions(merge: true));
-                  },
-                  description: 'Get Notifications related to your activity',
-                ),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
+                // settingsSwitchListTile(
+                //   'Activity Emails',
+                //   activities,
+                //   (newValue) {
+                //      preferences.setBool('email_activities', newValue);
+                //       setState(() {
+                //        activities = newValue;
+                //             });
+                //         preferencesRef.doc(currentUser.id).set({'email_activities': newValue},SetOptions(merge: true));
+                //   },
+                //   description: 'Get Notifications related to your activity',
+                // ),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
               ],
             ),
     );

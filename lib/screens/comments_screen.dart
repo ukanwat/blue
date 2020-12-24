@@ -97,7 +97,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
       'downvotes': 0,
     });
     // TODO data['postInteractions'].postInteractions[data['postId']] = PostInteraction( data['ownerId'], false, true, false, false);
-    bool isNotPostOwner = currentUser.id == data.ownerId;
+    bool isNotPostOwner = currentUser.id != data.ownerId;
     if (isNotPostOwner) {
       activityFeedRef.doc(data.ownerId).collection('feedItems').add({
         'type': 'comment',

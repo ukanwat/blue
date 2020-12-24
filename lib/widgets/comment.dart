@@ -33,8 +33,9 @@ class Comment extends StatefulWidget {
       this.replies,
       this.showReplies});
 
-  factory Comment.fromDocument(Map doc, String postId, String docId, bool showReplies) {
-    if(showReplies == null){
+  factory Comment.fromDocument(
+      Map doc, String postId, String docId, bool showReplies) {
+    if (showReplies == null) {
       showReplies = false;
     }
     return Comment(
@@ -42,7 +43,7 @@ class Comment extends StatefulWidget {
       username: doc['username'],
       userId: doc['userId'],
       comment: doc['comment'],
-      timestamp: doc['timeStamp'],                            // TODO fix 'S'
+      timestamp: doc['timeStamp'], // TODO fix 'S'
       avatarUrl: doc['avatarUrl'],
       upvotes: doc['upvotes'],
       downvotes: doc['downvotes'],
@@ -60,27 +61,28 @@ class _CommentState extends State<Comment> {
   List<Widget> replyWidgets = [];
   bool repliesLoaded = false;
   int maxLines = 8;
-  bool canExceedChanged= false;
+  bool canExceedChanged = false;
   bool canExceed = false;
   toggleReplies() {
     setState(() {
       if (repliesLoaded == false) {
-        if(widget.replies != null){
-        widget.replies.forEach((key, value) {
-          replyWidgets.add(CommentReply(
-            avatarUrl: value['avatarUrl'],
-            comment: value['comment'],
-            id: key,
-            commentId: widget.id,
-            username: value['username'],
-            downvotes: value['downvotes'],
-            postId: widget.postId,
-            upvotes: value['upvotes'],
-            userId: value['userId'],
-            referName: value['referName'],
-            timestamp: value['timeStamp'],
-          ));
-        });}
+        if (widget.replies != null) {
+          widget.replies.forEach((key, value) {
+            replyWidgets.add(CommentReply(
+              avatarUrl: value['avatarUrl'],
+              comment: value['comment'],
+              id: key,
+              commentId: widget.id,
+              username: value['username'],
+              downvotes: value['downvotes'],
+              postId: widget.postId,
+              upvotes: value['upvotes'],
+              userId: value['userId'],
+              referName: value['referName'],
+              timestamp: value['timeStamp'],
+            ));
+          });
+        }
         repliesLoaded = true;
       } else {
         replyWidgets = [];
@@ -88,20 +90,24 @@ class _CommentState extends State<Comment> {
       }
     });
   }
- @override
+
+  @override
   void initState() {
-    if(widget.showReplies == true){
-       toggleReplies();
+    if (widget.showReplies == true) {
+      toggleReplies();
     }
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     int votes = widget.upvotes - widget.downvotes;
     return Consumer<CommentNotifier>(
         builder: (context, notifier, child) => Column(
               children: <Widget>[
-                SizedBox(height: 8,),
+                SizedBox(
+                  height: 8,
+                ),
                 ListTile(
                   title: Row(
                     children: <Widget>[
@@ -111,26 +117,25 @@ class _CommentState extends State<Comment> {
                       ),
                       Container(
                         margin: EdgeInsets.symmetric(horizontal: 2),
-                       height: 3,
-                       width: 3,
+                        height: 3,
+                        width: 3,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
- color: Colors.grey,
+                          color: Colors.grey,
                         ),
                       ),
-                  Text(   '${timeago.format(widget.timestamp.toDate())}',
-                  style: TextStyle(
-                    fontSize: 13
-                  ),
-                  ),
+                      Text(
+                        '${timeago.format(widget.timestamp.toDate())}',
+                        style: TextStyle(fontSize: 13),
+                      ),
                       Expanded(child: Container()),
                       SizedBox(
                         height: 24,
                         width: 24,
                         child: PopupMenuButton(
                           padding: EdgeInsets.zero,
-              tooltip: 'Report Comment',
-              elevation: 2,
+                          tooltip: 'Report Comment',
+                          elevation: 2,
                           color: Theme.of(context).backgroundColor,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -139,7 +144,6 @@ class _CommentState extends State<Comment> {
                                   color: Theme.of(context).canvasColor)),
                           itemBuilder: (_) => [
                             PopupMenuItem(
-                              
                                 child: Text('Report'), value: 'Report'),
                           ],
                           icon: Icon(
@@ -147,15 +151,14 @@ class _CommentState extends State<Comment> {
                             size: 22,
                             color: Colors.grey,
                           ),
-                          onSelected: (selectedValue)  {
+                          onSelected: (selectedValue) {
                             if (selectedValue == 'Report') {
                               notifier.focusNode.unfocus();
-                           commentsRef
+                              commentsRef
                                   .doc(widget.postId)
                                   .collection('userComments')
                                   .doc(widget.id)
-                                  .update( {'reports': FieldValue.increment(1)});
-                            
+                                  .update({'reports': FieldValue.increment(1)});
                             }
                           },
                         ),
@@ -164,90 +167,90 @@ class _CommentState extends State<Comment> {
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[LayoutBuilder(builder: (context, size) {
-            var span = TextSpan(
-              text:  '${widget.comment}',
-              style: TextStyle(fontSize: 15,
-              color: Theme.of(context).iconTheme.color          // TODO
-              ),
-            );
-            var tp = TextPainter(
-              maxLines: maxLines,
-              textAlign: TextAlign.left,
-              textDirection: TextDirection.ltr,
-              text: span,
-            );
-            tp.layout(maxWidth: size.maxWidth);
-            var exceeded = tp.didExceedMaxLines;
-            if(exceeded == true && canExceedChanged == false){
-              canExceedChanged = true;
-              canExceed = true;
-            }
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-              Text.rich(
-                span,
-                overflow: TextOverflow.ellipsis,
-                maxLines: maxLines,
-              ),
-               if(canExceed)  GestureDetector(
-                        onTap:(){
-                          
-                           setState(() {
-                              if(maxLines == 8){
-                                           maxLines= 100;
-                          }else{
-                            maxLines = 8;
-                          }
-
-                           });
-                         print(  maxLines );
-                         },
-                                              child: Text(
-                      exceeded?   'See more': 'See less',
-                          maxLines: 1,
-                         style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14
-                          ),
-
-                       
-                        ),
+                    children: <Widget>[
+                      LayoutBuilder(builder: (context, size) {
+                        var span = TextSpan(
+                          text: '${widget.comment}',
+                          style: TextStyle(
+                              fontSize: 15,
+                              color: Theme.of(context).iconTheme.color // TODO
+                              ),
+                        );
+                        var tp = TextPainter(
+                          maxLines: maxLines,
+                          textAlign: TextAlign.left,
+                          textDirection: TextDirection.ltr,
+                          text: span,
+                        );
+                        tp.layout(maxWidth: size.maxWidth);
+                        var exceeded = tp.didExceedMaxLines;
+                        if (exceeded == true && canExceedChanged == false) {
+                          canExceedChanged = true;
+                          canExceed = true;
+                        }
+                        return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text.rich(
+                                span,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: maxLines,
+                              ),
+                              if (canExceed)
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      if (maxLines == 8) {
+                                        maxLines = 100;
+                                      } else {
+                                        maxLines = 8;
+                                      }
+                                    });
+                                    print(maxLines);
+                                  },
+                                  child: Text(
+                                    exceeded ? 'See more' : 'See less',
+                                    maxLines: 1,
+                                    style: TextStyle(
+                                        color: Colors.grey, fontSize: 14),
+                                  ),
+                                ),
+                            ]);
+                      }),
+                      SizedBox(
+                        height: 5,
                       ),
-            ]);
-          }),
-                     SizedBox(height: 5,),
                       Row(
                         children: <Widget>[
-                        if(widget.replies != null)  InkWell(
-                            onTap: () {
-                              toggleReplies();
-                            },
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 5.0),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Icon(
-                                    repliesLoaded == true
-                                        ? Icons.expand_less
-                                        : Icons.expand_more,
-                                    color: Colors.blue,
-                                    size: 20,
-                                  ),
-                                  Text(
-                                    repliesLoaded == true 
-                                        ? 'Hide Replies'
-                                        : '${widget.replies.length} Replies',
-                                    style: TextStyle(
-                                        color: Colors.blue, fontSize: 16),
-                                  ),
-                                ],
+                          if (widget.replies != null)
+                            InkWell(
+                              onTap: () {
+                                toggleReplies();
+                              },
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 5.0),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    Icon(
+                                      repliesLoaded == true
+                                          ? Icons.expand_less
+                                          : Icons.expand_more,
+                                      color: Colors.blue,
+                                      size: 20,
+                                    ),
+                                    Text(
+                                      repliesLoaded == true
+                                          ? 'Hide Replies'
+                                          : '${widget.replies.length} Replies',
+                                      style: TextStyle(
+                                          color: Colors.blue, fontSize: 16),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
                           Expanded(child: Container()),
                           InkWell(
                             onTap: () {
@@ -278,13 +281,15 @@ class _CommentState extends State<Comment> {
                               ),
                             ),
                           ),
-                          SizedBox(width: 30,),
-                              CommentVoteButton(
-                                type: CommentType.comment,
-          vote: Vote.upvote,
-          commentId: widget.id,
-          postId: widget.postId,
-        ),
+                          SizedBox(
+                            width: 30,
+                          ),
+                          CommentVoteButton(
+                            type: CommentType.comment,
+                            vote: Vote.upvote,
+                            commentId: widget.id,
+                            postId: widget.postId,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             votes.toString(),
@@ -292,11 +297,11 @@ class _CommentState extends State<Comment> {
                           ),
                           SizedBox(width: 8),
                           CommentVoteButton(
-                                type: CommentType.comment,
-          vote: Vote.downvote,
-          commentId: widget.id,
-          postId: widget.postId,
-        ),
+                            type: CommentType.comment,
+                            vote: Vote.downvote,
+                            commentId: widget.id,
+                            postId: widget.postId,
+                          ),
                         ],
                       ),
                     ],
@@ -311,8 +316,11 @@ class _CommentState extends State<Comment> {
                   // subtitle: Text(timestamp.toDate().toString())//timeago.format(timestamp.toDate()))
                 ),
                 ...replyWidgets,
-                Container(width: double.infinity,  color: Colors.grey[400],height: 0.4,),
-                
+                Container(
+                  width: double.infinity,
+                  color: Colors.grey[400],
+                  height: 0.4,
+                ),
               ],
             ));
   }

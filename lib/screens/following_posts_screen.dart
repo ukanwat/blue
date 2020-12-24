@@ -47,7 +47,8 @@ class _FollowingPostsScreenState extends State<FollowingPostsScreen>
     return Container(color: Theme.of(context).backgroundColor,
       child: RefreshIndicator(
           onRefresh: () => getFollowingPosts(),
-          child: buildFollowingPosts(context),
+          child: 
+          buildFollowingPosts(context),
         ),
     );
   }

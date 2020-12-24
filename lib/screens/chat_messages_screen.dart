@@ -42,9 +42,11 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   var focusNode = new FocusNode();
   String groupChatId;
   Map sendingStateMap = {'count': 0, 'id': {}, 'state': ''};
-  Map deletingStateMap = {'count': 0, 'lastId': '', 'state': ''};
   Future<QuerySnapshot> chatMessagesFuture;
   TextEditingController messageController = TextEditingController();
+  DateTime lastMessageTime;
+  bool loading = true;
+  List data = [];
   @override
   void dispose() {
     sendingStateMap['id'] = {};
@@ -53,27 +55,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     super.dispose();
   }
 
-  @override
-  void didChangeDependencies() {
-    if (currentUser.id.hashCode <= widget.peerUser.id.hashCode) {
-      groupChatId = '${currentUser.id}-${widget.peerUser.id}';
-    } else {
-      groupChatId = '${widget.peerUser.id}-${currentUser.id}';
-    }
-    getChatMessagesFuture();
-    super.didChangeDependencies();
-  }
 
-  getChatMessagesFuture() {
-    setState(() {
-      chatMessagesFuture = messagesRef
-          .doc(groupChatId)
-          .collection(groupChatId)
-          .orderBy('timestamp', descending: true)
-          // .where('hide',isEqualTo: )           TODO
-          .get();
-    });
-  }
 
   sendMessage() async {
     if (messageController.text != '') {
@@ -100,8 +82,6 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         if (v == false) valid = false;
       });
       print(valid);
-
-      getChatMessagesFuture();
       Future.delayed(const Duration(milliseconds: 1000), () {
         setState(() {
           if (valid) {
@@ -169,7 +149,6 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                 }
               });
             });
-            getChatMessagesFuture();
           });
         }
       });
@@ -235,229 +214,36 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
             }
           });
         });
-        getChatMessagesFuture();
       }
     } catch (e) {
       print(e);
     }
   }
 
-  FutureBuilder chatMessages(Future<QuerySnapshot> chatMessagesFuture) {
-    return FutureBuilder(
-      future: chatMessagesFuture,
-      builder: (context, snapshot) {
-        Timestamp lastTimestamp = Timestamp(0, 0);
-        bool showTime = false;
-        if (!snapshot.hasData) {
-          return circularProgress();
-        }
-        List<Widget> messageItems = [];
-        int length = snapshot.data.documents.length;
-        if(length == 0){
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Expanded(child: emptyState(context,'Say Hi!', "Welcome")),
-              Container(width: double.infinity,
-                margin: EdgeInsets.symmetric(horizontal: 10,vertical: 80),
-                padding: EdgeInsets.symmetric(horizontal: 12,vertical: 20),
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(15),color: Colors.blue.withOpacity(0.24)),
-child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-  children: [Text('COMMUNITY RULES',style: TextStyle(fontSize: 14,fontWeight: FontWeight.w800),),SizedBox(height: 10,),
-  Text('😊 Be friendly and polite\n🙈 Keep it safe for work/appropriate for all ages\n🚫 Offensive behaviour, Spamming, harassment or bullying is forbidden\n👮‍♂️ Users who violate the rules will be blocked',style: TextStyle(fontSize: 15,fontWeight: FontWeight.w400,height: 1.7),)
-  ],),
-              ),
-            ],
-          );
-        }
-        int i = 0;
-        snapshot.data.docs.forEach((QueryDocumentSnapshot doc) {
-          i++;
-          Message messageItem = Message.fromDocument(doc.data());
-          if (i == 1) {
-            messageItems.add(Visibility(
-              visible: sendingStateMap['id'] != {},
-              child: Container(
-                alignment: Alignment.centerLeft,
-                padding: EdgeInsets.only(left: 8),
-                width: double.infinity,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Text(
-                      sendingStateMap['state'],
-                      style: TextStyle(
-                          fontSize: 16,
-                          color: Theme.of(context).iconTheme.color,
-                          fontWeight: FontWeight.w500),
-                    ),
-                    if (sendingStateMap['state'] == 'Sending')
-                      Container(
-                        height: 20,
-                        width: 20,
-                        padding: const EdgeInsets.all(3.0),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation(Colors.blue),
-                        ),
-                      ),
-                    if (sendingStateMap['state'] == 'Sent')
-                      Container(
-                        height: 20,
-                        width: 20,
-                        child: Icon(
-                          Icons.check,
-                          color: Colors.blue,
-                          size: 20,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ));
-            String lastMessage = '';
-            var direct = preferences.getString('direct');
-            Map directMap = direct == null ? {} : json.decode(direct);
-            if (messageItem.type == 'image')
-              lastMessage = '${MessageType.image}';
-            else if (messageItem.type == 'gif')
-              lastMessage = '${MessageType.gif}';
-            else
-              lastMessage = '${messageItem.message}';
-            directMap[widget.peerUser.id] = {
-              'seen': true,
-              'message': lastMessage,
-              'time': messageItem.timestamp.toDate().toString(),
-              'mine': messageItem.idFrom == currentUser.id ? true : false,
-            };
-            direct = json.encode(directMap);
-            preferences.setString('direct', direct);
-          }
-          showTime = 30 <
-              lastTimestamp
-                  .toDate()
-                  .difference(messageItem.timestamp.toDate())
-                  .inMinutes;
-          if (showTime)
-            messageItems.add(Container(
-                padding: EdgeInsets.symmetric(vertical: 15),
-                child: Center(
-                    child: Text(
-                  '${date(lastTimestamp.toDate())}, ${DateFormat.jm().format(lastTimestamp.toDate())}',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
-                ))));
-          bool myText = currentUser.id == messageItem.idFrom;
-          if (doc.data()['hide'] != true || myText)
-            messageItems.add(InkWell(
-                //TODO
-                onLongPress: () {
-                  FocusScope.of(context).unfocus();
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) => Dialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          elevation: 0.0,
-                          backgroundColor: Colors.transparent,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                    'Sent on ${date(lastTimestamp.toDate())}, ${DateFormat.jm().format(lastTimestamp.toDate())}',style: TextStyle(color: Colors.white),),
-                              ),
-                              InkWell(
-                                onTap: () async {
-                                  Navigator.pop(context);
-                                  if (myText) {
-                                    try {
-                                      await messagesRef
-                                          .doc(groupChatId)
-                                          .collection(groupChatId)
-                                          .doc(doc.id)
-                                          .delete();
-                                      if (messageItem.type == 'image') {
-                                        await FileStorage.delete(
-                                            messageItem.message);
-                                      }
-                                    } catch (e) {
-                                      print(e);
-                                    }
-                                  } else {
-                                    await messagesRef
-                                        .doc(groupChatId)
-                                        .collection(groupChatId)
-                                        .doc(doc.id)
-                                        .set({'hide': true},
-                                            SetOptions(merge: true));
-                                  }
-                                  getChatMessagesFuture();
-                                },
-                                child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                        vertical: 15, horizontal: 20),
-                                    decoration: new BoxDecoration(
-                                      color: Theme.of(context).canvasColor,
-                                      shape: BoxShape.rectangle,
-                                      borderRadius: BorderRadius.circular(10),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black26,
-                                          blurRadius: 10.0,
-                                          offset: const Offset(0.0, 10.0),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Container(
-                                      height: 20,
-                                      child: Center(
-                                          child: Text(
-                                        myText
-                                            ? 'Delete this Message'
-                                            : 'Delete for me',
-                                        style: TextStyle(fontSize: 16),
-                                      )),
-                                    )),
-                              ),
-                            ],
-                          )));
-                },
-                child: messageItem));
 
-          lastTimestamp = messageItem.timestamp;
-          if (length == i) {
-            messageItems.add(Container(
-                padding: EdgeInsets.symmetric(vertical: 15),
-                child: Center(
-                    child: Text(
-                  '${date(lastTimestamp.toDate())}, ${DateFormat.jm().format(lastTimestamp.toDate())}',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
-                ))));
-          }
-        });
-        return ListView.builder(padding: EdgeInsets.only(top: 0,left: 0,right: 0,bottom: 70),
-          itemBuilder: (_, i) {
-            return messageItems[i];
-          },
-          itemCount: messageItems.length,
-          reverse: true,
-        );
-      },
-    );
+  @override
+  void initState() {
+       if (currentUser.id.hashCode <= widget.peerUser.id.hashCode) {
+      groupChatId = '${currentUser.id}-${widget.peerUser.id}';
+    } else {
+      groupChatId = '${widget.peerUser.id}-${currentUser.id}';
+    }
+    print('dd');
+    
+    // getMessages();
+    super.initState();
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Theme.of(context).canvasColor,
         appBar: header(
-          context,elevation: 0.5,
+          context,
+          elevation: 0.5,
           leadingButton: CupertinoNavigationBarBackButton(),
           actionButton: IconButton(
               icon: Icon(
-               FluentIcons.info_24_regular,
+                FluentIcons.info_24_regular,
               ),
               onPressed: () {
                 Navigator.of(context)
@@ -466,15 +252,16 @@ child: Column(crossAxisAlignment: CrossAxisAlignment.start,
                   'peerUsername': widget.peerUser.username,
                   'groupChatId': groupChatId,
                   'peerImageUrl': widget.peerUser.photoUrl,
-                  'peerName':widget.peerUser.displayName,
+                  'peerName': widget.peerUser.displayName,
                 });
               }),
           title: Row(
             children: <Widget>[
-              GestureDetector(onTap: (){
-                GoTo().profileScreen(context,widget.peerUser.id);
-              },
-                              child: Padding(
+              GestureDetector(
+                onTap: () {
+                  GoTo().profileScreen(context, widget.peerUser.id);
+                },
+                child: Padding(
                   padding: const EdgeInsets.only(
                       left: 0, right: 15, bottom: 5, top: 5),
                   child: CircleAvatar(
@@ -497,92 +284,114 @@ child: Column(crossAxisAlignment: CrossAxisAlignment.start,
           child: Stack(
             alignment: Alignment.bottomCenter,
             children: [
-              Container(child:  chatMessages(chatMessagesFuture)),
-              Container( margin: EdgeInsets.symmetric(horizontal: 8, vertical: 6),  
-                child: ClipRRect(  borderRadius: BorderRadius.circular(18),
-                child: new BackdropFilter(
-                  filter: new ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),child:Container(
-                
-                  color: Theme.of(context).backgroundColor == Colors.white?Colors.grey.shade200.withOpacity(0.5):Colors.grey.shade700.withOpacity(0.5),
-                  padding: EdgeInsets.only(bottom: 5, top: 7, left: 1, right: 1),
-                  child: Row(
-                    children: <Widget>[
-                      Container(
-                        child: GestureDetector(
-                            child: Container(
-                                padding: EdgeInsets.only(left: 4),
-                                child: Icon(
-                                  FluentIcons.image_24_filled,
-                                  size: 32,
-                                  color: Colors.deepOrange,
-                                )),
-                            onTap: sendMedia),
-                      ),
-                      Container(
-                        height: 40,
-                        child: GestureDetector(
-                            child: Padding(
-                              padding: EdgeInsets.only(right: 5),
-                              child: Icon(
-                                FluentIcons.gif_24_filled,
-                                size: 34,
-                                color: Colors.red,
-                              ),
+              Container(child: ChatMessages(sendingStateMap,widget.peerUser.id,groupChatId)),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: new BackdropFilter(
+                      filter: new ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                      child: Container(
+                        color: Theme.of(context).backgroundColor == Colors.white
+                            ? Colors.grey.shade200.withOpacity(0.5)
+                            : Colors.grey.shade700.withOpacity(0.5),
+                        padding: EdgeInsets.only(
+                            bottom: 5, top: 7, left: 1, right: 1),
+                        child: Row(
+                          children: <Widget>[
+                            Container(
+                              child: GestureDetector(
+                                  child: Container(
+                                      padding: EdgeInsets.only(left: 4),
+                                      child: Icon(
+                                        FluentIcons.image_24_filled,
+                                        size: 32,
+                                        color: Colors.deepOrange,
+                                      )),
+                                  onTap: sendMedia),
                             ),
-                            onTap: sendGIF),
-                      ),
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.only(bottom: 2),
-                          child: TextField(
-                            focusNode: focusNode,
-                            controller: messageController,
-                            style: TextStyle(
-                                fontSize: 18,
-                                color: Theme.of(context).iconTheme.color),
-                            maxLines: 4,
-                            minLines: 1,
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.only(top: 8, left: 10),
-                              hintText: 'Message',
-                              hintStyle: TextStyle(
-                                  fontSize: 18,
-                                  color: Theme.of(context)
-                                      .iconTheme
-                                      .color
-                                      .withOpacity(0.8)),
-                              fillColor: Theme.of(context)
-                                      .canvasColor,
-                              filled: true,
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15),
-                                borderSide: BorderSide(
-                                  width: 0,
-                                  color: Theme.of(context).cardColor,
+                            Container(
+                              height: 40,
+                              child: GestureDetector(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(right: 5),
+                                    child: Icon(
+                                      FluentIcons.gif_24_filled,
+                                      size: 34,
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                  onTap: sendGIF),
+                            ),
+                            Expanded(
+                              child: Container(
+                                padding: EdgeInsets.only(bottom: 2),
+                                child: TextField(
+                                  focusNode: focusNode,
+                                  controller: messageController,
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      color: Theme.of(context).iconTheme.color),
+                                  maxLines: 4,
+                                  minLines: 1,
+                                  decoration: InputDecoration(
+                                    contentPadding:
+                                        EdgeInsets.only(top: 8, left: 10),
+                                    hintText: 'Message',
+                                    hintStyle: TextStyle(
+                                        fontSize: 18,
+                                        color: Theme.of(context)
+                                            .iconTheme
+                                            .color
+                                            .withOpacity(0.8)),
+                                    fillColor: Theme.of(context).canvasColor,
+                                    filled: true,
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                      borderSide: BorderSide(
+                                        width: 0,
+                                        color: Theme.of(context).cardColor,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                      borderSide: BorderSide(
+                                        width: 0,
+                                        color: Theme.of(context).cardColor,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15),
-                                borderSide: BorderSide(
-                                  width: 0,
-                                  color: Theme.of(context).cardColor,
-                                ),
-                              ),
                             ),
-                          ),
+                            sendButton(sendFunction: sendMessage)
+                          ],
                         ),
                       ),
-                      sendButton(sendFunction: sendMessage)
-                    ],
-                  ),
-                ),)),
+                    )),
               )
             ],
           ),
         ));
   }
 
-  String date(DateTime tm) {
+
+}
+
+
+class ChatMessages extends StatefulWidget {
+  ChatMessages(this.sendingStateMap,this.peerUserId,this.groupChatId,);
+
+    final Map sendingStateMap;
+      final String  peerUserId;
+      final String groupChatId;
+
+  @override
+  _ChatMessagesState createState() => _ChatMessagesState();
+}
+
+class _ChatMessagesState extends State<ChatMessages> {
+    String date(DateTime tm) {
     DateTime today = new DateTime.now();
     Duration oneDay = new Duration(days: 1);
     Duration twoDay = new Duration(days: 2);
@@ -626,7 +435,6 @@ child: Column(crossAxisAlignment: CrossAxisAlignment.start,
         month = "December";
         break;
     }
-
     Duration difference = today.difference(tm);
 
     if (difference.compareTo(oneDay) < 1) {
@@ -656,5 +464,290 @@ child: Column(crossAxisAlignment: CrossAxisAlignment.start,
       return '${tm.day} $month ${tm.year}';
     }
     return "";
+  }
+   List data  = [];
+   bool loading  = true;
+   @override
+  void initState() {
+    //  getMessages();
+    super.initState();
+  }
+  
+  // getMessages() async {
+  //  var _cachedMessages = await messagesRef
+  //       .doc(widget.groupChatId)
+  //       .collection(widget.groupChatId)
+  //       .orderBy('timestamp', descending: true) //         TODO
+  //       .get(GetOptions(source: Source.cache));
+  //       print(_cachedMessages.docs.length);
+  //   _cachedMessages.docs.forEach((DocumentSnapshot doc) {
+  //     data.add([doc.id,doc.data()]);
+  //     //  messages.add(doc);
+  //   });
+  //   setState(() {
+  //     loading = false;
+  //   });
+  //   if(data.length != 0){
+  //   print(data.first[1]['timestamp']);
+  //   addMessagesStream(data.first[1]['timestamp']);
+  //   }
+  // }
+
+  addMessagesStream() async {
+    Stream<QuerySnapshot> _snaps = messagesRef
+        .doc(widget.groupChatId)
+        .collection(widget.groupChatId)
+        // .where('timestamp', isGreaterThan: dateTime)
+        .orderBy('timestamp', descending: false)
+        .snapshots();
+        var _cachedMessages = messagesRef
+        .doc(widget.groupChatId)
+        .collection(widget.groupChatId)
+        .orderBy('timestamp', descending: true) //         TODO
+        .get(GetOptions(source: Source.cache)).asStream();
+  // _snaps.listen((event) {
+  //     event.docChanges.forEach((change) {
+  //       print(change.doc.data());
+  //       if (change.type == DocumentChangeType.added) {
+  //         setState(() {
+  //       data.add([change.doc.id,change.doc.data()]);
+  //           // newMessages.add(change.doc);
+  //         });
+          
+  //       }
+  //     });
+  //   });
+    
+  }
+
+  @override
+  Widget build(BuildContext context) {
+      Timestamp lastTimestamp = Timestamp(0, 0);
+      setState(() {
+        
+      });
+    bool showTime = false;
+    if (data == null) {
+      return circularProgress();
+    }
+    List<Widget> messageItems = [];
+    int length = data.length;
+    if (length == 0) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Expanded(child: emptyState(context, 'Say Hi!', "Welcome")),
+          Container(
+            width: double.infinity,
+            margin: EdgeInsets.symmetric(horizontal: 10, vertical: 80),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 20),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                color: Colors.blue.withOpacity(0.24)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'COMMUNITY RULES',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  '😊 Be friendly and polite\n🙈 Keep it safe for work/appropriate for all ages\n🚫 Offensive behaviour, Spamming, harassment or bullying is forbidden\n👮‍♂️ Users who violate the rules will be blocked',
+                  style: TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w400, height: 1.7),
+                )
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+    int i = 0;
+    data.forEach(( doc) {
+      i++;
+      Message messageItem = Message.fromDocument(doc[1]);
+      if (i == 1) {
+        messageItems.add(Visibility(
+          visible: widget.sendingStateMap['id'] != {},
+          child: Container(
+            alignment: Alignment.centerLeft,
+            padding: EdgeInsets.only(left: 8),
+            width: double.infinity,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                  widget.sendingStateMap['state'],
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Theme.of(context).iconTheme.color,
+                      fontWeight: FontWeight.w500),
+                ),
+                if (widget.sendingStateMap['state'] == 'Sending')
+                  Container(
+                    height: 20,
+                    width: 20,
+                    padding: const EdgeInsets.all(3.0),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(Colors.blue),
+                    ),
+                  ),
+                if (widget.sendingStateMap['state'] == 'Sent')
+                  Container(
+                    height: 20,
+                    width: 20,
+                    child: Icon(
+                      Icons.check,
+                      color: Colors.blue,
+                      size: 20,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ));
+        String lastMessage = '';
+        var direct = preferences.getString('direct');
+        Map directMap = direct == null ? {} : json.decode(direct);
+        if (messageItem.type == 'image')
+          lastMessage = '${MessageType.image}';
+        else if (messageItem.type == 'gif')
+          lastMessage = '${MessageType.gif}';
+        else
+          lastMessage = '${messageItem.message}';
+        directMap[widget.peerUserId] = {/////////////////////////////////
+          'seen': true,
+          'message': lastMessage,
+          'time': messageItem.timestamp.toDate().toString(),
+          'mine': messageItem.idFrom == currentUser.id ? true : false,
+        };
+        direct = json.encode(directMap);
+        preferences.setString('direct', direct);
+      }
+      showTime = 30 <
+          lastTimestamp
+              .toDate()
+              .difference(messageItem.timestamp.toDate())
+              .inMinutes;
+      if (showTime)
+        messageItems.add(Container(
+            padding: EdgeInsets.symmetric(vertical: 15),
+            child: Center(
+                child: Text(
+              '${date(lastTimestamp.toDate())}, ${DateFormat.jm().format(lastTimestamp.toDate())}',
+              style: TextStyle(color: Colors.grey, fontSize: 12),
+            ))));
+      bool myText = currentUser.id == messageItem.idFrom;
+      if (doc[1]['hide'] != true || myText)
+        messageItems.add(InkWell(
+            //TODO
+            onLongPress: () {
+              FocusScope.of(context).unfocus();
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) => Dialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 0.0,
+                      backgroundColor: Colors.transparent,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Sent on ${date(lastTimestamp.toDate())}, ${DateFormat.jm().format(lastTimestamp.toDate())}',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () async {
+                              Navigator.pop(context);
+                              if (myText) {
+                                try {
+                                  await messagesRef
+                                      .doc(widget.groupChatId)
+                                      .collection(widget.groupChatId)
+                                      .doc(doc[0])
+                                      .delete();
+                                  if (messageItem.type == 'image') {
+                                    await FileStorage.delete(//TODO
+                                        messageItem.message);
+                                  }
+                                } catch (e) {
+                                  print(e);
+                                }
+                              } else {
+                                await messagesRef
+                                    .doc(widget.groupChatId)
+                                    .collection(widget.groupChatId)
+                                    .doc(doc[0])
+                                    .set({'hide': true},
+                                        SetOptions(merge: true));
+                              }
+                              await messagesRef.doc(widget.groupChatId).collection(widget.groupChatId).doc(doc[0]).delete();
+                               setState(() {
+                  data.remove(doc);
+                });
+                            },
+                            child: Container(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 15, horizontal: 20),
+                                decoration: new BoxDecoration(
+                                  color: Theme.of(context).canvasColor,
+                                  shape: BoxShape.rectangle,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black26,
+                                      blurRadius: 10.0,
+                                      offset: const Offset(0.0, 10.0),
+                                    ),
+                                  ],
+                                ),
+                                child: Container(
+                                  height: 20,
+                                  child: Center(
+                                      child: Text(
+                                    myText
+                                        ? 'Delete this Message'
+                                        : 'Delete for me',
+                                    style: TextStyle(fontSize: 16),
+                                  )),
+                                )),
+                          ),
+                        ],
+                      )));
+            },
+            child: messageItem));
+
+      lastTimestamp = messageItem.timestamp;
+      if (length == i) {
+        messageItems.add(Container(
+            padding: EdgeInsets.symmetric(vertical: 15),
+            child: Center(
+                child: Text(
+              '${date(lastTimestamp.toDate())}, ${DateFormat.jm().format(lastTimestamp.toDate())}',
+              style: TextStyle(color: Colors.grey, fontSize: 12),
+            ))));
+      }
+    });
+    return Scrollbar(
+      thickness: 4,
+      radius: Radius.circular(5),
+      child: ListView.builder(
+        padding: EdgeInsets.only(top: 0, left: 0, right: 0, bottom: 70),
+        itemBuilder: (_, i) {
+          return messageItems[i];
+        },
+        itemCount: messageItems.length,
+        reverse: true,
+      ),
+    );
   }
 }

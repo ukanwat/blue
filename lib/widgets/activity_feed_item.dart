@@ -143,6 +143,8 @@ class _ActivityFeedItemState extends State<ActivityFeedItem> {
                     ),
                   ),
                 ),
+                 if(widget.type == 'follow')
+                 SizedBox(height: 10,),
                if(widget.type != 'follow')
                 Padding(
                   padding:

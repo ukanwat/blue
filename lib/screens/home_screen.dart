@@ -1,16 +1,11 @@
 import 'package:animations/animations.dart';
 import 'package:blue/screens/following_posts_screen.dart';
+import 'package:blue/widgets/paginated_posts.dart';
 import 'package:blue/widgets/tags_wrap.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:provider/provider.dart';
 import '../widgets/header.dart';
-import './home.dart';
-import '../widgets/post.dart';
-import '../widgets/progress.dart';
-import 'package:blue/main.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';                                                                                                           
+import './home.dart';                                                                                                           
                                                                                                                                                                        
 class HomeScreen extends StatefulWidget {
   @override
@@ -21,7 +16,7 @@ class _HomeScreenState extends State<HomeScreen>
     with
         AutomaticKeepAliveClientMixin<HomeScreen>,
         SingleTickerProviderStateMixin {                                                        
-  List<Post> posts;
+Widget posts;
   bool followingPosts = false;
   bool topicLoading = true;
   bool banner = false;
@@ -29,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
-    getTimeline();
+    posts = PaginatedPosts(length: 2,query: postsRef.orderBy('timeStamp',descending: true,),key: UniqueKey(),);
     tabToggleBanner = toggleBanner();
   }
 
@@ -61,15 +56,6 @@ class _HomeScreenState extends State<HomeScreen>
             ));
   }
 
-  getTimeline() async {
-    print(currentUser);
-    QuerySnapshot snapshot = await postsRef.get();
-
-    setState(() {
-      posts =
-          snapshot.docs.map((doc) => Post.fromDocument(doc.data())).toList();
-    });
-  }
 
   showTagsSheet() {
     showModalBottomSheet(
@@ -92,16 +78,11 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  buildTimeline() {
-    if (posts == null) {
-      return circularProgress();
-    } else if (posts.isEmpty) {
-      return Container();
-    } else {
-      return ListView(children: [...posts,Container(height: 100,)]);
-    }
+ Future refreshPosts()async{
+      setState(() {
+        posts = PaginatedPosts(length: 2,query: postsRef.orderBy('timeStamp',descending: true,),key: UniqueKey(),);
+      }); 
   }
-
   bool get wantKeepAlive => true;
   @override
   Widget build(context) {
@@ -168,8 +149,8 @@ class _HomeScreenState extends State<HomeScreen>
           child: followingPosts
               ? FollowingPostsScreen()
               : RefreshIndicator(
-                  onRefresh: () => getTimeline(),
-                  child: buildTimeline(),
+                  onRefresh: () => refreshPosts(),
+                  child:posts,
                 ),
         ));
   }

@@ -1,4 +1,5 @@
 import 'package:blue/screens/home.dart';
+import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -30,34 +31,25 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
   }
 
   getPushNotificationPreferences() async {
-    preferences = await SharedPreferences.getInstance();
-
     setState(() {
-      likes = preferences.getBool('push_likes') != null
-          ? preferences.getBool('push_likes')
-          : true;
-      comments = preferences.getBool('push_comments') != null
-          ? preferences.getBool('push_comments')
-          : true;
-      commentReplies = preferences.getBool('push_comment_replies') != null
-          ? preferences.getBool('push__comment_replies')
-          : true;
-      newFollowers = preferences.getBool('push_new_followers') != null
-          ? preferences.getBool('push_new_followers')
-          : true;
-      directRequests = preferences.getBool('push_direct_requests') != null
-          ? preferences.getBool('push_direct_requests')
-          : true;
-      features = preferences.getBool('push_features') != null
-          ? preferences.getBool('push_features')
-          : true;
-      reminders = preferences.getBool('push_reminders') != null
-          ? preferences.getBool('push_reminders')
-          : true;
+      reminders = PreferencesUpdate().getBool('push_features',def: true);
+      features = PreferencesUpdate().getBool('push_reminders',def: true);
+      directRequests = PreferencesUpdate().getBool('push_direct_requests',def: true);
+      newFollowers  = PreferencesUpdate().getBool('push_new_followers',def: true);
+      commentReplies = PreferencesUpdate().getBool('push_reminders',def: true);
+        comments = PreferencesUpdate().getBool('push_comments',def: true);
+          likes = PreferencesUpdate().getBool('push_likes',def: true);
       loading = false;
     });
   }
 
+       
+       saveNotifPref(String name, bool value,){
+                PreferencesUpdate().updateBool(name, value);
+                  preferencesRef.doc(currentUser.id).set(
+                      {name: value},
+                      SetOptions(merge: true));
+       }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,56 +79,60 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
                   'Likes',
                   likes,
                   (newValue) {
-                    preferences.setBool('push_likes', newValue);
-                    likes = newValue;
-                    preferencesRef.doc(currentUser.id).set(
-                      {'push_likes': newValue},
-                    );
+                    saveNotifPref( 'push_likes', newValue,);
+                    setState(() {
+                      likes = newValue;
+                    });
                   },
                 ),
                 settingsSwitchListTile('Comments', comments, (newValue) {
-                  preferences.setBool('push_comments', newValue);
-                  comments = newValue;
-                  preferencesRef.doc(currentUser.id).set(
-                      {'push_comments': newValue}, SetOptions(merge: true));
+                   saveNotifPref( 'push_comments', newValue,);
+                    setState(() {
+                      likes = newValue;
+                    });
+                   saveNotifPref( 'push_comments', newValue,);
                 }),
                 settingsSwitchListTile('Comment Replies', commentReplies,
                     (newValue) {
-                  preferences.setBool('push_comment_replies', newValue);
+
+
+                       saveNotifPref( 'push_comment_replies', newValue,);
+                    setState(() {
                   commentReplies = newValue;
-                  preferencesRef.doc(currentUser.id).set(
-                      {'push_comment_replies': newValue},
-                      SetOptions(merge: true));
+                    });
+                 
                 }),
                 settingsSwitchListTile('New Followers', newFollowers,
                     (newValue) {
-                  preferences.setBool('push_new_followers', newValue);
-                  newFollowers = newValue;
-                  preferencesRef.doc(currentUser.id).set(
-                      {'push_new_followers': newValue},
-                      SetOptions(merge: true));
+                           saveNotifPref( 'push_new_followers', newValue,);
+                    setState(() {
+                   newFollowers = newValue;
+                    });
+                 
+                
                 }),
                 settingsSwitchListTile('Direct Requests', directRequests,
                     (newValue) {
-                  preferences.setBool('push_direct_requests', newValue);
+                             saveNotifPref( 'push_direct_requests', newValue,);
+                    setState(() {
                   directRequests = newValue;
-                  preferencesRef.doc(currentUser.id).set(
-                      {'push_direct_requests': newValue},
-                      SetOptions(merge: true));
+                    });
+                
                 }),
                 settingsSwitchListTile('New Feature Updates', features,
                     (newValue) {
-                  preferences.setBool('push_features', newValue);
-                  features = newValue;
-                  preferencesRef.doc(currentUser.id).set(
-                      {'push_features': newValue}, SetOptions(merge: true));
+                                saveNotifPref( 'push_features', newValue,);
+                    setState(() {
+               features = newValue;
+                    });
+            
                 }),
                 settingsSwitchListTile('Notification Reminders', reminders,
                     (newValue) {
-                  preferences.setBool('push_reminders', newValue);
-                  reminders = newValue;
-                  preferencesRef.doc(currentUser.id).set(
-                      {'push_reminders': newValue}, SetOptions(merge: true));
+                                      saveNotifPref( 'push_reminders', newValue,);
+                    setState(() {
+               reminders = newValue;
+                    });
                 }),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
               ],
             ),

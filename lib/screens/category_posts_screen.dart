@@ -1,4 +1,5 @@
 import 'package:blue/widgets/empty_state.dart';
+import 'package:blue/widgets/paginated_posts.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -18,50 +19,29 @@ class _CategoryPostsScreenState extends State<CategoryPostsScreen>
   List<Post> posts = [];
   bool loading = true;
   bool blank = false;
-  @override
-  void didChangeDependencies() async{
-   await getPosts();
-    super.didChangeDependencies();
-  }
+  Widget compactPosts;
 
   
 
-  getPosts() async {
-    print(currentUser);
-    QuerySnapshot snapshot =
-        await postsRef.where('topicName', isEqualTo: widget.name).get();
-        print(snapshot.docs.length );
-    if (snapshot.docs.length != 0) {
-      setState(() {
-       snapshot.docs.forEach((doc) {
-         posts.add(Post.fromDocument(
-            doc.data(),
-            isCompact: true,
-          ));
-        });
-        loading = false;
-      });
-    } else {
-      setState(() {
-        blank = true;
-      });
-    }
-  }
+ 
 
-Widget  postList() {
-    if (blank)
-      return emptyState(context,  "Can't find any posts", 'Bad Gateway');
-    else if (loading)
-      return circularProgress();
-    else
-      return ListView(children: posts);
+    Future refreshPosts()async{
+      setState(() {
+        compactPosts = PaginatedPosts(length: 8,query: postsRef.where('topicName',isEqualTo: widget.name).orderBy('timeStamp',descending: true,),isCompact: true ,key: UniqueKey(),);
+      }); 
   }
-
+   @override
+  void initState() {
+   compactPosts =  PaginatedPosts(length: 8,query: postsRef.where('topicName',isEqualTo: widget.name).orderBy('timeStamp',descending: true,), isCompact: true,key: UniqueKey(),);
+    super.initState();
+  }
   @override
   bool get wantKeepAlive => true;
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return postList();
+    return Container(
+     decoration: BoxDecoration(border: Border(top: BorderSide(color: Theme.of(context).cardColor,width: 1))),
+     child:compactPosts);
   }
 }

@@ -2,6 +2,7 @@ import 'package:blue/screens/about_screen.dart';
 import 'package:blue/screens/all_saved_posts_screen.dart';
 import 'package:blue/screens/chat_messages_screen.dart';
 import 'package:blue/widgets/empty_state.dart';
+import 'package:blue/widgets/paginated_posts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,7 @@ import '../widgets/progress.dart';
 import './home.dart';
 import './edit_profile_screen.dart';
 import './settings_screen.dart';
-
+import '../services/functions.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 
@@ -33,7 +34,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen>
     with AutomaticKeepAliveClientMixin<ProfileScreen> {
- 
+ Widget postsList;
   // final PostInteractions postInteractions;
   // _ProfileScreenState(this.postInteractions);
   User _profileUser;
@@ -49,7 +50,7 @@ String profileName = '';
   int repostCount = 0;
   int followerCount = 0;
   int followingCount = 0;
-  List<Post> posts;
+  List<Post> posts = [];
   List<Post> reposts = [];
   bool headerLoading = true;
   bool hasMorePosts = true; // flag for more products available or not
@@ -65,10 +66,10 @@ String profileName = '';
   @override
   void initState() {
     super.initState();
-    getProfilePosts();
     getFollowers();
     getFollowing();
     checkIfFollowing();
+     postsList = PaginatedPosts(length: 2,query: postsRef.where('ownerId',isEqualTo: currentUserId).orderBy('timeStamp',descending: true,),key: UniqueKey(),);
     controller.addListener(onScroll);
   }
   @override
@@ -119,65 +120,7 @@ void dispose() {
     });
   }
 
-  getProfilePosts() async {
-    if (!hasMorePosts) {
-      print('No More posts');
-      return;
-    }
-    if (postsAreLoading) {
-      return;
-    }
-    setState(() {
-      postsAreLoading = true;
-    });
-    var _postGroup = await userPostsRef
-        .doc(widget.profileId)
-        .collection('userPosts')
-        .orderBy('order', descending: false)
-        .get();
-    List _postList = [];
-    if(_postGroup.docs.length == 0){
-      return Container();
-    }
-    for (int l = 0; l < _postGroup.docs.length; l++) {
-      _postList.add(_postGroup.docs.elementAt(l).data()['posts']);
-    }
-    List _postFullList = [];
-    for (int i = 0; i < _postList.length; i++) {
-      for (int x = 0; x < _postList[i].length; x++) {
-        _postFullList.add(_postList[i][x]);
-      }
-    }
-    List<Future> postFutures = [];
-    if (lastPostDocument == null) {
-      for (int k = 0; k < _postFullList.length; k++) {
-        postFutures.add(postsRef.doc(_postFullList[k]).get());
-      }
-    } else {
-      for (int k = 0; k < _postFullList.length; k++) {
-        postFutures.add(postsRef.doc(_postFullList[k]).get());
-      }
-    }
-    postDocSnapshots = await Future.wait(postFutures);
-    print(postDocSnapshots.first);
-    print('${postDocSnapshots.length}j');
-    if (postDocSnapshots.length < documentLimit) {
-      hasMorePosts = false;
-    }
-    if (postDocSnapshots.length == 0) {
-      return;
-    }
-    lastPostDocument = postDocSnapshots[postDocSnapshots.length - 1];
-    posts = [];
-    setState(() {
-      postsAreLoading = false;
-      postCount = postDocSnapshots.length;
-      print(postDocSnapshots);
-      posts = posts +
-          postDocSnapshots.map((doc) => Post.fromDocument(doc.data())).toList();
-    });
-  }
-
+  
 
   editProfile() {
     Navigator.pushNamed(
@@ -278,90 +221,17 @@ void dispose() {
     } else if (!isFollowing) {
       return buildButton(
           text: 'Follow',
-          function: handleFollowUser,
+          function: (){
+            Functions().handleFollowUser(widget.profileId);
+              setState(() {
+      isFollowing = true;
+    });
+          },
           icon: FlutterIcons.adduser_ant);
     }
   }
 
-  handleUnfollowUser()async {// TODO batch writes and prefer server side
-      usersRef.doc(widget.profileId).update({'followers': FieldValue.increment(-1) },);
-      usersRef.doc(currentUser.id).update({'following': FieldValue.increment(-1) },);
-      
-     QuerySnapshot _followersDocs =  await followersRef
-        .doc(widget.profileId)
-        .collection('userFollowers')
-        .where('followers',arrayContains: currentUser.id).get();
-         _followersDocs.docs.forEach((doc) {
-           doc.reference.update({'followers': FieldValue.arrayRemove([currentUser.id])});
-          });
-      
-     QuerySnapshot _followingDocs =  await followingRef
-        .doc(currentUser.id)
-        .collection('userFollowing')
-        .where('following',arrayContains: widget.profileId).get();
-         _followingDocs.docs.forEach((doc) {
-           doc.reference.update({'following': FieldValue.arrayRemove([widget.profileId])});
-          });
 
-     setState(() {
-      isFollowing = false;
-    });
-  }
-
-  handleFollowUser() async{//TODO Batch writes and prefer server side
-    usersRef.doc(widget.profileId).update({'followers': FieldValue.increment(1) },);
-     usersRef.doc(currentUser.id).update({'following': FieldValue.increment(1) },);
-
-   QuerySnapshot _followersDoc =  await followersRef
-        .doc(widget.profileId)
-        .collection('userFollowers')
-        .orderBy('order').limit(1).get();
-        if(_followersDoc.docs.length == 0){
-           followersRef
-        .doc(widget.profileId)
-        .collection('userFollowers').doc().set({'order':1,'followers':[currentUser.id]});
-        }else if((_followersDoc.docs.length == 1) && (_followersDoc.docs.first.data()['followers'].length>9999 )  ){
-                          followersRef
-        .doc(widget.profileId)
-        .collection('userFollowers').doc().set({'order':_followersDoc.docs.first.data()['order']+1,'followers':[currentUser.id]}); 
-        }else{
-             followersRef
-        .doc(widget.profileId)
-        .collection('userFollowers').doc(_followersDoc.docs.first.id).update({'followers':FieldValue.arrayUnion([currentUser.id])}); 
-        }
-       QuerySnapshot  _followingDoc =  await followingRef
-        .doc(currentUser.id)
-        .collection('userFollowing')
-        .orderBy('order').limit(1).get();
-         if(_followingDoc.docs.length == 0){
-           followingRef
-        .doc(widget.profileId)
-        .collection('userFollowing').doc().set({'order':1,'following':[widget.profileId]});
-        }else if((_followingDoc.docs.length == 1) && (_followingDoc.docs.first.data()['following'].length>9999 )  ){
-                          followingRef
-        .doc(widget.profileId)
-        .collection('userFollowing').doc().set({'order':_followingDoc.docs.first.data()['order']+1,'following':[widget.profileId]}); 
-        }else{
-             followingRef
-        .doc(widget.profileId)
-        .collection('userFollowing').doc(_followingDoc.docs.first.id).update({'following':FieldValue.arrayUnion([widget.profileId])}); 
-        }
-    activityFeedRef
-        .doc(widget.profileId)
-        .collection('feedItems')
-        .doc(currentUserId)
-        .set({
-      'type': 'follow',
-      'ownerId': widget.profileId,
-      'username': currentUser.username,
-      'userId': currentUser.photoUrl,
-      'userProfileImg': currentUser.photoUrl,
-      'timestamp': timestamp,
-    });
-     setState(() {
-      isFollowing = true;
-    });
-  }
 
   Widget buildProfileIconButton() {
     bool isProfileOwner = currentUserId == widget.profileId;
@@ -531,21 +401,12 @@ void dispose() {
     }
   }
 
-  buildProfilePosts() {
-    if(posts == null)
-    return circularProgress();
-    if(posts == [] )
-    return emptyState(context,  "Can't find any posts", 'Bad Gateway');
-    return ListView.builder(
-      padding: EdgeInsets.only(bottom: 100),
-      scrollDirection: Axis.vertical,
-      itemBuilder: (_, i) {
-        return posts[i];
-      },
-      itemCount: posts.length,
-    );
-  }
 
+ Future refreshPosts()async{
+      setState(() {
+        postsList = PaginatedPosts(length: 2,query: postsRef.where('ownerId',isEqualTo: currentUserId).orderBy('timeStamp',descending: true,),key: UniqueKey(),);
+      }); 
+  }
  
 
   
@@ -610,7 +471,10 @@ void dispose() {
                       icon: Icon(FluentIcons.more_vertical_24_regular,),
                       onSelected: (selectedValue)async {   //TODO
                         if(selectedValue ==  'Unfollow'){
-                             await   handleUnfollowUser();
+                            Functions().handleUnfollowUser(widget.profileId);
+                              setState(() {
+      isFollowing = false;
+    });
                         }else if(selectedValue ==  'Report'){
 
                         }else if(selectedValue ==  'Block'){
@@ -633,10 +497,10 @@ void dispose() {
           // allows you to build a list of elements that would be scrolled away till the body reached the top
           headerSliverBuilder: (context, _) {
             return [
-              SliverToBoxAdapter(
-                // delegate: SliverChildListDelegate(
-                child: buildProfileHeaderTemp(),
-                //),
+              SliverList(
+                delegate: SliverChildListDelegate(
+                [buildProfileHeaderTemp()],
+                ),
               ),
             ];
           },
@@ -695,9 +559,9 @@ void dispose() {
                     ],
                   )),
               Divider(
-                height: 0.3,
-                thickness: 0.3,
-                color: Colors.grey,
+                height: 1,
+                thickness:1,
+                color: Theme.of(context).cardColor,
               ),
               if (sortDropDown)
                 Material(
@@ -782,8 +646,7 @@ void dispose() {
                     ],
                   ),
                 ),
-              Expanded(child: Container(color: Theme.of(context).canvasColor,child:  buildProfilePosts(),)),
-            
+              Expanded(child: Container(color: Theme.of(context).canvasColor,child:  postsList,)),
             ],
           ),
         ),
