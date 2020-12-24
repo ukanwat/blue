@@ -1,19 +1,24 @@
+// Dart imports:
 import 'dart:convert';
 
-import 'package:animations/animations.dart';
-import 'package:blue/screens/settings_screen.dart';
-import 'package:blue/widgets/empty_state.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import '../main.dart';
-import './home.dart';
-import '../widgets/progress.dart';
-import '../models/user.dart';
-import './chat_messages_screen.dart';
 
+// Package imports:
+import 'package:animations/animations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:timeago/timeago.dart' as timeago;
+
+// Project imports:
+import 'package:blue/screens/settings_screen.dart';
+import 'package:blue/widgets/empty_state.dart';
+import '../main.dart';
+import '../models/user.dart';
+import '../widgets/progress.dart';
+import './chat_messages_screen.dart';
+import './home.dart';
 
 class ChatsScreen extends StatefulWidget {
   @override

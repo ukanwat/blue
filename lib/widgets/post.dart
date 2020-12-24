@@ -1,32 +1,40 @@
+// Dart imports:
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
+
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_pro/carousel_pro.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flick_video_player/flick_video_player.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:video_player/video_player.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
+
+// Project imports:
+import 'package:blue/main.dart';
 import 'package:blue/screens/explore_posts_screen.dart';
 import 'package:blue/screens/profile_screen.dart';
+import 'package:blue/screens/tag_screen.dart';
 import 'package:blue/services/link_preview.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/services/video_controls.dart';
 import 'package:blue/widgets/report_dialog.dart';
 import 'package:blue/widgets/repost_dialog.dart';
 import 'package:blue/widgets/save_dialog.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:carousel_pro/carousel_pro.dart';
-import 'package:flick_video_player/flick_video_player.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:video_player/video_player.dart';
-import 'package:blue/screens/tag_screen.dart';
-import 'package:blue/main.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:math' as math;
-import './custom_image.dart';
-import '../screens/home.dart';
 import '../screens/comments_screen.dart';
-import '../services/go_to.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../screens/home.dart';
 import '../services/functions.dart';
+import '../services/go_to.dart';
+import '../services/go_to.dart';
+import './custom_image.dart';
 
 enum CompactPostThumbnailType {
   video,
@@ -1009,8 +1017,8 @@ class _PostState extends State<Post> {
         text,
         style: preferences.getBool('serif')
             ? TextStyle(
-                fontFamily: 'Georgia',
-                fontSize: 17,
+                fontFamily: 'Yahoo Sans',
+                fontSize: 17,fontWeight: FontWeight.w400,
                 letterSpacing: 0,
                 wordSpacing: 0,
                 height: 1.25,
@@ -1274,7 +1282,7 @@ class _PostState extends State<Post> {
                   builder: (BuildContext context) => RepostDialog(this.widget),
                 );
               }),
-              if (!widget.commentsShown)
+              if (!(widget.commentsShown || widget.isCompact))
                 footerButton(FluentIcons.comment_24_regular, Colors.cyan, () {
                   showComments(
                     context,
@@ -1445,9 +1453,27 @@ class _PostState extends State<Post> {
                 child: InkWell(
                   onTap: widget.isCompact
                       ? () {
-                          Navigator.of(context).pushNamed(
-                              ExplorePostsScreen.routeName,
-                              arguments: this.widget);
+                           showComments(
+                    context,
+                    post: Post(
+                      commentsShown: true,
+                      contents: this.widget.contents,
+                      contentsInfo: this.widget.contentsInfo,
+                      isCompact: false,
+                      ownerId: this.widget.ownerId,
+                      photoUrl: this.widget.photoUrl,
+                      postId: this.widget.postId,
+                      tags: this.widget.tags,
+                      title: this.widget.title,
+                      topicId: this.widget.topicId,
+                      topicName: this.widget.topicName,
+                      upvotes: this.widget.upvotes,
+                      username: this.widget.username,
+                    ),
+                  );
+                          // Navigator.of(context).pushNamed(
+                          //     ExplorePostsScreen.routeName,
+                          //     arguments: this.widget);
                         }
                       : null,
                   child: Column(

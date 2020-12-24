@@ -1,13 +1,16 @@
-import 'package:blue/services/go_to.dart';
-import 'package:blue/widgets/post.dart' as p;
+// Flutter imports:
 import 'package:flutter/material.dart';
 
-import '../widgets/activity_feed_item.dart';
-import '../models/user.dart';
-import '../widgets/progress.dart';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+// Project imports:
+import 'package:blue/services/go_to.dart';
+import 'package:blue/widgets/post.dart' as p;
+import '../models/user.dart';
+import '../widgets/activity_feed_item.dart';
+import '../widgets/progress.dart';
 
 FutureBuilder peopleResultsScreen(Future<QuerySnapshot> peopleResultsFuture,TextEditingController searchController) {
   return FutureBuilder(

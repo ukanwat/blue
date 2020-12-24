@@ -1,9 +1,12 @@
+// Flutter imports:
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:blue/providers/provider_widget.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/widgets/header.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
 enum AuthFormType { signIn, signUp, googleSignIn,reset ,anonymous}
 

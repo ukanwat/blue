@@ -1,6 +1,10 @@
-import 'package:blue/main.dart';
+// Package imports:
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+// Project imports:
+import 'package:blue/main.dart';
 import '../screens/home.dart';
+
 class Functions{
   handleFollowUser(String profileId, ) async{//TODO Batch writes and prefer server side
     usersRef.doc(profileId).update({'followers': FieldValue.increment(1) },);

@@ -1,10 +1,15 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+
+// Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/services/go_to.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 String activityItemText;
 String activityItemTextData;
@@ -84,11 +89,11 @@ class _ActivityFeedItemState extends State<ActivityFeedItem> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            activityFeedRef
-                .doc(currentUser.id)
-                .collection('feedItems')
-                .doc(activityFeedDocumentId)
-                .update({'seen': true});
+            // activityFeedRef
+            //     .doc(currentUser.id)
+            //     .collection('feedItems')
+            //     .doc(activityFeedDocumentId)
+            //     .update({'seen': true});
           },
           child: Padding(
             padding: EdgeInsets.only(bottom: 2.0, top: 8),

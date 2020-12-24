@@ -1,6 +1,9 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/widgets/settings_widgets.dart';
-import 'package:flutter/material.dart';
 import '../../edit_profile_screen.dart';
 import 'account_screens/email_screen.dart';
 import 'account_screens/logins.dart';

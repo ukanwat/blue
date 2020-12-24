@@ -1,11 +1,16 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+import 'package:provider/provider.dart';
+
+// Project imports:
+import 'package:blue/main.dart';
 import 'package:blue/providers/submit_state.dart';
 import 'package:blue/screens/search_tag_screen.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:blue/main.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:provider/provider.dart';
 import 'home.dart';
 
 class SelectTopicScreen extends StatefulWidget {

@@ -1,9 +1,14 @@
-import 'package:blue/screens/activity_feed_screen.dart';
-import 'package:blue/screens/chats_screen.dart';
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:blue/main.dart';
+import 'package:blue/screens/activity_feed_screen.dart';
+import 'package:blue/screens/chats_screen.dart';
 
 class CommunicationTabbarScreen extends StatefulWidget {
   const CommunicationTabbarScreen({Key key}) : super(key: key);

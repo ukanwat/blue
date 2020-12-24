@@ -1,5 +1,8 @@
-import 'package:blue/widgets/settings_widgets.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Project imports:
+import 'package:blue/widgets/settings_widgets.dart';
 
 class AcknowledgementsScreen extends StatefulWidget {
   static const routeName = 'acknowledgements';

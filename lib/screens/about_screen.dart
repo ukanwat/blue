@@ -1,10 +1,16 @@
-import 'package:blue/models/user.dart';
-import 'package:blue/widgets/header.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+// Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+// Project imports:
+import 'package:blue/models/user.dart';
+import 'package:blue/widgets/header.dart';
+
 class AboutScreen extends StatelessWidget {
   static const routeName = 'about';
     String compactString(int value) {

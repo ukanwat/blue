@@ -1,5 +1,7 @@
+// Package imports:
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:package_info/package_info.dart';
+
 class DynamicLinksService {
   static Future<String> createDynamicLink(String parameter) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();

@@ -1,8 +1,13 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+
+// Project imports:
 import 'package:blue/providers/provider_widget.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:blue/widgets/show_dialog.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
 
 class LoginsScreen extends StatelessWidget {
   static const routeName = 'logins';

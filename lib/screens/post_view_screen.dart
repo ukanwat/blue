@@ -1,7 +1,11 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
-import './home.dart';
-import '../widgets/progress.dart';
+
+// Project imports:
 import '../widgets/post.dart';
+import '../widgets/progress.dart';
+import './home.dart';
+
 class PostViewScreen extends StatelessWidget { final String userId;
   final String postId;
 

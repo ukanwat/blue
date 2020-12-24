@@ -1,15 +1,27 @@
+// Dart imports:
 import 'dart:io';
 import 'dart:ui';
+
+// Flutter imports:
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+// Package imports:
+import 'package:device_info/device_info.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+// Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/screens/license_screen.dart';
 import 'package:blue/screens/settings/about/privacy_policy_screen.dart';
 import 'package:blue/screens/settings/about/terms_of_service_screen.dart';
-import 'package:blue/screens/settings/advanced_settings/font_screen.dart';
-import 'package:blue/screens/settings/general/account_screen.dart';
-import 'package:blue/screens/settings/advanced_settings/autoplay_screen.dart';
-import 'package:blue/screens/settings/advanced_settings/content_cache_screen.dart';
 import 'package:blue/screens/settings/feedback/give_a_suggestion_screen.dart';
 import 'package:blue/screens/settings/feedback/report_a_bug_screen.dart';
+import 'package:blue/screens/settings/general/account_screen.dart';
 import 'package:blue/screens/settings/general/appearance_screen.dart';
 import 'package:blue/screens/settings/general/collections_screen.dart';
 import 'package:blue/screens/settings/general/drafts_screen.dart';
@@ -17,15 +29,7 @@ import 'package:blue/screens/settings/notification/email_notifications_screen.da
 import 'package:blue/screens/settings/notification/push_notifications_screen.dart';
 import 'package:blue/screens/settings/privacy/activity_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screen.dart';
-import 'package:device_info/device_info.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:blue/widgets/settings_widgets.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_email_sender/flutter_email_sender.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
   static const routeName = 'settings';
@@ -169,37 +173,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
           
-              settingsSectionTitle(
-                  'Advanced Settings',
-                  Icon(
-                    FluentIcons.more_circle_20_regular,
-                    color: Colors.blueAccent,
-                  ),
-                  context),
-                      Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: Material(
-                  borderRadius: BorderRadius.circular(12),
-                  color: dark
-                      ? Theme.of(context).canvasColor
-                      : Theme.of(context).backgroundColor,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    clipBehavior: Clip.antiAlias,
-                    child: Column(
-                      children: [
-                         settingsPageNavigationTile(
-                  context, 'Autoplay', AutoplayScreen.routeName),
-              settingsPageNavigationTile(context, 'Font', FontScreen.routeName),
-
-              settingsPageNavigationTile(
-                  context, 'Content Cache', ContentCacheScreen.routeName,removeBorder: true),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-         
+             
 
               // Divider(
               //   thickness: 6,

@@ -1,12 +1,16 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+
+// Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/widgets/empty_state.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import './home.dart';
 import './search_results_screen.dart';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SearchScreen extends StatefulWidget {
   static const routeName = '/search';

@@ -1,11 +1,15 @@
+// Flutter imports:
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Project imports:
+import 'package:blue/main.dart';
 import 'package:blue/screens/tag_screen.dart';
 import 'package:blue/widgets/header.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:blue/main.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 import 'home.dart';
 
 class AllTopicsScreen extends StatefulWidget {

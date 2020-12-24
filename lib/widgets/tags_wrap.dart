@@ -1,12 +1,19 @@
+// Dart imports:
 import 'dart:convert';
+
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sortedmap/sortedmap.dart';
+
+// Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/screens/tag_screen.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sortedmap/sortedmap.dart';
 
 class TagsWrap extends StatefulWidget {
   @override

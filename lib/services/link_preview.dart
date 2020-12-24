@@ -1,6 +1,11 @@
+// Dart imports:
 import 'dart:convert';
-import 'package:cached_network_image/cached_network_image.dart';
+
+// Flutter imports:
 import 'package:flutter/material.dart' hide Element;
+
+// Package imports:
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:html/dom.dart' hide Text;
 import 'package:html/parser.dart' as parser;

@@ -1,4 +1,7 @@
+// Dart imports:
 import 'dart:io';
+
+// Package imports:
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 
 class VideoProcessing {

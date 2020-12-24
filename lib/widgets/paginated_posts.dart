@@ -1,8 +1,14 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+// Project imports:
 import 'package:blue/widgets/empty_state.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'post.dart';
+
 class PaginatedPosts extends StatefulWidget {
   final Query query;
   final int  length ;
@@ -83,7 +89,8 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
   @override
   Widget build(BuildContext context) {
     return empty? emptyState(context, "Can't find any posts ", 'none'): ListView.builder(
-      physics: NeverScrollableScrollPhysics(),
+      physics:AlwaysScrollableScrollPhysics(),
+   
       controller: _scrollController,
 itemCount:posts.length+1,
       itemBuilder: (context, i) {

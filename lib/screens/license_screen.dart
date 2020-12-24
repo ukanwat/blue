@@ -1,11 +1,16 @@
+// Dart imports:
 import 'dart:async';
 import 'dart:developer' show Timeline, Flow;
-import 'package:blue/screens/package_licenses_screen.dart';
-import 'package:blue/widgets/settings_widgets.dart';
+
+// Flutter imports:
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' hide Flow;
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart' hide Flow;
-import 'package:flutter/material.dart' hide Flow;
+
+// Project imports:
+import 'package:blue/screens/package_licenses_screen.dart';
+import 'package:blue/widgets/settings_widgets.dart';
 
 class LicenseScreen extends StatefulWidget {
   static const routeName = 'license';

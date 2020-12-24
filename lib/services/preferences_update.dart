@@ -1,3 +1,4 @@
+// Project imports:
 import 'package:blue/main.dart';
 
 class PreferencesUpdate {

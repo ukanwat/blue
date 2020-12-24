@@ -1,11 +1,17 @@
-import 'package:blue/providers/comment.dart';
-import 'package:blue/screens/home.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
-import 'package:timeago/timeago.dart'  as timeago; 
+
+// Project imports:
+import 'package:blue/providers/comment.dart';
+import 'package:blue/screens/home.dart';
 import 'comment_vote_button.dart';
+
+import 'package:timeago/timeago.dart'  as timeago; 
 
 class CommentReply extends StatelessWidget {
     final String id;

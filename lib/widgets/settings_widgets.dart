@@ -1,6 +1,9 @@
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+// Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 PreferredSize settingsHeader(BuildContext context, String title){
   return PreferredSize(
@@ -23,7 +26,7 @@ fontFamily: 'Techna Sans Regular'
       ),);
 }
 
-Container settingsSectionTitle(String title, Icon icon,BuildContext context) {
+Container settingsSectionTitle(String title, Icon icon,BuildContext context, ) {
   return Container(
     width: double.infinity,
     color: Theme.of(context).iconTheme.color == Colors.white?Theme.of(context).backgroundColor:Theme.of(context).canvasColor,

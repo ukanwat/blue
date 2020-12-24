@@ -1,6 +1,11 @@
-import 'package:blue/screens/home.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+// Project imports:
+import 'package:blue/screens/home.dart';
 
 class ReportDialog extends StatefulWidget {
   final String postId;

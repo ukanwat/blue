@@ -1,8 +1,11 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+// Project imports:
 import 'package:blue/providers/provider_widget.dart';
 import 'package:blue/screens/sign_in_screen.dart';
 import 'package:blue/screens/tabs_screen.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class SignInViewScreen extends StatelessWidget {
   static const routeName = 'sign-in-view';

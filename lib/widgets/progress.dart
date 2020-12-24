@@ -1,4 +1,7 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:nuts_activity_indicator/nuts_activity_indicator.dart';
 
  circularProgress() {

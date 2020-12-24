@@ -1,13 +1,17 @@
-import 'package:blue/screens/category_posts_screen.dart';
-import 'package:blue/screens/search_screen.dart';
-import 'package:blue/widgets/progress.dart';
-import 'package:blue/widgets/tags_wrap.dart';
-import 'package:blue/widgets/post.dart';
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
+// Project imports:
+import 'package:blue/screens/category_posts_screen.dart';
+import 'package:blue/screens/search_screen.dart';
+import 'package:blue/widgets/post.dart';
+import 'package:blue/widgets/progress.dart';
+import 'package:blue/widgets/tags_wrap.dart';
 import 'home.dart';
 
 class ExploreScreen extends StatefulWidget {

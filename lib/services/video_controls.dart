@@ -1,5 +1,8 @@
-import 'package:flick_video_player/flick_video_player.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:flick_video_player/flick_video_player.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 

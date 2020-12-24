@@ -1,19 +1,23 @@
+// Flutter imports:
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+import 'package:provider/provider.dart';
+
+// Project imports:
+import 'package:blue/main.dart';
 import 'package:blue/providers/comment.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/header.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:blue/main.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:provider/provider.dart';
-
-import './home.dart';
 import '../widgets/comment.dart';
+import './home.dart';
 
 class CommentsScreen extends StatefulWidget {
   static const routeName = '/comments';

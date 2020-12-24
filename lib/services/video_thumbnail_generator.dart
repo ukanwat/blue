@@ -1,8 +1,14 @@
+// Dart imports:
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
+
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:video_thumbnail/video_thumbnail.dart';
+
 class ThumbnailRequest {
   final String video;
   final String thumbnailPath;

@@ -1,10 +1,16 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:animations/animations.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+
+// Project imports:
 import 'package:blue/screens/following_posts_screen.dart';
 import 'package:blue/widgets/paginated_posts.dart';
 import 'package:blue/widgets/tags_wrap.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
 import '../widgets/header.dart';
+
 import './home.dart';                                                                                                           
                                                                                                                                                                        
 class HomeScreen extends StatefulWidget {

@@ -1,12 +1,18 @@
+// Dart imports:
 import 'dart:io';
 import 'dart:ui';
 
+// Flutter imports:
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+// Package imports:
+import 'package:device_info/device_info.dart';
+
+// Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/widgets/settings_widgets.dart';
-import 'package:device_info/device_info.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class GiveASuggestionScreen extends StatefulWidget {
   static const routeName = 'give-a-suggestion';

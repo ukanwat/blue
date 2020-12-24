@@ -1,6 +1,10 @@
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 Widget emptyState(BuildContext context,String title,String svgName,{String subtitle,} ){
  return Container(width: double.infinity,height: MediaQuery.of(context).size.height,
       child: Center(

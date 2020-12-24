@@ -1,5 +1,8 @@
+// Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:blue/providers/provider_widget.dart';
 
 class EmailScreen extends StatefulWidget {

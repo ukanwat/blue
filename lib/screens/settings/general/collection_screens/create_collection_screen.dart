@@ -1,8 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:blue/main.dart';
 
+// Package imports:
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+// Project imports:
+import 'package:blue/main.dart';
 import '../../../home.dart';
 
 class CreateCollectionScreen extends StatefulWidget {

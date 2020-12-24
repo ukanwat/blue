@@ -1,7 +1,10 @@
-import 'package:blue/widgets/progress.dart';
+// Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+// Project imports:
+import 'package:blue/widgets/progress.dart';
 
 class PackageLicensesScreen extends StatefulWidget {
   static const routeName = 'package-licenses';

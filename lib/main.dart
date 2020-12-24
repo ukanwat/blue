@@ -1,35 +1,51 @@
+// Dart imports:
 import 'dart:convert';
 import 'dart:io';
+
+// Flutter imports:
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+// Package imports:
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:hive/hive.dart';
+import 'package:page_transition/page_transition.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Project imports:
 import 'package:blue/providers/provider_widget.dart' as PW;
 import 'package:blue/providers/theme.dart';
 import 'package:blue/screens/about_screen.dart';
 import 'package:blue/screens/all_saved_posts_screen.dart';
 import 'package:blue/screens/all_topics_screen.dart';
+import 'package:blue/screens/chat_info_screen.dart';
+import 'package:blue/screens/chat_messages_screen.dart';
 import 'package:blue/screens/collection_posts_screen.dart';
 import 'package:blue/screens/explore_posts_screen.dart';
+import 'package:blue/screens/gifs_screen.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/screens/license_screen.dart';
 import 'package:blue/screens/package_licenses_screen.dart';
-import 'package:blue/screens/settings/about/privacy_policy_screen.dart';
-import 'package:blue/screens/settings/about/terms_of_service_screen.dart';
-import 'package:blue/screens/settings/advanced_settings/font_screen.dart';
-import 'package:blue/screens/settings/general/appearance_screen.dart';
-import 'package:blue/screens/sign_in_screen.dart';
 import 'package:blue/screens/profile_image_crop_screen.dart';
-import 'package:blue/screens/sign_in_view_screen.dart';
-import 'package:blue/screens/tabs_screen.dart';
-import 'package:blue/screens/tag_screen.dart';
 import 'package:blue/screens/search_tag_screen.dart';
 import 'package:blue/screens/select_topic_screen.dart';
 import 'package:blue/screens/settings/about/acknowledgements_screen.dart';
-import 'package:blue/screens/settings/advanced_settings/autoplay_screen.dart';
-import 'package:blue/screens/settings/advanced_settings/content_cache_screen.dart';
+import 'package:blue/screens/settings/about/privacy_policy_screen.dart';
+import 'package:blue/screens/settings/about/terms_of_service_screen.dart';
 import 'package:blue/screens/settings/feedback/give_a_suggestion_screen.dart';
 import 'package:blue/screens/settings/feedback/report_a_bug_screen.dart';
 import 'package:blue/screens/settings/general/account_screen.dart';
 import 'package:blue/screens/settings/general/account_screens/deactivate_account_screen.dart';
 import 'package:blue/screens/settings/general/account_screens/logins.dart';
 import 'package:blue/screens/settings/general/account_screens/password_screen.dart';
+import 'package:blue/screens/settings/general/appearance_screen.dart';
 import 'package:blue/screens/settings/general/collection_screens/create_collection_screen.dart';
 import 'package:blue/screens/settings/general/collections_screen.dart';
 import 'package:blue/screens/settings/general/drafts_screen.dart';
@@ -39,28 +55,16 @@ import 'package:blue/screens/settings/privacy/activity_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screens/blocked_accounts_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screens/muted_accounts_screen.dart';
+import 'package:blue/screens/sign_in_screen.dart';
+import 'package:blue/screens/sign_in_view_screen.dart';
+import 'package:blue/screens/tabs_screen.dart';
+import 'package:blue/screens/tag_screen.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/preferences_update.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:blue/screens/chat_info_screen.dart';
-import 'package:blue/screens/gifs_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart' as auth;
-import 'package:blue/screens/chat_messages_screen.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:hive/hive.dart';
-import 'package:page_transition/page_transition.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import './screens/search_screen.dart';
+import './screens/comments_screen.dart';
 import './screens/edit_profile_screen.dart';
 import './screens/post_screen.dart';
-import './screens/comments_screen.dart';
+import './screens/search_screen.dart';
 import './screens/settings_screen.dart';
 import 'models/user.dart';
 import 'screens/settings/general/account_screens/email_screen.dart';
@@ -69,9 +73,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  await getCurrentUser();                                              ////////check all
+  await getCurrentUser();                                              ////////check all, do all on login to0
   await getPreferences();
-  await openBoxes();
+  await openBoxes();              
 
  
   uploadTagsInfo();
@@ -142,6 +146,8 @@ uploadTagsInfo() {
 }
 
 Future getPreferences() async {
+  if(currentUser == null)
+  return;
   preferences = await SharedPreferences.getInstance();
   try {
     accountType = preferences.getString('accountType');
@@ -176,6 +182,10 @@ Future getCurrentUser() async {
 }
   bool   boxesOpened ;
 Future openBoxes() async {
+    if(currentUser == null)
+  return;
+    if(currentUser == null)
+  return;
   try{
  var dir = await getApplicationDocumentsDirectory();
   Hive.init(dir.path);
@@ -335,21 +345,7 @@ class MyAppState extends State<MyApp> {
                           child: PushNotificationsScreen(),
                           type: PageTransitionType.rightToLeft,
                           settings: settings);
-                    case AutoplayScreen.routeName:
-                      return PageTransition(
-                          child: AutoplayScreen(),
-                          type: PageTransitionType.rightToLeft,
-                          settings: settings);
-                    case FontScreen.routeName:
-                      return PageTransition(
-                          child: FontScreen(),
-                          type: PageTransitionType.rightToLeft,
-                          settings: settings);
-                    case ContentCacheScreen.routeName:
-                      return PageTransition(
-                          child: ContentCacheScreen(),
-                          type: PageTransitionType.rightToLeft,
-                          settings: settings);
+                  
                     case SafetyScreen.routeName:
                       return PageTransition(
                           child: SafetyScreen(),

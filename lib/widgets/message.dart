@@ -1,9 +1,14 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:image_downloader/image_downloader.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:blue/main.dart';
+
+// Package imports:
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:full_screen_image/full_screen_image.dart';
+import 'package:image_downloader/image_downloader.dart';
+
+// Project imports:
+import 'package:blue/main.dart';
 
 class Message extends StatelessWidget {
   final String idTo;

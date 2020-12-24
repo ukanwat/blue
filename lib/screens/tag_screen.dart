@@ -1,12 +1,17 @@
+// Flutter imports:
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+// Project imports:
+import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/screens/tag/tag_popular_screen.dart';
 import 'package:blue/screens/tag/tag_recent_screen.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/services/preferences_update.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:blue/main.dart';
 
 class TagScreen extends StatefulWidget {
   static const routeName = 'tag';

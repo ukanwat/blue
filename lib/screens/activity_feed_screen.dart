@@ -1,10 +1,15 @@
-import 'package:blue/widgets/empty_state.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
-import './home.dart';
-import '../widgets/progress.dart';
-import '../widgets/activity_feed_item.dart';
-import 'package:blue/main.dart';
+
+// Package imports:
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+// Project imports:
+import 'package:blue/main.dart';
+import 'package:blue/widgets/empty_state.dart';
+import '../widgets/activity_feed_item.dart';
+import '../widgets/progress.dart';
+import './home.dart';
 
 class ActivityFeedScreen extends StatefulWidget {
   @override

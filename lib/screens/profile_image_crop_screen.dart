@@ -1,7 +1,14 @@
+// Dart imports:
 import 'dart:io';
-import 'package:blue/widgets/header.dart';
+
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:simple_image_crop/simple_image_crop.dart';
+
+// Project imports:
+import 'package:blue/widgets/header.dart';
 
 class ProfileImageCropScreen extends StatefulWidget {
   static const routeName = 'profile-image-crop';

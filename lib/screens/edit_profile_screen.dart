@@ -1,23 +1,30 @@
+// Dart imports:
 import 'dart:convert';
 import 'dart:io';
-import '../services/file_storage.dart';
+
+// Flutter imports:
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+// Package imports:
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image/image.dart' as Im;
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
+
+// Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/screens/profile_image_crop_screen.dart';
 import 'package:blue/widgets/custom_image.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
-import 'package:image/image.dart' as Im;
-import 'package:path_provider/path_provider.dart';
-
-import './home.dart';
-import '../models/user.dart'; 
+import '../services/file_storage.dart';
 import '../widgets/progress.dart';
+import './home.dart';
 
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/user.dart'; 
+
 
 class EditProfileScreen extends StatefulWidget {
   static const routeName = '/edit-profile';

@@ -1,9 +1,12 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:blue/screens/comments_screen.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/screens/post_view_screen.dart';
 import 'package:blue/screens/profile_screen.dart';
 import 'package:blue/widgets/post.dart';
-import 'package:flutter/material.dart';
 
 class GoTo{
    profileScreen(BuildContext context,String profileId) {

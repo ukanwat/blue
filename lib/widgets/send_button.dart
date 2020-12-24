@@ -1,4 +1,7 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:flutter_icons/flutter_icons.dart';
 
 Container sendButton({Function sendFunction}) {

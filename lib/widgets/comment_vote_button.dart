@@ -1,7 +1,12 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
-import '../screens/home.dart';
-import 'package:flutter_icons/flutter_icons.dart';
+
+// Package imports:
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+
+// Project imports:
+import '../screens/home.dart';
 
 enum Vote{
   upvote,

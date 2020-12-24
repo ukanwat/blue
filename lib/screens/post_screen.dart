@@ -1,33 +1,40 @@
+// Dart imports:
 import 'dart:convert';
+import 'dart:io';
 import 'dart:ui';
-import 'package:blue/providers/submit_state.dart';
-import 'package:blue/services/link_preview.dart';
-import 'package:blue/widgets/show_dialog.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
-import 'package:blue/screens/select_topic_screen.dart';
-import 'package:blue/services/video_controls.dart';
-import 'package:carousel_pro/carousel_pro.dart';
-import 'package:flick_video_player/flick_video_player.dart';
+
+// Flutter imports:
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+// Package imports:
+import 'package:carousel_pro/carousel_pro.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flick_video_player/flick_video_player.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:multi_image_picker/multi_image_picker.dart';
-import 'package:provider/provider.dart';
-import 'dart:io';
-import './home.dart';
 import 'package:http/http.dart';
-import 'package:blue/main.dart';
-import 'package:path/path.dart' as p;
 import 'package:image/image.dart' as Im;
-import 'package:path_provider/path_provider.dart';
-import 'package:uuid/uuid.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:video_player/video_player.dart';
-import '../services/video_processing.dart';
+import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:path/path.dart' as Path;
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
+import 'package:video_player/video_player.dart';
+
+// Project imports:
+import 'package:blue/main.dart';
+import 'package:blue/providers/submit_state.dart';
+import 'package:blue/screens/select_topic_screen.dart';
+import 'package:blue/services/link_preview.dart';
+import 'package:blue/services/video_controls.dart';
+import 'package:blue/widgets/show_dialog.dart';
 import '../services/file_storage.dart';
+import '../services/video_processing.dart';
+import './home.dart';
 
 enum ContentInsertOptions { Device, Camera, Carousel }
 

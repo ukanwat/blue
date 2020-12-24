@@ -1,14 +1,19 @@
+// Flutter imports:
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+
+// Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/header.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:blue/widgets/show_dialog.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
 class ChatInfoScreen extends StatefulWidget {
   static const routeName = 'chat-info';

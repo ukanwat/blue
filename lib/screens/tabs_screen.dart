@@ -1,12 +1,17 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:flutter_icons/flutter_icons.dart';
+
+// Project imports:
+import 'package:blue/main.dart';
 import 'package:blue/screens/communication_tabbar_screen.dart';
 import 'package:blue/screens/post_screen.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'home_screen.dart';
 import './explore_screen.dart';
-import './profile_screen.dart';
 import './home.dart';
-import 'package:blue/main.dart';
+import './profile_screen.dart';
+import 'home_screen.dart';
 
 class TabsScreen extends StatefulWidget {
   static const routeName = 'tabs';

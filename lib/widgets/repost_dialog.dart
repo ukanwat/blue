@@ -1,8 +1,11 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Project imports:
+import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/settings_widgets.dart';
-import 'package:flutter/material.dart';
-import 'package:blue/main.dart';
 
 class RepostDialog extends StatefulWidget {
  final  Post post;

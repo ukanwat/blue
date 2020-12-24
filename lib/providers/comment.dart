@@ -1,7 +1,6 @@
+// Flutter imports:
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-
 
 class CommentNotifier extends ChangeNotifier {
   Map<String,String> _commentState;

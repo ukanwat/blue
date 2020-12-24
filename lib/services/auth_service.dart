@@ -1,13 +1,20 @@
+// Dart imports:
 import 'dart:convert';
-import 'package:blue/screens/home.dart';
-import 'package:blue/screens/sign_in_view_screen.dart';
+
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../screens/sign_in_screen.dart';
-import 'package:flutter/material.dart';
+
+// Project imports:
+import 'package:blue/screens/home.dart';
+import 'package:blue/screens/sign_in_view_screen.dart';
 import '../main.dart';
+import '../screens/sign_in_screen.dart';
 
 class AuthService {
   final auth.FirebaseAuth _firebaseAuth = auth.FirebaseAuth.instance;
