@@ -77,8 +77,12 @@ void main() async {
   await getPreferences();
   await openBoxes();              
 
- 
+ try{
   uploadTagsInfo();
+ }catch(e){
+   
+ }
+
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       //TODO
       systemNavigationBarColor: Colors.black,
@@ -116,15 +120,23 @@ query = await postsVotersRef.doc(currentUser.id).collection('userVotes').
        
   }
 uploadTagsInfo() {
+
   DateTime nowTime = DateTime.now();
   DateTime todayTime =
       DateTime.parse("${nowTime.year}-${nowTime.month}-${nowTime.day}");
+       Map openedTagsMap = {};
+      try{
   String openedTagsInfo = preferences.getString('tags_open_info');
-  Map openedTagsMap = {};
+ 
   if(openedTagsInfo == null){
     preferences.setString('tags_open_info',json.encode({}));
   }else
  openedTagsMap = json.decode(openedTagsInfo);
+      }catch(e){
+
+      }
+
+
   print(todayTime);
   String lastTagsInfoUploaded =
       preferences.getString('last_tags_info_uploaded');
@@ -216,7 +228,7 @@ class MyAppState extends State<MyApp> {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
- 
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -465,10 +477,13 @@ class MyAppState extends State<MyApp> {
   // Future selectNotification(String payload) async {
   //   await flutterLocalNotificationsPlugin.cancelAll();
   // }
+ @override
+  void didChangeDependencies() {
+    
+    super.didChangeDependencies();
 
-  @override
-  void initState() {
-      String host = Platform.isAndroid ? '10.0.2.2:8080' : 'localhost:8080';
+
+       String host = Platform.isAndroid ? '10.0.2.2:8080' : 'localhost:8080';
 
 Settings(   host: host,
       sslEnabled: false,
@@ -490,7 +505,7 @@ final InitializationSettings initializationSettings = InitializationSettings(
     );
 flutterLocalNotificationsPlugin.initialize(initializationSettings,
     onSelectNotification: selectNotification);
-    super.initState();
+   
 
     _firebaseMessaging.configure(
       onBackgroundMessage: myBackgroundHandler,
@@ -517,6 +532,10 @@ flutterLocalNotificationsPlugin.initialize(initializationSettings,
     );
 
     getTokenz();
+  }
+  @override
+  void initState() {
+    super.initState();
   }
 }
 

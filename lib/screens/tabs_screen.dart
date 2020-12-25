@@ -26,7 +26,12 @@ class _TabsScreenState extends State<TabsScreen> {
     logout() {
     googleSignIn.signOut();
   }
-
+   @override
+  void didChangeDependencies() {
+       _pageController = PageController(initialPage: 0);
+    loadCurrentUser();
+    super.didChangeDependencies();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,12 +132,7 @@ class _TabsScreenState extends State<TabsScreen> {
     _pageController.jumpToPage(page);
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController(initialPage: 0);
-    loadCurrentUser();
-  }
+  
   Future loadCurrentUser()async{
     
   }

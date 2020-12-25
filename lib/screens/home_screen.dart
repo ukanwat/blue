@@ -10,8 +10,9 @@ import 'package:blue/screens/following_posts_screen.dart';
 import 'package:blue/widgets/paginated_posts.dart';
 import 'package:blue/widgets/tags_wrap.dart';
 import '../widgets/header.dart';
-
-import './home.dart';                                                                                                           
+import '../widgets/loading_indicator.dart';
+import './home.dart';    
+import '../widgets/bottom_bar.dart';                                                                                                       
                                                                                                                                                                        
 class HomeScreen extends StatefulWidget {
   @override
@@ -21,7 +22,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with
         AutomaticKeepAliveClientMixin<HomeScreen>,
-        SingleTickerProviderStateMixin {                                                        
+        SingleTickerProviderStateMixin {                                                     
 Widget posts;
   bool followingPosts = false;
   bool topicLoading = true;
@@ -30,6 +31,7 @@ Widget posts;
   @override
   void initState() {
     super.initState();
+    showLoadingIndicator(context);
     posts = PaginatedPosts(length: 2,query: postsRef.orderBy('timeStamp',descending: true,),key: UniqueKey(),);
     tabToggleBanner = toggleBanner();
   }
@@ -64,6 +66,7 @@ Widget posts;
 
 
   showTagsSheet() {
+    //  bottomBar(_scaffoldKey,'sssss',);
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
@@ -93,7 +96,7 @@ Widget posts;
   @override
   Widget build(context) {
     super.build(context);
-    return Scaffold(
+    return Scaffold( 
         backgroundColor: Theme.of(context).cardColor,
         appBar: header(
           context,implyLeading: false,

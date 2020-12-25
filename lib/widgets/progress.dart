@@ -9,7 +9,7 @@ import 'package:nuts_activity_indicator/nuts_activity_indicator.dart';
     alignment: Alignment.center,
     padding: EdgeInsets.only(top: 10,bottom: 2),
     child:NutsActivityIndicator(
-    radius: 26,endRatio: 0.9,relativeWidth: 0.6,
+    radius: 20,endRatio: 0.9,relativeWidth: 0.6,
     tickCount: 16,
     startRatio: 0.55,
 ),

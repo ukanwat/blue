@@ -37,7 +37,8 @@ class ProfileScreen extends StatefulWidget {
   ProfileScreen({
     this.profileId,
     // this.postInteractions
-  }):super(key: UniqueKey());
+  });
+  // :super(key: UniqueKey());
 
   @override
   _ProfileScreenState createState() => _ProfileScreenState(
@@ -122,6 +123,7 @@ class _ProfileScreenState extends State<ProfileScreen>
      if(lastDoc == null ){
  var _snapshot = await query.limit(length).get();
        posts =_snapshot.docs.map((doc) => Post.fromDocument(doc.data(),isCompact: false)).toList();
+       if(this.mounted)
          setState(() {
           
         });
@@ -192,6 +194,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         .doc(widget.profileId)
         .collection('userFollowers')
         .get();
+        if(this.mounted)
     setState(() {
       followerCount = snapshot.docs.length;
     });
@@ -202,6 +205,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         .doc(widget.profileId)
         .collection('userFollowing')
         .get();
+        if(this.mounted)
     setState(() {
       followingCount = snapshot.docs.length;
     });

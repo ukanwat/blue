@@ -129,7 +129,7 @@ Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom
               //      preferencesRef.doc(currentUser.id).set({'autoplay_GIFs': newValue},SetOptions(merge: true));
               // });},description: 'Autoplay GIF messages'),
               Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
-          settingsSectionTitle("Post font", Icon(FluentIcons.text_font_size_24_regular,), context),
+          settingsSectionTitle("Title font", Icon(FluentIcons.text_font_size_24_regular,), context),
           Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
            ListTile( onTap: (){
                setState(() {

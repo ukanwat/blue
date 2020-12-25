@@ -22,22 +22,16 @@ class ExploreScreen extends StatefulWidget {
 class _ExploreScreenState extends State<ExploreScreen>
     with AutomaticKeepAliveClientMixin<ExploreScreen> ,TickerProviderStateMixin{
   List<Post> posts = [];
-  List<Tab> topicTabs = [];
-    List<Widget> topicViews = [];
+  List<Tab> topicTabs = [ Tab(child: Text('All',style: TextStyle(fontFamily: 'OpenSans',fontWeight: FontWeight.w600,fontSize: 16))
+        )];
+    List<Widget> topicViews = [CategoryPostsScreen( 'All')];
  bool  loading = true; 
  TabController tabController;
    List<String> t = ['Humor','Art & Design','Technology','News','Entertainment','Lifestyle','Science'];
   @override
   void initState() {
-       
-      t.forEach((topic) {
-        topicTabs.add(
-          Tab(text: topic,)
-        );
-        topicViews.add( CategoryPostsScreen( topic));
-      });
+     
 
-     tabController = new TabController(length: 7 , vsync: this);
     getTopics();
     getExplore();
     super.initState();
@@ -73,15 +67,15 @@ class _ExploreScreenState extends State<ExploreScreen>
             List<Widget> _topicViews = [];
       _topics.forEach((topic) {
         _topicTabs.add(
-          Tab(text: topic,)
-        );
+          Tab(child: Text(topic,style: TextStyle(fontFamily: 'OpenSans',fontWeight: FontWeight.w600,fontSize: 16))
+        ));
        
         _topicViews.add( CategoryPostsScreen( topic));
       });
       topicViews = _topicViews;
       topicTabs =_topicTabs;
 
-     tabController = new TabController(length: 7 , vsync: this);
+     tabController = new TabController(length: topicTabs.length , vsync: this);
       }
        
     });

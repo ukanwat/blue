@@ -48,6 +48,7 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
      if(lastDoc == null ){
  var _snapshot = await widget.query.limit(widget.length).get();
        posts =_snapshot.docs.map((doc) => Post.fromDocument(doc.data(),isCompact: widget.isCompact == null? false: widget.isCompact)).toList();
+         if(this.mounted)
          setState(() {
           
         });

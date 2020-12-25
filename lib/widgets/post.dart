@@ -321,10 +321,20 @@ class _PostState extends State<Post> {
                         // 'Hope you weren’t planning to watchiiiii Wonder Woman 1984 with an HBO Max free trial', ///////******/
 
                         widget.title,
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontFamily: 'OpenSans',
-                            fontSize: 16),
+                        style: preferences.getBool('serif')
+            ? TextStyle(
+                fontFamily: 'Georgia',
+                fontSize: 19,fontWeight: FontWeight.w400,
+                letterSpacing: 0,
+                wordSpacing: 0,
+                height: 1.25,
+                color: Theme.of(context).textSelectionColor)
+            : TextStyle(fontFamily: 'OpenSans',
+                fontSize: 18,fontWeight: FontWeight.w600,
+                letterSpacing: 0,
+                wordSpacing: 0,
+                height: 1.25,
+                ),
                         maxLines: tagBarVisible ? 5 : 2,
                         overflow: TextOverflow.ellipsis),
                   ),
@@ -1015,20 +1025,12 @@ class _PostState extends State<Post> {
     return Container(
       child: Text(
         text,
-        style: preferences.getBool('serif')
-            ? TextStyle(
-                fontFamily: 'Yahoo Sans',
-                fontSize: 17,fontWeight: FontWeight.w400,
-                letterSpacing: 0,
-                wordSpacing: 0,
-                height: 1.25,
-                color: Theme.of(context).textSelectionColor)
-            : TextStyle(
+        style: TextStyle(fontFamily: 'Yahoo Sans',
                 fontSize: 16,
                 letterSpacing: 0,
                 wordSpacing: 0,
                 height: 1.25,
-                color: Theme.of(context).textSelectionColor),
+                ),
       ),
       padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
     );
