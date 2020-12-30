@@ -1,18 +1,27 @@
 // Project imports:
 import 'package:blue/main.dart';
+import 'package:blue/screens/home.dart';
 
 class PreferencesUpdate {
   updateBool(
     String key,
-    bool value,
-  ) {
+    bool value, {
+    bool upload,
+  }) {
+    if (upload != null ? upload : false) {
+      preferencesRef.doc(currentUser.id).update({key: value});
+    }
     preferences.setBool(key, value);
   }
 
   updateString(
     String key,
-    String value,
-  ) {
+    String value, {
+    bool upload,
+  }) {
+    if (upload != null ? upload : false) {
+      preferencesRef.doc(currentUser.id).update({key: value});
+    }
     preferences.setString(key, value);
   }
 
@@ -39,13 +48,13 @@ class PreferencesUpdate {
   removeStringFromList(
     String key,
     String value,
-  ) {
+  ) async {
     List _list = preferences.getStringList(key);
     if (_list != null) {
       _list.remove(value);
-      preferences.setStringList(key, _list);
+      await preferences.setStringList(key, _list);
     } else {
-      preferences.setStringList(key, []);
+      await preferences.setStringList(key, []);
     }
   }
 

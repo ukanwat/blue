@@ -1,4 +1,6 @@
 // Flutter imports:
+import 'package:blue/services/functions.dart';
+import 'package:blue/widgets/user_report_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -34,7 +36,7 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
         .containsInStringList('muted_messages', peer['peerId']);
 
     isBlocked = PreferencesUpdate()
-        .containsInStringList('muted_messages', peer['peerId']);
+        .containsInStringList('blocked_accounts', peer['peerId']);
     super.didChangeDependencies();
   }
    deleteMessagesData(String peerId, DateTime peerDeleteTime)async{
@@ -55,36 +57,6 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
 //TODO devise a more foolproof way of deleting docs
     //TODO delete images too from storage
    }
-  updateReportFirebase(String option) async {
-    PreferencesUpdate()
-        .addStringToList('reported_accounts_$option', peer['peerId']);
-    var _accountDoc = await accountReportsRef.doc(peer['peerId']).get();
-    if (_accountDoc.data() != null) {
-      accountReportsRef
-          .doc(peer['peerId'])
-          .update({'$option': FieldValue.increment(1)});
-    } else {
-      accountReportsRef.doc(peer['peerId']).set({'$option': 1});
-    }
-    var _userDoc = await userReportsRef.doc(currentUser.id).get();
-    if (_userDoc.data() == null) {
-      userReportsRef.doc(currentUser.id).set(
-        {
-          '$option': [peer['peerId']]
-        },
-      );
-    } else if (_userDoc.data()['$option'] == null) {
-      userReportsRef.doc(peer['$option']).set({
-        '$option': [peer['peerId']]
-      }, SetOptions(merge: true));
-    } else {
-      userReportsRef.doc(peer['peerId']).update(
-        {
-          '$option': FieldValue.arrayUnion([peer['peerId']])
-        },
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -137,45 +109,12 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
               setState(() {
                 isMuted = newValue;
               });
-              PreferencesUpdate()
-                  .addStringToList('muted_messages', peer['peerId']);
-              var _userDoc = await userReportsRef.doc(currentUser.id).get();
-              print('sdfffffffffffff');
-              if(_userDoc != null)
-              print(_userDoc.data());
-               print('sdfffffffffffff');
-              if (_userDoc.data() == null) {
-                userReportsRef.doc(currentUser.id).set(
-                  {
-                    'muted': [peer['peerId']]
-                  },
-                );
-              } else if (_userDoc.data()['muted'] == null) {
-                userReportsRef.doc(currentUser.id).set({
-                  'muted': [peer['peerId']]
-                }, SetOptions(merge: true));
-              } else {
-                userReportsRef.doc(currentUser.id).update(
-                  {
-                    'muted': FieldValue.arrayUnion([peer['peerId']])
-                  },
-                );
-              }
+             Functions().muteUser(peer);
             } else {
-              PreferencesUpdate()
-                  .removeStringFromList('muted_messages', peer['peerId']);
-              try {
-                userReportsRef.doc(currentUser.id).update(
-                  {
-                    'muted': FieldValue.arrayRemove([peer['peerId']])
-                  },
-                );
                 setState(() {
                   isMuted = newValue;
                 });
-              } catch (e) {
-                //error TODO
-              }
+                Functions().unmuteUser(peer);
             }
           }),  
            Container(
@@ -189,128 +128,16 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                 )),
               ),
           settingsActionTile(context, 'Report', () {
-            showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return Dialog(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    elevation: 0.0,
-                    backgroundColor: Colors.transparent,
-                    child: Container(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 10, horizontal: 0),
-                      decoration: new BoxDecoration(
-                        color: Theme.of(context).canvasColor,
-                        shape: BoxShape.rectangle,
-                        borderRadius: BorderRadius.circular(15),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 10.0,
-                            offset: const Offset(0.0, 10.0),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisSize:
-                            MainAxisSize.min, // To make the card compact
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 15, vertical: 10),
-                            child: Text(
-                              'Report',
-                              style: TextStyle(
-                                fontSize: 24.0,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 15),
-                            child: Text(
-                              'Tell us your reason for reporting ${peer['peerUsername']}',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 16.0,
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          Divider(
-                            height: 5,
-                            thickness: 0.3,
-                            color: Colors.grey,
-                          ),
-                          InkWell(
-                            onTap: () async {
-                              updateReportFirebase('spam');
-
-                              Navigator.of(context).pop();
-                            },
-                            child: Container(
-                              height: 50,
-                              child: Center(child: Text("It's Spam")),
-                            ),
-                          ),
-                          Divider(
-                            height: 5,
-                            thickness: 0.3,
-                            color: Colors.grey,
-                          ),
-                          InkWell(
-                            onTap: () {
-                              updateReportFirebase('inappropriate');
-                              Navigator.of(context).pop();
-                            },
-                            child: Container(
-                              height: 50,
-                              child: Center(child: Text("It's Inappropriate")),
-                            ),
-                          ),
-                          Divider(
-                            height: 5,
-                            thickness: 0.3,
-                            color: Colors.grey,
-                          ),
-                          InkWell(
-                            onTap: () {
-                              updateReportFirebase('abusive');
-                              Navigator.of(context).pop();
-                            },
-                            child: Container(
-                              height: 50,
-                              child: Center(child: Text("It's abusive")),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                });
+          showDialog(context: context,builder: (context) {
+            return UserReportDialog(peer: peer,);
+          },);
           }, FluentIcons.chat_warning_24_regular),
           settingsActionTile(context, isBlocked ? 'Unblock' : 'Block', () {
             if (isBlocked) {
               setState(() {
-                isBlocked = false;
+                isBlocked = false; 
               });
-              PreferencesUpdate()
-                  .removeStringFromList('blocked_accounts', peer['peerId']);
-
-              try {
-                userReportsRef.doc(currentUser.id).update({
-                  'blocked': FieldValue.arrayRemove([peer['peerId']])
-                });
-                userReportsRef.doc(peer['peerId']).update({
-                  'blockedBy': FieldValue.arrayRemove([currentUser.id])
-                });
-              } catch (e) {
-// show toast or something
-              }
+            Functions().unblockUser(peer);
             } else {
               showDialog(
                 context: context,
@@ -325,48 +152,8 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                     setState(() {
                       isBlocked = true;
                     });
-                    var _userDoc =
-                        await accountReportsRef.doc(currentUser.id).get();
-                    var _peerDoc =
-                        await accountReportsRef.doc(peer['peerId']).get();
-                    if (_userDoc.data() == null) {
-                      userReportsRef.doc(currentUser.id).set(
-                        {
-                          'blocked': [peer['peerId']]
-                        },
-                      );
-                    } else if (_userDoc.data()['blocked'] == null) {
-                      userReportsRef.doc(currentUser.id).set({
-                        'blocked': [peer['peerId']]
-                      }, SetOptions(merge: true));
-                    } else {
-                      userReportsRef.doc(currentUser.id).update(
-                        {
-                          'blocked': FieldValue.arrayUnion([peer['peerId']])
-                        },
-                      );
-                    }
-
-                    if (_peerDoc.data() == null) {
-                      userReportsRef.doc(peer['peerId']).set(
-                        {
-                          'blockedBy': [currentUser.id]
-                        },
-                      );
-                    } else if (_userDoc.data()['blockedBy'] == null) {
-                      userReportsRef.doc(peer['peerId']).set({
-                        'blockedBy': [currentUser.id]
-                      }, SetOptions(merge: true));
-                    } else {
-                      userReportsRef.doc(peer['peerId']).update(
-                        {
-                          'blockedBy': FieldValue.arrayUnion([currentUser.id])
-                        },
-                      );
-                    }
-                    PreferencesUpdate()
-                        .addStringToList('blocked_accounts', peer['peerId']);
-                  },
+                     Functions().blockUser(peer);
+                  }
                 ),
               );
             }

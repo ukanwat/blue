@@ -93,7 +93,7 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
                 settingsSwitchListTile('Comments', comments, (newValue) {
                    saveNotifPref( 'push_comments', newValue,);
                     setState(() {
-                      likes = newValue;
+                     comments = newValue;
                     });
                    saveNotifPref( 'push_comments', newValue,);
                 }),

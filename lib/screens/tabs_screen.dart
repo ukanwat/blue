@@ -35,7 +35,8 @@ class _TabsScreenState extends State<TabsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
+      body:
+      PageView(
         physics: NeverScrollableScrollPhysics(),
         controller: _pageController,
         onPageChanged: onPageChanged,
@@ -128,8 +129,10 @@ class _TabsScreenState extends State<TabsScreen> {
   void navigationTapped(int page) {
     if(page == 2){
       Navigator.pushNamed(context, PostScreen.routeName);
-    }else
-    _pageController.jumpToPage(page);
+    }
+    else
+    
+   _pageController.jumpToPage(page);
   }
 
   

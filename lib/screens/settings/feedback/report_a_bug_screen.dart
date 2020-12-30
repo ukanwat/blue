@@ -132,7 +132,8 @@ class _ReportABugScreenState extends State<ReportABugScreen> {
           ),
                               InkWell(
                                 onTap: (){
-                                  bugsRef.add(_deviceData);
+                                   _deviceData['bug'] = bugController.text;
+                                  bugsRef.doc().set(_deviceData);
                                   Navigator.of(context).pop();
                                 },
                                                               child: Container(

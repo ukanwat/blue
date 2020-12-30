@@ -1,4 +1,5 @@
 // Dart imports:
+import 'dart:async';
 import 'dart:convert';
 
 // Flutter imports:
@@ -34,7 +35,12 @@ class _ChatsScreenState extends State<ChatsScreen>
     chatUsers = usersRef.get();
     var direct = preferences.getString('direct');
     directMap = direct == null ? {} : json.decode(direct);
-    print(directMap);
+    Timer.periodic(Duration(minutes: 1), (Timer t) {   
+      if(this.mounted)
+      setState(() {
+             var direct = preferences.getString('direct');
+    directMap = direct == null ? {} : json.decode(direct);
+        });});
     super.initState();
   }
 
@@ -42,15 +48,7 @@ class _ChatsScreenState extends State<ChatsScreen>
 
   Widget build(BuildContext context) {
     super.build(context);
-    return RefreshIndicator(
-      onRefresh: (){
-        setState(() {
-             var direct = preferences.getString('direct');
-    directMap = direct == null ? {} : json.decode(direct);
-        });
-        return Future.value();
-      },
-      child: chatsList(chatUsers));
+    return chatsList(chatUsers);
   }
 
   FutureBuilder chatsList(Future<QuerySnapshot> chatUsers) {

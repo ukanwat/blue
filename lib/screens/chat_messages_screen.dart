@@ -44,13 +44,13 @@ class ChatMessagesScreen extends StatefulWidget {
 
 class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   var focusNode = new FocusNode();
+  List<DocumentSnapshot> data = [];
   String groupChatId;
   Map sendingStateMap = {'count': 0, 'id': {}, 'state': ''};
   Future<QuerySnapshot> chatMessagesFuture;
   TextEditingController messageController = TextEditingController();
   DateTime lastMessageTime;
   bool loading = true;
-  List data = [];
   @override
   void dispose() {
     sendingStateMap['id'] = {};
@@ -58,8 +58,6 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     sendingStateMap['count'] = 0;
     super.dispose();
   }
-
-
 
   sendMessage() async {
     if (messageController.text != '') {
@@ -169,8 +167,8 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
       var picker = ImagePicker();
       var pickedFile = await picker.getImage(
         source: ImageSource.gallery,
-        maxHeight: 1080,
-        maxWidth: 1080,
+        maxHeight: 720,
+        maxWidth: 720,
       );
       setState(() {
         sendingStateMap['id'][dateTime.toString()] = false;
@@ -224,19 +222,18 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     }
   }
 
-
   @override
   void initState() {
-       if (currentUser.id.hashCode <= widget.peerUser.id.hashCode) {
+    if (currentUser.id.hashCode <= widget.peerUser.id.hashCode) {
       groupChatId = '${currentUser.id}-${widget.peerUser.id}';
     } else {
       groupChatId = '${widget.peerUser.id}-${currentUser.id}';
     }
-    print('dd');
-    
+    addMessages();
     // getMessages();
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -288,7 +285,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
           child: Stack(
             alignment: Alignment.bottomCenter,
             children: [
-              Container(child: ChatMessages(sendingStateMap,widget.peerUser.id,groupChatId)),
+              Container(child: chatMessages()),
               Container(
                 margin: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 child: ClipRRect(
@@ -379,23 +376,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         ));
   }
 
-
-}
-
-
-class ChatMessages extends StatefulWidget {
-  ChatMessages(this.sendingStateMap,this.peerUserId,this.groupChatId,);
-
-    final Map sendingStateMap;
-      final String  peerUserId;
-      final String groupChatId;
-
-  @override
-  _ChatMessagesState createState() => _ChatMessagesState();
-}
-
-class _ChatMessagesState extends State<ChatMessages> {
-    String date(DateTime tm) {
+  String date(DateTime tm) {
     DateTime today = new DateTime.now();
     Duration oneDay = new Duration(days: 1);
     Duration twoDay = new Duration(days: 2);
@@ -469,78 +450,49 @@ class _ChatMessagesState extends State<ChatMessages> {
     }
     return "";
   }
-   List data  = [];
-   bool loading  = true;
-   @override
-  void initState() {
-    //  getMessages();
-    super.initState();
-  }
-  
-  // getMessages() async {
-  //  var _cachedMessages = await messagesRef
-  //       .doc(widget.groupChatId)
-  //       .collection(widget.groupChatId)
-  //       .orderBy('timestamp', descending: true) //         TODO
-  //       .get(GetOptions(source: Source.cache));
-  //       print(_cachedMessages.docs.length);
-  //   _cachedMessages.docs.forEach((DocumentSnapshot doc) {
-  //     data.add([doc.id,doc.data()]);
-  //     //  messages.add(doc);
-  //   });
-  //   setState(() {
-  //     loading = false;
-  //   });
-  //   if(data.length != 0){
-  //   print(data.first[1]['timestamp']);
-  //   addMessagesStream(data.first[1]['timestamp']);
-  //   }
-  // }
 
-  addMessagesStream() async {
-    Stream<QuerySnapshot> _snaps = messagesRef
-        .doc(widget.groupChatId)
-        .collection(widget.groupChatId)
-        // .where('timestamp', isGreaterThan: dateTime)
-        .orderBy('timestamp', descending: false)
-        .snapshots();
-        var _cachedMessages = messagesRef
-        .doc(widget.groupChatId)
-        .collection(widget.groupChatId)
+  addMessages() async {
+    QuerySnapshot _cachedMessages = await messagesRef
+        .doc(groupChatId)
+        .collection(groupChatId)
         .orderBy('timestamp', descending: true) //         TODO
-        .get(GetOptions(source: Source.cache)).asStream();
-  // _snaps.listen((event) {
-  //     event.docChanges.forEach((change) {
-  //       print(change.doc.data());
-  //       if (change.type == DocumentChangeType.added) {
-  //         setState(() {
-  //       data.add([change.doc.id,change.doc.data()]);
-  //           // newMessages.add(change.doc);
-  //         });
-          
-  //       }
-  //     });
-  //   });
-    
+        .get(GetOptions(source: Source.cache));
+    print('${_cachedMessages.docs.length} cached messages');
+    QuerySnapshot _snaps;
+    if (_cachedMessages.docs.length > 0) {
+      _snaps = await messagesRef
+          .doc(groupChatId)
+          .collection(groupChatId)
+          .where('timestamp',
+              isGreaterThan: _cachedMessages.docs.first.data()['timestamp'])
+          .orderBy('timestamp', descending: true)
+          .get();
+    } else {
+      _snaps = await messagesRef
+          .doc(groupChatId)
+          .collection(groupChatId)
+          .orderBy('timestamp', descending: true)
+          .limit(12)
+          .get();
+    }
+    setState(() {
+      data = [..._snaps.docs, ..._cachedMessages.docs];
+    });
   }
 
-  @override
-  Widget build(BuildContext context) {
-      Timestamp lastTimestamp = Timestamp(0, 0);
-      setState(() {
-        
-      });
+  chatMessages() {
+    Timestamp lastTimestamp = Timestamp(0, 0);
     bool showTime = false;
-    if (data == null) {
+    if (data == null || data.length == 0) {
       return circularProgress();
     }
     List<Widget> messageItems = [];
     int length = data.length;
-    if (length == 0) {
+    if (data.isEmpty) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Expanded(child: emptyState(context, 'Say Hi!', "Welcome")),
+          Expanded(child: Center()),
           Container(
             width: double.infinity,
             margin: EdgeInsets.symmetric(horizontal: 10, vertical: 80),
@@ -570,12 +522,12 @@ class _ChatMessagesState extends State<ChatMessages> {
       );
     }
     int i = 0;
-    data.forEach(( doc) {
+    data.forEach((doc) {
       i++;
-      Message messageItem = Message.fromDocument(doc[1]);
+      Message messageItem = Message.fromDocument(doc.data());
       if (i == 1) {
         messageItems.add(Visibility(
-          visible: widget.sendingStateMap['id'] != {},
+          visible: sendingStateMap['id'] != {},
           child: Container(
             alignment: Alignment.centerLeft,
             padding: EdgeInsets.only(left: 8),
@@ -584,13 +536,13 @@ class _ChatMessagesState extends State<ChatMessages> {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Text(
-                  widget.sendingStateMap['state'],
+                  sendingStateMap['state'],
                   style: TextStyle(
                       fontSize: 16,
                       color: Theme.of(context).iconTheme.color,
                       fontWeight: FontWeight.w500),
                 ),
-                if (widget.sendingStateMap['state'] == 'Sending')
+                if (sendingStateMap['state'] == 'Sending')
                   Container(
                     height: 20,
                     width: 20,
@@ -600,7 +552,7 @@ class _ChatMessagesState extends State<ChatMessages> {
                       valueColor: AlwaysStoppedAnimation(Colors.blue),
                     ),
                   ),
-                if (widget.sendingStateMap['state'] == 'Sent')
+                if (sendingStateMap['state'] == 'Sent')
                   Container(
                     height: 20,
                     width: 20,
@@ -623,7 +575,8 @@ class _ChatMessagesState extends State<ChatMessages> {
           lastMessage = '${MessageType.gif}';
         else
           lastMessage = '${messageItem.message}';
-        directMap[widget.peerUserId] = {/////////////////////////////////
+        directMap[widget.peerUser.id] = {
+          /////////////////////////////////
           'seen': true,
           'message': lastMessage,
           'time': messageItem.timestamp.toDate().toString(),
@@ -646,7 +599,7 @@ class _ChatMessagesState extends State<ChatMessages> {
               style: TextStyle(color: Colors.grey, fontSize: 12),
             ))));
       bool myText = currentUser.id == messageItem.idFrom;
-      if (doc[1]['hide'] != true || myText)
+      if (doc.data()['hide'] != true || myText)
         messageItems.add(InkWell(
             //TODO
             onLongPress: () {
@@ -675,8 +628,8 @@ class _ChatMessagesState extends State<ChatMessages> {
                               if (myText) {
                                 try {
                                   await messagesRef
-                                      .doc(widget.groupChatId)
-                                      .collection(widget.groupChatId)
+                                      .doc(groupChatId)
+                                      .collection(groupChatId)
                                       .doc(doc[0])
                                       .delete();
                                   if (messageItem.type == 'image') {
@@ -688,16 +641,20 @@ class _ChatMessagesState extends State<ChatMessages> {
                                 }
                               } else {
                                 await messagesRef
-                                    .doc(widget.groupChatId)
-                                    .collection(widget.groupChatId)
+                                    .doc(groupChatId)
+                                    .collection(groupChatId)
                                     .doc(doc[0])
                                     .set({'hide': true},
                                         SetOptions(merge: true));
                               }
-                              await messagesRef.doc(widget.groupChatId).collection(widget.groupChatId).doc(doc[0]).delete();
-                               setState(() {
-                  data.remove(doc);
-                });
+                              await messagesRef
+                                  .doc(groupChatId)
+                                  .collection(groupChatId)
+                                  .doc(doc[0])
+                                  .delete();
+                              setState(() {
+                                data.remove(doc);
+                              });
                             },
                             child: Container(
                                 padding: EdgeInsets.symmetric(

@@ -73,9 +73,20 @@ snapshot =await collectionsRef
               )
             ],
           ),),
-      body: loading ? circularProgress(): ListView.builder(itemBuilder: (_,i){
+      body: loading ? circularProgress(): ListView.builder(
+        padding: EdgeInsets.only(top: 6),
+        itemBuilder: (_,i){
         i = i-1;
-          return InkWell(
+          return Container(
+              height: 60,
+              padding: EdgeInsets.symmetric(horizontal: 0),
+              margin: EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+
+              decoration: BoxDecoration(
+borderRadius: BorderRadius.circular(15),
+border: Border.all(width: 2,color:  Theme.of(context).cardColor,)
+            
+              ), child:InkWell(
              onTap: (){
            if(i== -1){
               Navigator.of(context).pushNamed( AllSavedPostsScreen.routeName);
@@ -83,16 +94,7 @@ snapshot =await collectionsRef
               Navigator.of(context).pushNamed( CollectionPostsScreen.routeName,arguments: snapshot.data()['$i' ]);
            }
              },
-                      child: Container(
-              height: 80,
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-
-              decoration: BoxDecoration(
-color: Theme.of(context).cardColor,
-borderRadius: BorderRadius.circular(5),
-            
-              ), child: Center(
+                      child:  Center(
                child: Text(i== -1? 'All Saved':
                 snapshot.data()['$i' ],maxLines: 1,overflow: TextOverflow.ellipsis,
                 style: TextStyle(

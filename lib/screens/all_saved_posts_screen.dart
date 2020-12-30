@@ -19,94 +19,121 @@ class AllSavedPostsScreen extends StatefulWidget {
 }
 
 class _AllSavedPostsScreenState extends State<AllSavedPostsScreen> {
-bool hasMorePosts = true;
-bool loading = false;
-List<Post> posts = [];
+ bool loading = true;
+  List<Post> posts = [];
   List<dynamic> postDocSnapshots = [];
-  DocumentSnapshot lastPostDocument;
-  int documentLimit = 10;
-getAllSavedPosts() async {
-    if (!hasMorePosts) {
-      print('No More posts');
-      return;
-    }
-    if (loading) {
-      return;
-    }
-    setState(() {
-      loading = true;
-    });
-    var _postGroup = await savedPostsRef
+  DocumentSnapshot lastDocument;
+  int documentLimit = 3;
+  ScrollController _controller = ScrollController();
+  Future<List> getDocPosts()async{
+    if(lastDocument == null){
+var _postGroup = await savedPostsRef
         .doc(currentUser.id)
         .collection('all')
-        .orderBy('order', descending: false)
+        .orderBy('order', descending: true)
+        .limit(1)
         .get();
+        print(_postGroup.docs.first.data()['posts']);
+         if(_postGroup.docs.length == 0){
+             print('ssssssssssss');
+          setState(() {
+            loading = false;
+         
+          });
+             return [];
+        }
+        lastDocument = _postGroup.docs.first;
+          return _postGroup.docs.first.data()['posts'];
+    }
+ var _postGroup = await savedPostsRef
+        .doc(currentUser.id)
+        .collection('all')
+        .orderBy('order', descending: true)
+          .startAfterDocument(lastDocument)
+        .limit(1)
+        .get();
+        if(_postGroup.docs.length == 0){
+          setState(() {
+            loading = false;
+        
+          });
+              return [];
+        }
+         lastDocument = _postGroup.docs.first;
+        return _postGroup.docs.first.data()['posts'];
+  }
+  getAllSavedPosts() async {
+  
+    if (!loading) {
+      return;
+    }
+   
     List _postList = [];
-    for (int l = 0; l < _postGroup.docs.length; l++) {
-      _postList.add(_postGroup.docs.elementAt(l).data()['posts']);
-    }
-    List _postFullList = [];
-    for (int i = 0; i < _postList.length; i++) {
-      for (int x = 0; x < _postList[i].length; x++) {
-        _postFullList.add(_postList[i][x]);
-      }
-    }
+    
     List<Future> postFutures = [];
-    if (lastPostDocument == null) {
-      for (int k = 0; k < _postFullList.length; k++) {
-        postFutures.add(postsRef.doc(_postFullList[k]).get());
-      }
-    } else {
-      for (int k = 0; k < _postFullList.length; k++) {
-        postFutures.add(postsRef.doc(_postFullList[k]).get());
-      }
+  int postLength = 0;
+    while(postLength < documentLimit){
+      _postList = await getDocPosts();
+      postLength  =     postLength + _postList.length;
+      if(!loading)
+      return;
+      print( postLength );
+   _postList.forEach((id) {
+     print(id);
+
+   postFutures.add(postsRef.doc(id).get());
+       });
+       
     }
     postDocSnapshots = await Future.wait(postFutures);
 
-    if (postDocSnapshots.length < documentLimit) {
-      hasMorePosts = false;
-    }
-    if (postDocSnapshots.length == 0) {
-      return;
-    }
-    lastPostDocument = postDocSnapshots[postDocSnapshots.length - 1];
+    
+   
     setState(() {
-      loading = false;
       posts = posts +
           postDocSnapshots.map((doc) => Post.fromDocument(doc.data())).toList();
     });
   }
   
-  buildAllSavedPosts(){
-    print(posts.length);
-        if (loading) {
-      return circularProgress();
-    } else if (posts.isEmpty) {
-      return Container();                         // TODO:
-    } else {
-      return ListView(children: posts);
-    }
-  }
   @override
-  void initState() {
+  void didChangeDependencies() {
     getAllSavedPosts();
-    super.initState();
+    _controller.addListener(() {
+      if (_controller.position.pixels == _controller.position.maxScrollExtent &&
+          loading) {
+    
+        setState(() {
+          getAllSavedPosts();
+        });
+      }
+    });
+
+
+    super.didChangeDependencies();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
-      appBar: header(context,
-    title: Text('All Saved'),
-    centerTitle: true,
-    elevation: 1,
-    leadingButton: CupertinoNavigationBarBackButton(
-      color: Colors.blue
-    ),
-
-
-    ),
-    body: buildAllSavedPosts(),
+      appBar: header(
+        context,
+        title: Text('All Saved'),
+        centerTitle: true,
+        elevation: 1,
+        leadingButton: CupertinoNavigationBarBackButton(color: Colors.blue),
+      ),
+      body:Container(
+        color: Theme.of(context).backgroundColor,
+        child: ListView(controller: _controller, children: [
+                ...posts,
+                if(loading)
+                circularProgress(),
+             if(!loading)   Container(
+                    width: double.infinity,
+                    height: 100,
+                    color: Theme.of(context).backgroundColor),
+              ]),
+      ),
     );
   }
 }

@@ -1,15 +1,18 @@
 // Package imports:
+import 'package:blue/services/preferences_update.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../screens/home.dart';
 
 class Functions{
   handleFollowUser(String profileId, ) async{//TODO Batch writes and prefer server side
+      followingBox.put(profileId, null);
     usersRef.doc(profileId).update({'followers': FieldValue.increment(1) },);
      usersRef.doc(currentUser.id).update({'following': FieldValue.increment(1) },);
-
+ 
    QuerySnapshot _followersDoc =  await followersRef
         .doc(profileId)
         .collection('userFollowers')
@@ -40,9 +43,7 @@ class Functions{
         .doc(profileId)
         .collection('userFollowing').doc().set({'order':_followingDoc.docs.first.data()['order']+1,'following':[profileId]}); 
         }else{
-             followingRef
-        .doc(profileId)
-        .collection('userFollowing').doc(_followingDoc.docs.first.id).update({'following':FieldValue.arrayUnion([profileId])}); 
+          _followingDoc.docs.first.reference.update({'following':FieldValue.arrayUnion([profileId])}); 
         }
     activityFeedRef
         .doc(profileId)
@@ -56,10 +57,15 @@ class Functions{
       'userProfileImg': currentUser.photoUrl,
       'timestamp': timestamp,
     });
-   
+    
   }
 
     handleUnfollowUser(String profileId)async {// TODO batch writes and prefer server side
+   if(followingBox.containsKey(profileId)){
+     followingBox.delete(profileId);
+   }
+   
+   
       usersRef.doc(profileId).update({'followers': FieldValue.increment(-1) },);
       usersRef.doc(currentUser.id).update({'following': FieldValue.increment(-1) },);
       
@@ -81,5 +87,141 @@ class Functions{
 
    
   }
+    unblockUser(Map peer)async{
+        PreferencesUpdate()
+                  .removeStringFromList('blocked_accounts', peer['peerId']);
 
+              try {
+               await userReportsRef.doc(currentUser.id).update({
+                  'blocked': FieldValue.arrayRemove([peer['peerId']])
+                });
+              await  userReportsRef.doc(peer['peerId']).update({
+                  'blockedBy': FieldValue.arrayRemove([currentUser.id])
+                });
+              } catch (e) {
+// show toast or something
+              }
+    }
+    blockUser(Map peer)async{
+         var _userDoc =
+                        await accountReportsRef.doc(currentUser.id).get();
+                    var _peerDoc =
+                        await accountReportsRef.doc(peer['peerId']).get();
+                    if (_userDoc.data() == null||_userDoc.data() == {}) {
+                      userReportsRef.doc(currentUser.id).set(
+                        {
+                          'blocked': [peer['peerId']]
+                        },
+                        SetOptions(merge: true)
+                      );
+                    } else if (_userDoc.data()['blocked'] == null) {
+                      userReportsRef.doc(currentUser.id).set({
+                        'blocked': [peer['peerId']]
+                      }, SetOptions(merge: true));
+                    } else {
+                      userReportsRef.doc(currentUser.id).update(
+                        {
+                          'blocked': FieldValue.arrayUnion([peer['peerId']])
+                        },
+                      );
+                    }
+                        print(_peerDoc.data() );
+                    if (_peerDoc.data() == null || _peerDoc.data().isEmpty ) {
+                      userReportsRef.doc(peer['peerId']).set(
+                        {
+                          'blockedBy': [currentUser.id]
+                        },
+                      );
+                    } else if (_peerDoc.data()['blockedBy'] == null) {
+                      userReportsRef.doc(peer['peerId']).set({
+                        'blockedBy': [currentUser.id]
+                      }, SetOptions(merge: true));
+                    } else {
+                      userReportsRef.doc(peer['peerId']).update(
+                        {
+                          'blockedBy': FieldValue.arrayUnion([currentUser.id])
+                        },
+                      );
+                    }
+                    PreferencesUpdate()
+                        .addStringToList('blocked_accounts', peer['peerId']);
+    }
+    muteUser(Map peer)async{
+        PreferencesUpdate()
+                  .addStringToList('muted_messages', peer['peerId']);
+              var _userDoc = await userReportsRef.doc(currentUser.id).get();
+              print('sdfffffffffffff');
+              if(_userDoc != null)
+              print(_userDoc.data());
+               print('sdfffffffffffff');
+              if (_userDoc.data() == null) {
+                userReportsRef.doc(currentUser.id).set(
+                  {
+                    'muted': [peer['peerId']]
+                  },
+                );
+              } else if (_userDoc.data()['muted'] == null) {
+                userReportsRef.doc(currentUser.id).set({
+                  'muted': [peer['peerId']]
+                }, SetOptions(merge: true));
+              } else {
+                userReportsRef.doc(currentUser.id).update(
+                  {
+                    'muted': FieldValue.arrayUnion([peer['peerId']])
+                  },
+                );
+              }
+    }
+    unmuteUser(Map peer)async{
+      PreferencesUpdate()
+                  .removeStringFromList('muted_messages', peer['peerId']);
+              try {
+                userReportsRef.doc(currentUser.id).update(
+                  {
+                    'muted': FieldValue.arrayRemove([peer['peerId']])
+                  },
+                );
+             
+              } catch (e) {
+                //error TODO
+              }
+    }
+
+      updateReportFirebase(Map peer,String option) async {
+    PreferencesUpdate()
+        .addStringToList('reported_accounts_$option', peer['peerId']);
+    var _accountDoc = await accountReportsRef.doc(peer['peerId']).get();
+    if (_accountDoc.data() != null) {
+      accountReportsRef
+          .doc(peer['peerId'])
+          .update({'$option': FieldValue.increment(1)});
+    } else {
+      accountReportsRef.doc(peer['peerId']).set({'$option': 1});
+    }
+    var _userDoc = await userReportsRef.doc(currentUser.id).get();
+    if (_userDoc.data() == null) {
+      userReportsRef.doc(currentUser.id).set(
+        {
+          '$option': [peer['peerId']]
+        },
+      );
+    } else if (_userDoc.data()['$option'] == null) {
+      userReportsRef.doc(peer['$option']).set({
+        '$option': [peer['peerId']]
+      }, SetOptions(merge: true));
+    } else {
+      userReportsRef.doc(peer['peerId']).update(
+        {
+          '$option': FieldValue.arrayUnion([peer['peerId']])
+        },
+      );
+    }
+  }
+launchURL(String url) async {
+  if (await canLaunch(url)) {
+    await launch(url);
+  } else {
+    throw 'Could not launch $url';
+  }
+}
 }

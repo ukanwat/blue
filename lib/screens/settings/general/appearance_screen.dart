@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -13,7 +14,11 @@ import 'package:blue/main.dart';
 import 'package:blue/providers/theme.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/widgets/settings_widgets.dart';
-
+enum AppTheme{
+  sysDefault,
+  dark,
+  light
+}
 class AppearanceScreen extends StatefulWidget {
   static const routeName = 'appearance';
   @override
@@ -21,7 +26,7 @@ class AppearanceScreen extends StatefulWidget {
 }
 
 class _AppearanceScreenState extends State<AppearanceScreen> {
-  String themeMode = 'System Default';
+  AppTheme themeMode = AppTheme.sysDefault;
     bool autoplayVideos = false;
       bool serif = false;
   // bool autoplayGIFs = false;
@@ -41,23 +46,22 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
     super.initState();
   }
   getTheme()async{
- SharedPreferences preferences = await SharedPreferences.getInstance();
-     switch( preferences.get('theme')){
+     switch( PreferencesUpdate().getBool('theme')){
        case true: 
        setState(() {
-        themeMode = 'Dark Mode';
+        themeMode =AppTheme.dark;
          
        });
         break;
         case false: 
         setState(() {
-           themeMode = 'Light Mode';
+           themeMode =AppTheme.light;
         });
        
         break;
         default: 
           setState(() {
-            themeMode = 'System Default';
+            themeMode = AppTheme.sysDefault;
         });
       
         break;
@@ -76,14 +80,14 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
         ListTile(
             onTap: (){
               setState(() {
-                  themeMode = 'System Default';
+                  themeMode = AppTheme.sysDefault;
                 notifier.toggleTheme(null);
               });
-                       preferencesRef.doc(currentUser.id).set({'theme': themeMode },SetOptions(merge: true));
+                       preferencesRef.doc(currentUser.id).set({'theme': themeMode.toString().substring(9)  },SetOptions(merge: true));
             },
           title: Text('System Default'),
           trailing: Visibility(
-            visible: themeMode == 'System Default',
+            visible: themeMode ==AppTheme.sysDefault,
                       child: Icon(FlutterIcons.check_circle_faw5s,
             color: Colors.blue
             ),
@@ -91,24 +95,24 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
         ), 
            ListTile( onTap: (){
              setState(() {
-              themeMode = 'Light Mode';
+              themeMode = AppTheme.light;
                         notifier.toggleTheme(false);
              });
-                    preferencesRef.doc(currentUser.id).set({'theme': themeMode },SetOptions(merge: true));
+                    preferencesRef.doc(currentUser.id).set({'theme': themeMode.toString().substring(9) },SetOptions(merge: true));
             }, title: Text('Light Mode'),
-          trailing: Visibility( visible: themeMode == 'Light Mode',
+          trailing: Visibility( visible: themeMode == AppTheme.light,
                       child: Icon(FlutterIcons.check_circle_faw5s,
             color: Colors.blue),
           ),),
               ListTile( onTap: (){
                 setState(() {
-              themeMode = 'Dark Mode';
+              themeMode = AppTheme.dark;
                            notifier.toggleTheme(true);
                 });
-                       preferencesRef.doc(currentUser.id).set({'theme': themeMode },SetOptions(merge: true));
+                       preferencesRef.doc(currentUser.id).set({'theme': themeMode.toString().substring(9)  },SetOptions(merge: true));
             }, title: Text('Dark Mode'),
               
-          trailing: Visibility( visible: themeMode == 'Dark Mode',
+          trailing: Visibility( visible: themeMode == AppTheme.dark,
 
                       child: Icon(FlutterIcons.check_circle_faw5s,
             color: Colors.blue

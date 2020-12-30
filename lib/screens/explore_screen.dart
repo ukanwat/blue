@@ -95,12 +95,13 @@ class _ExploreScreenState extends State<ExploreScreen>
           ),
         bottom: loading? PreferredSize(child: Container(), preferredSize: Size.fromHeight(0)): PreferredSize(preferredSize: Size.fromHeight(40),
                   child: Container(height: 40,margin:EdgeInsets.only(left: 8,right: 8,bottom: 6,top: 4),
-                    child: TabBar(indicator: ShapeDecoration(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-              color: Theme.of(context).cardColor.withOpacity(0.6),
-            ),
+                    child: TabBar(
+            
+            indicatorWeight: 2.5,indicatorPadding: EdgeInsets.symmetric(vertical: 1,horizontal: 15),
+
+
             isScrollable: true,
-            controller: tabController,indicatorColor: Colors.blue,labelPadding: EdgeInsets.symmetric(horizontal: 10),
+            controller: tabController,indicatorColor: Colors.deepOrange,labelPadding: EdgeInsets.symmetric(horizontal: 10),
             tabs: topicTabs,),
                   ),
         ),

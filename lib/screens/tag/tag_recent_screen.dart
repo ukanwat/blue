@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/widgets/paginated_posts.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -17,45 +18,26 @@ class TagRecentScreen extends StatefulWidget {
 }
 
 class _TagRecentScreenState extends State<TagRecentScreen> {
- List<Widget> posts = [];
- @override
-  void didChangeDependencies() {
-     getPopular();
-    super.didChangeDependencies();
+  Widget posts = Container();
+ 
+ Future refreshPosts()async{
+      setState(() {
+        posts = PaginatedPosts(length: 4,query: postsRef.where('tags',arrayContains: widget.tag).orderBy('timeStamp',descending: true,),key: UniqueKey(),neverScroll: true,);
+      }); 
   }
-    getPopular() async {
-    QuerySnapshot snapshot =
-     await topicPostsCollectionGroupRef
-     .where("tags", arrayContains: widget.tag).
-       get();
-    setState(() {
-      this.posts =  snapshot.docs.map((doc) => Post.fromDocument(doc.data())).toList() ;
-    });
-  }
-    buildRecent() {
-    if (posts == null) {
-      return circularProgress();
-    } else if (posts.isEmpty) {
-      return Container(
-        height: 400,
 
-      );
-    } else {
-      return ListView.builder(
-      padding: EdgeInsets.all(0),
-        itemBuilder: (_,i){
-          return posts[i];
-        },
-        itemCount: posts.length,
-      );
-    }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    posts = PaginatedPosts(length: 4,query: postsRef.where('tags',arrayContains: widget.tag).orderBy('timeStamp',descending: true,),key: UniqueKey(),neverScroll: true,);
   }
   @override
   Widget build(BuildContext context) {
     return 
         Container(
         
-              child: buildRecent()
+              child: posts
             
     
           

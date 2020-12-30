@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 // Project imports:
@@ -18,7 +19,7 @@ class MutedAccountsScreen extends StatefulWidget {
 
 class _MutedAccountsScreenState extends State<MutedAccountsScreen> {
   bool loading  = true;
-  List<String> mutedAccounts; 
+  List mutedAccounts; 
      List<User> mutedUsers = [];
   @override
   void initState() {
@@ -30,22 +31,45 @@ class _MutedAccountsScreenState extends State<MutedAccountsScreen> {
     super.initState();
   }
      getMutedAccounts()async{
-    mutedAccounts =  preferences.getStringList('muted_accounts');
-     List<Future> accountFutures = [];
-     List accountsDocSnapshots;
+ DocumentSnapshot _doc;
+    try {
+      _doc = await userReportsRef
+          .doc(currentUser.id)
+          .get(GetOptions(source: Source.cache));
+    } catch (e) {}
+    if (_doc == null) {
+      _doc = await userReportsRef.doc(currentUser.id).get();
+    } 
+    else if (!_doc.exists) {
+      _doc = await userReportsRef.doc(currentUser.id).get();
+    }
+    if(_doc == null){
+      setState(() {
+        loading = false;
+      });
+      return;
+    }else if(_doc.data()['muted'] == null){
+  setState(() {
+        loading = false;
+      });
+      return;
+    }
+    mutedAccounts = _doc.data()['muted'];
+    List<Future> accountFutures = [];
+    List accountsDocSnapshots;
     mutedAccounts.forEach((account) {
-             accountFutures.add(usersRef.doc(account).get());
+      if(account != null)
+      accountFutures.add(usersRef.doc(account).get());
     });
-       
 accountsDocSnapshots = await Future.wait(accountFutures);
 
   
     setState(() {
       loading = false;
     mutedUsers = mutedUsers +
-          accountsDocSnapshots.map((doc) => User.fromDocument(doc)).toList();
+          accountsDocSnapshots.map((doc) => User.fromDocument(doc.data())).toList();
     });
-
+    
 
 
 
@@ -56,7 +80,7 @@ accountsDocSnapshots = await Future.wait(accountFutures);
       appBar: settingsHeader(
       context  , 'Muted Accounts'),
       body: loading? circularProgress(): ListView.builder(itemBuilder: (_,i){
-         return UserTile(mutedUsers[i]);
+         return UserTile(mutedUsers[i],Tile.mute);
           
       },
       

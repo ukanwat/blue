@@ -5,6 +5,8 @@ import 'dart:io';
 import 'dart:math' as math;
 
 // Flutter imports:
+import 'package:blue/services/post_functions.dart';
+import 'package:blue/widgets/show_dialog.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -122,7 +124,7 @@ class Post extends StatefulWidget {
       downvotes: this.downvotes,
       tags: this.tags);
 }
-
+Vote vote;
 class _PostState extends State<Post> {
   double topEdgeHeight;
   double bottomEdgeHeight;
@@ -209,7 +211,7 @@ class _PostState extends State<Post> {
                   child: Material(
                     borderRadius: BorderRadius.circular(15),
                     color: Theme.of(context).canvasColor,
-                    elevation: 0.0,
+                    elevation: 1.0,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(15),
                       child: Column(
@@ -247,26 +249,20 @@ class _PostState extends State<Post> {
                               });
                             },
                           ),
-                          ListTile(
-                            dense: true,
-                            leading: Transform.rotate(
-                              angle: 59.7,
-                              child: Icon(
-                                 vote == Vote.down
-                                ? FluentIcons.keyboard_shift_24_filled
-                                : FluentIcons.keyboard_shift_24_regular,
-                            size: 24.0,
-                            color:   vote == Vote.down
-                                ?Colors.red: Theme.of(context).iconTheme.color
-                              ),
-                            ),
-                            title: Text('Downvote'),
-                            onTap: () {
-                             
-                              handleDownvoteButton();
-                            },
-                          ),
-                          if (isFollowing)
+                   if(ownerId != currentUser.id)
+          DownvoteTile(vote, postId,(){
+              if(vote == Vote.down){
+ setState(() {
+      vote = Vote.none;
+    });
+    unvote();
+   
+   }else
+       setState(() {
+     vote = Vote.down;
+    });
+          }),
+                          if (isFollowing )
                             ListTile(
                               dense: true,
                               leading: Icon(
@@ -282,6 +278,21 @@ class _PostState extends State<Post> {
                                 });
                               },
                               title: Text('Unfollow'),
+                            ),
+                            if(currentUser.id == ownerId)
+                              ListTile(
+                              dense: true,
+                              leading: Icon(
+                                FluentIcons.delete_24_regular,
+                                color: Colors.red,
+                              ),
+                              onTap: () async {
+                                overlayOptions?.remove();
+                                deletePost();
+                              },
+                              title: Text('Delete',style: TextStyle(
+                                color: Colors.red
+                              ),),
                             )
                         ],
                       ),
@@ -321,7 +332,7 @@ class _PostState extends State<Post> {
                         // 'Hope you weren’t planning to watchiiiii Wonder Woman 1984 with an HBO Max free trial', ///////******/
 
                         widget.title,
-                        style: preferences.getBool('serif')
+                        style:PreferencesUpdate().getBool('serif',def: false)
             ? TextStyle(
                 fontFamily: 'Georgia',
                 fontSize: 19,fontWeight: FontWeight.w400,
@@ -635,36 +646,16 @@ class _PostState extends State<Post> {
     ]);
   }
 
-  handleDeletePost(BuildContext parentContext) {
-    return showDialog(
-        context: parentContext,
-        builder: (context) {
-          return SimpleDialog(
-            title: Text("Remove this post?"),
-            children: <Widget>[
-              SimpleDialogOption(
-                onPressed: () {
-                  Navigator.pop(context);
-                  deletePost();
-                },
-                child: Text(
-                  'Delete',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-              SimpleDialogOption(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text('Cancel')),
-            ],
-          );
-        });
-  }
 
   deletePost() async {
-    if(widget.ownerId != currentUser.id)
+    showDialog(context: context,child: ShowDialog(title: 'Delete Post', description: 'Are you sure you want to delete this Post?', leftButtonText: 'Cancel', rightButtonText: 'delete',leftButtonFunction: (){
+      Navigator.pop(context);
+    },
+    rightButtonFunction: ()async{
+         if(widget.ownerId != currentUser.id)
     return;
     // delete post itself
-    postsRef.doc(ownerId).collection('userPosts').doc(postId).get().then((doc) {
+    postsRef.doc(postId).get().then((doc) {
       if (doc.exists) {
         doc.reference.delete();
       }
@@ -673,7 +664,7 @@ class _PostState extends State<Post> {
     // storageRef.child("post_$postId.jpg").delete();  // TODO: delete stored media
     // then delete all activity feed notifications
     QuerySnapshot activityFeedSnapshot = await activityFeedRef
-        .doc(ownerId)
+        .doc(currentUser.id)
         .collection("feedItems")
         .where('postId', isEqualTo: postId)
         .get();
@@ -690,6 +681,9 @@ class _PostState extends State<Post> {
         doc.reference.delete();
       }
     });
+    },
+    ));
+ 
   }
   unvote()async{
  if (PreferencesUpdate().getBool('votes_downloaded') == null ||
@@ -715,123 +709,9 @@ class _PostState extends State<Post> {
    voteBox.delete(widget.postId);
     }
   }
-  handleDownvoteButton() async {
-      if(vote == Vote.none){
-     postsRef.doc(widget.postId).update({
-       'upvotes': FieldValue.increment(-1),
-       'votes': FieldValue.increment(-1),
-     });
-    }else if(vote == Vote.down){
- postsRef.doc(widget.postId).update({
-       'upvotes': FieldValue.increment(1),
-       'votes': FieldValue.increment(1),
-     });
-    }else{
-       postsRef.doc(widget.postId).update({
-       'upvotes': FieldValue.increment(-2),
-       'votes': FieldValue.increment(-2),
-     });
-    }
-   if(vote == Vote.down){
- setState(() {
-    // DownvoteButtonState().setVote(Vote.none);
-      vote = Vote.none;
-    });
-    unvote();
-    
-    return;
-   
-   }
-       setState(() {
-     vote = Vote.down;
-      // DownvoteButtonState().setVote(Vote.down);
-    });
-    if (PreferencesUpdate().getBool('votes_downloaded') == null ||
-        PreferencesUpdate().getBool('votes_downloaded') == false) {
-      QuerySnapshot query = await postsVotersRef
-          .doc(currentUser.id)
-          .collection('userVotes')
-          .where('ids', arrayContains: widget.postId)
-          .limit(1)
-          .get();
-      List<String> ids = query.docs.first.data()['ids'];
-      List<bool> votes = query.docs.first.data()['votes'];
-      int index = ids.indexOf(widget.postId);
-      if (votes[index]) {
-        votes[index] = false;
-        await postsVotersRef
-            .doc(currentUser.id)
-            .collection('userVotes')
-            .doc(query.docs.first.id)
-            .set({'votes': votes}, SetOptions(merge: true));
-      }
-    } else if (PreferencesUpdate().getBool('votes_downloaded')) {
-      var _vote = voteBox.get(widget.postId);
-      if (_vote == null ? true : _vote) {
-        voteBox.put(widget.postId, false);
-      }
-    }
-  }
 
-  handleUpvoteButton() async {
-    if(vote == Vote.none){
-     postsRef.doc(widget.postId).update({
-       'upvotes': FieldValue.increment(1),
-       'votes': FieldValue.increment(1),
-     });
-    }else if(vote == Vote.up){
- postsRef.doc(widget.postId).update({
-       'upvotes': FieldValue.increment(-1),
-       'votes': FieldValue.increment(-1),
-     });
-    }else{
-       postsRef.doc(widget.postId).update({
-       'upvotes': FieldValue.increment(2),
-       'votes': FieldValue.increment(2),
-     });
-    }
 
-   if(vote == Vote.up){
- setState(() {
-      vote = Vote.none;
-    });
-    unvote();
-    
-    return;
-   
-   }
-
-  
-      setState(() {
-     vote = Vote.up;
-    });
-    
-    if (PreferencesUpdate().getBool('votes_downloaded') == null ||
-        PreferencesUpdate().getBool('votes_downloaded') == false) {
-      QuerySnapshot query = await postsVotersRef
-          .doc(currentUser.id)
-          .collection('userVotes')
-          .where('ids', arrayContains: widget.postId)
-          .limit(1)
-          .get();
-      List<String> ids = query.docs.first.data()['ids'];
-      List<bool> votes = query.docs.first.data()['votes'];
-      int index = ids.indexOf(widget.postId);
-      if (!votes[index]) {
-        votes[index] = true;
-        await postsVotersRef
-            .doc(currentUser.id)
-            .collection('userVotes')
-            .doc(query.docs.first.id)
-            .set({'votes': votes}, SetOptions(merge: true));
-      }
-    } else if (PreferencesUpdate().getBool('votes_downloaded')) {
-       var _vote = voteBox.get(widget.postId);
-      if (_vote == null ? true : !_vote) {
-        voteBox.put(widget.postId, true);
-      }
-    }
-  }
+ 
 
   getVideoThumbnail(String url) async {
     if (thumbnailType != CompactPostThumbnailType.video) {
@@ -1044,11 +924,18 @@ class _PostState extends State<Post> {
         margin: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: ClipRRect(
             borderRadius: BorderRadius.circular(6),
-            child: LinkPreview(
-              url: link,
-              bodyStyle: TextStyle(fontSize: 13),
-              titleStyle: TextStyle(fontWeight: FontWeight.w500),
-              showMultimedia: true,
+            child: Material(
+                          child: InkWell(
+                onTap: (){
+                  Functions().launchURL(link);
+                },
+                            child: LinkPreview(
+                  url: link,
+                  bodyStyle: TextStyle(fontSize: 13),
+                  titleStyle: TextStyle(fontWeight: FontWeight.w500),
+                  showMultimedia: true,
+                ),
+              ),
             )));
   }
 
@@ -1074,10 +961,32 @@ class _PostState extends State<Post> {
   }
 
   buildPostFooter() {
-    bool n = (vote == Vote.down || vote == Vote.none);
-    bool u = vote == Vote.up;
-    bool s = alreadyUpvoted && vote != Vote.up;
-    bool a = alreadyUpvoted;
+    bool increment;
+    if(alreadyUpvoted){
+     switch(vote){
+       case Vote.up:
+       increment = null;
+       break;
+        case Vote.none:
+        increment = false;
+       break;
+        case Vote.down:
+        increment = false;
+       break;
+     }
+    }else{
+       switch(vote){
+       case Vote.up:
+        increment = true;
+       break;
+        case Vote.none:
+          increment = null;
+       break;
+        case Vote.down:
+        increment = null;
+       break;
+     }
+    }
     return Padding(
       padding: EdgeInsets.only(top: 5),
       child: Column(
@@ -1211,16 +1120,21 @@ class _PostState extends State<Post> {
                 ),
               isSaved
                   ? footerButton(FluentIcons.bookmark_24_filled, Colors.blue,
-                      () {
-                      setState(() {
+                      () async{
+                      setState((){
                         isSaved = false;
                         showSaveBar = false;
-                        savedPostsRef // TODO
-                            .doc(currentUser?.id)
-                            .collection('All')
-                            .doc(postId)
-                            .delete();
                       });
+                      saveBox.delete(postId);
+                         var snap = await savedPostsRef 
+                            .doc(currentUser?.id)
+                            .collection('all')
+                            .where('posts',arrayContains: postId).get();
+                            snap.docs.forEach((doc) {
+                            doc.reference.update({
+                              'posts': FieldValue.arrayRemove([postId])
+                            });
+                            });
                     })
                   : footerButton(FluentIcons.bookmark_24_regular, Colors.blue,
                       () async {
@@ -1269,6 +1183,7 @@ class _PostState extends State<Post> {
                           ],
                         }, SetOptions(merge: true));
                       }
+                      saveBox.put(postId, null);
                       setState(() {
                         showSaveBar = true;
                       });
@@ -1312,8 +1227,20 @@ class _PostState extends State<Post> {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () {
-                      
-                      handleUpvoteButton();
+                      if(ownerId == currentUser.id){
+   return;
+                      }
+                   
+                       PostFunctions().handleUpvoteButton(postId, vote);
+                         if(vote == Vote.up){
+ setState(() {
+      vote = Vote.none;
+    });
+    unvote();}else
+       setState(() {
+     vote = Vote.up;
+    });
+ 
                     },
                     customBorder: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -1335,7 +1262,7 @@ class _PostState extends State<Post> {
                           Padding(
                               padding: const EdgeInsets.only(right: 3, left: 6),
                               child: Text(
-                            ((a&&n)||(!a&&u))?'${(upvotes+1)}':'$upvotes',
+                           increment == null?'$upvotes': increment?'${(upvotes+1)}':'${(upvotes-1)}',
                                 style: TextStyle(
                                     fontWeight: FontWeight.w700, fontSize: 24),
                               ),),
@@ -1376,20 +1303,19 @@ class _PostState extends State<Post> {
     }
   }
  bool alreadyUpvoted = false;
-  bool alreadyDownvoted = false;
   @override
   void initState() {
     isOwner = currentUser.id == widget.ownerId;
+    if(saveBox.containsKey(postId)){
+      isSaved = true;
+    }
+
      if(voteBox.containsKey(widget.postId)){
        if( voteBox.get(widget.postId)){
 
         alreadyUpvoted = true;
         vote = Vote.up;
        }
-        else{
-             alreadyDownvoted = true;
- vote = Vote.down;
-        }
        
     }else
     if(PreferencesUpdate().getBool('votes_downloaded') == null || PreferencesUpdate().getBool('votes_downloaded') == false)
@@ -1397,16 +1323,10 @@ class _PostState extends State<Post> {
        checkVoteOnline();
     }
 
-    List<String> followingList = preferences.getStringList('following');
-    if (followingList == null) {
-      followingList = [];
-      preferences.setStringList('following', followingList);
-    }
 
-    if (followingList.contains(widget.ownerId))
-      setState(() {
-        isFollowing = true;
-      });
+  if(followingBox.containsKey(ownerId)){
+      isFollowing = true;
+  }
 
     super.initState();
   }
@@ -1627,28 +1547,55 @@ class _VideoContentContainerState extends State<VideoContentContainer> {
   }
 }
 
-class DownvoteButton extends StatefulWidget {
+class DownvoteTile extends StatefulWidget {
+  final Vote vote;
+  final String postId;
+  final Function callback;
+  DownvoteTile(this.vote,this.postId,this.callback);
   @override
-  DownvoteButtonState createState() => DownvoteButtonState();
+  DownvoteTileState createState() => DownvoteTileState();
 }
    
-class DownvoteButtonState extends State<DownvoteButton> {
-  Vote vote;
-  setVote(Vote v){
-    setState(() {
-      vote = v;
-    });
+class DownvoteTileState extends State<DownvoteTile> {
+Vote vote;
+@override
+  void initState() {
+    vote = widget.vote;
+    print(vote);
+    super.initState();
   }
   @override
   Widget build(BuildContext context) {
-    return   Icon(
+    print(vote);
+    return   ListTile(
+                            dense: true,
+                            leading: Transform.rotate(
+                              angle: 59.7,
+                              child: Icon(
                                  vote == Vote.down
                                 ? FluentIcons.keyboard_shift_24_filled
                                 : FluentIcons.keyboard_shift_24_regular,
                             size: 24.0,
                             color:   vote == Vote.down
                                 ?Colors.red: Theme.of(context).iconTheme.color
-                              );
+                              ),
+                            ),
+                            title: Text('Downvote'),
+                            onTap: () {
+                               PostFunctions().handleDownvoteButton(widget.postId,vote);
+                             
+                                  if(vote == Vote.down){
+ setState(() {
+      vote = Vote.none;
+    });
+   
+   }else
+       setState(() {
+     vote = Vote.down;
+    });
+    widget.callback();
+                            },
+                          );
                             
   }
 }

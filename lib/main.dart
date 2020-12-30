@@ -91,7 +91,7 @@ void main() async {
   runApp(MyApp());
 }
 
- Box voteBox;
+
  
    loadVotes()async {
      if(currentUser.id == null)
@@ -193,6 +193,9 @@ Future getCurrentUser() async {
 
 }
   bool   boxesOpened ;
+   Box voteBox;
+   Box saveBox;
+   Box followingBox;
 Future openBoxes() async {
     if(currentUser == null)
   return;
@@ -202,6 +205,8 @@ Future openBoxes() async {
  var dir = await getApplicationDocumentsDirectory();
   Hive.init(dir.path);
   voteBox =  await Hive.openBox('votes');
+  saveBox =  await Hive.openBox('saves');
+  followingBox =  await Hive.openBox('followings');
   boxesOpened = true;
     loadVotes();
   }catch(e){
@@ -384,6 +389,12 @@ class MyAppState extends State<MyApp> {
                           type: PageTransitionType.rightToLeft,
                           settings: settings);
                       break;
+                       case CommentsScreen.routeName:
+                      return PageTransition(
+                          child: CommentsScreen(),
+                          type: PageTransitionType.rightToLeft,
+                          settings: settings);
+                      break;
                   }
                   return CupertinoPageRoute(
                       // TODO
@@ -407,7 +418,7 @@ class MyAppState extends State<MyApp> {
                   SearchScreen.routeName: (ctx) => SearchScreen(),
                   EditProfileScreen.routeName: (ctx) => EditProfileScreen(),
                   PostScreen.routeName: (ctx) => PostScreen(),
-                  CommentsScreen.routeName: (ctx) => CommentsScreen(),
+                
                   ChatMessagesScreen.routeName: (ctx) => ChatMessagesScreen(),
                   SelectTopicScreen.routeName: (ctx) => SelectTopicScreen(),
                   AllSavedPostsScreen.routeName: (ctx) => AllSavedPostsScreen(),
@@ -474,15 +485,11 @@ class MyAppState extends State<MyApp> {
     print(token);
   }
 
-  // Future selectNotification(String payload) async {
-  //   await flutterLocalNotificationsPlugin.cancelAll();
-  // }
- @override
-  void didChangeDependencies() {
+
+  @override
+  void initState() {
+    super.initState();
     
-    super.didChangeDependencies();
-
-
        String host = Platform.isAndroid ? '10.0.2.2:8080' : 'localhost:8080';
 
 Settings(   host: host,
@@ -532,10 +539,6 @@ flutterLocalNotificationsPlugin.initialize(initializationSettings,
     );
 
     getTokenz();
-  }
-  @override
-  void initState() {
-    super.initState();
   }
 }
 

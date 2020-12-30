@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/material.dart';
 
 // Project imports:
@@ -18,9 +19,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
   bool sensitiveContent =  true;
   @override
   void initState() {
-   bool _sensitiveContent = preferences.getBool('hide_sensitive_content');
-      if(_sensitiveContent != null)
-        sensitiveContent =_sensitiveContent;
+  sensitiveContent = PreferencesUpdate().getBool('hide_sensitive_content',def: true);
     super.initState();
   }
   @override
@@ -34,7 +33,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
                 settingsPageNavigationTile(
               context, 'Blocked Accounts', BlockedAccountsScreen.routeName),
               settingsSwitchListTile('Hide Sensitive Content', sensitiveContent, (newValue){
-                preferences.setBool('hide_sensitive_content',newValue );
+                PreferencesUpdate().updateBool( 'hide_sensitive_content', newValue);
                 preferencesRef.doc(currentUser.id).update({
                   'hide_sensitive_content': newValue
                 });

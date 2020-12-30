@@ -7,7 +7,7 @@ import 'package:nuts_activity_indicator/nuts_activity_indicator.dart';
  circularProgress() {
   return Container(
     alignment: Alignment.center,
-    padding: EdgeInsets.only(top: 10,bottom: 2),
+    padding: EdgeInsets.only(top: 20,bottom: 20,left: 20,right: 20),
     child:NutsActivityIndicator(
     radius: 20,endRatio: 0.9,relativeWidth: 0.6,
     tickCount: 16,

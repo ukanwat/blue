@@ -77,6 +77,7 @@ savePost(String collectionName)async{
                                 ],
                               },SetOptions(merge: true ));
                             }
+                             saveBox.put(widget.post.postId,collectionName );
 
 }  
 @override

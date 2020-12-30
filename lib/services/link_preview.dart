@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 // Flutter imports:
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart' hide Element;
 
 // Package imports:
@@ -92,11 +93,10 @@ class _LinkPreviewState extends State<LinkPreview> {
 
   @override
   Widget build(BuildContext context) {
-    print('efesfsefsef');
+   
     if (widget.builder != null) {
       return widget.builder(_info);
     }
-    print('efesfsefsef');
     if ( _info is YoutubeInfo) {
       print((_info as YoutubeInfo).url);
       return  Container(
@@ -122,11 +122,9 @@ class _LinkPreviewState extends State<LinkPreview> {
         ),
       );
     }
-print('efesfsefsef');
     if (_info == null || _info is VideoInfo) {
       return const SizedBox();
     }
-print('efesfsefsef');
     if (_info is ImageInfo) {
       return
        CachedNetworkImage(
@@ -138,11 +136,9 @@ print('efesfsefsef');
     final WebInfo info = _info;
     final bool hasDescription = WebAnalyzer.isNotEmpty(info.description);
     final Color iconColor = widget.titleStyle?.color;
-    print('${info.title}////////////////////////////////////////////////////////////////////////////////////////////////////////////////////');
     return Container(
       width: double.infinity,
       child: Row(
-        
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[  if (WebAnalyzer.isNotEmpty(info.icon))
@@ -163,10 +159,10 @@ print('efesfsefsef');
               else
                 Padding(
                   padding: const EdgeInsets.all(4.0),
-                  child: Icon(FlutterIcons.link_fea, size: 45, color: iconColor),
+                  child: Icon(FluentIcons.link_square_24_filled, size: 45, color: iconColor),
                 ),
                  Expanded(
-                                    child: Column(mainAxisSize: MainAxisSize.min,mainAxisAlignment: MainAxisAlignment.center,
+                                    child: Column(mainAxisSize: MainAxisSize.min,mainAxisAlignment: MainAxisAlignment.center,crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
             
           Row(mainAxisSize: MainAxisSize.min,
@@ -184,7 +180,7 @@ print('efesfsefsef');
               ),
               Padding(
                 padding: const EdgeInsets.all(5.0),
-                child: Icon(FlutterIcons.link_external_oct,size: 20,),
+                child: Icon(FluentIcons.window_new_24_filled,size: 22,color: Theme.of(context).iconTheme.color.withOpacity(0.9),),
               )
             ],
           ),

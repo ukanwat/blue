@@ -320,7 +320,13 @@ class _CommentState extends State<Comment> {
                   ),
                   // subtitle: Text(timestamp.toDate().toString())//timeago.format(timestamp.toDate()))
                 ),
-                ...replyWidgets,
+                Container(
+                  margin: EdgeInsets.only(left: 15),
+                  child: Column(
+                    children: replyWidgets,
+                  ),
+                  decoration: BoxDecoration(border: Border(left: BorderSide(color: Theme.of(context).cardColor,width: 3)),
+                ),),
                 Container(
                   width: double.infinity,
                   color: Colors.grey[400],

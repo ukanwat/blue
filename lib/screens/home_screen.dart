@@ -23,21 +23,16 @@ class _HomeScreenState extends State<HomeScreen>
     with
         AutomaticKeepAliveClientMixin<HomeScreen>,
         SingleTickerProviderStateMixin {                                                     
-Widget posts;
+Widget posts = Container();
   bool followingPosts = false;
   bool topicLoading = true;
   bool banner = false;
-  OverlayEntry tabToggleBanner;
-  @override
-  void initState() {
-    super.initState();
-    showLoadingIndicator(context);
-    posts = PaginatedPosts(length: 2,query: postsRef.orderBy('timeStamp',descending: true,),key: UniqueKey(),);
-    tabToggleBanner = toggleBanner();
-  }
+OverlayEntry tabToggleBanner;
+ 
 
-  OverlayEntry toggleBanner() {
-    return OverlayEntry(
+OverlayEntry toggleBanner() {
+    return   
+    OverlayEntry(
         builder: (context) => Positioned(
               left: MediaQuery.of(context).size.width * 0.5 - 60,                                                               
               top: 100,
@@ -92,7 +87,16 @@ Widget posts;
         posts = PaginatedPosts(length: 2,query: postsRef.orderBy('timeStamp',descending: true,),key: UniqueKey(),);
       }); 
   }
-  bool get wantKeepAlive => true;
+
+  @override
+  void didChangeDependencies() {
+   
+    super.didChangeDependencies();
+
+    posts = PaginatedPosts(length: 2,query: postsRef.orderBy('timeStamp',descending: true,),key: UniqueKey(),);
+    tabToggleBanner = toggleBanner();
+  }
+    bool get wantKeepAlive => true;
   @override
   Widget build(context) {
     super.build(context);
@@ -155,7 +159,8 @@ Widget posts;
               child: child,                                                                                                     
             );
           },
-          child: followingPosts
+          child: 
+          followingPosts
               ? FollowingPostsScreen()
               : RefreshIndicator(
                   onRefresh: () => refreshPosts(),

@@ -13,10 +13,12 @@ class PaginatedPosts extends StatefulWidget {
   final Query query;
   final int  length ;
   final bool isCompact;
+  final bool neverScroll;
   PaginatedPosts({
     this.query,
     this.length,
     this.isCompact,
+    this.neverScroll,
     Key key,
   }):super(key: key);
   @override
@@ -89,6 +91,11 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
    }
   @override
   Widget build(BuildContext context) {
+    if(widget.neverScroll==null?false:widget.neverScroll ){
+        return Column(
+          children: posts,
+        );
+    }
     return empty? emptyState(context, "Can't find any posts ", 'none'): ListView.builder(
       physics:AlwaysScrollableScrollPhysics(),
    

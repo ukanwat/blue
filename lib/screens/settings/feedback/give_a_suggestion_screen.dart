@@ -132,6 +132,7 @@ class _GiveASuggestionScreenState extends State<GiveASuggestionScreen> {
           ),
           InkWell(
             onTap: (){
+              _deviceData['suggestion'] = suggestionController.text;
                 suggestionsRef.add(_deviceData);
                                   Navigator.of(context).pop();
             },
