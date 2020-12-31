@@ -1,19 +1,21 @@
 // Package imports:
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:package_info/package_info.dart';
-
+import 'package:flutter/material.dart';
+import '../screens/comments_screen.dart';
+import '../screens/home.dart';
+import '../widgets/post.dart';
 class DynamicLinksService {
   static Future<String> createDynamicLink(String parameter) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     print(packageInfo.packageName);
-    String uriPrefix = "https://flutterdevs.page.link";
+    String uriPrefix = "https://scrible.page.link";
 
-    final DynamicLinkParameters parameters = DynamicLinkParameters(
+    final DynamicLinkParameters parameters = DynamicLinkParameters(        //TODO
       uriPrefix: uriPrefix,
-      link: Uri.parse('https://example.com/$parameter'),
+      link: Uri.parse('https://scrible.com/$parameter'),
       androidParameters: AndroidParameters(
         packageName: packageInfo.packageName,
-        minimumVersion: 125,
       ),
       iosParameters: IosParameters(
         bundleId: packageInfo.packageName,
@@ -30,10 +32,10 @@ class DynamicLinksService {
         campaignToken: 'example-promo',
       ),
       socialMetaTagParameters: SocialMetaTagParameters(
-          title: 'Example of a Dynamic Link',
+          title: 'Dynamic link',
           description: 'This link works whether app is installed or not!',
           imageUrl: Uri.parse(
-              "https://images.pexels.com/photos/3841338/pexels-photo-3841338.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260")),
+              "https://www.google.com")),
     );
 
     // final Uri dynamicUrl = await parameters.buildUrl();
@@ -42,30 +44,33 @@ class DynamicLinksService {
     return shortUrl.toString();
   }
 
-  static void initDynamicLinks() async {
+  static Future initDynamicLinks(BuildContext context) async {
     final PendingDynamicLinkData data = await FirebaseDynamicLinks.instance.getInitialLink();
 
-    _handleDynamicLink(data);
+    handleDynamicLink(data,context);
 
     FirebaseDynamicLinks.instance.onLink(
         onSuccess: (PendingDynamicLinkData dynamicLink) async {
-          _handleDynamicLink(dynamicLink);
+          handleDynamicLink(dynamicLink,context);
         }, onError: (OnLinkErrorException e) async {
       print('onLinkError');
       print(e.message);
     });
   }
 
-  static _handleDynamicLink(PendingDynamicLinkData data) async {
+  static handleDynamicLink(PendingDynamicLinkData data,BuildContext context) async {
     final Uri deepLink = data?.link;
 
     if (deepLink == null) {
       return;
     }
-    if (deepLink.pathSegments.contains('refer')) {
-      var title = deepLink.queryParameters['code'];
-      if (title != null) {
-        print("refercode=$title");
+    print(deepLink);
+    if (deepLink.pathSegments.contains('post')) {
+      var postId = deepLink.queryParameters['id'];
+      var doc= await postsRef.doc(postId).get();
+      if (postId != null) {
+
+        Navigator.of(context).pushNamed(CommentsScreen.routeName,arguments: Post.fromDocument(doc.data(),commentsShown: true,isCompact: false,));
 
 
       }

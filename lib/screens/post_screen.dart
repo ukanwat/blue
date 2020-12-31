@@ -22,9 +22,10 @@ import 'package:path/path.dart' as Path;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:string_validator/string_validator.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
-
+import 'package:postgrest/postgrest.dart';
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/providers/submit_state.dart';
@@ -57,9 +58,8 @@ class _PostScreenState extends State<PostScreen> {
   bool isUploading = false;
   FlickManager flickManager;
   VideoPlayerController _videoPlayerController;
-  VideoPlayerController _cameraVideoPlayerController;
   TextEditingController titleController = TextEditingController();
-   TextEditingController currentTextController = TextEditingController();
+  TextEditingController currentTextController = TextEditingController();
   List<TextEditingController> textControllers = List();
   bool editingText = false;
   List<FocusNode> textFocusNodes = List();
@@ -69,7 +69,7 @@ class _PostScreenState extends State<PostScreen> {
   Map<int, Map> contentsInfo = {};
   Map<String, Map> firestoreContentsInfo = {};
   Map<int, String> videoSources = {};
-  List<Map<String, dynamic>> contentsData =
+  List contentsData =
       []; //////////////////////////////////////////////////////////////////////////////
   List<String> contentType = [];
   String imageId = Uuid().v4();
@@ -87,10 +87,13 @@ class _PostScreenState extends State<PostScreen> {
       maxWidth: 960,
     );
     _cameraImage = File(pickedFile.path);
-    fileIndex++;
+    addImageContent(_cameraImage);
+  }
+addImageContent(File _image)async{
+   fileIndex++;
     double _aspectRatio;
     var decodedImage =
-        await decodeImageFromList(_cameraImage.readAsBytesSync());
+        await decodeImageFromList(_image.readAsBytesSync());
     _aspectRatio =
         decodedImage.width.toDouble() / decodedImage.height.toDouble();
     Map infoMap = {}; //
@@ -98,59 +101,42 @@ class _PostScreenState extends State<PostScreen> {
     infoMap['aspectRatio'] = _aspectRatio; //
     contentsInfo[fileIndex] = infoMap; //
     setState(() {
-      if (_cameraImage == null) {
+      if (_image == null) {
         print('File is not available');
       } else {
         contentsData.add({
           'info': {'type': 'image', 'aspectRatio': _aspectRatio},
-          'content': _cameraImage,
-          'widget': imageDisplay(_cameraImage, fileIndex, _aspectRatio)
+          'content': _image,
+          'widget': imageDisplay(_image, fileIndex, _aspectRatio)
         });
-        contents.add(imageDisplay(_cameraImage, fileIndex, _aspectRatio));
+        contents.add(imageDisplay(_image, fileIndex, _aspectRatio));
       }
     });
+}
+   handleChooseImageFromGallery() async {
+    File _galleryImage;
+    var picker = ImagePicker();
+    var pickedFile = await picker.getImage(
+      source: ImageSource.gallery,
+    );
+    _galleryImage = File(pickedFile.path);
+   addImageContent(_galleryImage);
   }
-
+  
   handleTakeVideo() async {
     File _cameraVideo;
     var picker = ImagePicker();
     var pickedFile = await picker.getVideo(source: ImageSource.camera);
     _cameraVideo = File(pickedFile.path);
-    fileIndex++;
-    _cameraVideoPlayerController = VideoPlayerController.file(_cameraVideo)
-      ..initialize().then((_) {
-        flickManager = FlickManager(
-          videoPlayerController: _cameraVideoPlayerController,
-        );
-        setState(() {
-          contentsData.add({
-            'info': {
-              'type': 'video',
-              'aspectRatio': _cameraVideoPlayerController.value.aspectRatio
-            },
-            'content': _cameraVideo,
-            'widget': Container(child: VideoDisplay(flickManager, false))
-          });
-
-          if (_cameraVideoPlayerController.value.isPlaying == true) {
-            print('amsdd');
-          }
-        });
-      });
+     addVideoContent(_cameraVideo);
+  
   }
-
-  handleChooseVideoFromGallery() async {
-    File _galleryVideo;
-    var picker = ImagePicker();
-    var pickedFile = await picker.getVideo(
-      source: ImageSource.gallery,
-    );
-    _galleryVideo = File(pickedFile.path);
-    fileIndex++;
-    _videoPlayerController = VideoPlayerController.file(_galleryVideo)
+  addVideoContent(File _video){
+     fileIndex++;
+    _videoPlayerController = VideoPlayerController.file(_video)
       ..initialize().then((_) {
         flickManager = FlickManager(
-          videoPlayerController: _videoPlayerController,
+          videoPlayerController:  _videoPlayerController ,
         );
         setState(() {
           contentsData.add({
@@ -158,68 +144,29 @@ class _PostScreenState extends State<PostScreen> {
               'type': 'video',
               'aspectRatio': _videoPlayerController.value.aspectRatio
             },
-            'content': _galleryVideo,
+            'content': _video,
             'widget': Container(child: VideoDisplay(flickManager, false))
           });
 
-          if (_videoPlayerController.value.isPlaying == true) {
-            print('msdd');
+          if ( _videoPlayerController.value.isPlaying == true) {
+            print('amsdd');
           }
         });
       });
   }
-
-  handleChooseImageFromGallery() async {
-    File _galleryImage;
+  handleChooseVideoFromGallery() async {
+    File _galleryVideo;
     var picker = ImagePicker();
-    var pickedFile = await picker.getImage(
+    var pickedFile = await picker.getVideo(
       source: ImageSource.gallery,
     );
-    _galleryImage = File(pickedFile.path);
-    fileIndex++;
-    double aspectRatio;
-    var decodedImage =
-        await decodeImageFromList(_galleryImage.readAsBytesSync());
-    aspectRatio =
-        decodedImage.width.toDouble() / decodedImage.height.toDouble();
-    contentsData.add({
-      'info': {'type': 'image', 'aspectRatio': aspectRatio},
-      'content': _galleryImage,
-      'widget': imageDisplay(_galleryImage, fileIndex, aspectRatio)
-    });
-    Map infoMap = {};
-    infoMap['type'] = 'image';
-    infoMap['aspectRatio'] = aspectRatio;
-    contentsInfo[fileIndex] = infoMap;
-    setState(() {
-      contents.add(imageDisplay(
-        _galleryImage,
-        fileIndex,
-        aspectRatio,
-      ));
-    });
-    // compressImage(fileIndex);
+    _galleryVideo = File(pickedFile.path);
+   addVideoContent(_galleryVideo);
   }
+
+ 
 
   List<Asset> resultList = List<Asset>();
-  loadCarouselImages() async {
-    // try {
-    resultList = await MultiImagePicker.pickImages(
-      maxImages: 12,
-      enableCamera: true,
-      cupertinoOptions: CupertinoOptions(
-        takePhotoIcon: "chat",
-      ),
-      materialOptions: MaterialOptions(
-        actionBarColor: "#147efb",
-        actionBarTitle: "Scrible",
-        allViewTitle: "All Images",
-        useDetailsView: false,
-        selectCircleStrokeColor: "#000000",
-      ),
-    );
-  }
-
   String error = 'No Error Dectected';
   Future<void> handleCreateCarousel() async {
     try {
@@ -237,15 +184,23 @@ class _PostScreenState extends State<PostScreen> {
           selectCircleStrokeColor: "#000000",
         ),
       );
+      if( resultList.length == 0){
+        return;
+      }
     } on Exception catch (e) {
-      error = e.toString();
+      error = e.toString();//show error
+      return;
     }
-    fileIndex++;
+   
     if (!mounted) return;
     List carouselData = await getCarouselImages(resultList);
+  
     List<File> carouselImages = carouselData[0];
     double _aspectRatio = carouselData[1];
-
+  addCarouselContent( carouselImages, _aspectRatio);
+  }
+   addCarouselContent(List<File> carouselImages,  double _aspectRatio){
+ fileIndex++;
     setState(() {
       contentsData.add({
         'info': {'type': 'carousel', 'aspectRatio': _aspectRatio},
@@ -254,8 +209,7 @@ class _PostScreenState extends State<PostScreen> {
       });
       contents.add(carouselDisplay(carouselImages, fileIndex, _aspectRatio));
     });
-  }
-
+   }
   Future<File> compressImage(File file) async {
     imageId = Uuid().v4();
     final tempDir = await getTemporaryDirectory();
@@ -298,6 +252,14 @@ class _PostScreenState extends State<PostScreen> {
       String topicName,
       String topicId,
       List<String> tags}) async {
+// var url = 'postgres://postgres:$supaPass@db.tauylgkvskndhqcgzpls.supabase.co:5432/postgres';
+// var client = PostgrestClient(url);
+// var response = await client.from('posts').
+//       insert([
+//         { 'username': 'supabot', 'status': 'ONLINE'}
+//       ])
+//       .execute();
+
     var lastDoc = await userPostsRef
         .doc(currentUser.id)
         .collection('userPosts')
@@ -319,10 +281,11 @@ class _PostScreenState extends State<PostScreen> {
       'topicName': topicName,
       'tags': tags,
       'ownerName': currentUser?.username,
-      'upvotes':0,
-      'downvotes':0,
-      'votes':0
+      'upvotes': 0,
+      'downvotes': 0,
+      'votes': 0
     }); // TODO: check if successful
+
     if (lastDoc.docs.length == 0) {
       userPostsRef.doc(currentUser.id).collection('userPosts').doc().set({
         'order': 1,
@@ -398,7 +361,6 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   Future<Map<String, String>> _processVideo(File file) async {
-    var stateProvider = Provider.of<SubmitState>(context, listen: false);
 
     final FlutterFFmpeg _encoder = FlutterFFmpeg();
 
@@ -532,19 +494,22 @@ class _PostScreenState extends State<PostScreen> {
     print(contentsMap);
     return Container(
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-        child:
-         TextField(controller: textController,focusNode: textFocusNode,keyboardType: TextInputType.multiline,decoration: InputDecoration(hintText: 'Text...',border: InputBorder.none)
-         ,maxLines: null,
-         onTap: (){
-           if(editingText = false){
-setState(() {
-             editingText = true;
-             currentTextController = textController;
-           });
-           }
-          
-         },)
-        );
+        child: TextField(
+          controller: textController,
+          focusNode: textFocusNode,
+          keyboardType: TextInputType.multiline,
+          decoration:
+              InputDecoration(hintText: 'Text...', border: InputBorder.none),
+          maxLines: null,
+          onTap: () {
+            if (editingText = false) {
+              setState(() {
+                editingText = true;
+                currentTextController = textController;
+              });
+            }
+          },
+        ));
   }
 
   Container linkDisplay(TextEditingController linkController, bool isLoading,
@@ -602,6 +567,17 @@ setState(() {
   }
 
   void verifyLink(TextEditingController linkController) async {
+    String _url = linkController.text.toLowerCase();
+
+    if (!isURL(_url, {
+      'protocols': ['http', 'https'],
+      'require_tld': true,
+      'require_protocol': false,
+    })) {
+      showErrorLinkDisplay(linkController);
+
+      return;
+    }
     setState(() {
       contentsData.firstWhere((element) {
         if (element['content'] == linkController) {
@@ -611,43 +587,61 @@ setState(() {
       })['widget'] = linkDisplay(linkController, true);
     });
     Response response;
-    // final response = await head(linkController.text);
-    // print('${response.statusCode}');
     bool errorOccured = false;
+    _url = linkController.text.toLowerCase().trim();
+    if (!(_url.startsWith(
+          'http://',
+        ) ||
+        _url.startsWith(
+          'https://',
+        ))) {
+      _url = 'https://$_url';
+    }
     try {
-      response = await head(linkController.text);
+      response = await head(_url);
     } catch (error) {
       errorOccured = true;
     }
     if (!errorOccured && response.statusCode == 200) {
+      Container _display;
+      try {
+        _display = linkImageDisplay(linkController.text);
+      } catch (e) {
+        showErrorLinkDisplay(linkController);
+        return;
+      }
       setState(() {
-        contents.add(linkImageDisplay(linkController.text));
+        contents.add(_display);
         contentsData.firstWhere((element) {
           if (element['content'] == linkController) {
             return true;
           }
           return false;
-        })['widget'] = linkImageDisplay(linkController.text);
+        })['widget'] = _display;
       });
     } else {
-      setState(() {
-        contentsData.firstWhere((element) {
-          if (element['content'] == linkController) {
-            return true;
-          }
-          return false;
-        })['widget'] = linkDisplay(linkController, false, error: true);
-      });
-      await Future.delayed(Duration(seconds: 3));
-      setState(() {
-        contentsData.firstWhere((element) {
-          if (element['content'] == linkController) {
-            return true;
-          }
-          return false;
-        })['widget'] = linkDisplay(linkController, false, error: false);
-      });
+      showErrorLinkDisplay(linkController);
     }
+  }
+
+  showErrorLinkDisplay(TextEditingController linkController) async {
+    setState(() {
+      contentsData.firstWhere((element) {
+        if (element['content'] == linkController) {
+          return true;
+        }
+        return false;
+      })['widget'] = linkDisplay(linkController, false, error: true);
+    });
+    await Future.delayed(Duration(seconds: 3));
+    setState(() {
+      contentsData.firstWhere((element) {
+        if (element['content'] == linkController) {
+          return true;
+        }
+        return false;
+      })['widget'] = linkDisplay(linkController, false, error: false);
+    });
   }
 
   Container linkImageDisplay(String link) {
@@ -757,31 +751,77 @@ setState(() {
   @override
   void dispose() {
     _videoPlayerController?.dispose();
-    _cameraVideoPlayerController?.dispose();
     flickManager?.dispose();
     super.dispose();
   }
 
   @override
   void didChangeDependencies() {
-    String _postId = ModalRoute.of(context).settings.arguments;
+    int _postId = ModalRoute.of(context).settings.arguments;
     if (_postId != null) {
-      var _postData = preferences.get('drafts');
-      Map _postDataMap = jsonDecode(_postData);
+      var _postData = draftBox.values.elementAt(_postId);
       setState(() {
-        contentsData = _postDataMap['contentsData'];
-        titleController =
-            TextEditingController(text: _postDataMap['contentsData']);
+      _postData['contentsData'].forEach((data) {
+          switch (data['info']['type']) {
+            case 'text':
+            TextEditingController textController =
+                            TextEditingController(text:data['content'] );
+                        FocusNode textFocusNode = FocusNode();
+                        setState(() {
+                          textControllers.add(textController);
+                          textFocusNodes.add(textFocusNode);
+                          fileIndex++;
+                          contentsData.add({
+                            'info': {'type': 'text'},
+                            'content': textController,
+                            'widget': textDisplay(
+                                textController, fileIndex, textFocusNode)
+                          });
+                          contents.add(textDisplay(
+                              textController, fileIndex, textFocusNode));
+                        });
+              break;
+            case 'link':
+               TextEditingController linkController =
+                            TextEditingController(text:data['content'] );
+                        setState(() {
+                          linkControllers.add(linkController);
+                          fileIndex++;
+                          contentsData.add({
+                            'info': {'type': 'link'},
+                            'content': linkController,
+                            'widget': linkDisplay(linkController, false)
+                          });
+                        });
+              break;
+            case 'image':
+             addImageContent(File(data['content']));
+              break;
+            case 'video':
+            addVideoContent(File(data['content']));
+              break;
+               case 'carousel':
+               List<File> _images = [];
+             data['content'].forEach((img) {
+                  _images.add(File(img));
+              });
+            addCarouselContent(_images, data['info']['aspectRatio']);
+              break;
+          }
+        });
+        // _postData['contentsData'].
+        titleController = TextEditingController(text: _postData['title']);
         isDrafted = true;
       });
     }
+
     super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
     List<Widget> _contents = [];
-    print(contentsData);
+    // draftBox.deleteAll([0,1]);
     for (int i = 0; i < contentsData.length; i++) {
       _contents.add(GestureDetector(
           onLongPress: () {
@@ -789,7 +829,7 @@ setState(() {
           },
           child: contentsData[i]['widget']));
     }
-
+    print(draftBox.values);
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       appBar: AppBar(
@@ -812,6 +852,10 @@ setState(() {
                       rightButtonFunction: () async {
                         List<Map> _modifiedContentsData = contentsData;
                         Directory appDocDir;
+                        appDocDir = await getApplicationDocumentsDirectory();
+                        await Directory(appDocDir.path + '/posts/$postId')
+                            .create(recursive: true);
+
                         // Directory(_storageInfo[0].rootDir + '/MyCreatedFolder').create();
                         for (int i = 0; i < _modifiedContentsData.length; i++) {
                           _modifiedContentsData[i].remove('widget');
@@ -819,32 +863,24 @@ setState(() {
                             case 'image':
                               final _fileName = Path.basename(
                                   _modifiedContentsData[i]['content'].path);
-                              if (appDocDir == null)
-                                appDocDir =
-                                    await getApplicationDocumentsDirectory();
                               String _path =
-                                  appDocDir.path + '/$postId/$_fileName';
+                                  appDocDir.path + '/posts/$postId/$_fileName';
                               await _modifiedContentsData[i]['content']
                                   .copy(_path);
                               _modifiedContentsData[i]['content'] = _path;
                               break;
                             case 'video':
+                              print('its video draft content');
                               final _fileName = Path.basename(
                                   _modifiedContentsData[i]['content'].path);
-                              if (appDocDir == null)
-                                appDocDir =
-                                    await getApplicationDocumentsDirectory();
                               String _path =
-                                  appDocDir.path + '/$postId/$_fileName';
+                                  appDocDir.path + '/posts/$postId/$_fileName';
                               await _modifiedContentsData[i]['content']
                                   .copy(_path);
                               _modifiedContentsData[i]['content'] = _path;
                               break;
                             case 'carousel':
-                              if (appDocDir == null)
-                                appDocDir =
-                                    await getApplicationDocumentsDirectory();
-                              String _path = appDocDir.path + '/$postId';
+                              String _path = appDocDir.path + '/posts/$postId';
                               List _paths = [];
                               for (int f = 0;
                                   f <
@@ -871,19 +907,12 @@ setState(() {
                             default:
                           }
                         }
-                        var drafts = preferences.get('drafts');
-                        if (drafts == null) {
-                          drafts = jsonEncode({});
-                          preferences.setString('drafts', drafts);
-                        }
 
-                        Map _drafts = jsonDecode(drafts);
-                        _drafts[postId] = {
+                        draftBox.add({
                           'title': titleController.text,
-                          'contentsData': _modifiedContentsData
-                        };
-                        preferences.setString('drafts', jsonEncode(_drafts));
-                        print(_drafts);
+                          'contentsData': _modifiedContentsData,
+                          'postId': postId
+                        });
                         Navigator.of(context).pop();
                         Navigator.of(context).pop();
                       },
@@ -996,69 +1025,60 @@ setState(() {
           backgroundColor: Theme.of(context).canvasColor //TODO blue gradient
           ),
       body: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-                    width: double.infinity,
-                    child: TextField(
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                      maxLines: 2,
-                      minLines: 1,
-                      controller: titleController,
-                      decoration: InputDecoration(
-                        hintText: "Title",
-                        hintStyle: TextStyle(
-                            color: Theme.of(context)
-                                .iconTheme
-                                .color
-                                .withOpacity(0.8)),
-                        border: InputBorder.none,
-                      ),
-                    ),
-                  ),
-                  Divider(
-                    color: Colors.grey,
-                    height: 1,
-                    thickness: 0.3,
-                  ),
-                  if (_contents.length > 0)
-                    Column(
-                      children: _contents,
-                    )
-                  else
-                    Container(
-                      height: MediaQuery.of(context).size.height * 0.35,
-                      alignment: Alignment.bottomCenter,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Icon(
-                              FluentIcons.collections_add_24_regular,
-                              size: 45,
-                            ),
-                          ),
-                          Text(
-                            'Add Content',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
-                    ),
-                  SizedBox(
-                    height: 30,
-                  )
-                ],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+              width: double.infinity,
+              child: TextField(
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                maxLines: 2,
+                minLines: 1,
+                controller: titleController,
+                decoration: InputDecoration(
+                  hintText: "Title",
+                  hintStyle: TextStyle(
+                      color:
+                          Theme.of(context).iconTheme.color.withOpacity(0.8)),
+                  border: InputBorder.none,
+                ),
               ),
             ),
-          )
-        
-    ;
+            Divider(
+              color: Colors.grey,
+              height: 1,
+              thickness: 0.3,
+            ),
+            if (_contents.length > 0)
+              Column(
+                children: _contents,
+              )
+            else
+              Container(
+                height: MediaQuery.of(context).size.height * 0.35,
+                alignment: Alignment.bottomCenter,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Icon(
+                        FluentIcons.collections_add_24_regular,
+                        size: 95,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            SizedBox(
+              height: 30,
+            )
+          ],
+        ),
+      ),
+    );
   }
 
   postItemsDialog(Map functions, BuildContext context) {

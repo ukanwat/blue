@@ -76,8 +76,11 @@ class _LinkPreviewState extends State<LinkPreview> {
     });
   }
   Future<void> _init() async {
-    _url = widget.url.trim();
-    if (_url.startsWith("http")) {
+    _url = widget.url.toLowerCase().trim();
+    if (!(_url.startsWith('http://',)||_url.startsWith('https://',))) {
+       _url = 'https://$_url';
+    }
+
       _info = await WebAnalyzer.getInfo(
         _url,
         cache: widget.cache,
@@ -86,9 +89,7 @@ class _LinkPreviewState extends State<LinkPreview> {
          if (mounted) setState(() {});
          if(_info.runtimeType == WebInfo)
       _validateImageUri((_info as WebInfo).icon);
-    } else {
-      print("Links don't start with http or https from : $_url");
-    }
+    
   }
 
   @override

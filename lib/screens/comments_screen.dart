@@ -28,7 +28,7 @@ class CommentsScreen extends StatefulWidget {
 class _CommentsScreenState extends State<CommentsScreen> {
   TextEditingController commentsController = TextEditingController();
   bool showReplies = true;
-
+  Post data;
   buildComments(Post data) {
     return StreamBuilder(
       stream:
@@ -183,6 +183,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
 
   @override
   void initState() {
+    
     CommentNotifier().changeCommentType(
       {'type': 'comment'},
     );
@@ -195,7 +196,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
   }
   @override
   Widget build(BuildContext context) {
-    var data = ModalRoute.of(context).settings.arguments as Post;
+   data = ModalRoute.of(context).settings.arguments as Post;
     return ChangeNotifierProvider(
       create: (_) => CommentNotifier(),
       child: Scaffold(

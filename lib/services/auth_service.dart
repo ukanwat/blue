@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Project imports:
@@ -148,7 +149,9 @@ SharedPreferences preferences = await SharedPreferences.getInstance();
     preferences.setString('currentUser', currentUserString);
     preferences.reload();
     getCurrentUser();
-
+       voteBox =  await Hive.openBox('votes');
+  saveBox =  await Hive.openBox('saves');
+  followingBox =  await Hive.openBox('followings');
     user.reload();
   }
 

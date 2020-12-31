@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 // Flutter imports:
+import 'package:blue/services/dynamic_links.dart';
 import 'package:blue/services/post_functions.dart';
 import 'package:blue/widgets/show_dialog.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share/share.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
@@ -1193,11 +1196,9 @@ class _PostState extends State<Post> {
                         });
                       });
                     }),
-              footerButton(FluentIcons.share_24_regular, Colors.blueAccent, () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) => RepostDialog(this.widget),
-                );
+              footerButton(FluentIcons.share_24_regular, Colors.blueAccent, () async{
+             String _link =  await DynamicLinksService.createDynamicLink('post?id=$postId');
+                Share.share(_link, subject: 'Sharing this Post');
               }),
               if (!(widget.commentsShown || widget.isCompact))
                 footerButton(FluentIcons.comment_24_regular, Colors.cyan, () {
@@ -1303,12 +1304,12 @@ class _PostState extends State<Post> {
     }
   }
  bool alreadyUpvoted = false;
+
   @override
   void initState() {
     isOwner = currentUser.id == widget.ownerId;
-    if(saveBox.containsKey(postId)){
-      isSaved = true;
-    }
+   
+
 
      if(voteBox.containsKey(widget.postId)){
        if( voteBox.get(widget.postId)){

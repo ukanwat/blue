@@ -695,22 +695,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   : Transform.scale(
                                       scale: 0.8,
                                       child: Container(
-                                        padding:
-                                            EdgeInsets.symmetric(horizontal: 5),
-                                        child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(50),
-                                            child: new BackdropFilter(
-                                                filter: new ImageFilter.blur(
-                                                    sigmaX: 10.0, sigmaY: 10.0),
-                                                child: Container(
-                                                    color: Colors.black38
-                                                        .withOpacity(0.4),
-                                                    child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              0),
-                                                      child: PopupMenuButton(
+                                        decoration: BoxDecoration(shape: BoxShape.circle,  color: Colors.white.withOpacity(0.25),),
+                                      margin:
+                                            EdgeInsets.symmetric(horizontal: 8,vertical: 3),child: PopupMenuButton(
                                                         padding:
                                                             EdgeInsets.zero,
                                                         color: Theme.of(context)
@@ -820,9 +807,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                           }
                                                         },
                                                       ),
-                                                    )))),
-                                      ),
-                                    ),
+                                                    )),
+                                     
                             ],
                           ),
                         );
@@ -908,6 +894,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               Divider(
                 height: 1,
                 thickness: 1,
+                color: Theme.of(context).cardColor,
               ),
               Expanded(
                   child: ListView(

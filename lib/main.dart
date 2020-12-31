@@ -68,11 +68,11 @@ import './screens/search_screen.dart';
 import './screens/settings_screen.dart';
 import 'models/user.dart';
 import 'screens/settings/general/account_screens/email_screen.dart';
-
+import './services/dynamic_links.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-
+  
   await getCurrentUser();                                              ////////check all, do all on login to0
   await getPreferences();
   await openBoxes();              
@@ -196,6 +196,7 @@ Future getCurrentUser() async {
    Box voteBox;
    Box saveBox;
    Box followingBox;
+   Box draftBox;
 Future openBoxes() async {
     if(currentUser == null)
   return;
@@ -207,6 +208,7 @@ Future openBoxes() async {
   voteBox =  await Hive.openBox('votes');
   saveBox =  await Hive.openBox('saves');
   followingBox =  await Hive.openBox('followings');
+  draftBox =  await Hive.openBox('drafts');
   boxesOpened = true;
     loadVotes();
   }catch(e){
@@ -495,7 +497,7 @@ class MyAppState extends State<MyApp> {
 Settings(   host: host,
       sslEnabled: false,
       persistenceEnabled: false,
-      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED);
+      cacheSizeBytes:100);
   
 
     const AndroidInitializationSettings initializationSettingsAndroid =

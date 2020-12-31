@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
-import 'package:blue/providers/submit_state.dart';
 import 'package:blue/screens/search_tag_screen.dart';
 import 'package:blue/widgets/progress.dart';
 import 'home.dart';
@@ -148,7 +147,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                                         ),
                                       ),
                                       SizedBox(height: 15),
-                                      SubmitText(),
+                                      Text('Submitting'),
                                     ],
                                   ),
                                 ),
@@ -293,19 +292,5 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
         ),
       ),
     );
-  }
-}
-
-class SubmitText extends StatefulWidget {
-  @override
-  _SubmitTextState createState() => _SubmitTextState();
-}
-
-class _SubmitTextState extends State<SubmitText> {
-  @override
-  Widget build(BuildContext context) {
-    String submitState = Provider.of<SubmitState>(context).state;
-    return Text(submitState,
-        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500));
   }
 }
