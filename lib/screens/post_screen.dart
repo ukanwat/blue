@@ -25,7 +25,7 @@ import 'package:provider/provider.dart';
 import 'package:string_validator/string_validator.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
-import 'package:postgrest/postgrest.dart';
+import '../services/hasura.dart';
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/providers/submit_state.dart';

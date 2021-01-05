@@ -8,13 +8,12 @@ import 'package:blue/services/auth_service.dart';
 import 'package:blue/widgets/header.dart';
 import 'package:blue/widgets/progress.dart';
 
-enum AuthFormType { signIn, signUp, googleSignIn,reset ,anonymous}
+enum AuthFormType { signIn, signUp, googleSignIn,reset }
 
 class SignInScreen extends StatefulWidget {
   static const signInRouteName = 'email-sign-in';
   static const signUpRouteName = 'email-sign-up';
   static const googleSignInRouteName = 'google-sign-in';
-   static const anonymousSignInRouteName = 'anonymous-sign-in';
   final AuthFormType authFormType;
 
   SignInScreen({Key key, @required this.authFormType}) : super(key: key);
@@ -133,30 +132,11 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  Future submitAnonymous()async {
-    final auth  = Provider.of(context).auth;
-   await  auth.singInAnonymously();
-  //  Navigator.of(context).pushReplacementNamed(TabsScreen.);
-  }
+
   @override
   Widget build(BuildContext context) {
     final _width = MediaQuery.of(context).size.width;
     final _height = MediaQuery.of(context).size.height;
- if (authFormType == AuthFormType.anonymous) {
-      submitAnonymous();
-      return Scaffold(
-          backgroundColor: Theme.of(context).backgroundColor,
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-             circularProgress(),
-              Text(
-                "Loading",
-                style: TextStyle(color: Colors.white),
-              ),
-            ],
-          ));
-    } else {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: buildHeaderText(),
@@ -180,7 +160,7 @@ class _SignInScreenState extends State<SignInScreen> {
         ),
       ),
     );
-  }}
+  }
 
   PreferredSize buildHeaderText() {
     String _headerText;

@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/services/hasura.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -119,6 +120,7 @@ OverlayEntry toggleBanner() {
                 size: 26,
               ),
               onPressed: () {
+                Hasura.insertUser('ded', 'dedededefrfrf');
                 setState(() {
                   followingPosts = !followingPosts;
                   banner = !banner;

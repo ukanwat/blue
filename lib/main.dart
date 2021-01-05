@@ -405,9 +405,6 @@ class MyAppState extends State<MyApp> {
                 },
                 routes: {
                   TabsScreen.routeName: (ctx) => TabsScreen(),
-                  SignInScreen.anonymousSignInRouteName: (ctx) => SignInScreen(
-                        authFormType: AuthFormType.anonymous,
-                      ),
                   SignInScreen.signInRouteName: (ctx) => SignInScreen(
                         authFormType: AuthFormType.signIn,
                       ),

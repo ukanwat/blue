@@ -70,9 +70,9 @@ dependencies:
   flutter_local_notifications: ^3.0.2
   sticky_headers: ^0.1.8+1
   import_sorter: ^4.4.1
-  postgrest: ^0.0.2
   share: ^0.6.5+4
   string_validator: ^0.1.4
+  hasura_connect: ^2.0.1
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2

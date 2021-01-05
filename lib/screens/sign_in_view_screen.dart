@@ -72,15 +72,17 @@ class SignInViewScreen extends StatelessWidget {
               width: double.infinity,
               height: 48,
               margin: EdgeInsets.symmetric(horizontal: 40),
+              padding: EdgeInsets.symmetric(vertical: 5,horizontal: 0),
               child: Row(
                 children: <Widget>[
-                  Container(
-                    height: 48,
-                    child:
-                        Image.asset('assets/icons/google_sign_in_button.png'),
+                  CircleAvatar(backgroundImage:  AssetImage('assets/icons/google_sign_in_button.png'),
+                    radius: 24,
+                                      
+                   
+                    
                   ),
                   Container(
-                    width: MediaQuery.of(context).size.width - 128,
+                    width: MediaQuery.of(context).size.width - 140,
                     child: Center(
                       child: Text(
                         'Sign in with Google',
@@ -95,12 +97,12 @@ class SignInViewScreen extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: Color.fromRGBO(66, 133, 244, 1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(40),
               ),
             ),
           ),
           Expanded(child: Container()),
-          Text('OR WITH EMAIL'),
+          Text('OR WITH EMAIL',style: TextStyle(fontWeight: FontWeight.w600,fontSize: 18),),
           Expanded(child: Container()),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 40),
@@ -116,7 +118,7 @@ class SignInViewScreen extends StatelessWidget {
                     width: MediaQuery.of(context).size.width / 2 - 47,
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(80),
                     ),
                     child: Center(
                       child: Text(
@@ -140,7 +142,7 @@ class SignInViewScreen extends StatelessWidget {
                     width: MediaQuery.of(context).size.width / 2 - 47,
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(80),
                     ),
                     child: Center(
                       child: Text(

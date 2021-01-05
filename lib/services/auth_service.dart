@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 // Flutter imports:
+import 'package:blue/services/hasura.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -9,6 +10,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hive/hive.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Project imports:
@@ -34,7 +36,7 @@ class AuthService {
       email: email,
       password: password,
     );
-
+                                
     // Update the username
     await currentUser.user.updateProfile(displayName: name);
     await currentUser.user.reload();
@@ -55,7 +57,7 @@ class AuthService {
    
     SharedPreferences preferences = await SharedPreferences.getInstance();
     preferences.clear();
-     _firebaseAuth.signOut();
+    await _firebaseAuth.signOut();
      currentUser = null;
      Navigator.of(context).pushReplacementNamed(SignInViewScreen.routeName);
   }
@@ -102,18 +104,16 @@ SharedPreferences preferences = await SharedPreferences.getInstance();
 
   }
 
-  // Create Anonymous User
-  Future singInAnonymously() {
-    return _firebaseAuth.signInAnonymously();
-  }
 
   signInWithGoogle(BuildContext context) async {
+  
     final GoogleSignInAccount account = await _googleSignIn.signIn();
     final GoogleSignInAuthentication _googleAuth = await account.authentication;
     final auth.AuthCredential credential = auth.GoogleAuthProvider.credential(
       idToken: _googleAuth.idToken,
       accessToken: _googleAuth.accessToken,
     );
+   
     var user = (await _firebaseAuth.signInWithCredential(credential)).user;
     DocumentSnapshot doc = await usersRef.doc(account.id).get();
     var username;
@@ -149,6 +149,9 @@ SharedPreferences preferences = await SharedPreferences.getInstance();
     preferences.setString('currentUser', currentUserString);
     preferences.reload();
     getCurrentUser();
+
+     var dir = await getApplicationDocumentsDirectory();
+  Hive.init(dir.path);
        voteBox =  await Hive.openBox('votes');
   saveBox =  await Hive.openBox('saves');
   followingBox =  await Hive.openBox('followings');
