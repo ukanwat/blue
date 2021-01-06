@@ -30,6 +30,7 @@ import '../widgets/progress.dart';
 import './edit_profile_screen.dart';
 import './home.dart';
 import './settings_screen.dart';
+import '../services/boxes.dart';
 
 enum Sort { Recent, Earliest, Best }
 
@@ -103,7 +104,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   void initState() {
     super.initState();
 
-   if(followingBox.containsKey(widget.profileId)){
+   if( Boxes.followingBox.containsKey(widget.profileId)){
      isFollowing = true;
    }
     getFollowers();

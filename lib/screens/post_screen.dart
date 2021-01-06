@@ -36,6 +36,7 @@ import 'package:blue/widgets/show_dialog.dart';
 import '../services/file_storage.dart';
 import '../services/video_processing.dart';
 import './home.dart';
+import '../services/boxes.dart';
 
 enum ContentInsertOptions { Device, Camera, Carousel }
 
@@ -759,7 +760,7 @@ addImageContent(File _image)async{
   void didChangeDependencies() {
     int _postId = ModalRoute.of(context).settings.arguments;
     if (_postId != null) {
-      var _postData = draftBox.values.elementAt(_postId);
+      var _postData =  Boxes.draftBox.values.elementAt(_postId);
       setState(() {
       _postData['contentsData'].forEach((data) {
           switch (data['info']['type']) {
@@ -829,7 +830,7 @@ addImageContent(File _image)async{
           },
           child: contentsData[i]['widget']));
     }
-    print(draftBox.values);
+    print( Boxes.draftBox.values);
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       appBar: AppBar(
@@ -908,7 +909,7 @@ addImageContent(File _image)async{
                           }
                         }
 
-                        draftBox.add({
+                         Boxes.draftBox.add({
                           'title': titleController.text,
                           'contentsData': _modifiedContentsData,
                           'postId': postId

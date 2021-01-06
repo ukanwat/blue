@@ -6,11 +6,9 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sortedmap/sortedmap.dart';
 
 // Project imports:
-import 'package:blue/main.dart';
 import 'package:blue/screens/tag_screen.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/progress.dart';
@@ -105,9 +103,7 @@ print(tags);
         ));
       }
     });
-    if (preferences == null)
-      preferences = await SharedPreferences.getInstance();
-    preferences.setStringList('followed_tags', tags);
+  PreferencesUpdate().updateStringList('followed_tags', tags);
   }
 
   @override
@@ -134,7 +130,7 @@ print(tags);
                 onPressed: () {
                   setState(() {
                     wrapped = !wrapped;
-                    preferences.setBool('tagsWrapped', wrapped);
+              PreferencesUpdate().updateBool('tagsWrapped', wrapped);
                   });
                 }),
             IconButton(
@@ -166,9 +162,9 @@ print(tags);
     );
   }
 tagsInfoUpdate(List sortedPriorityList,int i){
- String tagOpenInfo = preferences.getString('tags_open_info');
+ String tagOpenInfo = PreferencesUpdate().getString('tags_open_info');
             if (tagOpenInfo == null) {
-              preferences.setString('tags_open_info', json.encode({}));
+         PreferencesUpdate().updateString('tags_open_info', json.encode({}));
               tagOpenInfo = json.encode({});
             }
             DateTime nowTime = DateTime.now();
@@ -187,6 +183,6 @@ tagsInfoUpdate(List sortedPriorityList,int i){
               };
             }
             print(tagOpenMap);
-            preferences.setString('tags_open_info', json.encode(tagOpenMap));
+           PreferencesUpdate().updateString('tags_open_info', json.encode(tagOpenMap));
 }
 }

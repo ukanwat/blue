@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
@@ -20,7 +19,6 @@ class PushNotificationsScreen extends StatefulWidget {
 }
 
 class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
-  SharedPreferences preferences;
   bool likes = true;
   bool comments = true;
   bool commentReplies = true;

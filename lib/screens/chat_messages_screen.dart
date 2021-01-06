@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:ui';
 
 // Flutter imports:
+import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -567,7 +568,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
           ),
         ));
         String lastMessage = '';
-        var direct = preferences.getString('direct');
+        var direct =   PreferencesUpdate().getString('direct');
         Map directMap = direct == null ? {} : json.decode(direct);
         if (messageItem.type == 'image')
           lastMessage = '${MessageType.image}';
@@ -583,7 +584,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
           'mine': messageItem.idFrom == currentUser.id ? true : false,
         };
         direct = json.encode(directMap);
-        preferences.setString('direct', direct);
+          PreferencesUpdate().updateString('direct',direct);
       }
       showTime = 30 <
           lastTimestamp

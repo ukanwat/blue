@@ -38,8 +38,9 @@ import '../screens/comments_screen.dart';
 import '../screens/home.dart';
 import '../services/functions.dart';
 import '../services/go_to.dart';
-import '../services/go_to.dart';
+import '../services/boxes.dart';
 import './custom_image.dart';
+
 
 enum CompactPostThumbnailType {
   video,
@@ -709,7 +710,7 @@ class _PostState extends State<Post> {
               'ids':FieldValue.arrayRemove([widget.postId]),
               'votes': votes});
     } else if (PreferencesUpdate().getBool('votes_downloaded')) {
-   voteBox.delete(widget.postId);
+    Boxes.voteBox.delete(widget.postId);
     }
   }
 
@@ -769,9 +770,9 @@ class _PostState extends State<Post> {
                       Navigator.of(context)
                           .pushNamed(TagScreen.routeName, arguments: tags[i]);
                       String tagOpenInfo =
-                          preferences.getString('tags_open_info');
+                       PreferencesUpdate().getString('tags_open_info');
                       if (tagOpenInfo == null) {
-                        preferences.setString(
+                      PreferencesUpdate().updateString(
                             'tags_open_info', json.encode({}));
                         tagOpenInfo = json.encode({});
                       }
@@ -790,7 +791,7 @@ class _PostState extends State<Post> {
                         tagOpenMap[todayTime] = {tags[i]: 1};
                       }
                       print(tagOpenMap);
-                      preferences.setString(
+                 PreferencesUpdate().updateString(
                           'tags_open_info', json.encode(tagOpenMap));
                     },
                     child: Container(
@@ -841,10 +842,10 @@ class _PostState extends State<Post> {
           contents['$i'],
         );
         _initializeVideoPlayerFuture = _controller.initialize().then((_) {
-          if (preferences.getBool('autoplay_videos') == null) {
-            preferences.setBool('autoplay_videos', false);
+          if (PreferencesUpdate().getBool('autoplay_videos') == null) {
+         PreferencesUpdate().updateBool('autoplay_videos', false);
           }
-          bool _autoplay = preferences.getBool('autoplay_videos');
+          bool _autoplay =PreferencesUpdate().getBool('autoplay_videos');
           flickManager = FlickManager(
             videoPlayerController: _controller,
           );
@@ -902,8 +903,8 @@ class _PostState extends State<Post> {
   }
 
   Widget textContentContainer(String text) {
-    if (preferences.getBool('serif') == null) {
-      preferences.setBool('serif', false);
+    if (PreferencesUpdate().getBool('serif') == null) {
+     PreferencesUpdate().updateBool('serif', false);
     }
     return Container(
       child: Text(
@@ -1128,7 +1129,7 @@ class _PostState extends State<Post> {
                         isSaved = false;
                         showSaveBar = false;
                       });
-                      saveBox.delete(postId);
+                       Boxes.saveBox.delete(postId);
                          var snap = await savedPostsRef 
                             .doc(currentUser?.id)
                             .collection('all')
@@ -1186,7 +1187,7 @@ class _PostState extends State<Post> {
                           ],
                         }, SetOptions(merge: true));
                       }
-                      saveBox.put(postId, null);
+                       Boxes.saveBox.put(postId, null);
                       setState(() {
                         showSaveBar = true;
                       });
@@ -1311,8 +1312,8 @@ class _PostState extends State<Post> {
    
 
 
-     if(voteBox.containsKey(widget.postId)){
-       if( voteBox.get(widget.postId)){
+     if( Boxes.voteBox.containsKey(widget.postId)){
+       if(  Boxes.voteBox.get(widget.postId)){
 
         alreadyUpvoted = true;
         vote = Vote.up;
@@ -1325,7 +1326,7 @@ class _PostState extends State<Post> {
     }
 
 
-  if(followingBox.containsKey(ownerId)){
+  if( Boxes.followingBox.containsKey(ownerId)){
       isFollowing = true;
   }
 

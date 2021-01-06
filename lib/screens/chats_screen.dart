@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 
 // Flutter imports:
+import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -33,12 +34,12 @@ class _ChatsScreenState extends State<ChatsScreen>
   @override
   void initState() {
     chatUsers = usersRef.get();
-    var direct = preferences.getString('direct');
+    var direct =  PreferencesUpdate().getString('direct');
     directMap = direct == null ? {} : json.decode(direct);
     Timer.periodic(Duration(minutes: 1), (Timer t) {   
       if(this.mounted)
       setState(() {
-             var direct = preferences.getString('direct');
+             var direct =  PreferencesUpdate().getString('direct');
     directMap = direct == null ? {} : json.decode(direct);
         });});
     super.initState();

@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/material.dart';
 
 // Project imports:
@@ -17,8 +18,8 @@ class _ActivityScreenState extends State<ActivityScreen> {
   bool setPrivate =  false;
   @override
   void initState() {
-   bool _setPrivate = preferences.getBool('set_private');
-      bool _trackActivity = preferences.getBool('track_activity');
+   bool _setPrivate = PreferencesUpdate().getBool('set_private');
+      bool _trackActivity = PreferencesUpdate().getBool('track_activity');
       print(_setPrivate);
        print(_trackActivity);
       if(_setPrivate != null)
@@ -36,7 +37,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         children: <Widget>[
                   settingsSwitchListTile('Set your profile private', setPrivate, (newValue){
                  //TODO
-                                preferences.setBool('set_private',newValue );
+                 PreferencesUpdate().updateBool('set_private',newValue);
                 preferencesRef.doc(currentUser.id).update({
                   'set_private': newValue
                 });
@@ -45,8 +46,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 });}),  Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),   
 
               settingsSwitchListTile('Personalised recommendations based on your activity', trackActivity, (newValue){
-                
-                                preferences.setBool('track_activity',newValue );
+                  PreferencesUpdate().updateBool('track_activity',newValue);
                 preferencesRef.doc(currentUser.id).update({
                   'track_activity': newValue
                 });

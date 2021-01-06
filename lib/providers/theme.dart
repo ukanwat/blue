@@ -1,19 +1,19 @@
 // Flutter imports:
+import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/foundation.dart';
-
+import 'package:blue/services/boxes.dart';
+import 'package:flutter/material.dart';
 // Package imports:
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeNotifier extends ChangeNotifier {
   final String key = "theme";
-  SharedPreferences _prefs;
   bool _darkTheme;
 
   bool get darkTheme => _darkTheme;
   
-  ThemeNotifier() {
+  ThemeNotifier(BuildContext context) {
     _darkTheme = true;
-    _loadFromPrefs();
+    _loadFromPrefs(context);
   }
 
   toggleTheme(var value ) {
@@ -22,20 +22,20 @@ class ThemeNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  _initPrefs() async {
-    if(_prefs == null)
-      _prefs = await SharedPreferences.getInstance();
-  }
 
-  _loadFromPrefs() async {
-    await _initPrefs();
-    _darkTheme = _prefs.getBool(key) ?? true;
+
+  _loadFromPrefs(BuildContext context) async {
+    if(Boxes.preferenceBox == null){
+         _darkTheme = false;
+    }else{
+_darkTheme = PreferencesUpdate().getBool(key,def: null) ?? true;
+    }
+    
     notifyListeners();
   }
 
   _saveToPrefs()async {
-    await _initPrefs();
-    _prefs.setBool(key, _darkTheme);
+    PreferencesUpdate().updateBool(key, _darkTheme);
   }
 
 }

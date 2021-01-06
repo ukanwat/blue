@@ -9,6 +9,7 @@ import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
+import '../services/boxes.dart';
 
 class SaveDialog extends StatefulWidget {
  final  Post post;
@@ -77,7 +78,7 @@ savePost(String collectionName)async{
                                 ],
                               },SetOptions(merge: true ));
                             }
-                             saveBox.put(widget.post.postId,collectionName );
+                             Boxes.saveBox.put(widget.post.postId,collectionName );
 
 }  
 @override

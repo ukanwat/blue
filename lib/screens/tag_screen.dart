@@ -43,7 +43,8 @@ class _TagScreenState extends State<TagScreen> {
                 floating: false,
                 pinned: true,
                 backgroundColor: Theme.of(context).backgroundColor,
-                actions: [ preferences.getStringList('followed_tags').contains(tag) 
+                actions: [
+                  PreferencesUpdate().containsInStringList('followed_tags', tag)
                   ?  PopupMenuButton(
                         padding: EdgeInsets.zero,
                         

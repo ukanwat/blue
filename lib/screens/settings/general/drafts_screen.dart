@@ -10,7 +10,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 // Project imports:
-import 'package:blue/main.dart';
+import 'package:blue/services/boxes.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:video_player/video_player.dart';
 import 'package:blue/widgets/show_dialog.dart';
@@ -26,7 +26,7 @@ class _DraftsScreenState extends State<DraftsScreen> {
   @override
   void initState() {
     // draftBox.keys.forEach((key) { draftBox.delete(key);});
-    contentsData = draftBox.values.toList();
+    contentsData =  Boxes.draftBox.values.toList();
     print('drafts - $contentsData');
     super.initState();
   }
@@ -140,7 +140,7 @@ class _DraftsScreenState extends State<DraftsScreen> {
                                  return ShowDialog(title: 'Delete Draft',description: 'Are you sure you want to delete this draft?',leftButtonText: 'Cancel',rightButtonText: 'Delete',rightButtonFunction: ()async{
                                 
                                    setState(() {
-                                    draftBox.deleteAt(i);
+                                     Boxes.draftBox.deleteAt(i);
                                     contentsData.removeAt(i);
                                    
                                    });

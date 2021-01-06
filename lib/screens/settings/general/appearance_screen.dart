@@ -7,7 +7,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
@@ -33,16 +32,16 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
   @override
   void initState(){
      getTheme();
-         if(preferences.getBool('autoplay_videos') == null)
-    preferences.setBool('autoplay_videos',false);
+         if(PreferencesUpdate().getBool('autoplay_videos') == null)
+    PreferencesUpdate().updateBool('autoplay_videos',false);
     //  if(preferences.getBool('autoplay_GIFs') == null)
     // preferences.setBool('autoplay_GIFs',false);
-   autoplayVideos =  preferences.getBool('autoplay_videos');
+   autoplayVideos =  PreferencesUpdate().getBool('autoplay_videos');
       // autoplayGIFs =  preferences.getBool('autoplay_GIFs');
-        if(preferences.getBool('serif') == null){
-      preferences.setBool('serif',false);
+        if(PreferencesUpdate().getBool('serif') == null){
+     PreferencesUpdate().updateBool('serif',false);
     }
-    serif = preferences.getBool('serif');
+    serif = PreferencesUpdate().getBool('serif');
     super.initState();
   }
   getTheme()async{
@@ -122,7 +121,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
 Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
   settingsSwitchListTile(
               'Autoplay Videos', autoplayVideos, (newValue) {setState(() {
-                  preferences.setBool('autoplay_videos', newValue);
+                 PreferencesUpdate().updateBool('autoplay_videos', newValue);
                  autoplayVideos = newValue;
                      preferencesRef.doc(currentUser.id).set({'autoplay_videos': newValue},SetOptions(merge: true));
               });},description: 'Autoplay Videos which appear in Posts'),
@@ -138,7 +137,7 @@ Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom
            ListTile( onTap: (){
                setState(() {
                 serif = false;
-                  preferences.setBool('serif',false);
+                PreferencesUpdate().updateBool('serif',false);
                     preferencesRef.doc(currentUser.id).set({'serif': false},SetOptions(merge: true));
                });
               }, title: Text('Sans Serif'),
@@ -149,7 +148,7 @@ Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom
               ListTile( onTap: (){
                setState(() {
                 serif = true;
-                  preferences.setBool('serif',true);
+                PreferencesUpdate().updateBool('serif',true);
                  preferencesRef.doc(currentUser.id).set({'serif': true},SetOptions(merge: true));
                });
               }, title: Text('Serif',style: TextStyle(fontFamily: 'Georgia'),),

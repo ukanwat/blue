@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -51,7 +52,7 @@ class _ExplorePostsScreenState extends State<ExplorePostsScreen>
        child:   SwitchListTile(value: showReplies, onChanged: (newValue){
          setState(() {
                     showReplies = newValue;
-                    preferences.setBool('show_replies', newValue);
+                    PreferencesUpdate().updateBool('show_replies', newValue);
          });        
           },
           title: Text('Show Replies',style: TextStyle(fontSize: 15),),
@@ -159,7 +160,7 @@ class _ExplorePostsScreenState extends State<ExplorePostsScreen>
   @override
   void initState() {
     CommentNotifier().changeCommentType({'type': 'comment'},);
-    bool _showReplies = preferences.getBool('show_replies');
+    bool _showReplies = PreferencesUpdate().getBool('show_replies');
     if(_showReplies == null){
       _showReplies = true;
     }

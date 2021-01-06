@@ -28,7 +28,6 @@ dependencies:
   cached_network_image: ^2.2.0+1
   image_picker: ^0.6.5+1
   firebase_storage: ^5.2.0
-  shared_preferences: ^0.5.7+3
   intl: ^0.16.1
   timeago: ^2.0.26
   video_player: ^0.10.9+1

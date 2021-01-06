@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 // Flutter imports:
+import 'package:blue/services/boxes.dart';
+import 'package:blue/services/boxes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -12,7 +14,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image/image.dart' as Im;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 // Project imports:
@@ -204,12 +205,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           : profilePictureUrl, //TODO
       'headerUrl': headerUrl == null ? currentUser.headerUrl : headerUrl,
     };
-    String currentUserString = json.encode(currentUserMap);
-    print(currentUserMap);
-    SharedPreferences preferences = await SharedPreferences.getInstance();
+    Boxes.currentUserBox.putAll(currentUserMap );
 
-    preferences.setString('currentUser', currentUserString);
-    Map currentUserMapGet = json.decode(preferences.get('currentUser'));
+    Map currentUserMapGet =  Boxes.currentUserBox.toMap();
     currentUser = User(
         id: currentUserMapGet['id'],
         bio: currentUserMapGet['bio'],

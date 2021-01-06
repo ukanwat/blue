@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 // Project imports:
 import 'package:blue/services/preferences_update.dart';
@@ -23,7 +22,6 @@ class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
   bool feedbacks = true;
   bool announcements = true;
   // bool activities = true;
-  SharedPreferences preferences;
   bool loading = true;
   @override
   void initState() {
@@ -32,7 +30,6 @@ class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
   }
 
   getPushNotificationPreferences() async {
-    preferences = await SharedPreferences.getInstance();
 
     setState(() {
       feedbacks= PreferencesUpdate().getBool('email_feedbacks',def: true);

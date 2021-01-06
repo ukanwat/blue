@@ -6,10 +6,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:blue/main.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../screens/home.dart';
+import 'boxes.dart';
 
 class Functions{
   handleFollowUser(String profileId, ) async{//TODO Batch writes and prefer server side
-      followingBox.put(profileId, null);
+       Boxes.followingBox.put(profileId, null);
     usersRef.doc(profileId).update({'followers': FieldValue.increment(1) },);
      usersRef.doc(currentUser.id).update({'following': FieldValue.increment(1) },);
  
@@ -61,8 +62,8 @@ class Functions{
   }
 
     handleUnfollowUser(String profileId)async {// TODO batch writes and prefer server side
-   if(followingBox.containsKey(profileId)){
-     followingBox.delete(profileId);
+   if( Boxes.followingBox.containsKey(profileId)){
+      Boxes.followingBox.delete(profileId);
    }
    
    

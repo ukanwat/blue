@@ -2,7 +2,10 @@
 import 'dart:convert';
 
 // Flutter imports:
+import 'package:blue/models/user.dart';
+import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
+import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -11,14 +14,14 @@ import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 // Project imports:
 import 'package:blue/screens/home.dart';
 import 'package:blue/screens/sign_in_view_screen.dart';
 import '../main.dart';
 import '../screens/sign_in_screen.dart';
-
+import 'boxes.dart';
+import 'package:blue/providers/provider_widget.dart';
 class AuthService {
   final auth.FirebaseAuth _firebaseAuth = auth.FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
@@ -28,19 +31,23 @@ class AuthService {
   Future<String> getCurrentUID() async {
     return _firebaseAuth.currentUser.uid;
   }
-
+ static logout(BuildContext context) {
+   var auth =  Provider.of(context).auth;
+    auth.signOut(context);
+  }
   // Email & Password Sign Up
   Future<String> createUserWithEmailAndPassword(
       String email, String password, String name) async {
-    final currentUser = await _firebaseAuth.createUserWithEmailAndPassword(
+    final _currentUser = await _firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
-                                
+               
     // Update the username
-    await currentUser.user.updateProfile(displayName: name);
-    await currentUser.user.reload();
-    return currentUser.user.uid;
+    await _currentUser.user.updateProfile(displayName: name);
+         currentUser = User(displayName: name,email: email);
+    await _currentUser.user.reload();
+    return _currentUser.user.uid;
   }
 
   // Email & Password Sign In
@@ -54,9 +61,10 @@ class AuthService {
 
   // Sign Out
   Future signOut(BuildContext context) async {
-   
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    preferences.clear();
+    if(Boxes.preferenceBox != null){
+ await Boxes.preferenceBox.clear();
+    }
+    
     await _firebaseAuth.signOut();
      currentUser = null;
      Navigator.of(context).pushReplacementNamed(SignInViewScreen.routeName);
@@ -69,8 +77,8 @@ class AuthService {
 
   Future changePassword(String newPassword,String password) async {
     auth.User firebaseUser = _firebaseAuth.currentUser;
-SharedPreferences preferences = await SharedPreferences.getInstance();
-     String _accountType =  preferences.getString('accountType');
+    
+     String _accountType = PreferencesUpdate().getString('accountType');
     if (firebaseUser != null && _accountType !=  'google') { 
         final auth.AuthCredential credential = auth.EmailAuthProvider.credential(email: currentUser.email, password: password);
          firebaseUser.reauthenticateWithCredential(credential);
@@ -81,8 +89,7 @@ SharedPreferences preferences = await SharedPreferences.getInstance();
   }
     Future changeEmail(String email,String password) async {
     var firebaseUser =  _firebaseAuth.currentUser;
-SharedPreferences preferences = await SharedPreferences.getInstance();
-     String _accountType =  preferences.getString('accountType');
+     String _accountType =  PreferencesUpdate().getString('accountType');
     if (firebaseUser != null && _accountType !=  'google') { 
       try{
         final auth.AuthCredential credential = auth.EmailAuthProvider.credential(email: currentUser.email, password: password);
@@ -90,12 +97,9 @@ SharedPreferences preferences = await SharedPreferences.getInstance();
        firebaseUser.updateEmail(email);
         firebaseUser.reload();
        usersRef.doc(currentUser.id).set({'email': email},SetOptions(merge: true));
-      var currentUserString =  preferences.getString('currentUser');
-      var currentUserMap = json.decode(currentUserString);
+      var currentUserMap = Boxes.currentUserBox.toMap();
       currentUserMap['email'] = email;
-      currentUserString =  json.encode( currentUserMap);
-       preferences.setString('currentUser',currentUserString );
-      preferences.reload();
+    Boxes.currentUserBox.putAll(  currentUserMap);
       getCurrentUser();}
       catch(e){
         print(e);
@@ -142,19 +146,16 @@ SharedPreferences preferences = await SharedPreferences.getInstance();
       'website': ""
     };
      user.reload();
-    String currentUserString = json.encode(currentUserMap);
-    
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-      preferences.setString('accountType','google');
-    preferences.setString('currentUser', currentUserString);
-    preferences.reload();
+     PreferencesUpdate().updateString('accountType','google');
+     Boxes.currentUserBox.putAll(currentUserMap);
+
     getCurrentUser();
 
      var dir = await getApplicationDocumentsDirectory();
   Hive.init(dir.path);
-       voteBox =  await Hive.openBox('votes');
-  saveBox =  await Hive.openBox('saves');
-  followingBox =  await Hive.openBox('followings');
+        Boxes.voteBox =  await Hive.openBox('votes');
+   Boxes.saveBox =  await Hive.openBox('saves');
+   Boxes.followingBox =  await Hive.openBox('followings');
     user.reload();
   }
 

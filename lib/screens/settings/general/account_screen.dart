@@ -1,8 +1,8 @@
 // Flutter imports:
+import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/material.dart';
 
 // Project imports:
-import 'package:blue/main.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import '../../edit_profile_screen.dart';
 import 'account_screens/email_screen.dart';
@@ -24,13 +24,13 @@ class _AccountScreenState extends State<AccountScreen> {
       body: ListView(
         children: <Widget>[
           Visibility(
-            visible: accountType != 'google',
+            visible: PreferencesUpdate().getString('accountType') != 'google',
             child: settingsPageNavigationTile(
                 context, 'Password', PasswordScreen.routeName),
           ),
           Visibility(
             visible: 
-            accountType != 'google',
+         PreferencesUpdate().getString('accountType') != 'google',
             child: settingsPageNavigationTile(
                 context, 'Email', EmailScreen.routeName,),
           ),

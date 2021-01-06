@@ -1,9 +1,9 @@
 // Flutter imports:
+import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:shared_preferences/shared_preferences.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
@@ -57,9 +57,7 @@ class _AllTopicsScreenState extends State<AllTopicsScreen> {
         ));
       }
     });
-    if(preferences == null)
- preferences = await SharedPreferences.getInstance();
-    preferences.setStringList('followed_tags', followedTags);
+      PreferencesUpdate().updateStringList('followed_tags', followedTags);
   }
 
   @override

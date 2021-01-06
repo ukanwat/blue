@@ -30,7 +30,6 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
 
   @override
   void didChangeDependencies() {
-    print(preferences.getStringList('blocked_accounts'));
     peer = ModalRoute.of(context).settings.arguments as Map;
     isMuted = PreferencesUpdate()
         .containsInStringList('muted_messages', peer['peerId']);

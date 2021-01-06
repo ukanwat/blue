@@ -3,6 +3,7 @@ import 'package:blue/screens/home.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../services/boxes.dart';
 
 class PostFunctions{
  handleUpvoteButton(String postId,Vote vote) async {
@@ -50,9 +51,9 @@ class PostFunctions{
             .set({'votes': votes}, SetOptions(merge: true));
       }
     } else if (PreferencesUpdate().getBool('votes_downloaded')) {
-       var _vote = voteBox.get(postId);
+       var _vote =  Boxes.voteBox.get(postId);
       if (_vote == null ? true : !_vote) {
-        voteBox.put(postId, true);
+         Boxes.voteBox.put(postId, true);
       }
     }
   }
@@ -98,9 +99,9 @@ class PostFunctions{
             .set({'votes': votes}, SetOptions(merge: true));
       }
     } else if (PreferencesUpdate().getBool('votes_downloaded')) {
-      var _vote = voteBox.get(postId);
+      var _vote =  Boxes.voteBox.get(postId);
       if (_vote == null ? true : _vote) {
-        voteBox.put(postId, false);
+         Boxes.voteBox.put(postId, false);
       }
     }
   }

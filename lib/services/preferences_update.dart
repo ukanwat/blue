@@ -1,6 +1,7 @@
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
+import 'package:blue/services/boxes.dart';
 
 class PreferencesUpdate {
   updateBool(
@@ -11,7 +12,8 @@ class PreferencesUpdate {
     if (upload != null ? upload : false) {
       preferencesRef.doc(currentUser.id).update({key: value});
     }
-    preferences.setBool(key, value);
+    Boxes.preferenceBox.put(key, value);
+    // preferences.setBool(key, value); TODO clean pref
   }
 
   updateString(
@@ -22,14 +24,14 @@ class PreferencesUpdate {
     if (upload != null ? upload : false) {
       preferencesRef.doc(currentUser.id).update({key: value});
     }
-    preferences.setString(key, value);
+    Boxes.preferenceBox.put(key, value);
   }
 
   bool containsInStringList(
     String key,
     String value,
   ) {
-    var _list = preferences.getStringList(
+    var _list = Boxes.preferenceBox.get(
       key,
     );
     if (_list == null) {
@@ -42,19 +44,19 @@ class PreferencesUpdate {
     String key,
     List<String> value,
   ) {
-    preferences.setStringList(key, value);
+     Boxes.preferenceBox.put(key, value);
   }
 
   removeStringFromList(
     String key,
     String value,
   ) async {
-    List _list = preferences.getStringList(key);
+    List _list =  Boxes.preferenceBox.get(key);
     if (_list != null) {
       _list.remove(value);
-      await preferences.setStringList(key, _list);
+      await  Boxes.preferenceBox.put(key, _list);
     } else {
-      await preferences.setStringList(key, []);
+      await  Boxes.preferenceBox.put(key, []);
     }
   }
 
@@ -62,22 +64,22 @@ class PreferencesUpdate {
     String key,
     String value,
   ) {
-    List<String> _list = preferences.getStringList(key);
+    List<String> _list =  Boxes.preferenceBox.get(key);
     if (_list == null) _list = [];
     _list.add(value);
-    preferences.setStringList(key, _list);
+     Boxes.preferenceBox.put(key, _list);
   }
 
   String getString(
     String key,
   ) {
-    return preferences.getString(key);
+    return  Boxes.preferenceBox.get(key);
   }
 
   List<String> getStringList(
     String key,
   ) {
-    List<String> _list = preferences.getStringList(key);
+    List<String> _list =  Boxes.preferenceBox.get(key);
     if (_list == null) {
       return [];
     }
@@ -86,9 +88,9 @@ class PreferencesUpdate {
 
   bool getBool(String key, {bool def}) {
     if (def != null) {
-      if (preferences.getBool(key) == null) return def;
+      if ( Boxes.preferenceBox.get(key) == null) return def;
     }
 
-    return preferences.getBool(key);
+    return  Boxes.preferenceBox.get(key);
   }
 }

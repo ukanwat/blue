@@ -5,16 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 // Project imports:
-import 'package:blue/providers/provider_widget.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:blue/widgets/show_dialog.dart';
-
+import 'package:blue/services/auth_service.dart';
 class LoginsScreen extends StatelessWidget {
   static const routeName = 'logins';
-   logout(BuildContext context) {
-   var auth =  Provider.of(context).auth;
-    auth.signOut(context);
-  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(backgroundColor: Theme.of(context).backgroundColor,
@@ -26,7 +21,7 @@ InkWell(
               context: context,
               builder: (BuildContext context) => ShowDialog(
                leftButtonFunction:  (){
-                 logout(context);
+                 AuthService.logout(context);
                },
                 title: "Sign Out of Scrible?",
                 description: "",

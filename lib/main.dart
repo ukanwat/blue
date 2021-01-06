@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 // Flutter imports:
+import 'package:blue/services/boxes.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +18,6 @@ import 'package:hive/hive.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 // Project imports:
 import 'package:blue/providers/provider_widget.dart' as PW;
@@ -68,14 +68,13 @@ import './screens/search_screen.dart';
 import './screens/settings_screen.dart';
 import 'models/user.dart';
 import 'screens/settings/general/account_screens/email_screen.dart';
-import './services/dynamic_links.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  
+
   await getCurrentUser();                                              ////////check all, do all on login to0
   await getPreferences();
-  await openBoxes();              
+  await Boxes.openBoxes();              
 
  try{
   uploadTagsInfo();
@@ -112,7 +111,7 @@ query = await postsVotersRef.doc(currentUser.id).collection('userVotes').
 
           List<bool> votes =  doc.data()['votes'];
          for(int i = 0; i< ids.length; i++){
-            voteBox.put(ids,votes);
+            Boxes.voteBox.put(ids,votes);
          }
 });
 
@@ -126,10 +125,10 @@ uploadTagsInfo() {
       DateTime.parse("${nowTime.year}-${nowTime.month}-${nowTime.day}");
        Map openedTagsMap = {};
       try{
-  String openedTagsInfo = preferences.getString('tags_open_info');
+  String openedTagsInfo =PreferencesUpdate().getString('tags_open_info');
  
   if(openedTagsInfo == null){
-    preferences.setString('tags_open_info',json.encode({}));
+    PreferencesUpdate().updateString('tags_open_info',json.encode({}));
   }else
  openedTagsMap = json.decode(openedTagsInfo);
       }catch(e){
@@ -139,11 +138,11 @@ uploadTagsInfo() {
 
   print(todayTime);
   String lastTagsInfoUploaded =
-      preferences.getString('last_tags_info_uploaded');
+      PreferencesUpdate().getString('last_tags_info_uploaded');
       if(lastTagsInfoUploaded == null){
-         preferences.setString('last_tags_info_uploaded',DateTime.now().toString());
+        PreferencesUpdate().updateString('last_tags_info_uploaded',DateTime.now().toString());
          lastTagsInfoUploaded =
-      preferences.getString('last_tags_info_uploaded');
+       PreferencesUpdate().getString('last_tags_info_uploaded');
       }
   if (!todayTime.isAtSameMomentAs(DateTime.parse(lastTagsInfoUploaded))) {
     openedTagsMap.forEach((key, value) {
@@ -153,28 +152,21 @@ uploadTagsInfo() {
             {DateTime.parse(key).toString(): value}, SetOptions(merge: true));
       }
     });
-     preferences.setString('last_tags_info_uploaded', todayTime.toString());
+      PreferencesUpdate().updateString('last_tags_info_uploaded', todayTime.toString());
   }
 }
 
 Future getPreferences() async {
   if(currentUser == null)
   return;
-  preferences = await SharedPreferences.getInstance();
-  try {
-    accountType = preferences.getString('accountType');
-  } catch (e) {
-    print(e);
-  }
-  if (preferences.getStringList('followed_tags') == null) {
-    await preferences.setStringList('followed_tags', []);
+  if ( PreferencesUpdate().getStringList('followed_tags') == null) {
+    await  PreferencesUpdate().updateStringList('followed_tags', []);
   }
 }
 
 Future getCurrentUser() async {
-  SharedPreferences preferences = await SharedPreferences.getInstance();
   try {
-    Map currentUserMap = json.decode(preferences.get('currentUser'));
+    Map currentUserMap = Boxes.currentUserBox.toMap();
     print(currentUserMap);
     currentUser = User(
       id: currentUserMap['id'],
@@ -192,34 +184,9 @@ Future getCurrentUser() async {
   }
 
 }
-  bool   boxesOpened ;
-   Box voteBox;
-   Box saveBox;
-   Box followingBox;
-   Box draftBox;
-Future openBoxes() async {
-    if(currentUser == null)
-  return;
-    if(currentUser == null)
-  return;
-  try{
- var dir = await getApplicationDocumentsDirectory();
-  Hive.init(dir.path);
-  voteBox =  await Hive.openBox('votes');
-  saveBox =  await Hive.openBox('saves');
-  followingBox =  await Hive.openBox('followings');
-  draftBox =  await Hive.openBox('drafts');
-  boxesOpened = true;
-    loadVotes();
-  }catch(e){
-    
-  }
- 
+  bool boxesOpened;
 
-}
-SharedPreferences preferences;
 User currentUser;
-String accountType;
 
 class MyApp extends StatefulWidget {
   @override
@@ -239,14 +206,14 @@ class MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => ThemeNotifier(),
+      create: (_) => ThemeNotifier(context),
       child: Consumer<ThemeNotifier>(
         builder: (context, ThemeNotifier notifier, child) {
           return PW.Provider(
             auth: AuthService(),
             child: MaterialApp(
                 debugShowCheckedModeBanner: false,
-                title: 'Scrible',
+                title: 'Stark',
                 theme: notifier.darkTheme == true
                     ? ThemeData(
                         accentColor: Colors.white,
@@ -549,8 +516,14 @@ class HomeController extends StatelessWidget {
       stream: authenticate.onAuthStateChanged,
       builder: (context, AsyncSnapshot<auth.User> snapshot) {
         if (snapshot.connectionState == ConnectionState.active) {
+          if(snapshot.data != null){
+ snapshot.data.getIdTokenResult().then((value){
+            print(value);
+          });
+          }
+         
           final bool signedIn = snapshot.hasData;
-          return signedIn && currentUser != null
+          return signedIn &  (currentUser != null)
               ? TabsScreen()
               : SignInViewScreen();
         }
