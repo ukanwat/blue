@@ -777,8 +777,10 @@ class _PostState extends State<Post> {
                         tagOpenInfo = json.encode({});
                       }
                       DateTime nowTime = DateTime.now();
+                      String _nowMonth = nowTime.month<10?'0${nowTime.month}':'${nowTime.month}';
+                       String _nowDay = nowTime.day<10?'0${nowTime.day}':'${nowTime.day}';
                       String todayTime = DateTime.parse(
-                              "${nowTime.year}-${nowTime.month}-${nowTime.day}")
+                              "${nowTime.year}-$_nowMonth-$_nowDay")
                           .toString();
                       Map tagOpenMap = json.decode(tagOpenInfo);
                       if (tagOpenMap.containsKey(todayTime)) {

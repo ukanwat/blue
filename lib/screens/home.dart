@@ -7,6 +7,7 @@ final String supaPass = "Kg8UJ&nz^EXh";
 final GoogleSignIn googleSignIn = GoogleSignIn();
 final preferencesRef = FirebaseFirestore.instance.collection('preferences');
 final usersRef = FirebaseFirestore.instance.collection('users');
+final metadataRef = FirebaseFirestore.instance.collection('metadata');
 final postsRef = FirebaseFirestore.instance.collection('posts');
 final postsVotersRef = FirebaseFirestore.instance.collection('votes');
 final repostsRef = FirebaseFirestore.instance.collection('reposts');

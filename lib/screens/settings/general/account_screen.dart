@@ -1,12 +1,15 @@
 // Flutter imports:
+import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/preferences_update.dart';
+import 'package:blue/widgets/show_dialog.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
 // Project imports:
 import 'package:blue/widgets/settings_widgets.dart';
 import '../../edit_profile_screen.dart';
+import 'account_screens/deactivate_account_screen.dart';
 import 'account_screens/email_screen.dart';
-import 'account_screens/logins.dart';
 import 'account_screens/password_screen.dart';
 
 class AccountScreen extends StatefulWidget {
@@ -38,7 +41,35 @@ class _AccountScreenState extends State<AccountScreen> {
               context, 'Edit Profile',EditProfileScreen.routeName),
           // settingsPageNavigationTile(             TODO
           //     context, 'Deactivate Account', DeactivateAccountScreen.routeName),
-          settingsPageNavigationTile(context, 'Logins', LoginsScreen.routeName),
+          settingsPageNavigationTile(context, 'Deactivate Account', DeactivateAccountScreen.routeName),
+          InkWell(
+    onTap: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) => ShowDialog(
+               leftButtonFunction:  (){
+                 AuthService.logout(context);
+               },
+                title: "Sign Out?",
+                description: "Are you sure you want to sign out of stark?",
+                leftButtonText: "Sign Out",
+                rightButtonText: "Cancel",
+              ),
+            );
+          },
+    child: Container(alignment: Alignment.centerLeft,width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+      child: 
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+               'Sign Out',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500,color: Colors.red),
+              ),Icon(FluentIcons.sign_out_24_regular,color: Colors.red,)
+            ],
+          ),
+    ),
+  ),
         ],
       ),
     );

@@ -3,6 +3,8 @@ import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/services/boxes.dart';
 
+import 'hasura.dart';
+
 class PreferencesUpdate {
   updateBool(
     String key,
@@ -13,7 +15,7 @@ class PreferencesUpdate {
       preferencesRef.doc(currentUser.id).update({key: value});
     }
     Boxes.preferenceBox.put(key, value);
-    // preferences.setBool(key, value); TODO clean pref
+      Hasura.updatePreferences(key,value);
   }
 
   updateString(
@@ -25,6 +27,7 @@ class PreferencesUpdate {
       preferencesRef.doc(currentUser.id).update({key: value});
     }
     Boxes.preferenceBox.put(key, value);
+    
   }
 
   bool containsInStringList(

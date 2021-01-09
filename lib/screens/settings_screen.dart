@@ -11,8 +11,6 @@ import 'package:flutter/services.dart';
 import 'package:device_info/device_info.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 // Project imports:
 import 'package:blue/main.dart';

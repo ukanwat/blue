@@ -78,7 +78,7 @@ class AboutScreen extends StatelessWidget {
           backgroundColor: Theme.of(context).backgroundColor,maxRadius: 72,minRadius: 72,backgroundImage: CachedNetworkImageProvider(user.photoUrl),)),
         Container(
           padding: const EdgeInsets.all(8.0),
-          child: Center(child: Text(user.displayName,style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500),)),
+          child: Center(child: Text(user.name,style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500),)),
         ),
         Padding(
           padding: const EdgeInsets.all(10.0),

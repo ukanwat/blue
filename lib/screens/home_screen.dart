@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:flutter/material.dart';
 
@@ -11,9 +12,7 @@ import 'package:blue/screens/following_posts_screen.dart';
 import 'package:blue/widgets/paginated_posts.dart';
 import 'package:blue/widgets/tags_wrap.dart';
 import '../widgets/header.dart';
-import '../widgets/loading_indicator.dart';
-import './home.dart';    
-import '../widgets/bottom_bar.dart';                                                                                                       
+import './home.dart';                                                                                                        
                                                                                                                                                                        
 class HomeScreen extends StatefulWidget {
   @override
@@ -106,7 +105,7 @@ OverlayEntry toggleBanner() {
         appBar: header(
           context,implyLeading: false,
           title: Text(
-            'FlipBoard',
+            'Stark',
             style: TextStyle(
               fontSize: 26,
               fontFamily: 'Techna Sans Regular',
@@ -120,7 +119,6 @@ OverlayEntry toggleBanner() {
                 size: 26,
               ),
               onPressed: () {
-                Hasura.insertUser('ded', 'dedededefrfrf');
                 setState(() {
                   followingPosts = !followingPosts;
                   banner = !banner;
@@ -145,6 +143,8 @@ OverlayEntry toggleBanner() {
             ),
             onPressed: () {
               showTagsSheet();
+              
+   
             },
           ),
           centerTitle: false,

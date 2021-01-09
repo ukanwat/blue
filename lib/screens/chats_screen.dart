@@ -100,7 +100,7 @@ if(chatUsers ==  null)  //TODO check
                   backgroundImage: CachedNetworkImageProvider(user.photoUrl),
                 ),
                 title: Text(
-                  user.displayName,
+                  user.name,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                   ),

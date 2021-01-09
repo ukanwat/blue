@@ -1,36 +1,42 @@
 // Package imports:
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+
 class User {
-final String id;
+final dynamic id;
 final String username;
 final String email;
 final String photoUrl;
-final String displayName;
+final String name;
 final String bio;
 final String website;
 final String headerUrl;
+final String avatarUrl;
 User({
   this.id,
   this.username,
   this.email,
   this.photoUrl,
-  this.displayName,
+  this.name,
   this.bio,
   this.website,
-  this.headerUrl
+  this.headerUrl,
+  this.avatarUrl
 });
 
-factory User.fromDocument(Map doc){
+factory User.fromDocument(Map doc,{bool hasura}){
+  if(hasura == null)
+  hasura = false;
   return User(
-    id: doc['id'],
+    id: doc[hasura?'user_id': 'id'],
     email: doc['email'],
     username: doc['username'],
-    photoUrl: doc['photoUrl'],
-    displayName: doc['displayName'],
+    photoUrl: doc[hasura?'photo_url':'photoUrl'],
+    name: doc[hasura?'name':'displayName'],
     bio: doc['bio'],
     website: doc['website'],
-    headerUrl: doc['headerUrl']
+    headerUrl: doc[hasura?'header_url':'headerUrl'],
+    avatarUrl: doc[hasura?'avatar_url':'avatarUrl'],
   );
 }
 

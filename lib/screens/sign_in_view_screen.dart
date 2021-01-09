@@ -1,4 +1,6 @@
 // Flutter imports:
+import 'package:blue/main.dart';
+import 'package:blue/services/boxes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -36,20 +38,13 @@ class SignInViewScreen extends StatelessWidget {
                   Padding(
                     padding: EdgeInsets.only(
                         top: MediaQuery.of(context).padding.top),
-                    child: IconButton(
-                      onPressed: null,
-                      icon: Icon(
-                        Icons.clear,
-                        color: Colors.white,
-                      ),
-                    ),
                   ),
                   Container(
                     padding: EdgeInsets.only(top: 50),
                     width: double.infinity,
                     child: Center(
                       child: Text(
-                        'Scrible',
+                        'Stark',
                         style: TextStyle(
                             fontFamily: 'Diskopia',
                             fontSize: 60 * scale,
@@ -65,7 +60,7 @@ class SignInViewScreen extends StatelessWidget {
           InkWell(
             onTap: () async {
               final _auth = Provider.of(context).auth;
-              await _auth.signInWithGoogle(context);
+             await _auth.signInWithGoogle(context);
               Navigator.pushReplacementNamed(context, TabsScreen.routeName);
             },
             child: Container(
@@ -77,9 +72,6 @@ class SignInViewScreen extends StatelessWidget {
                 children: <Widget>[
                   CircleAvatar(backgroundImage:  AssetImage('assets/icons/google_sign_in_button.png'),
                     radius: 24,
-                                      
-                   
-                    
                   ),
                   Container(
                     width: MediaQuery.of(context).size.width - 140,
@@ -101,21 +93,21 @@ class SignInViewScreen extends StatelessWidget {
               ),
             ),
           ),
-          Expanded(child: Container()),
-          Text('OR WITH EMAIL',style: TextStyle(fontWeight: FontWeight.w600,fontSize: 18),),
-          Expanded(child: Container()),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 40),
-            child: Row(
-              children: <Widget>[
-                InkWell(
+          Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: Text('OR WITH EMAIL',style: TextStyle(fontWeight: FontWeight.w600,fontSize: 15),),
+          ),
+         
+                 Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40,vertical: 15),
+                  child: InkWell(
                   onTap: () {
                     Navigator.of(context)
                         .pushNamed(SignInScreen.signInRouteName);
                   },
                   child: Container(
                     height: 48,
-                    width: MediaQuery.of(context).size.width / 2 - 47,
+                    width:double.infinity,
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(80),
@@ -128,34 +120,36 @@ class SignInViewScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                ),
+                )),
                 SizedBox(
                   width: 14,
                 ),
-                InkWell(
-                  onTap: () {
-                    Navigator.of(context)
-                        .pushNamed(SignInScreen.signUpRouteName);
-                  },
-                  child: Container(
-                    height: 48,
-                    width: MediaQuery.of(context).size.width / 2 - 47,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(80),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Sign up',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w500),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40,vertical: 0),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.of(context)
+                          .pushNamed(SignInScreen.signUpRouteName);
+                    },
+                    child: Container(
+                      height: 48,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(80),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Sign up',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w500),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
+             
+          
           Expanded(child: Container()),
         ],
       ),

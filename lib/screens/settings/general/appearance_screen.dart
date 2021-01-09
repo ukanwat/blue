@@ -80,7 +80,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
             onTap: (){
               setState(() {
                   themeMode = AppTheme.sysDefault;
-                notifier.toggleTheme(null);
+                notifier.toggleTheme(null,context);
               });
                        preferencesRef.doc(currentUser.id).set({'theme': themeMode.toString().substring(9)  },SetOptions(merge: true));
             },
@@ -95,7 +95,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
            ListTile( onTap: (){
              setState(() {
               themeMode = AppTheme.light;
-                        notifier.toggleTheme(false);
+                        notifier.toggleTheme(false,context);
              });
                     preferencesRef.doc(currentUser.id).set({'theme': themeMode.toString().substring(9) },SetOptions(merge: true));
             }, title: Text('Light Mode'),
@@ -106,7 +106,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
               ListTile( onTap: (){
                 setState(() {
               themeMode = AppTheme.dark;
-                           notifier.toggleTheme(true);
+                           notifier.toggleTheme(true,context);
                 });
                        preferencesRef.doc(currentUser.id).set({'theme': themeMode.toString().substring(9)  },SetOptions(merge: true));
             }, title: Text('Dark Mode'),

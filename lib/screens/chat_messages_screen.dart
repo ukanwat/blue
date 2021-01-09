@@ -254,7 +254,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                   'peerUsername': widget.peerUser.username,
                   'groupChatId': groupChatId,
                   'peerImageUrl': widget.peerUser.photoUrl,
-                  'peerName': widget.peerUser.displayName,
+                  'peerName': widget.peerUser.name,
                 });
               }),
           title: Row(
@@ -274,7 +274,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
               ),
               Expanded(
                 child: Text(
-                  widget.peerUser.displayName,
+                  widget.peerUser.name,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),

@@ -2,6 +2,7 @@
 import 'dart:ui';
 
 // Flutter imports:
+import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/user_report_dialog.dart';
 import 'package:flutter/material.dart';
@@ -82,7 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   bool loaded = false;
   DocumentSnapshot lastDoc;
   bool empty = false;
-
+  var future;
   @override
   void didChangeDependencies() {
     addPosts(Sort.Recent);
@@ -341,161 +342,165 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   buildProfileHeaderTemp() {
+  future =  currentUser.id == widget.profileId? Hasura.getUser():usersRef.doc(widget.profileId).get();
     return FutureBuilder(
-      future: usersRef.doc(widget.profileId).get(),
-      builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+      future: future
+      ,
+      builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return circularProgress();
         }
-        User user = User.fromDocument(snapshot.data.data());
+        print('${snapshot.data}VVVVVVVVVVVVVVVV');
+        User user = User.fromDocument( currentUser.id == widget.profileId?snapshot.data['data']['users_by_pk']:snapshot.data.data(),hasura: currentUser.id == widget.profileId );
         _profileUser = user;
-        profileName = user.displayName;
+        profileName = user.name;
         return Container(
-          color: Theme.of(context).backgroundColor,
-          child: Column(
-            children: <Widget>[
-              Container(
-                color: Theme.of(context).backgroundColor,
-                child: user.headerUrl == null
-                    ? Container(
-                        height: 150,
-                        width: double.infinity,
-                        color: Theme.of(context).cardColor,
-                      )
-                    : CachedNetworkImage(
-                        imageUrl: user.headerUrl,
-                        fit: BoxFit.cover,
-                        height: 150,
-                      ),
-                height: 150,
-                width: double.infinity,
-              ),
-              ExpansionTile(
-                expandedAlignment: Alignment.topLeft,
-                expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                childrenPadding:
-                    EdgeInsets.only(left: 10, bottom: 10, top: 0, right: 10),
-                title: Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: Text(
-                    '${user.username}',
-                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
-                  ),
-                ),
-                leading: Stack(
-                  overflow: Overflow.visible,
-                  children: <Widget>[
-                    Container(
-                      height: 60,
-                      width: 120,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      child: Container(
-                        decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Theme.of(context).backgroundColor),
-                        padding: EdgeInsets.all(3),
-                        child: CircleAvatar(
-                          radius: 57.0,
-                          backgroundColor: Theme.of(context).backgroundColor,
-                          backgroundImage:
-                              CachedNetworkImageProvider(user.photoUrl),
+            color: Theme.of(context).backgroundColor,
+            child: Column(
+              children: <Widget>[
+                Container(
+                  color: Theme.of(context).backgroundColor,
+                  child: user.headerUrl == null
+                      ? Container(
+                          height: 150,
+                          width: double.infinity,
+                          color: Theme.of(context).cardColor,
+                        )
+                      : CachedNetworkImage(
+                          imageUrl: user.headerUrl,
+                          fit: BoxFit.cover,
+                          height: 150,
                         ),
+                  height: 150,
+                  width: double.infinity,
+                ),
+                ExpansionTile(
+                  expandedAlignment: Alignment.topLeft,
+                  expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                  childrenPadding:
+                      EdgeInsets.only(left: 10, bottom: 10, top: 0, right: 10),
+                  title: Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Text(
+                      '${user.username}',
+                      style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
+                    ),
+                  ),
+                  leading: Stack(
+                    overflow: Overflow.visible,
+                    children: <Widget>[
+                      Container(
+                        height: 60,
+                        width: 120,
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        child: Container(
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Theme.of(context).backgroundColor),
+                          padding: EdgeInsets.all(3),
+                          child: CircleAvatar(
+                            radius: 57.0,
+                            backgroundColor: Theme.of(context).backgroundColor,
+                            backgroundImage:
+                                CachedNetworkImageProvider(user.photoUrl??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=5e4e10c2-587a-46a7-959c-c30bfb71d0ea"),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  subtitle: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                    child: Text(
+                      '$followerCount Followers',
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              Theme.of(context).iconTheme.color.withOpacity(0.6)),
+                    ), //TODO fix follower count
+                  ),
+                  children: <Widget>[
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Padding(
+                        padding: const EdgeInsets.only(left: 15),
+                        child: Row(
+                          children: [
+                            Text('$followingCount',
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    color: Theme.of(context)
+                                        .iconTheme
+                                        .color
+                                        .withOpacity(0.9),
+                                    fontWeight: FontWeight.w500)),
+                            SizedBox(
+                              width: 5,
+                            ),
+                            Text('following',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w400)),
+                          ],
+                        )),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 15),
+                      child: Text(user.bio,
+                          style: TextStyle(
+                            fontSize: 16,
+                          )),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 15,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Container(
+                              padding: EdgeInsets.all(3),
+                              decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Theme.of(context).cardColor),
+                              child: Icon(
+                                FluentIcons.link_square_24_regular,
+                                size: 18,
+                              )),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Expanded(
+                            child: Linkify(
+                              text: user.website,
+                              linkStyle: TextStyle(
+                                fontSize: 18,
+                                color: Colors.blue,
+                                decoration: TextDecoration.none,
+                              ),
+                              onOpen: (link) {
+                                launchWebsite(user.website);
+                              },
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-                subtitle: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
-                  child: Text(
-                    '$followerCount Followers',
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color:
-                            Theme.of(context).iconTheme.color.withOpacity(0.6)),
-                  ), //TODO fix follower count
-                ),
-                children: <Widget>[
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Padding(
-                      padding: const EdgeInsets.only(left: 15),
-                      child: Row(
-                        children: [
-                          Text('$followingCount',
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  color: Theme.of(context)
-                                      .iconTheme
-                                      .color
-                                      .withOpacity(0.9),
-                                  fontWeight: FontWeight.w500)),
-                          SizedBox(
-                            width: 5,
-                          ),
-                          Text('following',
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w400)),
-                        ],
-                      )),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 15),
-                    child: Text(user.bio,
-                        style: TextStyle(
-                          fontSize: 16,
-                        )),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 15,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Container(
-                            padding: EdgeInsets.all(3),
-                            decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Theme.of(context).cardColor),
-                            child: Icon(
-                              FluentIcons.link_square_24_regular,
-                              size: 18,
-                            )),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        Expanded(
-                          child: Linkify(
-                            text: user.website,
-                            linkStyle: TextStyle(
-                              fontSize: 18,
-                              color: Colors.blue,
-                              decoration: TextDecoration.none,
-                            ),
-                            onOpen: (link) {
-                              launchWebsite(user.website);
-                            },
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
+              ],
+            ),
+          )
+        ;
       },
     );
   }
@@ -757,7 +762,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                                     .photoUrl,
                                                             'peerName':
                                                                 _profileUser
-                                                                    .displayName
+                                                                    .name
                                                           };
                                                           print(
                                                               '$selectedValue user');
@@ -821,7 +826,14 @@ class _ProfileScreenState extends State<ProfileScreen>
               ),
             ];
           },
-          body: Column(
+          body:RefreshIndicator(onRefresh: ()async{
+          setState(() {
+            future =  currentUser.id == widget.profileId? Hasura.getUser():usersRef.doc(widget.profileId).get();
+          });
+       await   Future.delayed(Duration(milliseconds: 500));
+          return;
+        },
+                  child:  Column(
             children: [
               if (_controller == null)
                 Container()
@@ -903,7 +915,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 children: [...posts, loaded ? Container() : circularProgress()],
               ))
             ],
-          ),
+          ),)
         ),
       ),
     );

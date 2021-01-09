@@ -5,6 +5,7 @@ import 'dart:io';
 // Flutter imports:
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/boxes.dart';
+import 'package:blue/services/hasura.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -24,8 +25,7 @@ import '../services/file_storage.dart';
 import '../widgets/progress.dart';
 import './home.dart';
 
-import '../models/user.dart'; 
-
+import '../models/user.dart';
 
 class EditProfileScreen extends StatefulWidget {
   static const routeName = '/edit-profile';
@@ -56,7 +56,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     DocumentSnapshot doc = await usersRef.doc(currentUser.id).get();
     user = User.fromDocument(doc.data());
-    displayNameController.text = user.displayName;
+    displayNameController.text = user.name;
     bioController.text = user.bio;
     websiteController.text = user.website;
     setState(() {
@@ -109,7 +109,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
         final compressedHeaderFile = File('$path/img_$headerId.jpg')
           ..writeAsBytesSync(Im.encodeJpg(headerFile, quality: 85));
-         headerUrl =   await FileStorage.upload('profile', headerId,compressedHeaderFile);
+        headerUrl =
+            await FileStorage.upload('profile', headerId, compressedHeaderFile);
       }
 
       final Im.Image imageFile = Im.decodeImage(croppedImage.readAsBytesSync());
@@ -121,8 +122,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           width: 100);
       final compressedAvatarFile = File('$path/img_$avatarId.jpg')
         ..writeAsBytesSync(Im.encodeJpg(avatarFile, quality: 85));
-    String imageDownloadUrl = await FileStorage.upload('profile', "photo_$imageId.jpg", compressedImageFile);
-     String avatarDownloadUrl = await FileStorage.upload('profile', "avatar_$avatarId.jpg", compressedAvatarFile);
+      String imageDownloadUrl = await FileStorage.upload(
+          'profile', "photo_$imageId.jpg", compressedImageFile);
+      String avatarDownloadUrl = await FileStorage.upload(
+          'profile', "avatar_$avatarId.jpg", compressedAvatarFile);
       profilePictureUrl = imageDownloadUrl;
       avatarUrl = avatarDownloadUrl;
       if (headerUrl == null) {
@@ -135,6 +138,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             'avatarUrl': avatarUrl,
           },
         );
+       await Hasura.updateUser(
+          name: displayNameController.text,
+          bio: bioController.text,
+          website: websiteController.text.trim(),
+          photoUrl: profilePictureUrl,
+          avatarUrl: avatarUrl
+        );
       } else {
         await usersRef.doc(currentUser.id).update(
           {
@@ -145,6 +155,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             'avatarUrl': avatarUrl,
             'headerUrl': headerUrl,
           },
+        );
+          await Hasura.updateUser(
+          name: displayNameController.text,
+          bio: bioController.text,
+          website: websiteController.text.trim(),
+          photoUrl: profilePictureUrl,
+          avatarUrl: avatarUrl,
+          headerUrl: headerUrl
         );
       }
 
@@ -168,8 +186,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
         final compressedHeaderFile = File('$path/img_$headerId.jpg')
           ..writeAsBytesSync(Im.encodeJpg(headerFile, quality: 85));
-      headerUrl = await FileStorage.upload('profile', "header_$headerId.jpg", compressedHeaderFile);
-
+        headerUrl = await FileStorage.upload(
+            'profile', "header_$headerId.jpg", compressedHeaderFile);
       }
       if (headerUrl == null) {
         await usersRef.doc(currentUser.id).update({
@@ -177,13 +195,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           'bio': bioController.text,
           'website': websiteController.text.trim(),
         });
+           await Hasura.updateUser(
+          name: displayNameController.text,
+          bio: bioController.text,
+          website: websiteController.text.trim(),
+        );
       } else {
         await usersRef.doc(currentUser.id).update({
           'displayName': displayNameController.text,
           'bio': bioController.text,
           'website': websiteController.text.trim(),
           'headerUrl': headerUrl,
+
         });
+           await Hasura.updateUser(
+          name: displayNameController.text,
+          bio: bioController.text,
+          website: websiteController.text.trim(),
+          headerUrl: headerUrl
+        );
       }
 
       SnackBar snackbar = SnackBar(
@@ -205,13 +235,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           : profilePictureUrl, //TODO
       'headerUrl': headerUrl == null ? currentUser.headerUrl : headerUrl,
     };
-    Boxes.currentUserBox.putAll(currentUserMap );
-
-    Map currentUserMapGet =  Boxes.currentUserBox.toMap();
+    Boxes.currentUserBox.putAll(currentUserMap);
+    Map currentUserMapGet = Boxes.currentUserBox.toMap();
     currentUser = User(
         id: currentUserMapGet['id'],
         bio: currentUserMapGet['bio'],
-        displayName: currentUserMapGet['displayName'],
+        name: currentUserMapGet['displayName'],
         email: currentUserMapGet['email'],
         photoUrl: currentUserMapGet['photoUrl'],
         username: currentUserMapGet['username'],

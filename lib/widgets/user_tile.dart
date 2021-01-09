@@ -40,7 +40,7 @@ class _UserTileState extends State<UserTile> {
                   'peerUsername': widget.user.username,
                   'groupChatId': groupChatId,
                   'peerImageUrl': widget.user.photoUrl,
-                  'peerName': widget.user.displayName,
+                  'peerName': widget.user.name,
                 };
     super.initState();
   }
@@ -78,7 +78,7 @@ onTap: (){
                 ),
               ),
               title: Text(
-                widget.user.displayName,
+                widget.user.name,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                 ),

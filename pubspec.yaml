@@ -66,7 +66,6 @@ dependencies:
   hive: ^1.4.4+1
   hive_flutter: ^0.3.1
   path_provider: ^1.6.24
-  flutter_local_notifications: ^3.0.2
   sticky_headers: ^0.1.8+1
   import_sorter: ^4.4.1
   share: ^0.6.5+4

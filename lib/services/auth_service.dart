@@ -3,6 +3,7 @@ import 'dart:convert';
 
 // Flutter imports:
 import 'package:blue/models/user.dart';
+import 'package:blue/screens/verify_email_screen.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
@@ -23,33 +24,47 @@ import '../screens/sign_in_screen.dart';
 import 'boxes.dart';
 import 'package:blue/providers/provider_widget.dart';
 class AuthService {
+  static bool verifyingEmail = false;
   final auth.FirebaseAuth _firebaseAuth = auth.FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   Stream<auth.User> get onAuthStateChanged => _firebaseAuth.authStateChanges();
 
   // GET UID
-  Future<String> getCurrentUID() async {
-    return _firebaseAuth.currentUser.uid;
+  getCurrentUID() {
+   String uid =  _firebaseAuth.currentUser.uid;
+   return uid;
   }
- static logout(BuildContext context) {
+ static logout(BuildContext context) async{
    var auth =  Provider.of(context).auth;
-    auth.signOut(context);
+     userSignedIn = false;
+   await auth.signOut(context);
+   await Boxes.clearBoxes();
   }
+
   // Email & Password Sign Up
   Future<String> createUserWithEmailAndPassword(
-      String email, String password, String name) async {
+      String email, String password, String name,BuildContext context) async {
     final _currentUser = await _firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
-               
+             
     // Update the username
     await _currentUser.user.updateProfile(displayName: name);
-         currentUser = User(displayName: name,email: email);
+         currentUser = User(name: name,email: email,id:_currentUser.user.uid );
+         
     await _currentUser.user.reload();
+    verifyingEmail = true;
+        Navigator.of(context).pushNamed(VerifyEmailScreen.routeName);
+        try{  await _currentUser.user.sendEmailVerification();}catch(e){
+              logout(context);
+        }
+ 
+               Navigator.of(context).pop();
+              verifyingEmail = false;
     return _currentUser.user.uid;
   }
-
+ 
   // Email & Password Sign In
   Future<String> signInWithEmailAndPassword(
       String email, String password) async {
@@ -107,8 +122,32 @@ class AuthService {
     }
 
   }
+  getUserFromFirestore(String id,BuildContext context)async{
+var _doc = await usersRef.doc(id).get();
 
+if(Boxes.currentUserBox == null){
+ await Boxes.openCurrentUserBox();
+}else if(!Boxes.currentUserBox.isOpen){
+await Boxes.openCurrentUserBox();
+}
+  _doc.data().forEach((key, value) async{ 
+    if(key != 'timestamp')
+await Boxes.currentUserBox.put(key, value);
+});
+if( !_doc.data().containsKey('username')){
+  String  username = await Navigator.of(context)
+          .pushNamed(SignInScreen.googleSignInRouteName);
+      await usersRef.doc(id).set({'username':username},SetOptions(merge: true));
+      Boxes.currentUserBox.put('username', username);
+}
 
+Boxes.currentUserBox.put('userSignedIn', true);
+ userSignedIn = true;
+currentUser = User.fromDocument(Boxes.currentUserBox.toMap());
+ }
+  setUserToFirestore(String id, String name, String email,)async{
+   await usersRef.doc(id).set({'id': id,'displayName': name, "email": email,},SetOptions(merge: true));
+  }
   signInWithGoogle(BuildContext context) async {
   
     final GoogleSignInAccount account = await _googleSignIn.signIn();
@@ -117,48 +156,24 @@ class AuthService {
       idToken: _googleAuth.idToken,
       accessToken: _googleAuth.accessToken,
     );
-   
+  
     var user = (await _firebaseAuth.signInWithCredential(credential)).user;
-    DocumentSnapshot doc = await usersRef.doc(account.id).get();
-    var username;
-    if (!doc.exists) {
-      username = await Navigator.of(context)
-          .pushNamed(SignInScreen.googleSignInRouteName);
-      usersRef.doc(account.id).set({
-        'id': account.id,
-        'username': username,
-        'photoUrl': user.photoURL,
-        'email': user.email,
-        'displayName': user.displayName,
-        'bio': "",
-        'timestamp': timestamp,
-        'website': ""
-      });
-      doc = await usersRef.doc(account.id).get();
-    }
-    Map currentUserMap = {
-      'id': account.id,
-      'username': username,
-      'photoUrl': user.photoURL,
-      'email': user.email,
-      'displayName': user.displayName,
-      'bio': "",
-      'website': ""
-    };
-     user.reload();
-     PreferencesUpdate().updateString('accountType','google');
-     Boxes.currentUserBox.putAll(currentUserMap);
-
-    getCurrentUser();
-
-     var dir = await getApplicationDocumentsDirectory();
-  Hive.init(dir.path);
-        Boxes.voteBox =  await Hive.openBox('votes');
-   Boxes.saveBox =  await Hive.openBox('saves');
-   Boxes.followingBox =  await Hive.openBox('followings');
+    
+   
+    await setUserToFirestore(account.id, user.displayName, user.email);
+  await getUserFromFirestore(account.id,context);
+     await  Boxes.openBoxes();
+        PreferencesUpdate().updateString('accountType','google');
+       await  setCustomClaimToken(user);
+ Hasura.insertPreferences();
     user.reload();
   }
-
+  setCustomClaimToken(auth.User _user)async{
+    return;
+   var stream = metadataRef.snapshots().where((snap) => snap.docs.first.id == _user.uid);
+    await stream.first;
+Hasura.jwtToken = await  _user.getIdToken();
+  }
   
 }
 
