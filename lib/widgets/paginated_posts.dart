@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/services/hasura.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -10,15 +11,19 @@ import 'package:blue/widgets/progress.dart';
 import 'post.dart';
 
 class PaginatedPosts extends StatefulWidget {
-  final Query query;
   final int  length ;
   final bool isCompact;
   final bool neverScroll;
+  final String orderBy;
+  final String where;
+  final String tag;
   PaginatedPosts({
-    this.query,
     this.length,
+    this.orderBy,
     this.isCompact,
     this.neverScroll,
+    this.where,
+    this.tag,
     Key key,
   }):super(key: key);
   @override
@@ -26,9 +31,9 @@ class PaginatedPosts extends StatefulWidget {
 }
 
 class _PaginatedPostsState extends State<PaginatedPosts> {
-  List<Post> posts = [];
+    dynamic _posts = [];
   bool loaded = false;
-  DocumentSnapshot lastDoc;
+  int lastDoc;
   bool empty = false;
   ScrollController _scrollController = ScrollController();
 
@@ -37,7 +42,6 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
      addPosts();
      _scrollController.addListener(() { 
           if(_scrollController.position.pixels == _scrollController.position.maxScrollExtent && empty != true  && loaded != true ){
-            print('sdfsefsxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
             setState(() {
             addPosts();
             });
@@ -48,23 +52,25 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
   }
    addPosts()async{
      if(lastDoc == null ){
- var _snapshot = await widget.query.limit(widget.length).get();
-       posts =_snapshot.docs.map((doc) => Post.fromDocument(doc.data(),isCompact: widget.isCompact == null? false: widget.isCompact)).toList();
+         dynamic  _p ;
+       if(widget.tag!=null){
+           _p =await Hasura.getTagPosts(widget.length<6?6:widget.length,0,widget.orderBy??"{created_at:desc}",tag:widget.tag,); 
+       }else{
+  _p =await Hasura.getPosts(widget.length<6?6:widget.length,0,widget.orderBy??"{created_at:desc}",); 
+       }
+        _posts =_p.map((doc) => Post.fromDocument(doc,isCompact: widget.isCompact??false,hasura: true,)).toList();
          if(this.mounted)
          setState(() {
           
         });
-       print('dwdsffffffffffffffffffffffffffffffffff');
-       print(widget.query.parameters);
-
-         if(_snapshot.docs.length == 0){
+         if(_p.length == 0){
                  setState(() {
                    empty = true;
                  });
                  return;
                }
-                  lastDoc = _snapshot.docs.last; 
-        if(_snapshot.docs.length < widget.length ){
+                  lastDoc = _p.length; 
+        if(_p.length < widget.length ){
                  setState(() {
                   loaded = true;
                  });
@@ -72,43 +78,55 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
                }
      }
      else{
-   var _snapshot = await widget.query.startAfterDocument(lastDoc).limit(widget.length).get();
-               _snapshot.docs.forEach((doc) { 
-                 posts.add(Post.fromDocument(doc.data()));
+         var _snapshot;
+if(widget.tag!=null){
+  
+           _snapshot =await Hasura.getTagPosts(widget.length,0,widget.orderBy??"{created_at:desc}",tag:widget.tag); 
+       }else{
+  _snapshot =await Hasura.getPosts(widget.length,0,widget.orderBy??"{created_at:desc}",); 
+       }
+               _snapshot.forEach((doc) { 
+                 _posts.add(Post.fromDocument(doc,isCompact: widget.isCompact??false,hasura: true,));
                });
-              
-                if(_snapshot.docs.length < widget.length ){
+             
+            
+                if(_snapshot.length < widget.length ){
                  setState(() {
                   loaded = true;
                  });
                  return;
                }
-                lastDoc = _snapshot.docs.last; 
+                lastDoc = lastDoc + _snapshot.length; 
      }
      
   
-  
+  //  List d = [];
+  //  d.elementAt(i)
    }
+  
+   
   @override
   Widget build(BuildContext context) {
     if(widget.neverScroll==null?false:widget.neverScroll ){
-        return Column(
-          children: posts,
+        return ListView.builder(shrinkWrap: true,
+          itemBuilder: (context,i){
+            return _posts.elementAt(i);
+          },
+          itemCount: _posts.length,
         );
     }
     return empty? emptyState(context, "Can't find any posts ", 'none'): ListView.builder(
       physics:AlwaysScrollableScrollPhysics(),
-   
       controller: _scrollController,
-itemCount:posts.length+1,
+itemCount:_posts.length+1,
       itemBuilder: (context, i) {
         print(i);
-        if(i == posts.length)
+        if(i == _posts.length)
         return Container(
           height: 100,
           child: loaded? Center(): circularProgress(),
         );
-        return posts[i];
+        return _posts.elementAt(i);
       },
       
     );

@@ -84,7 +84,7 @@ OverlayEntry toggleBanner() {
 
  Future refreshPosts()async{
       setState(() {
-        posts = PaginatedPosts(length: 2,query: postsRef.orderBy('timeStamp',descending: true,),key: UniqueKey(),);
+        posts = PaginatedPosts(length: 5,key: UniqueKey(),);
       }); 
   }
 
@@ -93,7 +93,7 @@ OverlayEntry toggleBanner() {
    
     super.didChangeDependencies();
 
-    posts = PaginatedPosts(length: 2,query: postsRef.orderBy('timeStamp',descending: true,),key: UniqueKey(),);
+    posts = PaginatedPosts(length: 2,key: UniqueKey(),);
     tabToggleBanner = toggleBanner();
   }
     bool get wantKeepAlive => true;
@@ -143,8 +143,6 @@ OverlayEntry toggleBanner() {
             ),
             onPressed: () {
               showTagsSheet();
-              
-   
             },
           ),
           centerTitle: false,

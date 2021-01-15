@@ -22,7 +22,7 @@ class _TagRecentScreenState extends State<TagRecentScreen> {
  
  Future refreshPosts()async{
       setState(() {
-        posts = PaginatedPosts(length: 4,query: postsRef.where('tags',arrayContains: widget.tag).orderBy('timeStamp',descending: true,),key: UniqueKey(),neverScroll: true,);
+        posts = PaginatedPosts(length: 4,key: UniqueKey(),neverScroll: true,orderBy: "{created_at:desc}",tag: widget.tag,);
       }); 
   }
 
@@ -30,7 +30,7 @@ class _TagRecentScreenState extends State<TagRecentScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    posts = PaginatedPosts(length: 4,query: postsRef.where('tags',arrayContains: widget.tag).orderBy('timeStamp',descending: true,),key: UniqueKey(),neverScroll: true,);
+    posts = PaginatedPosts(length: 4,key: UniqueKey(),neverScroll: true,orderBy: "{created_at:desc}",tag: widget.tag,);
   }
   @override
   Widget build(BuildContext context) {

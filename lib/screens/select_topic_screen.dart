@@ -37,7 +37,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
 
   addTag() async {
     Navigator.of(context).pushNamed(SearchTagScreen.routeName).then((value) {
-      if (value != null)
+      if (value != null && !tags.contains(value))
         setState(() {
           tags.add(value);
           tagChips.add(Chip(

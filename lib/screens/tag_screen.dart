@@ -14,7 +14,6 @@ import 'package:blue/screens/home.dart';
 import 'package:blue/screens/tag/tag_popular_screen.dart';
 import 'package:blue/screens/tag/tag_recent_screen.dart';
 import 'package:blue/services/preferences_update.dart';
-import 'package:blue/services/preferences_update.dart';
 
 class TagScreen extends StatefulWidget {
   static const routeName = 'tag';
@@ -30,200 +29,134 @@ class _TagScreenState extends State<TagScreen> {
     tag = ModalRoute.of(context).settings.arguments;
     super.didChangeDependencies();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: DefaultTabController(
+      body: DefaultTabController(
         length: 2,
         child: NestedScrollView(
-          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-            return <Widget>[
-              SliverAppBar(elevation: 0,
-                expandedHeight: 160.0,
-                floating: false,
-                pinned: true,
-                backgroundColor: Theme.of(context).backgroundColor,
-                actions: [
-                  PreferencesUpdate().containsInStringList('followed_tags', tag)
-                  ?  PopupMenuButton(
-                        padding: EdgeInsets.zero,
-                        
-                        color: Theme.of(context).canvasColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        itemBuilder: (_) => [
-                          PopupMenuItem(
-                              child: Text('Unfollow'),
-                              value:'Unfollow'),
-                        ],
-                        icon: Icon(Icons.more_vert),
-                        onSelected: (selectedValue) async {
-                          if (selectedValue == 'Unfollow') {
-                               setState(() {
-                                 PreferencesUpdate().removeStringFromList('followed_tags', tag);
+            headerSliverBuilder:
+                (BuildContext context, bool innerBoxIsScrolled) {
+              return <Widget>[
+                SliverAppBar(
+                  elevation: 0,
+                  expandedHeight: 160.0,
+                  floating: false,
+                  pinned: true,
+                  backgroundColor: Theme.of(context).backgroundColor,
+                  actions: [
+                    PreferencesUpdate()
+                            .containsInStringList('followed_tags', tag)
+                        ? PopupMenuButton(
+                            padding: EdgeInsets.zero,
+                            color: Theme.of(context).canvasColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            itemBuilder: (_) => [
+                              PopupMenuItem(
+                                  child: Text('Unfollow'), value: 'Unfollow'),
+                            ],
+                            icon: Icon(Icons.more_vert),
+                            onSelected: (selectedValue) async {
+                              if (selectedValue == 'Unfollow') {
+                                setState(() {
+                                  PreferencesUpdate().removeStringFromList(
+                                      'followed_tags', tag);
+                                });
+                                await followedTagsRef
+                                    .doc(currentUser.id)
+                                    .update({tag: FieldValue.delete()});
+                              }
+                            },
+                          )
+                        : IconButton(
+                            onPressed: () async {
+                              // TODO
 
-                          }); 
-             await   followedTagsRef.doc(currentUser.id).update({tag: FieldValue.delete()});
-             
-                          }
-                        },
-                      )
-                  : IconButton( onPressed: () async { // TODO
+                              followedTagsRef.doc(currentUser.id).set({
+                                tag: DateTime.now(),
+                              }, SetOptions(merge: true));
 
-                          followedTagsRef.doc(currentUser.id).set({
-                            tag: DateTime.now(),
-                          }, SetOptions(merge: true));
-                           
-                          setState(() {
-                            PreferencesUpdate().addStringToList('followed_tags', tag);
-                          });
-                        
-                      },
-                   icon:    Icon( Icons.add,
-                   size: 34,
-                   color: Colors.blue
-                   ),)],
-                flexibleSpace: FlexibleSpaceBar(
-                    centerTitle: true,
-                    title: new ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
-              child: new BackdropFilter(
-                filter: new ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                child:Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10,vertical: 4),
-                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(15),
-                      color: Colors.transparent
-                      ),
-                                          child: Text(
-                           '#$tag',
-                          style: TextStyle(
-                            fontSize: 22.0,
-                            fontWeight: FontWeight.w700
-
+                              setState(() {
+                                PreferencesUpdate()
+                                    .addStringToList('followed_tags', tag);
+                              });
+                            },
+                            icon: Icon(Icons.add, size: 34, color: Colors.blue),
+                          )
+                  ],
+                  flexibleSpace: FlexibleSpaceBar(
+                      centerTitle: true,
+                      title: new ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: new BackdropFilter(
+                            filter: new ImageFilter.blur(
+                                sigmaX: 10.0, sigmaY: 10.0),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(15),
+                                  color: Colors.transparent),
+                              child: Text('#$tag',
+                                  style: TextStyle(
+                                      fontSize: 22.0,
+                                      fontWeight: FontWeight.w700)),
+                            ),
                           )),
-                    ),)),
-                    background: Image.network(
-                      "https://i.pinimg.com/564x/15/68/74/15687422736584f42e9e4962594c7a2c.jpg",
-                      fit: BoxFit.cover,
-                    )),
-              ),
-              SliverPersistentHeader(
-                delegate: _SliverAppBarDelegate(
-                  TabBar(
-                    indicatorColor: Colors.deepOrange,
-                    tabs: [
-                      
-                      Tab(
-                        
-                        child: Row(
-                        children: [Icon(FluentIcons.arrow_trending_24_filled),Text('Top',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18),)],),),
-                 Tab(child: Row( children: [Icon(FluentIcons.new_24_filled),Text('Latest',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18),)],),),
-                    ],
-                  ),
+                      background: Image.network(
+                        "https://i.pinimg.com/564x/15/68/74/15687422736584f42e9e4962594c7a2c.jpg",
+                        fit: BoxFit.cover,
+                      )),
                 ),
-                pinned: true,
-              ),
-            ];
-          },
-          body:   TabBarView(children: <Widget>[
-        SingleChildScrollView(child: TagPopularScreen(tag)),
-  SingleChildScrollView(child: TagRecentScreen(tag))
-
-            ])
-          
-
-        ),
-        // Scaffold(
-        //   backgroundColor: Theme.of(context).backgroundColor,
-        //   appBar: AppBar(
-        //     elevation: 0,
-        //     actions: <Widget>[
-        //       preferences.getStringList('followed_tags').contains(tag) 
-        //           ?  PopupMenuButton(
-        //                 padding: EdgeInsets.zero,
-                        
-        //                 color: Theme.of(context).canvasColor,
-        //                 shape: RoundedRectangleBorder(
-        //                   borderRadius: BorderRadius.circular(8),
-        //                 ),
-        //                 itemBuilder: (_) => [
-        //                   PopupMenuItem(
-        //                       child: Text('Unfollow'),
-        //                       value:'Unfollow'),
-        //                 ],
-        //                 icon: Icon(Icons.more_vert),
-        //                 onSelected: (selectedValue) async {
-        //                   if (selectedValue == 'Unfollow') {
-        //                        setState(() {
-        //                          PreferencesUpdate().removeStringFromList('followed_tags', tag);
-
-        //                   }); 
-        //      await   followedTagsRef.doc(currentUser.id).update({tag: FieldValue.delete()});
-             
-        //                   }
-        //                 },
-        //               )
-        //           : IconButton(
-        //            icon:    Icon( Icons.add,
-        //            size: 34,
-        //            color: Colors.blue
-        //            ),
-
-        //               onPressed: () async { // TODO
-
-        //                   followedTagsRef.doc(currentUser.id).set({
-        //                     tag: DateTime.now(),
-        //                   }, SetOptions(merge: true));
-                           
-        //                   setState(() {
-        //                     PreferencesUpdate().addStringToList('followed_tags', tag);
-        //                   });
-                        
-        //               },
-        //             )
-        //     ],
-        //     backgroundColor: Theme.of(context).canvasColor,
-        //     automaticallyImplyLeading: false,
-        //     leading: CupertinoNavigationBarBackButton(color: Colors.blue),
-        //     centerTitle: true,
-        //     title: Container(
-        //       padding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
-        //       child: Text(
-        //         '#$tag',
-        //         overflow: TextOverflow.ellipsis,
-        //       ),
-        //       decoration: BoxDecoration(
-        //           borderRadius: BorderRadius.circular(30),
-        //           color: Colors.lightBlue),
-        //     ),
-        //     bottom: TabBar(
-        //       unselectedLabelStyle: TextStyle(
-        //           fontSize: 17,
-        //           fontWeight: FontWeight.w600),
-        //       labelStyle: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-        //       indicatorSize: TabBarIndicatorSize.tab,
-        //       indicatorColor: Theme.of(context).iconTheme.color,
-        //       labelColor: Theme.of(context).iconTheme.color,
-        //       unselectedLabelColor: Theme.of(context).iconTheme.color.withAlpha(200),
-        //       tabs: [
-        //         Tab(
-        //           text: "Latest",
-        //         ),
-        //         Tab(text: "Top"),
-        //       ],
-        //     ),
-        //   ),
-        //   body: TabBarView(children: [
-        //     TagPopularScreen(tag),
-        //     TagRecentScreen(tag),
-        //   ]),
-        // ),
+                SliverPersistentHeader(
+                  delegate: _SliverAppBarDelegate(
+                    TabBar(
+                      indicatorColor: Colors.deepOrange,
+                      tabs: [
+                        Tab(
+                          child: Row(
+                            children: [
+                              Icon(FluentIcons.arrow_trending_24_filled),
+                              Text(
+                                'Top',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 18),
+                              )
+                            ],
+                          ),
+                        ),
+                        Tab(
+                          child: Row(
+                            children: [
+                              Icon(FluentIcons.new_24_filled),
+                              Text(
+                                'Latest',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 18),
+                              )
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  pinned: true,
+                ),
+              ];
+            },
+            body: TabBarView(children: <Widget>[
+              SingleChildScrollView(child: TagPopularScreen(tag)),
+              SingleChildScrollView(child: TagRecentScreen(tag))
+            ])),
+        
       ),
     );
   }
-  
 }
+
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   _SliverAppBarDelegate(this._tabBar);
 
@@ -235,10 +168,11 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => _tabBar.preferredSize.height;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return new Container(
-     color: Theme.of(context).backgroundColor,
-      child:_tabBar,
+      color: Theme.of(context).backgroundColor,
+      child: _tabBar,
     );
   }
 

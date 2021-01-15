@@ -253,13 +253,7 @@ addImageContent(File _image)async{
       String topicName,
       String topicId,
       List<String> tags}) async {
-// var url = 'postgres://postgres:$supaPass@db.tauylgkvskndhqcgzpls.supabase.co:5432/postgres';
-// var client = PostgrestClient(url);
-// var response = await client.from('posts').
-//       insert([
-//         { 'username': 'supabot', 'status': 'ONLINE'}
-//       ])
-//       .execute();
+
 
     var lastDoc = await userPostsRef
         .doc(currentUser.id)
@@ -286,7 +280,16 @@ addImageContent(File _image)async{
       'downvotes': 0,
       'votes': 0
     }); // TODO: check if successful
-
+    List customContents = [];
+   contents.forEach((key, value) { 
+      customContents.add(contentsInfo[key]);
+          customContents[int.parse(key)]['data'] = value; //TODO
+        });
+        print(customContents);
+        if(tags == []){
+          tags = null;
+        }
+  await  Hasura.insertPost(customContents, title,tags: tags);
     if (lastDoc.docs.length == 0) {
       userPostsRef.doc(currentUser.id).collection('userPosts').doc().set({
         'order': 1,
@@ -1034,7 +1037,7 @@ addImageContent(File _image)async{
               width: double.infinity,
               child: TextField(
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                maxLines: 2,
+                maxLines: 1,
                 minLines: 1,
                 controller: titleController,
                 decoration: InputDecoration(

@@ -25,13 +25,13 @@ import 'boxes.dart';
 import 'package:blue/providers/provider_widget.dart';
 class AuthService {
   static bool verifyingEmail = false;
-  final auth.FirebaseAuth _firebaseAuth = auth.FirebaseAuth.instance;
+  final auth.FirebaseAuth firebaseAuth = auth.FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
-  Stream<auth.User> get onAuthStateChanged => _firebaseAuth.authStateChanges();
+  Stream<auth.User> get onAuthStateChanged => firebaseAuth.authStateChanges();
 
   // GET UID
   getCurrentUID() {
-   String uid =  _firebaseAuth.currentUser.uid;
+   String uid =  firebaseAuth.currentUser.uid;
    return uid;
   }
  static logout(BuildContext context) async{
@@ -44,7 +44,7 @@ class AuthService {
   // Email & Password Sign Up
   Future<String> createUserWithEmailAndPassword(
       String email, String password, String name,BuildContext context) async {
-    final _currentUser = await _firebaseAuth.createUserWithEmailAndPassword(
+    final _currentUser = await firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
@@ -68,7 +68,7 @@ class AuthService {
   // Email & Password Sign In
   Future<String> signInWithEmailAndPassword(
       String email, String password) async {
-    return (await _firebaseAuth.signInWithEmailAndPassword(
+    return (await firebaseAuth.signInWithEmailAndPassword(
             email: email, password: password))
         .user
         .uid;
@@ -80,18 +80,18 @@ class AuthService {
  await Boxes.preferenceBox.clear();
     }
     
-    await _firebaseAuth.signOut();
+    await firebaseAuth.signOut();
      currentUser = null;
      Navigator.of(context).pushReplacementNamed(SignInViewScreen.routeName);
   }
 
   // Reset Password
   Future sendPasswordResetEmail(String email) async {
-    return _firebaseAuth.sendPasswordResetEmail(email: email);
+    return firebaseAuth.sendPasswordResetEmail(email: email);
   }
 
   Future changePassword(String newPassword,String password) async {
-    auth.User firebaseUser = _firebaseAuth.currentUser;
+    auth.User firebaseUser = firebaseAuth.currentUser;
     
      String _accountType = PreferencesUpdate().getString('accountType');
     if (firebaseUser != null && _accountType !=  'google') { 
@@ -103,7 +103,7 @@ class AuthService {
     }
   }
     Future changeEmail(String email,String password) async {
-    var firebaseUser =  _firebaseAuth.currentUser;
+    var firebaseUser =  firebaseAuth.currentUser;
      String _accountType =  PreferencesUpdate().getString('accountType');
     if (firebaseUser != null && _accountType !=  'google') { 
       try{
@@ -157,7 +157,7 @@ currentUser = User.fromDocument(Boxes.currentUserBox.toMap());
       accessToken: _googleAuth.accessToken,
     );
   
-    var user = (await _firebaseAuth.signInWithCredential(credential)).user;
+    var user = (await firebaseAuth.signInWithCredential(credential)).user;
     
    
     await setUserToFirestore(account.id, user.displayName, user.email);

@@ -41,34 +41,34 @@ import '../services/go_to.dart';
 import '../services/boxes.dart';
 import './custom_image.dart';
 
-
 enum CompactPostThumbnailType {
   video,
   image,
   link,
 }
-enum Vote{
-  down,
-  up,
-  none
-}
-class Post extends StatefulWidget {
+enum Vote { down, up, none }
+
+class Post extends StatefulWidget {         
   final String postId;
-  final String ownerId;
+  final dynamic ownerId;
   final String username;
   final String photoUrl;
   final String title;
   final String topicName;
   final String topicId;
-  final Map contents;
-  final Map contentsInfo;
+  final dynamic contents;
+  final dynamic contentsInfo;
   final int upvotes;
-   final int downvotes;
-    final int votes;
+  final int downvotes;
+  final int votes;
   final List<dynamic> tags;
   final bool isCompact;
   final bool commentsShown;
-  final Timestamp time;
+  final dynamic time;
+  final bool hasura;
+  final int comments;
+  final int saves;
+  final int shares;
   // final PostInteractions postInteractions;
 
   Post(
@@ -87,28 +87,56 @@ class Post extends StatefulWidget {
       this.tags,
       this.isCompact,
       this.commentsShown, // this.postInteractions
-      this.time});
+      this.time,
+      this.hasura,
+      this.comments,
+      this.saves,
+      this.shares
+      });
 
-  factory Post.fromDocument(Map doc, {bool isCompact, bool commentsShown}) {
+  factory Post.fromDocument(Map doc,
+      {bool isCompact, bool commentsShown, bool hasura}) {
     if (isCompact == null) isCompact = false;
     if (commentsShown == null) commentsShown = false;
+    hasura = hasura ?? false;
+    Map data = {};
+    List _tags = [];
+    if (hasura) {
+      var list = doc['contents'];
+      int i = 0;
+      list.forEach((element) {
+        data['$i'] = element['data'];
+        i++;
+      });
+      var tagDataList = doc['post_tags'];
+      if (tagDataList != null) {
+        tagDataList.forEach((element) {
+          _tags.add(element['tag']['tag']);
+        });
+      }
+    }
+    List<dynamic> stats = doc['post_stats'];
     return Post(
-      postId: doc['postId'],
-      ownerId: doc['ownerId'],
-      username: doc['username'],
-      photoUrl: doc['photoUrl'],
+      postId: doc[hasura ? 'post_id' : 'postId'],
+      ownerId: doc[hasura ? 'owner_id' : 'ownerId'],
+      username: hasura ? doc['user']['username'] : doc['username'],
+      photoUrl: hasura ? doc['user']['avatar_url'] : doc['photoUrl'],
       title: doc['title'],
-      topicName: doc['topicName'],
-      topicId: doc['topicId'],
-      contents: doc['contents'],
-      contentsInfo: doc['contentsInfo'],
-      upvotes: doc['upvotes'],
-      downvotes: doc['downvotes'],
-      votes: doc['votes'],
-      tags: doc['tags'],
-      time: doc['timeStamp'], //TODO
-      isCompact: isCompact,
+      topicName: hasura ? null : doc['topicName'],
+      topicId: hasura ? null : doc['topicId'],
+      contents: hasura ? data : doc['contents'],
+      contentsInfo: hasura ? doc['contents'] : doc['contentsInfo'],
+      upvotes: hasura ? (stats == null?0: stats.length == 0?0:stats[0]['upvotes']): doc['upvotes'],
+      downvotes: hasura ?  (stats == null?0: stats.length == 0?0:stats[0]['downvotes']): doc['downvotes'],
+      votes: hasura ? 0 : doc['votes'],
+      tags: hasura ? _tags : doc['tags'],
+      time: doc[hasura ? 'created_at' : 'timeStamp'], //TODO
+      isCompact: isCompact ?? false,
       commentsShown: commentsShown,
+      hasura: hasura,
+      comments:stats == null?0: stats.length == 0?0:stats[0]['comments'],
+      saves: stats == null?0: stats.length == 0?0:stats[0]['saves'],
+      shares:stats == null?0:  stats.length == 0?0:stats[0]['shares'],
     );
   }
 
@@ -128,12 +156,13 @@ class Post extends StatefulWidget {
       downvotes: this.downvotes,
       tags: this.tags);
 }
+
 Vote vote;
+
 class _PostState extends State<Post> {
   double topEdgeHeight;
   double bottomEdgeHeight;
   bool showSaveBar = false;
-  final GlobalKey trackKey = GlobalKey();
   Widget playbackButton = Container();
   VideoPlayerController _controller;
   Future<void> _initializeVideoPlayerFuture;
@@ -141,35 +170,34 @@ class _PostState extends State<Post> {
   List<Widget> contentsViewList = [];
   final String currentUserId = currentUser?.id;
   final String postId;
-  final String ownerId;
+  final dynamic ownerId;
   final String username;
   final String photoUrl;
   final String title;
   final String topicName;
   final String topicId;
-  final Map contents;
-  final Map contentsInfo;
+  final dynamic contents;
+  final dynamic contentsInfo;
   final List<dynamic> tags;
   final int votes;
-    final int upvotes;
-      final int downvotes;
-  _PostState({
-    this.postId,
-    this.ownerId,
-    this.username,
-    this.photoUrl,
-    this.title,
-    this.topicName,
-    this.topicId,
-    this.contents,
-    this.contentsInfo,
-    this.upvotes,
-    this.tags,
-    this.votes,
-    this.downvotes
-  });
+  final int upvotes;
+  final int downvotes;
+  _PostState(
+      {this.postId,
+      this.ownerId,
+      this.username,
+      this.photoUrl,
+      this.title,
+      this.topicName,
+      this.topicId,
+      this.contents,
+      this.contentsInfo,
+      this.upvotes,
+      this.tags,
+      this.votes,
+      this.downvotes});
   //
-  Vote vote =Vote.none; 
+  Vote vote = Vote.none;
   bool isOwner = false;
   double screenWidth;
   bool tagBarVisible = false;
@@ -179,7 +207,7 @@ class _PostState extends State<Post> {
   OverlayEntry overlayOptions;
   bool isFollowing = false;
   FlickManager flickManager;
-  final GlobalKey _contentsKey = GlobalKey();
+  GlobalKey _contentsKey = GlobalKey();
   double contentsHeight;
   bool constraintContent = true;
 
@@ -253,20 +281,19 @@ class _PostState extends State<Post> {
                               });
                             },
                           ),
-                   if(ownerId != currentUser.id)
-          DownvoteTile(vote, postId,(){
-              if(vote == Vote.down){
- setState(() {
-      vote = Vote.none;
-    });
-    unvote();
-   
-   }else
-       setState(() {
-     vote = Vote.down;
-    });
-          }),
-                          if (isFollowing )
+                          if (ownerId != currentUser.id)
+                            DownvoteTile(vote, postId, () {
+                              if (vote == Vote.down) {
+                                setState(() {
+                                  vote = Vote.none;
+                                });
+                                unvote();
+                              } else
+                                setState(() {
+                                  vote = Vote.down;
+                                });
+                            }),
+                          if (isFollowing)
                             ListTile(
                               dense: true,
                               leading: Icon(
@@ -283,8 +310,8 @@ class _PostState extends State<Post> {
                               },
                               title: Text('Unfollow'),
                             ),
-                            if(currentUser.id == ownerId)
-                              ListTile(
+                          if (currentUser.id == ownerId)
+                            ListTile(
                               dense: true,
                               leading: Icon(
                                 FluentIcons.delete_24_regular,
@@ -294,9 +321,10 @@ class _PostState extends State<Post> {
                                 overlayOptions?.remove();
                                 deletePost();
                               },
-                              title: Text('Delete',style: TextStyle(
-                                color: Colors.red
-                              ),),
+                              title: Text(
+                                'Delete',
+                                style: TextStyle(color: Colors.red),
+                              ),
                             )
                         ],
                       ),
@@ -336,20 +364,23 @@ class _PostState extends State<Post> {
                         // 'Hope you weren’t planning to watchiiiii Wonder Woman 1984 with an HBO Max free trial', ///////******/
 
                         widget.title,
-                        style:PreferencesUpdate().getBool('serif',def: false)
-            ? TextStyle(
-                fontFamily: 'Georgia',
-                fontSize: 19,fontWeight: FontWeight.w400,
-                letterSpacing: 0,
-                wordSpacing: 0,
-                height: 1.25,
-                color: Theme.of(context).textSelectionColor)
-            : TextStyle(fontFamily: 'OpenSans',
-                fontSize: 18,fontWeight: FontWeight.w600,
-                letterSpacing: 0,
-                wordSpacing: 0,
-                height: 1.25,
-                ),
+                        style: PreferencesUpdate().getBool('serif', def: false)
+                            ? TextStyle(
+                                fontFamily: 'Georgia',
+                                fontSize: 19,
+                                fontWeight: FontWeight.w400,
+                                letterSpacing: 0,
+                                wordSpacing: 0,
+                                height: 1.25,
+                                color: Theme.of(context).textSelectionColor)
+                            : TextStyle(
+                                fontFamily: 'OpenSans',
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0,
+                                wordSpacing: 0,
+                                height: 1.25,
+                              ),
                         maxLines: tagBarVisible ? 5 : 2,
                         overflow: TextOverflow.ellipsis),
                   ),
@@ -650,47 +681,52 @@ class _PostState extends State<Post> {
     ]);
   }
 
-
   deletePost() async {
-    showDialog(context: context,child: ShowDialog(title: 'Delete Post', description: 'Are you sure you want to delete this Post?', leftButtonText: 'Cancel', rightButtonText: 'delete',leftButtonFunction: (){
-      Navigator.pop(context);
-    },
-    rightButtonFunction: ()async{
-         if(widget.ownerId != currentUser.id)
-    return;
-    // delete post itself
-    postsRef.doc(postId).get().then((doc) {
-      if (doc.exists) {
-        doc.reference.delete();
-      }
-    });
-    // delete uploaded image for thep ost
-    // storageRef.child("post_$postId.jpg").delete();  // TODO: delete stored media
-    // then delete all activity feed notifications
-    QuerySnapshot activityFeedSnapshot = await activityFeedRef
-        .doc(currentUser.id)
-        .collection("feedItems")
-        .where('postId', isEqualTo: postId)
-        .get();
-    activityFeedSnapshot.docs.forEach((doc) {
-      if (doc.exists) {
-        doc.reference.delete();
-      }
-    });
-    // then delete all comments
-    QuerySnapshot commentsSnapshot =
-        await commentsRef.doc(postId).collection('comments').get();
-    commentsSnapshot.docs.forEach((doc) {
-      if (doc.exists) {
-        doc.reference.delete();
-      }
-    });
-    },
-    ));
- 
+    showDialog(
+        context: context,
+        child: ShowDialog(
+          title: 'Delete Post',
+          description: 'Are you sure you want to delete this Post?',
+          leftButtonText: 'Cancel',
+          rightButtonText: 'delete',
+          leftButtonFunction: () {
+            Navigator.pop(context);
+          },
+          rightButtonFunction: () async {
+            if (widget.ownerId != currentUser.id) return;
+            // delete post itself
+            postsRef.doc(postId).get().then((doc) {
+              if (doc.exists) {
+                doc.reference.delete();
+              }
+            });
+            // delete uploaded image for thep ost
+            // storageRef.child("post_$postId.jpg").delete();  // TODO: delete stored media
+            // then delete all activity feed notifications
+            QuerySnapshot activityFeedSnapshot = await activityFeedRef
+                .doc(currentUser.id)
+                .collection("feedItems")
+                .where('postId', isEqualTo: postId)
+                .get();
+            activityFeedSnapshot.docs.forEach((doc) {
+              if (doc.exists) {
+                doc.reference.delete();
+              }
+            });
+            // then delete all comments
+            QuerySnapshot commentsSnapshot =
+                await commentsRef.doc(postId).collection('comments').get();
+            commentsSnapshot.docs.forEach((doc) {
+              if (doc.exists) {
+                doc.reference.delete();
+              }
+            });
+          },
+        ));
   }
-  unvote()async{
- if (PreferencesUpdate().getBool('votes_downloaded') == null ||
+
+  unvote() async {
+    if (PreferencesUpdate().getBool('votes_downloaded') == null ||
         PreferencesUpdate().getBool('votes_downloaded') == false) {
       QuerySnapshot query = await postsVotersRef
           .doc(currentUser.id)
@@ -701,21 +737,19 @@ class _PostState extends State<Post> {
       List<String> ids = query.docs.first.data()['ids'];
       List<bool> votes = query.docs.first.data()['votes'];
       int index = ids.indexOf(widget.postId);
-        votes.removeAt(index);
-        await postsVotersRef
-            .doc(currentUser.id)
-            .collection('userVotes')
-            .doc(query.docs.first.id)
-            .update({
-              'ids':FieldValue.arrayRemove([widget.postId]),
-              'votes': votes});
+      votes.removeAt(index);
+      await postsVotersRef
+          .doc(currentUser.id)
+          .collection('userVotes')
+          .doc(query.docs.first.id)
+          .update({
+        'ids': FieldValue.arrayRemove([widget.postId]),
+        'votes': votes
+      });
     } else if (PreferencesUpdate().getBool('votes_downloaded')) {
-    Boxes.voteBox.delete(widget.postId);
+      Boxes.voteBox.delete(widget.postId);
     }
   }
-
-
- 
 
   getVideoThumbnail(String url) async {
     if (thumbnailType != CompactPostThumbnailType.video) {
@@ -770,18 +804,22 @@ class _PostState extends State<Post> {
                       Navigator.of(context)
                           .pushNamed(TagScreen.routeName, arguments: tags[i]);
                       String tagOpenInfo =
-                       PreferencesUpdate().getString('tags_open_info');
+                          PreferencesUpdate().getString('tags_open_info');
                       if (tagOpenInfo == null) {
-                      PreferencesUpdate().updateString(
-                            'tags_open_info', json.encode({}));
+                        PreferencesUpdate()
+                            .updateString('tags_open_info', json.encode({}));
                         tagOpenInfo = json.encode({});
                       }
                       DateTime nowTime = DateTime.now();
-                      String _nowMonth = nowTime.month<10?'0${nowTime.month}':'${nowTime.month}';
-                       String _nowDay = nowTime.day<10?'0${nowTime.day}':'${nowTime.day}';
-                      String todayTime = DateTime.parse(
-                              "${nowTime.year}-$_nowMonth-$_nowDay")
-                          .toString();
+                      String _nowMonth = nowTime.month < 10
+                          ? '0${nowTime.month}'
+                          : '${nowTime.month}';
+                      String _nowDay = nowTime.day < 10
+                          ? '0${nowTime.day}'
+                          : '${nowTime.day}';
+                      String todayTime =
+                          DateTime.parse("${nowTime.year}-$_nowMonth-$_nowDay")
+                              .toString();
                       Map tagOpenMap = json.decode(tagOpenInfo);
                       if (tagOpenMap.containsKey(todayTime)) {
                         if (tagOpenMap[todayTime].containsKey(tags[i]))
@@ -793,7 +831,7 @@ class _PostState extends State<Post> {
                         tagOpenMap[todayTime] = {tags[i]: 1};
                       }
                       print(tagOpenMap);
-                 PreferencesUpdate().updateString(
+                      PreferencesUpdate().updateString(
                           'tags_open_info', json.encode(tagOpenMap));
                     },
                     child: Container(
@@ -828,39 +866,38 @@ class _PostState extends State<Post> {
     }
     print(contents);
     for (int i = 0; i < contents.length; i++) {
-      print(contents['$i']);
-      print(contentsInfo['$i']);
-      if (contentsInfo['$i']['type'] == 'image') {
+      if (contentsInfo[widget.hasura ? i : '$i']['type'] == 'image') {
         if (thumbnailType != CompactPostThumbnailType.video) {
           thumbnailType = CompactPostThumbnailType.image;
           compactPostThumbnailData = contents['$i'];
         }
-        contentsViewList.add(imageContentContainer(
-            contents['$i'], contentsInfo['$i']['aspectRatio']));
-      } else if (contentsInfo['$i']['type'] == 'video') {
-        compactPostThumbnailData = contentsInfo['$i']['thumbUrl'];
+        contentsViewList.add(imageContentContainer(contents['$i'],
+            contentsInfo[widget.hasura ? i : '$i']['aspectRatio']));
+      } else if (contentsInfo[widget.hasura ? i : '$i']['type'] == 'video') {
+        compactPostThumbnailData =
+            contentsInfo[widget.hasura ? i : '$i']['thumbUrl'];
         thumbnailType = CompactPostThumbnailType.video;
         _controller = VideoPlayerController.network(
           contents['$i'],
         );
         _initializeVideoPlayerFuture = _controller.initialize().then((_) {
           if (PreferencesUpdate().getBool('autoplay_videos') == null) {
-         PreferencesUpdate().updateBool('autoplay_videos', false);
+            PreferencesUpdate().updateBool('autoplay_videos', false);
           }
-          bool _autoplay =PreferencesUpdate().getBool('autoplay_videos');
+          bool _autoplay = PreferencesUpdate().getBool('autoplay_videos');
           flickManager = FlickManager(
             videoPlayerController: _controller,
           );
           contentsViewList
               .add(Container(child: VideoDisplay(flickManager, _autoplay)));
         });
-      } else if (contentsInfo['$i']['type'] == 'text') {
+      } else if (contentsInfo[widget.hasura ? i : '$i']['type'] == 'text') {
         contentsViewList.add(textContentContainer(contents['$i']));
-      } else if (contentsInfo['$i']['type'] == 'link') {
+      } else if (contentsInfo[widget.hasura ? i : '$i']['type'] == 'link') {
         contentsViewList.add(linkContentContainer(contents['$i']));
       } else {
-        contentsViewList.add(carouselContentContainer(
-            contents['$i'], contentsInfo['$i']['aspectRatio']));
+        contentsViewList.add(carouselContentContainer(contents['$i'],
+            contentsInfo[widget.hasura ? i : '$i']['aspectRatio']));
       }
     }
     if (!widget.isCompact)
@@ -906,17 +943,18 @@ class _PostState extends State<Post> {
 
   Widget textContentContainer(String text) {
     if (PreferencesUpdate().getBool('serif') == null) {
-     PreferencesUpdate().updateBool('serif', false);
+      PreferencesUpdate().updateBool('serif', false);
     }
     return Container(
       child: Text(
         text,
-        style: TextStyle(fontFamily: 'Yahoo Sans',
-                fontSize: 16,
-                letterSpacing: 0,
-                wordSpacing: 0,
-                height: 1.25,
-                ),
+        style: TextStyle(
+          fontFamily: 'Yahoo Sans',
+          fontSize: 16,
+          letterSpacing: 0,
+          wordSpacing: 0,
+          height: 1.25,
+        ),
       ),
       padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
     );
@@ -931,11 +969,11 @@ class _PostState extends State<Post> {
         child: ClipRRect(
             borderRadius: BorderRadius.circular(6),
             child: Material(
-                          child: InkWell(
-                onTap: (){
+              child: InkWell(
+                onTap: () {
                   Functions().launchURL(link);
                 },
-                            child: LinkPreview(
+                child: LinkPreview(
                   url: link,
                   bodyStyle: TextStyle(fontSize: 13),
                   titleStyle: TextStyle(fontWeight: FontWeight.w500),
@@ -947,7 +985,7 @@ class _PostState extends State<Post> {
 
   Widget footerButton(IconData iconData, Color color, Function function) {
     return Padding(
-      padding: const EdgeInsets.only(right: 10, left: 10),
+      padding: const EdgeInsets.only(right: 0, left: 10),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -968,30 +1006,30 @@ class _PostState extends State<Post> {
 
   buildPostFooter() {
     bool increment;
-    if(alreadyUpvoted){
-     switch(vote){
-       case Vote.up:
-       increment = null;
-       break;
+    if (alreadyUpvoted) {
+      switch (vote) {
+        case Vote.up:
+          increment = null;
+          break;
         case Vote.none:
-        increment = false;
-       break;
+          increment = false;
+          break;
         case Vote.down:
-        increment = false;
-       break;
-     }
-    }else{
-       switch(vote){
-       case Vote.up:
-        increment = true;
-       break;
+          increment = false;
+          break;
+      }
+    } else {
+      switch (vote) {
+        case Vote.up:
+          increment = true;
+          break;
         case Vote.none:
           increment = null;
-       break;
+          break;
         case Vote.down:
-        increment = null;
-       break;
-     }
+          increment = null;
+          break;
+      }
     }
     return Padding(
       padding: EdgeInsets.only(top: 5),
@@ -1044,11 +1082,7 @@ class _PostState extends State<Post> {
             children: <Widget>[
               if (widget.isCompact)
                 tagBarVisible
-                    ? Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                        ),
-                        child: SizedBox(
+                    ?SizedBox(
                           height: 24,
                           width: 24,
                           child: GestureDetector(
@@ -1062,13 +1096,8 @@ class _PostState extends State<Post> {
                               size: 22,
                             ),
                           ),
-                        ),
-                      )
-                    : Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                        ),
-                        child: SizedBox(
+                        )
+                    : SizedBox(
                           height: 24,
                           width: 24,
                           child: GestureDetector(
@@ -1083,7 +1112,6 @@ class _PostState extends State<Post> {
                             ),
                           ),
                         ),
-                      ),
               if (!widget.isCompact)
                 if (contentsHeight != null)
                   if (contentsHeight ==
@@ -1120,89 +1148,119 @@ class _PostState extends State<Post> {
                         ),
                       ),
                     ),
-              if (!widget.isCompact)
-                Expanded(
-                  child: Container(),
-                ),
               isSaved
-                  ? footerButton(FluentIcons.bookmark_24_filled, Colors.blue,
-                      () async{
-                      setState((){
-                        isSaved = false;
-                        showSaveBar = false;
-                      });
-                       Boxes.saveBox.delete(postId);
-                         var snap = await savedPostsRef 
-                            .doc(currentUser?.id)
-                            .collection('all')
-                            .where('posts',arrayContains: postId).get();
-                            snap.docs.forEach((doc) {
+                  ? Row(
+                    children: [
+                      footerButton(FluentIcons.bookmark_24_filled, Colors.blue,
+                          () async {
+                          setState(() {
+                            isSaved = false;
+                            showSaveBar = false;
+                          });
+                          Boxes.saveBox.delete(postId);
+                          var snap = await savedPostsRef
+                              .doc(currentUser?.id)
+                              .collection('all')
+                              .where('posts', arrayContains: postId)
+                              .get();
+                          snap.docs.forEach((doc) {
                             doc.reference.update({
                               'posts': FieldValue.arrayRemove([postId])
                             });
+                          });
+                        }),
+                        Padding(
+                            padding: const EdgeInsets.only(right: 0, left: 0),
+                            child: Text( '${Functions.abbreviateNumber(widget.saves,hideZero: true)}',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500, fontSize: 19),
+                            ),
+                          ),
+                    ],
+                  )
+                  : Row(
+                    children: [
+                      footerButton(FluentIcons.bookmark_24_regular, Colors.blue,
+                          () async {
+                          setState(() {
+                            isSaved = true;
+                          });
+                          var lastDoc = await savedPostsRef
+                              .doc(currentUser?.id)
+                              .collection('all')
+                              .orderBy('order', descending: true)
+                              .limit(1)
+                              .get();
+                          if (lastDoc.docs.length == 0) {
+                            savedPostsRef
+                                .doc(currentUser?.id)
+                                .collection('all')
+                                .doc()
+                                .set({
+                              'order': 1,
+                              'posts': [
+                                postId,
+                              ],
+                            }, SetOptions(merge: true));
+                          } else if (lastDoc.docs.length == 1 &&
+                              lastDoc.docs.first.data()['posts'].length < 2) {
+                            List<dynamic> _postIdList =
+                                lastDoc.docs.first.data()['posts'];
+                            _postIdList.add(postId);
+                            savedPostsRef
+                                .doc(currentUser?.id)
+                                .collection('all')
+                                .doc(lastDoc.docs.first.id)
+                                .set({
+                              'posts': _postIdList,
+                            }, SetOptions(merge: true));
+                          } else if (lastDoc.docs.length == 1 &&
+                              lastDoc.docs.first.data()['posts'].length > 1) {
+                            savedPostsRef
+                                .doc(currentUser?.id)
+                                .collection('all')
+                                .doc()
+                                .set({
+                              'order': lastDoc.docs.first.data()['order'] + 1,
+                              'posts': [
+                                postId,
+                              ],
+                            }, SetOptions(merge: true));
+                          }
+                          Boxes.saveBox.put(postId, null);
+                          setState(() {
+                            showSaveBar = true;
+                          });
+                          Future.delayed(const Duration(milliseconds: 4000), () {
+                            setState(() {
+                              showSaveBar = false;
                             });
-                    })
-                  : footerButton(FluentIcons.bookmark_24_regular, Colors.blue,
+                          });
+                        }),Padding(
+                            padding: const EdgeInsets.only(right: 0, left: 0),
+                            child: Text( '${Functions.abbreviateNumber(widget.saves,hideZero: true)}',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500, fontSize: 19),
+                            ),
+                          ),
+                    ],
+                  ),
+                     
+                          
+              Row(
+                children: [
+                  footerButton(FluentIcons.share_24_regular, Colors.blueAccent,
                       () async {
-                      setState(() {
-                        isSaved = true;
-                      });
-                      var lastDoc = await savedPostsRef
-                          .doc(currentUser?.id)
-                          .collection('all')
-                          .orderBy('order', descending: true)
-                          .limit(1)
-                          .get();
-                      if (lastDoc.docs.length == 0) {
-                        savedPostsRef
-                            .doc(currentUser?.id)
-                            .collection('all')
-                            .doc()
-                            .set({
-                          'order': 1,
-                          'posts': [
-                            postId,
-                          ],
-                        }, SetOptions(merge: true));
-                      } else if (lastDoc.docs.length == 1 &&
-                          lastDoc.docs.first.data()['posts'].length < 2) {
-                        List<dynamic> _postIdList =
-                            lastDoc.docs.first.data()['posts'];
-                        _postIdList.add(postId);
-                        savedPostsRef
-                            .doc(currentUser?.id)
-                            .collection('all')
-                            .doc(lastDoc.docs.first.id)
-                            .set({
-                          'posts': _postIdList,
-                        }, SetOptions(merge: true));
-                      } else if (lastDoc.docs.length == 1 &&
-                          lastDoc.docs.first.data()['posts'].length > 1) {
-                        savedPostsRef
-                            .doc(currentUser?.id)
-                            .collection('all')
-                            .doc()
-                            .set({
-                          'order': lastDoc.docs.first.data()['order'] + 1,
-                          'posts': [
-                            postId,
-                          ],
-                        }, SetOptions(merge: true));
-                      }
-                       Boxes.saveBox.put(postId, null);
-                      setState(() {
-                        showSaveBar = true;
-                      });
-                      Future.delayed(const Duration(milliseconds: 4000), () {
-                        setState(() {
-                          showSaveBar = false;
-                        });
-                      });
-                    }),
-              footerButton(FluentIcons.share_24_regular, Colors.blueAccent, () async{
-             String _link =  await DynamicLinksService.createDynamicLink('post?id=$postId');
-                Share.share(_link, subject: 'Sharing this Post');
-              }),
+                    String _link = await DynamicLinksService.createDynamicLink(
+                        'post?id=$postId');
+                    Share.share(_link, subject: 'Sharing this Post');
+                  }),
+Text( '${Functions.abbreviateNumber(widget.shares,hideZero: true)}',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500, fontSize: 19),
+                            ),
+                ],
+              ),  
               if (!(widget.commentsShown || widget.isCompact))
                 footerButton(FluentIcons.comment_24_regular, Colors.cyan, () {
                   showComments(
@@ -1221,9 +1279,22 @@ class _PostState extends State<Post> {
                       topicName: this.widget.topicName,
                       upvotes: this.widget.upvotes,
                       username: this.widget.username,
+                      comments: this.widget.comments,
+                      downvotes: this.widget.downvotes,
+                      saves: this.widget.saves,
+                      shares: this.widget.shares,
                     ),
                   );
                 }),
+                if (!(widget.commentsShown || widget.isCompact))
+                Text( '${Functions.abbreviateNumber(widget.comments,hideZero: true)}',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500, fontSize: 19),
+                            ),
+                if (!widget.isCompact)
+                Expanded(
+                  child: Container(),
+                ),  
               Padding(
                 padding: const EdgeInsets.only(right: 5),
                 child: Material(
@@ -1231,45 +1302,51 @@ class _PostState extends State<Post> {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () {
-                      if(ownerId == currentUser.id){
-   return;
+                      if (ownerId == currentUser.id) {
+                        return;
                       }
-                   
-                       PostFunctions().handleUpvoteButton(postId, vote);
-                         if(vote == Vote.up){
- setState(() {
-      vote = Vote.none;
-    });
-    unvote();}else
-       setState(() {
-     vote = Vote.up;
-    });
- 
+
+                      PostFunctions().handleUpvoteButton(postId, vote);
+                      if (vote == Vote.up) {
+                        setState(() {
+                          vote = Vote.none;
+                        });
+                        unvote();
+                      } else
+                        setState(() {
+                          vote = Vote.up;
+                        });
                     },
                     customBorder: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                          horizontal: 10, vertical: 6),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            vote == Vote.up
-                                ? FluentIcons.keyboard_shift_24_filled
-                                : FluentIcons.keyboard_shift_24_regular,
-                            size: 24.0,
-                            color:   vote == Vote.up
-                                ?Colors.blue: Theme.of(context).iconTheme.color
+                           Padding(
+                            padding: const EdgeInsets.only(right: 3, left: 6),
+                            child: Text(
+                              increment == null
+                                  ?  '${Functions.abbreviateNumber(upvotes,hideZero: true)}'
+                                  : increment
+                                      ? '${Functions.abbreviateNumber(upvotes+1, hideZero: true)}'
+                                      : '${Functions.abbreviateNumber(upvotes-1, hideZero: true)}',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500, fontSize: 19),
+                            ),
                           ),
-                          Padding(
-                              padding: const EdgeInsets.only(right: 3, left: 6),
-                              child: Text(
-                           increment == null?'$upvotes': increment?'${(upvotes+1)}':'${(upvotes-1)}',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w700, fontSize: 24),
-                              ),),
+                          Icon(
+                              vote == Vote.up
+                                  ? FluentIcons.keyboard_shift_24_filled
+                                  : FluentIcons.keyboard_shift_24_regular,
+                              size: 24.0,
+                              color: vote == Vote.up
+                                  ? Colors.blue
+                                  : Theme.of(context).iconTheme.color),
+                         
                         ],
                       ),
                     ),
@@ -1292,45 +1369,44 @@ class _PostState extends State<Post> {
     flickManager?.dispose();
     super.dispose();
   }
-  checkVoteOnline()async{
-   var query = await postsVotersRef.doc(currentUser.id).collection('userVotes').where('ids',arrayContains: widget.postId).get();
-    if(query.docs.length == 0)
-    return;
-    List ids =   query.docs.first.data()['ids'];
-     List votes =   query.docs.first.data()['votes'];
-    if(ids.contains(widget.postId)){
-      if(votes[ids.indexOf(widget.postId)] == true){
-           vote = Vote.up;
-      }else{
- vote = Vote.down;
+
+  checkVoteOnline() async {
+    var query = await postsVotersRef
+        .doc(currentUser.id)
+        .collection('userVotes')
+        .where('ids', arrayContains: widget.postId)
+        .get();
+    if (query.docs.length == 0) return;
+    List ids = query.docs.first.data()['ids'];
+    List votes = query.docs.first.data()['votes'];
+    if (ids.contains(widget.postId)) {
+      if (votes[ids.indexOf(widget.postId)] == true) {
+        vote = Vote.up;
+      } else {
+        vote = Vote.down;
       }
     }
   }
- bool alreadyUpvoted = false;
+
+  bool alreadyUpvoted = false;
 
   @override
   void initState() {
     isOwner = currentUser.id == widget.ownerId;
-   
 
-
-     if( Boxes.voteBox.containsKey(widget.postId)){
-       if(  Boxes.voteBox.get(widget.postId)){
-
+    if (Boxes.voteBox.containsKey(widget.postId)) {
+      if (Boxes.voteBox.get(widget.postId)) {
         alreadyUpvoted = true;
         vote = Vote.up;
-       }
-       
-    }else
-    if(PreferencesUpdate().getBool('votes_downloaded') == null || PreferencesUpdate().getBool('votes_downloaded') == false)
-    {
-       checkVoteOnline();
+      }
+    } else if (PreferencesUpdate().getBool('votes_downloaded') == null ||
+        PreferencesUpdate().getBool('votes_downloaded') == false) {
+      checkVoteOnline();
     }
 
-
-  if( Boxes.followingBox.containsKey(ownerId)){
+    if (Boxes.followingBox.containsKey(ownerId)) {
       isFollowing = true;
-  }
+    }
 
     super.initState();
   }
@@ -1379,24 +1455,24 @@ class _PostState extends State<Post> {
                 child: InkWell(
                   onTap: widget.isCompact
                       ? () {
-                           showComments(
-                    context,
-                    post: Post(
-                      commentsShown: true,
-                      contents: this.widget.contents,
-                      contentsInfo: this.widget.contentsInfo,
-                      isCompact: false,
-                      ownerId: this.widget.ownerId,
-                      photoUrl: this.widget.photoUrl,
-                      postId: this.widget.postId,
-                      tags: this.widget.tags,
-                      title: this.widget.title,
-                      topicId: this.widget.topicId,
-                      topicName: this.widget.topicName,
-                      upvotes: this.widget.upvotes,
-                      username: this.widget.username,
-                    ),
-                  );
+                          showComments(
+                            context,
+                            post: Post(
+                              commentsShown: true,
+                              contents: this.widget.contents,
+                              contentsInfo: this.widget.contentsInfo,
+                              isCompact: false,
+                              ownerId: this.widget.ownerId,
+                              photoUrl: this.widget.photoUrl,
+                              postId: this.widget.postId,
+                              tags: this.widget.tags,
+                              title: this.widget.title,
+                              topicId: this.widget.topicId,
+                              topicName: this.widget.topicName,
+                              upvotes: this.widget.upvotes,
+                              username: this.widget.username,
+                            ),
+                          );
                           // Navigator.of(context).pushNamed(
                           //     ExplorePostsScreen.routeName,
                           //     arguments: this.widget);
@@ -1555,51 +1631,50 @@ class DownvoteTile extends StatefulWidget {
   final Vote vote;
   final String postId;
   final Function callback;
-  DownvoteTile(this.vote,this.postId,this.callback);
+  DownvoteTile(this.vote, this.postId, this.callback);
   @override
   DownvoteTileState createState() => DownvoteTileState();
 }
-   
+
 class DownvoteTileState extends State<DownvoteTile> {
-Vote vote;
-@override
+  Vote vote;
+  @override
   void initState() {
     vote = widget.vote;
     print(vote);
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     print(vote);
-    return   ListTile(
-                            dense: true,
-                            leading: Transform.rotate(
-                              angle: 59.7,
-                              child: Icon(
-                                 vote == Vote.down
-                                ? FluentIcons.keyboard_shift_24_filled
-                                : FluentIcons.keyboard_shift_24_regular,
-                            size: 24.0,
-                            color:   vote == Vote.down
-                                ?Colors.red: Theme.of(context).iconTheme.color
-                              ),
-                            ),
-                            title: Text('Downvote'),
-                            onTap: () {
-                               PostFunctions().handleDownvoteButton(widget.postId,vote);
-                             
-                                  if(vote == Vote.down){
- setState(() {
-      vote = Vote.none;
-    });
-   
-   }else
-       setState(() {
-     vote = Vote.down;
-    });
-    widget.callback();
-                            },
-                          );
-                            
+    return ListTile(
+      dense: true,
+      leading: Transform.rotate(
+        angle: 59.7,
+        child: Icon(
+            vote == Vote.down
+                ? FluentIcons.keyboard_shift_24_filled
+                : FluentIcons.keyboard_shift_24_regular,
+            size: 24.0,
+            color: vote == Vote.down
+                ? Colors.red
+                : Theme.of(context).iconTheme.color),
+      ),
+      title: Text('Downvote'),
+      onTap: () {
+        PostFunctions().handleDownvoteButton(widget.postId, vote);
+
+        if (vote == Vote.down) {
+          setState(() {
+            vote = Vote.none;
+          });
+        } else
+          setState(() {
+            vote = Vote.down;
+          });
+        widget.callback();
+      },
+    );
   }
 }

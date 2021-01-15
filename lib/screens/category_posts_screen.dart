@@ -32,17 +32,17 @@ class _CategoryPostsScreenState extends State<CategoryPostsScreen>
 
     Future refreshPosts()async{
       setState(() {if(widget.name == 'All')
-      compactPosts = PaginatedPosts(length: 8,query: postsRef.orderBy('timeStamp',descending: true,),isCompact: true ,key: UniqueKey(),);
+      compactPosts = PaginatedPosts(length: 8,isCompact: true ,key: UniqueKey(),);
       else
-        compactPosts = PaginatedPosts(length: 8,query: postsRef.where('topicName',isEqualTo: widget.name).orderBy('timeStamp',descending: true,),isCompact: true ,key: UniqueKey(),);
+        compactPosts = PaginatedPosts(length: 8,isCompact: true ,key: UniqueKey(),);
       }); 
   }
    @override
   void initState() {
     if(widget.name == 'All')
-      compactPosts = PaginatedPosts(length: 8,query: postsRef.orderBy('timeStamp',descending: true,),isCompact: true ,key: UniqueKey(),);
+      compactPosts = PaginatedPosts(length: 8,isCompact: true ,key: UniqueKey(),);
       else
-   compactPosts =  PaginatedPosts(length: 8,query: postsRef.where('topicName',isEqualTo: widget.name).orderBy('timeStamp',descending: true,), isCompact: true,key: UniqueKey(),);
+   compactPosts =  PaginatedPosts(length: 8,isCompact: true,key: UniqueKey(),);
     super.initState();
   }
   @override

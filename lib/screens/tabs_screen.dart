@@ -1,7 +1,11 @@
 // Flutter imports:
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:blue/screens/settings/general/drafts_screen.dart';
+import 'package:blue/services/auth_service.dart';
+import 'package:blue/services/hasura.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
@@ -31,15 +35,24 @@ class _TabsScreenState extends State<TabsScreen> {
   logout() {
     googleSignIn.signOut();
   }
+
   Future handleStartUpLogic(BuildContext context) async {
     // call handle dynamic links
     await DynamicLinksService.initDynamicLinks(context);
   }
+
   @override
   void didChangeDependencies() {
+    Timer.periodic(Duration(minutes: 29), (Timer t) {
+      AuthService().firebaseAuth.authStateChanges().first.then((user) {
+        user.getIdToken(true).then((token) {
+          Hasura.jwtToken = token;
+        });
+      });
+    });
     _pageController = PageController(initialPage: 0);
     loadCurrentUser();
-      handleStartUpLogic(context);
+    handleStartUpLogic(context);
     super.didChangeDependencies();
   }
 
@@ -47,20 +60,22 @@ class _TabsScreenState extends State<TabsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      body: PageView(
-        physics: NeverScrollableScrollPhysics(),
-        controller: _pageController,
-        onPageChanged: onPageChanged,
-        children: <Widget>[
-          HomeScreen(),
-          ExploreScreen(),
-          Container(),
-          CommunicationTabbarScreen(),
-          ProfileScreen(
-            profileId: currentUser.id,
-          ),
-        ],
-      ),
+      body: Hasura.jwtToken == null
+          ? Container()
+          : PageView(
+              physics: NeverScrollableScrollPhysics(),
+              controller: _pageController,
+              onPageChanged: onPageChanged,
+              children: <Widget>[
+                HomeScreen(),
+                ExploreScreen(),
+                Container(),
+                CommunicationTabbarScreen(),
+                ProfileScreen(
+                  profileId: currentUser.id,
+                ),
+              ],
+            ),
       bottomNavigationBar: Theme(
         data: Theme.of(context).copyWith(
           // sets the background color of the `BottomNavigationBar`
@@ -163,7 +178,7 @@ class _TabsScreenState extends State<TabsScreen> {
                       margin: EdgeInsets.symmetric(vertical: 8),
                       height: 60,
                       child: Material(
-                        color: Colors.transparent,
+                          color: Colors.transparent,
                           borderRadius: new BorderRadius.circular(10),
                           child: InkWell(
                               onTap: () {
@@ -180,11 +195,14 @@ class _TabsScreenState extends State<TabsScreen> {
                                       Text(
                                         'Create new Post',
                                         style: TextStyle(
-color: Colors.white,
+                                            color: Colors.white,
                                             fontWeight: FontWeight.w500,
                                             fontSize: 18),
                                       ),
-                                      Icon(FluentIcons.edit_24_regular,color: Colors.white,)
+                                      Icon(
+                                        FluentIcons.edit_24_regular,
+                                        color: Colors.white,
+                                      )
                                     ],
                                   )))),
                       decoration: BoxDecoration(

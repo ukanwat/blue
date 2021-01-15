@@ -1,4 +1,5 @@
 // Dart imports:
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -407,7 +408,6 @@ class MyAppState extends State<MyApp> {
     );
   }
 }
-
 class HomeController extends StatelessWidget {
 
   @override
@@ -422,13 +422,14 @@ class HomeController extends StatelessWidget {
         }
         if (snapshot.connectionState == ConnectionState.active) {
           if (snapshot.data != null) {
-            snapshot.data.getIdTokenResult(true).then((value) {
+          snapshot.data.getIdTokenResult(true).then((value) {
               print(value.token);
               Hasura.jwtToken = value.token;
+              
             });
           }
           final bool _signedIn = snapshot.hasData;
-          return _signedIn & (userSignedIn?? false)
+          return _signedIn & (userSignedIn?? false) 
               ? TabsScreen()
               : SignInViewScreen();
         }

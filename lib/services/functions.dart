@@ -1,7 +1,8 @@
 // Package imports:
 import 'package:blue/services/preferences_update.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'dart:math';
+import 'package:intl/intl.dart';
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -224,5 +225,24 @@ launchURL(String url) async {
   } else {
     throw 'Could not launch $url';
   }
+}
+static String abbreviateNumber(int value,{bool hideZero}) {
+  if(hideZero == true){
+    if(value == 0){
+ return ' ';
+    }
+   
+  }
+   if (value > 999 && value < 99999) {
+        return "${(value / 1000).toStringAsFixed(1)} K";
+      } else if (value > 99999 && value < 999999) {
+        return "${(value / 1000).toStringAsFixed(0)} K";
+      } else if (value > 999999 && value < 999999999) {
+        return "${(value / 1000000).toStringAsFixed(1)} M";
+      } else if (value > 999999999) {
+        return "${(value / 1000000000).toStringAsFixed(1)} B";
+      } else {
+        return value.toString();
+      }
 }
 }

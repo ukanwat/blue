@@ -1,10 +1,12 @@
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hasura_connect/hasura_connect.dart';
 
 
-
+enum Stat{
+upvotes,
+downvotes,saves, shares,comments
+}
 class Hasura{
   static String jwtToken;
  static const String url = 'https://hasura-test-project.hasura.app/v1/graphql';
@@ -24,6 +26,7 @@ static getUserId({String uid})async {
 }""";
 
 var map = await hasuraConnect.query(_doc);
+print(map);
 Boxes.currentUserBox.put('user_id', map['data']['users'][0]['user_id']);   // check if there are no results
 return  map['data']['users'][0]['user_id'];
 }
@@ -65,18 +68,23 @@ static updateUser({String name,String email, String username,String bio, String 
   print(_doc);
  await hasuraConnect.mutation(_doc,);
 }
-static getUser()async{
+static getUser({String id,bool self })async{
   if(jwtToken == null)
   return;
-
-  var userId =  Boxes.currentUserBox.get('user_id');
-   if(userId == null){
+  var userId;
+  if(self == true){
+userId = id;
+  }else{
+   userId =  Boxes.currentUserBox.get('user_id');
+   if(userId == null ){
       String uid =  AuthService().getCurrentUID();
     userId =  await getUserId(uid:uid);
     }
-  print('$userId ssss');
+  }
+ 
+  int _id = 3;//TODO remove
   String _doc = """query{
-  users_by_pk(user_id:$userId){
+  users_by_pk(user_id:$_id){
     avatar_url
     bio
     email
@@ -92,7 +100,7 @@ static getUser()async{
 }"""; 
  return hasuraConnect.query(_doc,);
 }
-static insertPost(Map contents,String title)async{
+static insertPost(List contents,String title,{List<String> tags})async{
  if(jwtToken == null)
   return;
   String uid =  AuthService().getCurrentUID();
@@ -100,15 +108,36 @@ static insertPost(Map contents,String title)async{
     if(userId == null){
     userId =  await getUserId(uid:uid);
     }
-String _doc = """mutation{
-  insert_posts_one(object:{contents:$contents,owner_id:"$userId",title:"$title",uid:"$uid"}){
+    print(contents);
+  String tagsString = '';
+    if(tags!=null){
+      tags.forEach((t) {
+            tagsString = tagsString + '{tag: {data: {tag: "$t"}, on_conflict: {constraint: tags_tag_key, update_columns: [tag]}}}';
+       });
+    }
+String _doc =
+tags == null?"""mutation insertData  {
+  insert_posts_one(object: {contents: $contents, owner_id: "$userId", title: "$title", uid: "$uid", post_stats: {
+          data: [
+            {
+             upvotes:0
+            }
+          ]
+        }}) {
     __typename
   }
-}""";
+}
+""":
+ """mutation {
+  insert_posts_one(object: {contents: $contents, owner_id: "$userId", title: "$title", uid: "$uid", post_tags: {data: [$tagsString]}}) {
+    __typename
+  }
+}
+""";
 await hasuraConnect.mutation(_doc);
 }
 static updatePreferences(String key,dynamic value)async{
-String userId =Boxes.currentUserBox.get('user_id');
+var userId =Boxes.currentUserBox.get('user_id');
 if(userId == null){
  userId = await getUserId();
 }
@@ -128,6 +157,158 @@ if(userId == null){
     String uid =  AuthService().getCurrentUID();
   hasuraConnect.mutation("""mutation{
   insert_preferences_one(object:{uid:"$uid",user_id:$userId}){
+    __typename
+  }
+}""");
+}
+static getPosts(int limit,int offset,String orderby,{String where})async{
+  print(jwtToken);
+  String param = 'limit:$limit,offset:$offset,order_by:$orderby' ;
+  if(where!=null){
+    param = param + ',where:$where';
+  }
+var data = await hasuraConnect.query("""query{
+  posts($param){
+    contents
+    created_at
+    owner_id
+    post_id
+    title
+    user{
+      avatar_url
+      username
+    }
+    post_tags{
+      tag{tag}
+    }
+    post_stats{
+      upvotes
+      shares
+      comments
+      saves
+    }
+  }
+}""");
+return data['data']['posts'];
+}
+static getTagPosts(int limit,int offset,String orderby,{String tag,})async{
+  print(jwtToken);
+  String param = 'limit:$limit,offset:$offset' ;
+    param = param + ',where:{tag:{_eq:"$tag"}}';
+
+var data = await hasuraConnect.query("""query{
+  tags($param){
+    tag_posts{
+      post{
+         contents
+          created_at
+           owner_id
+             post_id
+           title
+          user{
+           avatar_url
+              username
+            }
+    post_tags{
+      tag{tag}
+    }
+      }
+    }
+  }
+}""");
+return data['data']['tags'][0]['tag_posts'];
+}
+static createTag(String _tag)async{
+  print(_tag);
+ await hasuraConnect.mutation("""mutation{
+  insert_tags_one(object:{tag: "$_tag"}){
+  __typename
+  }
+}""");
+}
+static searchTags(String tag)async{
+  var tagsData = await hasuraConnect.query("""query{
+  tags(where: {tag: {_ilike: "%$tag%"}},order_by:{post_count:desc},limit:20) {
+   tag
+   post_count
+  }
+}""");
+dynamic tagsMap =  tagsData['data']['tags'];
+List tags = [];
+tagsMap.forEach((element) { 
+  tags.add({"tag":element['tag'],
+  'postCount':element['post_count']
+  });
+});
+return tags;
+}
+static String updateStats(Stat type,String uuid,bool inc){
+ return """update_post_stats(
+   where: {id: {_eq: "$uuid"}},
+    _inc: {${type.toString().substring(5)}: ${inc?1:-1}}
+  ){
+    affected_rows
+  }""";
+}
+static insertPostVote(String postId,bool up)async{
+   var userId =  Boxes.currentUserBox.get('user_id');
+    if(userId == null){
+    userId =  await getUserId();
+    }
+   String string = """mutation{
+  insert_${up?"up":"down"}votes_one(object:{
+    post_id:"$postId",
+    user_id:$userId
+  }){
+   __typename
+  }
+  ${updateStats(up?Stat.upvotes:Stat.downvotes,postId,true)}
+}
+""";
+print(string);
+  await hasuraConnect.mutation(string);
+}
+static deletePostVote(String postId,bool up)async{
+    var userId =  Boxes.currentUserBox.get('user_id');
+    if(userId == null){
+    userId =  await getUserId();
+    }
+       String string = """mutation{
+ delete_${up?"up":"down"}votes_by_pk(
+    post_id:"$postId",
+    user_id:$userId
+  ){
+   __typename
+  }
+  ${updateStats(up?Stat.upvotes:Stat.downvotes,postId,false)}
+}
+""";
+print(string);
+  await hasuraConnect.mutation(string);
+}
+static getSearches(int limit)async{
+ var data =await  hasuraConnect.query("""query{
+  searches(limit:$limit,order_by:{searched_at:desc},where:{user_id:{_eq:3}}){
+    text
+    search_id
+  }
+}""");
+return data['data']['searches'];
+}
+static deleteSearch(int searchId)async{
+   await  hasuraConnect.mutation("""mutation{
+  delete_searches_by_pk(search_id:$searchId){
+    __typename
+  }
+}""");
+}
+static insertSearch(String text)async{
+  var userId =  Boxes.currentUserBox.get('user_id');
+    if(userId == null){
+    userId =  await getUserId();
+    }
+  await hasuraConnect.mutation("""mutation{
+  insert_searches_one(object:{text:"$text",user_id:$userId}){
     __typename
   }
 }""");

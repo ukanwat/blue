@@ -67,7 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   int repostCount = 0;
   int followerCount = 0;
   int followingCount = 0;
-  List<Post> posts = [];
+  List<dynamic> posts = [];
   bool headerLoading = true;
   bool hasMorePosts = true; // flag for more products available or not
   bool hasMoreReposts = true; // flag for more products available or not
@@ -81,7 +81,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   ScrollController _controller = ScrollController();
   Sort sort = Sort.Recent;
   bool loaded = false;
-  DocumentSnapshot lastDoc;
+  int lastDoc = 0;
   bool empty = false;
   var future;
   @override
@@ -115,66 +115,63 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   addPosts(Sort sort, {bool changing}) async {
-    print('fffffffffffffff');
     if (changing == null ? false : changing)
       setState(() {
         loaded = false;
       });
-    int length = 2;
-    Query query;
-    if (sort == Sort.Recent)
-      query = postsRef
-          .where('ownerId', isEqualTo: widget.profileId)
-          .orderBy('timeStamp', descending: true);
-    else if (sort == Sort.Best)
-      query = postsRef
-          .where('ownerId', isEqualTo: widget.profileId)
-          .orderBy('upvotes', descending: true);
-    else
-      query = postsRef
-          .where('ownerId', isEqualTo: widget.profileId)
-          .orderBy('timeStamp', descending: false);
-    if (lastDoc == null) {
-      var _snapshot = await query.limit(length).get();
-      posts = _snapshot.docs
-          .map((doc) => Post.fromDocument(doc.data(), isCompact: false))
+      print('owner-${widget.profileId}');
+    int length = 4;
+    int _id = 3;
+    String  _where = "{owner_id:{_eq:$_id}}";
+    String _orderBy;
+    if (sort == Sort.Recent){
+          _orderBy = "{created_at:desc}";
+    }
+    else if (sort == Sort.Best){
+           _orderBy = "{created_at:desc}";//TODO  voted ordering 
+    }
+    else{
+           _orderBy = "{created_at:asc}";
+    }
+    
+    if (lastDoc == 0) {
+      dynamic _snapshot = await Hasura.getPosts(length,0,_orderBy,where: _where); 
+  
+
+      setState(() {
+    posts = _snapshot
+          .map((doc) => Post.fromDocument(doc, isCompact: false,commentsShown: false,hasura: true,))
           .toList();
+      });
 
-      setState(() {});
-      print('dwdsffffffffffffffffffffffffffffffffff');
-      print(query.parameters);
-
-      if (_snapshot.docs.length == 0) {
+      if (_snapshot.length == 0) {
         setState(() {
           empty = true;
         });
         return;
       }
-      lastDoc = _snapshot.docs.last;
-      if (_snapshot.docs.length < length) {
+      lastDoc = lastDoc + _snapshot.length;
+      if (_snapshot.length < length) {
         setState(() {
           loaded = true;
         });
         return;
       }
     } else {
-      var _snapshot =
-          await query.startAfterDocument(lastDoc).limit(length).get();
-      _snapshot.docs.forEach((doc) {
-        posts.add(Post.fromDocument(doc.data()));
+         var _snapshot = await Hasura.getPosts(length,lastDoc,"{created_at:desc}",where: _where);
+      _snapshot.forEach((doc) {
+        posts.add(Post.fromDocument(doc,isCompact: false,commentsShown: false,hasura: true,));
       });
 
-      if (_snapshot.docs.length < length) {
+      if (_snapshot.length < length) {
         setState(() {
           loaded = true;
         });
         return;
       }
-      lastDoc = _snapshot.docs.last;
+      lastDoc = lastDoc + _snapshot.length;
     }
   }
-
-
   getFollowers() async {
     QuerySnapshot snapshot = await followersRef
         .doc(widget.profileId)
@@ -185,7 +182,6 @@ class _ProfileScreenState extends State<ProfileScreen>
         followerCount = snapshot.docs.length;
       });
   }
-
   getFollowing() async {
     QuerySnapshot snapshot = await followingRef
         .doc(widget.profileId)
@@ -342,15 +338,15 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   buildProfileHeaderTemp() {
+    print( currentUser.id);
   future =  currentUser.id == widget.profileId? Hasura.getUser():usersRef.doc(widget.profileId).get();
     return FutureBuilder(
-      future: future
+      future: Hasura.getUser()
       ,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return circularProgress();
         }
-        print('${snapshot.data}VVVVVVVVVVVVVVVV');
         User user = User.fromDocument( currentUser.id == widget.profileId?snapshot.data['data']['users_by_pk']:snapshot.data.data(),hasura: currentUser.id == widget.profileId );
         _profileUser = user;
         profileName = user.name;
@@ -404,7 +400,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                             radius: 57.0,
                             backgroundColor: Theme.of(context).backgroundColor,
                             backgroundImage:
-                                CachedNetworkImageProvider(user.photoUrl??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=5e4e10c2-587a-46a7-959c-c30bfb71d0ea"),
+                                CachedNetworkImageProvider(user.avatarUrl??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
                           ),
                         ),
                       ),
@@ -561,7 +557,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   setState(() {
                     sort = value;
                     posts = [];
-                    lastDoc = null;
+                    lastDoc = 0;
                     addPosts(value, changing: true);
                   });
                 },
@@ -703,7 +699,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       child: Container(
                                         decoration: BoxDecoration(shape: BoxShape.circle,  color: Colors.white.withOpacity(0.25),),
                                       margin:
-                                            EdgeInsets.symmetric(horizontal: 8,vertical: 3),child: PopupMenuButton(
+                                            EdgeInsets.symmetric(horizontal: 8,vertical: 5),child: PopupMenuButton(
                                                         padding:
                                                             EdgeInsets.zero,
                                                         color: Theme.of(context)
@@ -748,6 +744,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                           FluentIcons
                                                               .more_24_filled,
                                                           size: 24,
+                                                          color: Colors.white,
                                                         ),
                                                         onSelected:
                                                             (selectedValue) async {
@@ -910,9 +907,16 @@ class _ProfileScreenState extends State<ProfileScreen>
                 color: Theme.of(context).cardColor,
               ),
               Expanded(
-                  child: ListView(
+                  child: ListView.builder(
                     padding: EdgeInsets.only(bottom: 100),
-                children: [...posts, loaded ? Container() : circularProgress()],
+                    itemCount: posts.length+1,
+                    itemBuilder: (context,i){
+                      if(i == posts.length){
+                        return loaded ? Container() : circularProgress();
+                      }
+                      return posts[i];
+
+                    },
               ))
             ],
           ),)

@@ -22,7 +22,7 @@ class _TagPopularScreenState extends State<TagPopularScreen> {
  
  Future refreshPosts()async{
       setState(() {
-        posts = PaginatedPosts(length: 4,query: postsRef.where('tags',arrayContains: widget.tag).orderBy('upvotes',descending: true,),key: UniqueKey(),neverScroll: true,);
+        posts = PaginatedPosts(length: 6,key: UniqueKey(),neverScroll: true,orderBy: "{created_at:desc}",tag: widget.tag,);
       }); 
   }
 
@@ -31,7 +31,7 @@ class _TagPopularScreenState extends State<TagPopularScreen> {
    
     super.didChangeDependencies();
 
-    posts = PaginatedPosts(length: 4,query: postsRef.where('tags',arrayContains: widget.tag).orderBy('upvotes',descending: true,),key: UniqueKey(),neverScroll: true,);
+    posts = PaginatedPosts(length: 6,key: UniqueKey(),neverScroll: true,orderBy: "{created_at:desc}",tag: widget.tag,);
    
   }
   @override
