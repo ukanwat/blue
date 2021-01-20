@@ -9,7 +9,7 @@ import 'package:blue/screens/profile_screen.dart';
 import 'package:blue/widgets/post.dart';
 
 class GoTo{
-   profileScreen(BuildContext context,String profileId) {
+   profileScreen(BuildContext context,int profileId) {
     Navigator.push(
       context,
       MaterialPageRoute(

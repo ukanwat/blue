@@ -11,7 +11,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:blue/models/user.dart';
 import 'package:blue/screens/profile_screen.dart';
 enum Tile{
-  block,mute
+  block,mute,chat
 }
 class UserTile extends StatefulWidget {
   final User user;
@@ -30,7 +30,8 @@ class _UserTileState extends State<UserTile> {
   @override
   void initState() {
     print(widget.user.toString());
-     if (currentUser.id.hashCode <= widget.user.id.hashCode) {
+    if(widget.type != Tile.chat){
+         if (currentUser.id.hashCode <= widget.user.id.hashCode) {
       groupChatId = '${currentUser.id}-${widget.user.id}';
     } else {
       groupChatId = '${widget.user.id}-${currentUser.id}';
@@ -42,6 +43,8 @@ class _UserTileState extends State<UserTile> {
                   'peerImageUrl': widget.user.photoUrl,
                   'peerName': widget.user.name,
                 };
+    }
+    
     super.initState();
   }
   @override
@@ -72,7 +75,7 @@ onTap: (){
 },
                                 child: Container(
                                   child: CircleAvatar(
-                    backgroundImage: CachedNetworkImageProvider(widget.user.photoUrl),
+                    backgroundImage: CachedNetworkImageProvider(widget.user.avatarUrl),
                   ),
                                 ),
                 ),

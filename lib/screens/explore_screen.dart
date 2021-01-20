@@ -125,7 +125,6 @@ class _ExploreScreenState extends State<ExploreScreen>
         body: loading? circularProgress():TabBarView(
 children: topicViews,
 controller: tabController,
-
         ));
   }
 }

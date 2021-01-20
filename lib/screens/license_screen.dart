@@ -80,7 +80,7 @@ class _LicenseScreenState extends State<LicenseScreen> {
           child: Container(
             decoration: const BoxDecoration(
                 border:
-                    Border(top: BorderSide(width: 0.3, color: Colors.grey))),
+                    Border(top: BorderSide(width: 0, color: Colors.grey))),
             padding: EdgeInsets.symmetric(vertical: 20),
             margin: EdgeInsets.symmetric(horizontal: 10),
             child: Row(
@@ -122,16 +122,16 @@ class _LicenseScreenState extends State<LicenseScreen> {
   @override
   Widget build(BuildContext context) {
     assert(debugCheckHasMaterialLocalizations(context));
-    final String name = 'Scrible';
+    final String name = 'Stark';
     final String version = 'Build Version 1.0';
     final Widget icon = Container(
       color: Colors.blue,
       width: 100,
       height: 100,
     );
-    final String applicationLegalese = '© 2020 Feed. All Rights Reserved';
+    final String applicationLegalese = '© 2020 Stark. All Rights Reserved';
 
-    return Scaffold(
+    return Scaffold(backgroundColor: Theme.of(context).backgroundColor,
       appBar: settingsHeader(context, 'Acknowledgements'),
       // All of the licenses page text is English. We don't want localized text
       // or text direction.
@@ -148,12 +148,12 @@ class _LicenseScreenState extends State<LicenseScreen> {
                     const EdgeInsets.symmetric(horizontal: 0.0, vertical: 12.0),
                 children: <Widget>[
                   Text(name,
-                      style: Theme.of(context).textTheme.headline5,
+                      style: TextStyle(fontSize: 55,fontFamily: 'Techna Sans Regular',color: Theme.of(context).iconTheme.color),
                       
                       textAlign: TextAlign.center),
-                  if (icon != null)
-                    IconTheme(data: Theme.of(context).iconTheme, child: icon),
-                       Container(height: 18.0),
+                  // if (icon != null)
+                  //   IconTheme(data: Theme.of(context).iconTheme, child: icon),
+                  //      Container(height: 18.0),
                   Text(version,
                       style: Theme.of(context).textTheme.bodyText2,
                       textAlign: TextAlign.center),
@@ -167,7 +167,7 @@ class _LicenseScreenState extends State<LicenseScreen> {
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 24.0),
                       child: Center(
-                        child: CircularProgressIndicator(),
+                        child: CircularProgressIndicator(strokeWidth: 2,valueColor:  AlwaysStoppedAnimation<Color>(Colors.blue),),
                       ),
                     ),
                 ],

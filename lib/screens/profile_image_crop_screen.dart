@@ -24,7 +24,7 @@ class _ProfileImageCropScreenState extends State<ProfileImageCropScreen> {
     return Scaffold(
       appBar: header(context,
       leadingButton: IconButton(icon: Icon(Icons.clear), onPressed: () => Navigator.of(context),
-      color: Colors.black,
+   
       
       ),actionButton: FlatButton(onPressed:  () async {
     final crop = cropKey.currentState;
@@ -40,7 +40,6 @@ class _ProfileImageCropScreenState extends State<ProfileImageCropScreen> {
           title: Text(
             'Crop',
             style: TextStyle(
-              color: Colors.black
             ),
           )),
           body: Container(

@@ -37,7 +37,6 @@ import 'package:blue/screens/package_licenses_screen.dart';
 import 'package:blue/screens/profile_image_crop_screen.dart';
 import 'package:blue/screens/search_tag_screen.dart';
 import 'package:blue/screens/select_topic_screen.dart';
-import 'package:blue/screens/settings/about/acknowledgements_screen.dart';
 import 'package:blue/screens/settings/about/privacy_policy_screen.dart';
 import 'package:blue/screens/settings/about/terms_of_service_screen.dart';
 import 'package:blue/screens/settings/feedback/give_a_suggestion_screen.dart';
@@ -72,6 +71,10 @@ import './screens/verify_email_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
   await Firebase.initializeApp();
   await getCurrentUser();
 
@@ -171,6 +174,7 @@ Future getCurrentUser() async {
   await Boxes.openCurrentUserBox();
   try {
     Map currentUserMap = Boxes.currentUserBox.toMap();
+    print(currentUserMap);
   userSignedIn = currentUserMap['userSignedIn']?? false;
     currentUser = User.fromDocument(currentUserMap);
 
@@ -342,12 +346,6 @@ class MyAppState extends State<MyApp> {
                           child: ReportABugScreen(),
                           type: PageTransitionType.rightToLeft,
                           settings: settings);
-                    case AcknowledgementsScreen.routeName:
-                      return PageTransition(
-                          child: AcknowledgementsScreen(),
-                          type: PageTransitionType.rightToLeft,
-                          settings: settings);
-                      break;
                     case CommentsScreen.routeName:
                       return PageTransition(
                           child: CommentsScreen(),
@@ -412,7 +410,8 @@ class HomeController extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+    Boxes.currentUserBox.put('id', 9);
+    
     final AuthService authenticate = PW.Provider.of(context).auth;
     return StreamBuilder<auth.User>(
       stream: authenticate.onAuthStateChanged,

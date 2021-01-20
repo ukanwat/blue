@@ -36,7 +36,7 @@ import '../services/boxes.dart';
 enum Sort { Recent, Earliest, Best }
 
 class ProfileScreen extends StatefulWidget {
-  final String profileId;
+  final int profileId;
 //  final PostInteractions postInteractions;
   ProfileScreen({
     this.profileId,
@@ -60,7 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   bool compactPosts = true;
   String username = '';
   bool isFollowing = false;
-  final String currentUserId = currentUser?.id;
+  final dynamic currentUserId = currentUser?.id;
   bool postsAreLoading = false;
   bool repostsAreLoading = false;
   int postCount = 0;
@@ -92,7 +92,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           empty != true &&
           loaded != true) {
         print(
-            'sdfsefsxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+            '');
         setState(() {
           addPosts(sort, changing: true);
         });
@@ -108,8 +108,7 @@ class _ProfileScreenState extends State<ProfileScreen>
    if( Boxes.followingBox.containsKey(widget.profileId)){
      isFollowing = true;
    }
-    getFollowers();
-    getFollowing();
+    
 
     // _controller.addListener(onScroll);
   }
@@ -172,26 +171,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       lastDoc = lastDoc + _snapshot.length;
     }
   }
-  getFollowers() async {
-    QuerySnapshot snapshot = await followersRef
-        .doc(widget.profileId)
-        .collection('userFollowers')
-        .get();
-    if (this.mounted)
-      setState(() {
-        followerCount = snapshot.docs.length;
-      });
-  }
-  getFollowing() async {
-    QuerySnapshot snapshot = await followingRef
-        .doc(widget.profileId)
-        .collection('userFollowing')
-        .get();
-    if (this.mounted)
-      setState(() {
-        followingCount = snapshot.docs.length;
-      });
-  }
+ 
 
   editProfile() {
     Navigator.pushNamed(
@@ -296,7 +276,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       return buildButton(
           text: 'Follow',
           function: () {
-            Functions().handleFollowUser(widget.profileId);
+            // Functions().handleFollowUser(widget.profileId);
             setState(() {
               isFollowing = true;
             });
@@ -339,15 +319,16 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   buildProfileHeaderTemp() {
     print( currentUser.id);
-  future =  currentUser.id == widget.profileId? Hasura.getUser():usersRef.doc(widget.profileId).get();
+  future = Hasura.getUser(id: widget.profileId,self: widget.profileId == currentUser.id? true:false);
     return FutureBuilder(
-      future: Hasura.getUser()
+      future: future
       ,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return circularProgress();
         }
-        User user = User.fromDocument( currentUser.id == widget.profileId?snapshot.data['data']['users_by_pk']:snapshot.data.data(),hasura: currentUser.id == widget.profileId );
+        User user = User.fromDocument(snapshot.data['data']['users_by_pk'] );
+       print(snapshot.data['data']['users_by_pk']);
         _profileUser = user;
         profileName = user.name;
         return Container(
@@ -370,129 +351,148 @@ class _ProfileScreenState extends State<ProfileScreen>
                   height: 150,
                   width: double.infinity,
                 ),
-                ExpansionTile(
-                  expandedAlignment: Alignment.topLeft,
-                  expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                  childrenPadding:
-                      EdgeInsets.only(left: 10, bottom: 10, top: 0, right: 10),
-                  title: Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: Text(
-                      '${user.username}',
-                      style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
-                    ),
-                  ),
-                  leading: Stack(
-                    overflow: Overflow.visible,
-                    children: <Widget>[
-                      Container(
-                        height: 60,
-                        width: 120,
+                 ExpansionTile(backgroundColor: Theme.of(context).backgroundColor,tilePadding: EdgeInsets.symmetric(horizontal: 10,vertical: 0),
+
+                    expandedAlignment: Alignment.topLeft,
+                    expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                    childrenPadding:
+                        EdgeInsets.only(left: 0, bottom: 10, top: 0, right: 0),
+                    title: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Text(
+                        '${user.username}',
+
+                        style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18,color: Theme.of(context).iconTheme.color),
                       ),
-                      Positioned(
-                        bottom: 0,
-                        child: Container(
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Theme.of(context).backgroundColor),
-                          padding: EdgeInsets.all(3),
-                          child: CircleAvatar(
-                            radius: 57.0,
-                            backgroundColor: Theme.of(context).backgroundColor,
-                            backgroundImage:
-                                CachedNetworkImageProvider(user.avatarUrl??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                    ),
+                    leading: Stack(
+                      overflow: Overflow.visible,
+                      children: <Widget>[
+                        Container(
+                          height: 60,
+                          width: 120,
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          child: Container(
+                            decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Theme.of(context).backgroundColor),
+                            padding: EdgeInsets.all(3),
+                            child: CircleAvatar(
+                              radius: 57.0,
+                              backgroundColor: Theme.of(context).backgroundColor,
+                              backgroundImage:
+                                  CachedNetworkImageProvider(user.avatarUrl??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                            ),
                           ),
+                        ),
+                      ],
+                    ),
+                    subtitle: Padding(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                      child: Text(
+                        '${Functions.abbreviateNumber(2444)} Followers',
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color:
+                                Theme.of(context).iconTheme.color.withOpacity(0.6)),
+                      ),
+                    ),
+                    children: <Widget>[
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Padding(
+                          padding: const EdgeInsets.only(left: 22),
+                          child: Row(
+                            children: [
+                              Column(
+                                children: [
+                                  Text('${Functions.abbreviateNumber(2444)}',
+                                      style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w600)),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  Text('Following',
+                                      style: TextStyle(
+                                          fontSize: 13, fontWeight: FontWeight.w400)),
+                                ],
+                              ),SizedBox(width: 20,),
+                               Column(
+                                children: [
+                                  Text('${Functions.abbreviateNumber(9896634)}',
+                                      style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w600)),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  Text('Total Upvotes',
+                                      style: TextStyle(
+                                          fontSize: 13, fontWeight: FontWeight.w400)),
+                                ],
+                              ),
+                            ],
+                          )),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 20),
+                        child: Text(user.bio?? '',
+                            style: TextStyle(
+                              fontSize: 16,
+                            )),
+                      ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                       if(user.website!= null && user.website!= '')
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 20,
+                        ),
+                       
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Container(
+                                padding: EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Theme.of(context).cardColor),
+                                child: Icon(
+                                  FluentIcons.link_square_24_regular,
+                                  size: 18,
+                                )),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Expanded(
+                              child: Linkify(
+                                text: user.website,
+                                linkStyle: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.none,
+                                ),
+                                onOpen: (link) {
+                                  launchWebsite(user.website);
+                                },
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                  subtitle: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
-                    child: Text(
-                      '$followerCount Followers',
-                      style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color:
-                              Theme.of(context).iconTheme.color.withOpacity(0.6)),
-                    ), //TODO fix follower count
-                  ),
-                  children: <Widget>[
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Padding(
-                        padding: const EdgeInsets.only(left: 15),
-                        child: Row(
-                          children: [
-                            Text('$followingCount',
-                                style: TextStyle(
-                                    fontSize: 18,
-                                    color: Theme.of(context)
-                                        .iconTheme
-                                        .color
-                                        .withOpacity(0.9),
-                                    fontWeight: FontWeight.w500)),
-                            SizedBox(
-                              width: 5,
-                            ),
-                            Text('following',
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.w400)),
-                          ],
-                        )),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 15),
-                      child: Text(user.bio,
-                          style: TextStyle(
-                            fontSize: 16,
-                          )),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        left: 15,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Container(
-                              padding: EdgeInsets.all(3),
-                              decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Theme.of(context).cardColor),
-                              child: Icon(
-                                FluentIcons.link_square_24_regular,
-                                size: 18,
-                              )),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Expanded(
-                            child: Linkify(
-                              text: user.website,
-                              linkStyle: TextStyle(
-                                fontSize: 18,
-                                color: Colors.blue,
-                                decoration: TextDecoration.none,
-                              ),
-                              onOpen: (link) {
-                                launchWebsite(user.website);
-                              },
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                
               ],
             ),
           )
@@ -513,7 +513,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 // child: new BackdropFilter(
                     // filter: new ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
                  Container(
-                      color:Colors.grey.withOpacity(0.3),
+                      color:Colors.black38,
                       child: Padding(
                         padding: const EdgeInsets.all(6.0),
                       child: Icon(icon.icon,color: Colors.white,),
@@ -671,7 +671,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 ),
                               if (widget.profileId == currentUser.id)
                                 Padding(
-                                  padding: EdgeInsets.only(right: 5),
+                                  padding: EdgeInsets.only(right: 10),
                                   child: headerButton(
                                       Icon(
                                         FluentIcons.bookmark_24_regular,
@@ -723,8 +723,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                               value: 'Report'),
                                                           PopupMenuItem(
                                                               child: Text(
-                                                                  '${PreferencesUpdate().containsInStringList('blocked_accounts', _profileUser.id) ? "Unblock" : "Block"} $profileName'),
-                                                              value: PreferencesUpdate().containsInStringList(
+                                                                  '${PreferencesUpdate().containsInList('blocked_accounts', _profileUser.id) ? "Unblock" : "Block"} $profileName'),
+                                                              value: PreferencesUpdate().containsInList(
                                                                       'blocked_accounts',
                                                                       _profileUser
                                                                           .id)
@@ -732,8 +732,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                                   : "Block"),
                                                           PopupMenuItem(
                                                               child: Text(
-                                                                  '${PreferencesUpdate().containsInStringList('muted_messages', _profileUser.id) ? "Unmute" : "Mute"} $profileName'),
-                                                              value: PreferencesUpdate().containsInStringList(
+                                                                  '${PreferencesUpdate().containsInList('muted_messages', _profileUser.id) ? "Unmute" : "Mute"} $profileName'),
+                                                              value: PreferencesUpdate().containsInList(
                                                                       'muted_messages',
                                                                       _profileUser
                                                                           .id)
@@ -766,10 +766,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                           switch (
                                                               selectedValue) {
                                                             case 'Unfollow':
-                                                              Functions()
-                                                                  .handleUnfollowUser(
-                                                                      widget
-                                                                          .profileId);
+                                                              // Functions()
+                                                              //     .handleUnfollowUser(
+                                                              //         widget
+                                                              //             .profileId);
                                                               setState(() {
                                                                 isFollowing =
                                                                     false;
@@ -825,7 +825,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           },
           body:RefreshIndicator(onRefresh: ()async{
           setState(() {
-            future =  currentUser.id == widget.profileId? Hasura.getUser():usersRef.doc(widget.profileId).get();
+           Hasura.getUser(self: true);
           });
        await   Future.delayed(Duration(milliseconds: 500));
           return;

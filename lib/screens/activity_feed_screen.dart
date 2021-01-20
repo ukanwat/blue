@@ -23,55 +23,10 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen>
   bool loading = true;
 
   cachedFeed() async {
-      var _cachedFeed =  await activityFeedRef
-        .doc(currentUser.id)
-        .collection('feedItems')
-        .orderBy('timestamp', descending: true) //         TODO
-        .get(GetOptions(source: Source.cache));
-     _cachedFeed.docs.forEach((doc) {
-       data.add(  ActivityFeedItem.fromDocument(doc.data()));
-     
-      });
-    if (_cachedFeed.docs.length == 0) {
-      timestamp = Timestamp.fromDate(DateTime.utc(2019));
-    } else if (_cachedFeed.docs.first.data()['timestamp'] == null) {
-      timestamp = Timestamp.fromDate(DateTime.utc(2019));
-    } else {
-   
-      timestamp = _cachedFeed.docs.first.data()['timestamp'];
-         print(timestamp.toDate());
-    }
-   
-         var _newSnaps = await activityFeedRef
-        .doc(currentUser.id)
-        .collection('feedItems')
-        .where('timestamp', isGreaterThan: timestamp)
-        .orderBy('timestamp', descending: false)
-        .get();
-         _newSnaps.docs.forEach((_doc) {
-        data.insert(0,  ActivityFeedItem.fromDocument(_doc.data()));
-      });
-      if(_newSnaps.docs.isNotEmpty)
-      timestamp = _newSnaps.docs.last.data()['timestamp'];
-  setState(() {
-      loading = false;
-    });
+    
   }
    refreshFeed()async{
-             var _newSnaps = await activityFeedRef
-        .doc(currentUser.id)
-        .collection('feedItems')
-        .where('timestamp', isGreaterThan: timestamp)
-        .orderBy('timestamp', descending: false)
-        .get();
-         _newSnaps.docs.forEach((_doc) {
-        data.insert(0,  ActivityFeedItem.fromDocument(_doc.data()));
-      });
-        if(_newSnaps.docs.isNotEmpty)
-      setState(() {
-         timestamp = _newSnaps.docs.last.data()['timestamp'];
-      });
-     
+         
    }
   
  
@@ -109,8 +64,5 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen>
         children: data,
       ),
     );
-    //       },
-
-    // );
   }
 }

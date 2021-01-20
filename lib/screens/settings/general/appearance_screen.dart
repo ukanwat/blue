@@ -97,7 +97,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
               themeMode = AppTheme.light;
                         notifier.toggleTheme(false,context);
              });
-                    preferencesRef.doc(currentUser.id).set({'theme': themeMode.toString().substring(9) },SetOptions(merge: true));
+                    
             }, title: Text('Light Mode'),
           trailing: Visibility( visible: themeMode == AppTheme.light,
                       child: Icon(FlutterIcons.check_circle_faw5s,
@@ -108,7 +108,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
               themeMode = AppTheme.dark;
                            notifier.toggleTheme(true,context);
                 });
-                       preferencesRef.doc(currentUser.id).set({'theme': themeMode.toString().substring(9)  },SetOptions(merge: true));
+                     
             }, title: Text('Dark Mode'),
               
           trailing: Visibility( visible: themeMode == AppTheme.dark,
@@ -123,7 +123,7 @@ Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom
               'Autoplay Videos', autoplayVideos, (newValue) {setState(() {
                  PreferencesUpdate().updateBool('autoplay_videos', newValue);
                  autoplayVideos = newValue;
-                     preferencesRef.doc(currentUser.id).set({'autoplay_videos': newValue},SetOptions(merge: true));
+                   
               });},description: 'Autoplay Videos which appear in Posts'),
               // settingsSwitchListTile(
               // 'Autoplay GIFs', autoplayGIFs,  (newValue) {setState(() {

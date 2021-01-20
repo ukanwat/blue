@@ -234,13 +234,13 @@ static String abbreviateNumber(int value,{bool hideZero}) {
    
   }
    if (value > 999 && value < 99999) {
-        return "${(value / 1000).toStringAsFixed(1)} K";
+        return "${(value / 1000).toStringAsFixed(1)}K";
       } else if (value > 99999 && value < 999999) {
-        return "${(value / 1000).toStringAsFixed(0)} K";
+        return "${(value / 1000).toStringAsFixed(0)}K";
       } else if (value > 999999 && value < 999999999) {
-        return "${(value / 1000000).toStringAsFixed(1)} M";
+        return "${(value / 1000000).toStringAsFixed(1)}M";
       } else if (value > 999999999) {
-        return "${(value / 1000000000).toStringAsFixed(1)} B";
+        return "${(value / 1000000000).toStringAsFixed(1)}B";
       } else {
         return value.toString();
       }

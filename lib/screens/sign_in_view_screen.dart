@@ -61,7 +61,7 @@ class SignInViewScreen extends StatelessWidget {
             onTap: () async {
               final _auth = Provider.of(context).auth;
              await _auth.signInWithGoogle(context);
-              Navigator.pushReplacementNamed(context, TabsScreen.routeName);
+              Navigator.pushNamed(context, TabsScreen.routeName);//TODO replacement?
             },
             child: Container(
               width: double.infinity,

@@ -168,7 +168,7 @@ class _PostState extends State<Post> {
   Future<void> _initializeVideoPlayerFuture;
   bool isSaved = false;
   List<Widget> contentsViewList = [];
-  final String currentUserId = currentUser?.id;
+  final dynamic currentUserId = currentUser?.id;
   final String postId;
   final dynamic ownerId;
   final String username;
@@ -1529,16 +1529,6 @@ showComments(
   Navigator.pushNamed(context, CommentsScreen.routeName, arguments: post);
 }
 
-showProfile(BuildContext context, {String profileId}) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => ProfileScreen(
-        profileId: profileId,
-      ),
-    ),
-  );
-}
 
 class VideoContentContainer extends StatefulWidget {
   final Future<dynamic> initializeVideoPlayerFuture;

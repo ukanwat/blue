@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 // Project imports:
+import '../widgets/post.dart';
 import 'package:blue/main.dart';
 import 'package:blue/widgets/empty_state.dart';
 import 'package:blue/widgets/progress.dart';
@@ -13,7 +14,7 @@ import './home.dart';
 import './search_results_screen.dart';
 import '../services/hasura.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-
+import '../services/preferences_update.dart';
 class SearchScreen extends StatefulWidget {
   static const routeName = '/search';
 
@@ -22,7 +23,6 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen>{
-  List _list;
   QuerySnapshot searches;
   TextEditingController searchController = TextEditingController();
   Future<QuerySnapshot> peopleResultsFuture;
@@ -36,11 +36,11 @@ class _SearchScreenState extends State<SearchScreen>{
       if (!searching) {
         searching = true;
       }
-    resultsLoading = true;
+    // resultsLoading = true;
 
     });
     await Hasura.insertSearch(query);
-    resultsLoading = false;
+    // resultsLoading = false;
   }
   List<Widget> posts = [];
    List<Widget> userTiles = [];
@@ -60,9 +60,23 @@ class _SearchScreenState extends State<SearchScreen>{
             if (index == 0) {
               return Container(
                 padding: EdgeInsets.all(15),
-                child: Text(
-                  'Recent Searches',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 22),
+                child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Recent Searches',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
+                    ),
+                    Material(
+
+                                          child: InkWell(onTap: (){
+                                            PreferencesUpdate().updateString('searches_last_cleared',DateTime.now().toString(),upload: true);
+                                          },
+                                            child: Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Text('Clear All',style: TextStyle(color: Colors.blue,fontSize: 17,fontWeight: FontWeight.w500),)),
+                      ),
+                    )
+                  ],
                 ),
               );
             }
@@ -95,7 +109,7 @@ class _SearchScreenState extends State<SearchScreen>{
   }
   PreferredSize buildSearchField(context) {
     return PreferredSize(
-      preferredSize: Size.fromHeight(searching?90.0:50),
+      preferredSize: Size.fromHeight(searching?95.0:50),
       child: AppBar(
         titleSpacing: 0,
         automaticallyImplyLeading: false,
@@ -103,7 +117,7 @@ class _SearchScreenState extends State<SearchScreen>{
         indicatorPadding: EdgeInsets.symmetric(vertical: 4,horizontal: 20),
         indicatorWeight: 2.0,
               tabs: [
-                Container(height: 40,
+                Container(height: 45,
                   child: Center(
                     child: Row(mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -113,7 +127,7 @@ class _SearchScreenState extends State<SearchScreen>{
                     ),
                   ),
                 ),
-                 Container(height: 40,
+                 Container(height: 45,
                   child: Center(
                   child: Row(
                     children: [
@@ -122,7 +136,7 @@ class _SearchScreenState extends State<SearchScreen>{
                     ],
                   ),
                 ))
-                , Container(height: 40,
+                , Container(height: 45,
                   child: Center(
                   child: Row(
                     children: [
@@ -201,25 +215,18 @@ class _SearchScreenState extends State<SearchScreen>{
                   ),
                 ),
               ),
-              onFieldSubmitted: (search) {
-                  handleSearch(search);
+              onFieldSubmitted: (search) async{
+                 await handleSearch(search);
               },
+              
             ),
           ),
         ),
       ),
     );
   }
-   getPosts(){
-
-   }
-   getUsers(){
-
-
-   }
-   getTags(){
-
-   }
+   
+  
   @override
   void initState() {
     getRecentSearches();
@@ -255,17 +262,17 @@ class _SearchScreenState extends State<SearchScreen>{
                     ],
                   ))
             : TabBarView(children: <Widget>[
-              ListView.builder(itemBuilder: (context,i){
-                return Container();
-              }),
+             SearchResultsScreen(SearchResultsType.posts),
              ListView.builder(itemBuilder: (context,i){
                 return Container();
-              }),
+              },itemCount: 10,),
               ListView.builder(itemBuilder: (context,i){
                 return Container();
-              }),
+              },itemCount: 10,),
             ],),
       ),
     );
   }
 }
+
+

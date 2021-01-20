@@ -3,7 +3,8 @@ import 'dart:io';
 import 'dart:ui';
 
 // Flutter imports:
-import 'package:flutter/material.dart';
+import 'package:blue/services/hasura.dart';
+import 'package:flutter/material.dart' hide Feedback;
 import 'package:flutter/services.dart';
 
 // Package imports:
@@ -133,7 +134,7 @@ class _GiveASuggestionScreenState extends State<GiveASuggestionScreen> {
           InkWell(
             onTap: (){
               _deviceData['suggestion'] = suggestionController.text;
-                suggestionsRef.add(_deviceData);
+                   Hasura.insertFeedback(Feedback.suggestion, _deviceData);
                                   Navigator.of(context).pop();
             },
                       child: Container(

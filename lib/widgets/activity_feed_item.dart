@@ -18,7 +18,7 @@ String activityFeedDocumentId;
 class ActivityFeedItem extends StatefulWidget {
   final String username;
   final String displayName;
-  final String userId;
+  final int userId;
   final String type;
   final String title;
   final bool seen;

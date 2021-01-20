@@ -24,19 +24,17 @@ User({
   this.avatarUrl
 });
 
-factory User.fromDocument(Map doc,{bool hasura}){
-  if(hasura == null)
-  hasura = false;
+factory User.fromDocument(Map doc){
   return User(
-    id: doc[hasura?'user_id': 'id'],
+    id: doc['id'],
     email: doc['email'],
     username: doc['username'],
-    photoUrl: doc[hasura?'photo_url':'photoUrl'],
-    name: doc[hasura?'name':'displayName'],
+    photoUrl: doc['photo_url'],
+    name: doc['name'],
     bio: doc['bio'],
     website: doc['website'],
-    headerUrl: doc[hasura?'header_url':'headerUrl'],
-    avatarUrl: doc[hasura?'avatar_url':'avatarUrl'],
+    headerUrl: doc['header_url'],
+    avatarUrl: doc['avatar_url'],
   );
 }
 

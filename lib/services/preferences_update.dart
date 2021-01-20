@@ -22,17 +22,18 @@ class PreferencesUpdate {
     String key,
     String value, {
     bool upload,
-  }) {
-    if (upload != null ? upload : false) {
-      preferencesRef.doc(currentUser.id).update({key: value});
+  }) async{
+    if (upload == true) {
+  await Hasura.updatePreferences(key, value);
+
     }
-    Boxes.preferenceBox.put(key, value);
+   await Boxes.preferenceBox.put(key, value);
     
   }
 
-  bool containsInStringList(
+  bool containsInList(
     String key,
-    String value,
+    dynamic value,
   ) {
     var _list = Boxes.preferenceBox.get(
       key,
@@ -88,7 +89,11 @@ class PreferencesUpdate {
     }
     return _list;
   }
-
+  getSetValue(String key)async{
+    dynamic value =await Hasura.getPreferences(key);
+     Boxes.preferenceBox.put(key, value);
+     return value;
+  }
   bool getBool(String key, {bool def}) {
     if (def != null) {
       if ( Boxes.preferenceBox.get(key) == null) return def;

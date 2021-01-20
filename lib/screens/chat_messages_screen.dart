@@ -253,7 +253,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                   'peerId': widget.peerUser.id,
                   'peerUsername': widget.peerUser.username,
                   'groupChatId': groupChatId,
-                  'peerImageUrl': widget.peerUser.photoUrl,
+                  'peerImageUrl': widget.peerUser.avatarUrl,
                   'peerName': widget.peerUser.name,
                 });
               }),
@@ -268,7 +268,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                       left: 0, right: 15, bottom: 5, top: 5),
                   child: CircleAvatar(
                     backgroundImage:
-                        CachedNetworkImageProvider(widget.peerUser.photoUrl),
+                        CachedNetworkImageProvider(widget.peerUser.avatarUrl),
                   ),
                 ),
               ),

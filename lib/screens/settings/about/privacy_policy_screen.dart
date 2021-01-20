@@ -23,7 +23,7 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
     return Scaffold(
       appBar: settingsHeader(context, 'Privacy Policy'),
       body: WebView(
-        initialUrl: 'https://google.com',
+        initialUrl: 'https://www.stark.social/privacy-policy',
           onWebViewCreated: (WebViewController webViewController) {
           _controller.complete(webViewController);
         },

@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -54,8 +55,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       isLoading = true;
     });
 
-    DocumentSnapshot doc = await usersRef.doc(currentUser.id).get();
-    user = User.fromDocument(doc.data());
+    Map doc = await Hasura.getUser(self: true);
+    user = User.fromDocument(doc['data']['users_by_pk']);
+    print(user.name);
     displayNameController.text = user.name;
     bioController.text = user.bio;
     websiteController.text = user.website;
@@ -64,10 +66,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
   }
 
-  @override
+ @override
   void didChangeDependencies() {
     if (!userLoaded) {
-      getUser();
+  getUser();
+
       userLoaded = true;
     }
     super.didChangeDependencies();
@@ -90,7 +93,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       bioController.text.trim().length > 300
           ? _bioValid = false
           : _bioValid = true;
-      Uri.parse(websiteController.text.trim()).isAbsolute //TODO
+      Uri.parse(websiteController.text.trim()).isAbsolute || websiteController.text == null||websiteController.text == ''//TODO
           ? _websiteValid = true
           : _websiteValid = false;
     });
@@ -106,7 +109,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         String headerId = Uuid().v4();
         final Im.Image headerFile =
             Im.decodeImage(headerImage.readAsBytesSync());
-
         final compressedHeaderFile = File('$path/img_$headerId.jpg')
           ..writeAsBytesSync(Im.encodeJpg(headerFile, quality: 85));
         headerUrl =
@@ -129,15 +131,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       profilePictureUrl = imageDownloadUrl;
       avatarUrl = avatarDownloadUrl;
       if (headerUrl == null) {
-        await usersRef.doc(currentUser.id).update(
-          {
-            'displayName': displayNameController.text,
-            'bio': bioController.text,
-            'website': websiteController.text.trim(),
-            'photoUrl': profilePictureUrl,
-            'avatarUrl': avatarUrl,
-          },
-        );
        await Hasura.updateUser(
           name: displayNameController.text,
           bio: bioController.text,
@@ -146,16 +139,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           avatarUrl: avatarUrl
         );
       } else {
-        await usersRef.doc(currentUser.id).update(
-          {
-            'displayName': displayNameController.text,
-            'bio': bioController.text,
-            'website': websiteController.text.trim(),
-            'photoUrl': profilePictureUrl,
-            'avatarUrl': avatarUrl,
-            'headerUrl': headerUrl,
-          },
-        );
+        
           await Hasura.updateUser(
           name: displayNameController.text,
           bio: bioController.text,
@@ -175,8 +159,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
     if (croppedImage == null &&
         _displayNameValid &&
-        _bioValid &&
-        _websiteValid) {
+        _bioValid&&
+        _websiteValid ) {
       if (headerImage != null) {
         final tempDir = await getTemporaryDirectory();
         final path = tempDir.path;
@@ -190,24 +174,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             'profile', "header_$headerId.jpg", compressedHeaderFile);
       }
       if (headerUrl == null) {
-        await usersRef.doc(currentUser.id).update({
-          'displayName': displayNameController.text,
-          'bio': bioController.text,
-          'website': websiteController.text.trim(),
-        });
+        
            await Hasura.updateUser(
           name: displayNameController.text,
           bio: bioController.text,
           website: websiteController.text.trim(),
         );
       } else {
-        await usersRef.doc(currentUser.id).update({
-          'displayName': displayNameController.text,
-          'bio': bioController.text,
-          'website': websiteController.text.trim(),
-          'headerUrl': headerUrl,
-
-        });
+      
            await Hasura.updateUser(
           name: displayNameController.text,
           bio: bioController.text,
@@ -342,8 +316,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           keyboardType: TextInputType.url,
           decoration: InputDecoration(
               hintText: "Website Address",
-              errorText:
-                  _websiteValid ? null : "Please enter a valid website url"),
+              errorText:  _websiteValid ? null : "Invalid url",
+              
+              ),
         )
       ],
     );
@@ -361,6 +336,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         leading: IconButton(
           icon: Icon(
             Icons.clear,
+            color: Theme.of(context).iconTheme.color,
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -368,6 +344,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         elevation: 1,
         title: Text(
           "Edit Profile",
+          
           style: TextStyle(),
         ),
         actions: <Widget>[
@@ -503,7 +480,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                         backgroundImage: croppedImage != null
                                             ? FileImage(croppedImage)
                                             : CachedNetworkImageProvider(
-                                                user.photoUrl,
+                                                user.photoUrl??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744",
                                               ),
                                       ),
                                       InkWell(
@@ -516,7 +493,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                           ),
                                           height: 120,
                                           width: 120,
-                                          child: Icon(Icons.add_a_photo),
+                                          child: Icon(FluentIcons.camera_add_24_filled),
                                         ),
                                       )
                                     ],

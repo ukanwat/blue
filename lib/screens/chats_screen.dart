@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 
 // Flutter imports:
+import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/material.dart';
 
@@ -29,39 +30,32 @@ class ChatsScreen extends StatefulWidget {
 
 class _ChatsScreenState extends State<ChatsScreen>
     with AutomaticKeepAliveClientMixin<ChatsScreen> {
-  Future<QuerySnapshot> chatUsers;
   Map directMap = {};
+   List<Widget> chatUsers = [];
+ bool  loading = true;
+ bool empty = false;
   @override
   void initState() {
-    chatUsers = usersRef.get();
-    var direct =  PreferencesUpdate().getString('direct');
-    directMap = direct == null ? {} : json.decode(direct);
-    Timer.periodic(Duration(minutes: 1), (Timer t) {   
-      if(this.mounted)
-      setState(() {
-             var direct =  PreferencesUpdate().getString('direct');
-    directMap = direct == null ? {} : json.decode(direct);
-        });});
+    // Timer.periodic(Duration(minutes: 1), (Timer t) {   
+    //   if(this.mounted)
+    //   setState(() {
+    //          var direct =  PreferencesUpdate().getString('direct');
+    // directMap = direct == null ? {} : json.decode(direct);
+    //     });});
+     getUserTiles();
     super.initState();
   }
-
-  bool get wantKeepAlive => true;
-
-  Widget build(BuildContext context) {
-    super.build(context);
-    return chatsList(chatUsers);
-  }
-
-  FutureBuilder chatsList(Future<QuerySnapshot> chatUsers) {
-    return FutureBuilder(
-      future: chatUsers,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return circularProgress();
-        }
-        List<Widget> chatUsers = [];
-        snapshot.data.docs.forEach((QueryDocumentSnapshot doc) {
-          User user = User.fromDocument(doc.data());
+  getUserTiles()async{
+     dynamic data = await Hasura.getUsers();
+       
+        data.forEach((doc) {
+          print(doc);
+          User user = User.fromDocument({
+            'avatar_url':doc['avatar_url'],
+            'id':doc['user_id'],
+            'username':doc['username'],
+            'name':doc['name']
+          });
           print(user);
          Widget userChat =
       OpenContainer<bool>(
@@ -71,24 +65,37 @@ class _ChatsScreenState extends State<ChatsScreen>
               },
               onClosed: null,
               tappable: false,
-              closedShape: const RoundedRectangleBorder(),
-              closedElevation: 0.0,
+              closedShape: const RoundedRectangleBorder(),closedColor: Theme.of(context).backgroundColor,
               closedBuilder: (BuildContext _, VoidCallback openContainer) {
                 return chatUserListTile(user,openContainer);});
           chatUsers.add(userChat);
         });
-if(chatUsers ==  null)  //TODO check
-  return emptyState(context, 'No new Messages','Message Sent',subtitle: 'Any new messages will appear here' );
-
-        return ListView.builder(
-          itemBuilder: (_,i){
-               return chatUsers[i];
-          },
-    itemCount: chatUsers.length,
-        );
-      },
-    );
+        if(chatUsers ==  null)  //TODO check
+        setState(() {
+           
+           loading = false;
+           empty = true;
+        });
+ 
+ setState(() {
+           
+           loading = false;
+        });
   }
+  bool get wantKeepAlive => true;
+
+  Widget build(BuildContext context) {
+    super.build(context);
+    return loading? circularProgress(): empty? emptyState(context, 'No new Messages','Message Sent',subtitle: 'Any new messages will appear here' ):
+    ListView.builder(
+      itemCount: chatUsers.length,
+      itemBuilder: (context,i){
+return chatUsers[i]; 
+    })
+    ;
+  }
+
+
 
   InkWell chatUserListTile(User user,VoidCallback openContainer) {
     
@@ -97,7 +104,7 @@ if(chatUsers ==  null)  //TODO check
              ListTile(
                tileColor:  Theme.of(context).backgroundColor,
                 leading: CircleAvatar(
-                  backgroundImage: CachedNetworkImageProvider(user.photoUrl),
+                  backgroundImage: CachedNetworkImageProvider(user.avatarUrl),
                 ),
                 title: Text(
                   user.name,
@@ -135,9 +142,11 @@ if(chatUsers ==  null)  //TODO check
                             : Text(user.username,maxLines: 1,),
                       ),
                     ),
-                    Text(directMap.containsKey(user.id)
+                    Text(
+                      directMap.containsKey(user.id)
                         ? '${timeago.format(DateTime.parse(directMap[user.id]['time']))}'
-                        : ''),
+                        : 
+                        ''),
                   ],
                 ),
               ),

@@ -165,7 +165,9 @@ currentUser = User.fromDocument(Boxes.currentUserBox.toMap());
      await  Boxes.openBoxes();
         PreferencesUpdate().updateString('accountType','google');
        await  setCustomClaimToken(user);
- Hasura.insertPreferences();
+
+ Hasura.insertUser(user.displayName, user.email, 'uk');//TODO 
+  Hasura.insertPreferences();
     user.reload();
   }
   setCustomClaimToken(auth.User _user)async{

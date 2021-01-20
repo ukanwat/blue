@@ -1,8 +1,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import * as request from 'graphql-request';
+import { KoidFactory } from 'koid';
 admin.initializeApp(functions.config().firebase);
-
 export const Register = functions.auth.user().onCreate((user) => {
   const customClaims = {
     "admin": true,
@@ -17,55 +16,94 @@ export const Register = functions.auth.user().onCreate((user) => {
     .setCustomUserClaims(user.uid, customClaims)
     .then(() => {
       const metadataRef = admin.database().ref(`metadata/${user.uid}`);
-      return metadataRef.set({ refreshTime: new Date().getTime() });
+      return metadataRef.set({ refreshTime: new Date().getTime()});
     });
 });
 
 
-exports.checkAnswer = functions.https.onRequest( async (_request, response) => {
-  const client = new request.GraphQLClient('https://hasura-test-project.hasura.app/v1/graphql', {
-    headers: {
-        "content-type": "application/json",
-        "x-hasura-admin-secret": "qwertyuiop", 
-    },
-  })
+export const registerUser =  functions.https.onRequest( async (req, resp) => {
+ 
+  // const key = functions.config().registeruser.key;
+  // console.log(key);
+  // if (key === req.header('ACTION_KEY'))
+  if (true)
+   {const email = req.body.email;
+    const password = req.body.password;
+    const displayName = req.body.displayName;
+    const server = req.body.server;
+   const koid = KoidFactory({node:server,epoch:(2020-1970)*31536000*1000});
+  const uid = koid.nextBigint;
+    if (email === null || password === null || displayName === null) {
+        throw new functions.https.HttpsError("invalid-argument", 'missing information');
+    }
+    console.log(uid);
+   console.log('valid info');
+    // try {
+    //     const userRecord = await admin.auth().createUser({
+    //         email: email,
+    //         password: password,
+    //         displayName: displayName,
+    //         uid: uid.toString(),
+    //     });
+  
+    //     // const customClaims = {
+    //     //     "https://hasura.io/jwt/claims": {
+    //     //         "x-hasura-default-role": "user",
+    //     //         "x-hasura-allowed-roles": ["user"],
+    //     //         "x-hasura-user-id": uid,
+    //     //     },
+    //     // };
+  
+    //     // await admin.auth().setCustomUserClaims(userRecord.uid, customClaims);
+    //     resp.json(userRecord.toJSON());
+  
+    // } catch (e) {
+    //     throw new functions.https.HttpsError("unauthenticated", JSON.stringify(Error, undefined, 2));
+    // }
 
 
-
-  const answerID = _request.body.event.data.new.answer_id;
-  // const userID = _request.body.event.data.new.user_id;
-
-  const answerQuery = `
-  queryAnswer($answerID: uuid!) {
-      question_answers(where: {id: {_eq: $answerID}}) {
-        is_correct
-      }
-  }`;
-
-  // const incrementMutation = `
-  // mutationScore($userID: String!) {
-  //     update_users(where: {id: {_eq: $userID}}, _inc: {score: 10}) {
-  //         affected_rows
-  //     }
-  // }`;
-
-  try {
-      const data = await client.request(answerQuery, {
-          answerID: answerID,
-      })
-      
+  } 
 
 
-      const isCorrect = data["question_answers"][0]["is_correct"];
-      if (!isCorrect) {}
-          response.send("correct");
-          return;
-      // else {
-      //     await client.request(incrementMutation, { userID: userID })
-      //     response.send("correct");
-      // }
+else {
+    resp.status(400).send('Error 400: Bad key');
+}
+ 
+});
 
-  } catch (e) {
-      // throw new functions.https.HttpsError(e,'error');
-  }
+export const setCustomClaim =  functions.https.onRequest( async (req, resp) => {
+  // const key = functions.config().registeruser.key;
+  // console.log(key);
+  // if (key === req.header('ACTION_KEY'))
+  if (true)
+   {
+     
+  
+    // const uid = req.body.uid;
+    const server = req.body.server;
+    const koid = KoidFactory({node:server,epoch:(2020-1970)*31536000*1000});
+    const uid = koid.nextBigint;
+    try {
+        const customClaims = {
+            "https://hasura.io/jwt/claims": {
+                "x-hasura-default-role": "user",
+                "x-hasura-allowed-roles": ["user"],
+                "x-hasura-user-id": uid,
+            },
+        };
+  
+  await admin.auth().setCustomUserClaims(uid.toString(), customClaims);
+        resp.send('done');
+    } catch (e) {
+        throw new functions.https.HttpsError("unimplemented", JSON.stringify(Error, undefined, 2));
+    }
+
+
+  } 
+
+
+else {
+    resp.status(400).send('Error 400: Bad key');
+}
+ 
 });

@@ -24,18 +24,21 @@ class ChatInfoScreen extends StatefulWidget {
 }
 
 class _ChatInfoScreenState extends State<ChatInfoScreen> {
-  Map<String, String> peer;
+  Map peer;
   bool isMuted;
   bool isBlocked;
 
   @override
   void didChangeDependencies() {
-    peer = ModalRoute.of(context).settings.arguments as Map;
+    print( ModalRoute.of(context).settings.arguments);
+    peer = ModalRoute.of(context).settings.arguments;
+
     isMuted = PreferencesUpdate()
-        .containsInStringList('muted_messages', peer['peerId']);
+        .containsInList('muted_messages', peer['peerId']);
 
     isBlocked = PreferencesUpdate()
-        .containsInStringList('blocked_accounts', peer['peerId']);
+        .containsInList('blocked_accounts', peer['peerId']);
+
     super.didChangeDependencies();
   }
    deleteMessagesData(String peerId, DateTime peerDeleteTime)async{

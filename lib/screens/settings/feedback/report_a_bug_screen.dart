@@ -3,7 +3,8 @@ import 'dart:io';
 import 'dart:ui';
 
 // Flutter imports:
-import 'package:flutter/material.dart';
+import 'package:blue/services/hasura.dart';
+import 'package:flutter/material.dart' hide Feedback;
 import 'package:flutter/services.dart';
 
 // Package imports:
@@ -59,10 +60,9 @@ class _ReportABugScreenState extends State<ReportABugScreen> {
       'manufacturer': build.manufacturer,
       'model': build.model,
       'product': build.product,
-      'platform': 'android',
+      'platform': 'Android',
       'userId': currentUser.id,
       'version': 1.0,                 //TODO
-     
         'resolution': '${window.physicalSize.height} X ${window.physicalSize.width}'
     };
   }
@@ -74,8 +74,8 @@ class _ReportABugScreenState extends State<ReportABugScreen> {
       'systemVersion': data.systemVersion,
       'model': data.model,
       'localizedModel': data.localizedModel,
-      'utsname.release:': data.utsname.release,
-      'utsname.version:': data.utsname.version,
+      'utsname.release': data.utsname.release,
+      'utsname.version': data.utsname.version,
         'platform': 'iOS',
            'userId': currentUser.id,
       'version': 1.0,                  //TODO
@@ -131,9 +131,9 @@ class _ReportABugScreenState extends State<ReportABugScreen> {
                               ),
           ),
                               InkWell(
-                                onTap: (){
+                                onTap: ()async{
                                    _deviceData['bug'] = bugController.text;
-                                  bugsRef.doc().set(_deviceData);
+                                  Hasura.insertFeedback(Feedback.bug, _deviceData);
                                   Navigator.of(context).pop();
                                 },
                                                               child: Container(
@@ -152,7 +152,6 @@ class _ReportABugScreenState extends State<ReportABugScreen> {
           ),
                               ),
                     Container(
-            
             width: double.infinity,
             child: Center(
               child: Text('Your feedback will be used to help us better understand your experience and improve the app features.',style: TextStyle(
@@ -162,7 +161,6 @@ class _ReportABugScreenState extends State<ReportABugScreen> {
             ),
           margin: EdgeInsets.symmetric(vertical: 20,horizontal: 14),
           ),
-
         ],
       ),
     );

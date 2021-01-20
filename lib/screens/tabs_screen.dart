@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:blue/screens/settings/general/drafts_screen.dart';
 import 'package:blue/services/auth_service.dart';
+import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -43,6 +44,17 @@ class _TabsScreenState extends State<TabsScreen> {
 
   @override
   void didChangeDependencies() {
+    if(Hasura.jwtToken == null){
+AuthService().firebaseAuth.authStateChanges().first.then((user) {
+        user.getIdToken(true).then((token) {
+          setState(() {
+             Hasura.jwtToken = token;
+          });
+         
+        });
+      });
+    }
+    
     Timer.periodic(Duration(minutes: 29), (Timer t) {
       AuthService().firebaseAuth.authStateChanges().first.then((user) {
         user.getIdToken(true).then((token) {
@@ -58,6 +70,7 @@ class _TabsScreenState extends State<TabsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print(currentUser.id);
     return Scaffold(
       key: scaffoldKey,
       body: Hasura.jwtToken == null
@@ -72,7 +85,7 @@ class _TabsScreenState extends State<TabsScreen> {
                 Container(),
                 CommunicationTabbarScreen(),
                 ProfileScreen(
-                  profileId: currentUser.id,
+                  profileId: Boxes.currentUserBox.get('id'),
                 ),
               ],
             ),

@@ -23,9 +23,10 @@ class _TermsOfServiceScreenState extends State<TermsOfServiceScreen> {
     return Scaffold(
       appBar: settingsHeader(context, 'Terms Of Use'),
       body: WebView(
-        initialUrl: 'https://www.scrible.app/terms/',
+        initialUrl: 'https://www.stark.social/terms',
           onWebViewCreated: (WebViewController webViewController) {
           _controller.complete(webViewController);
+          
         },
       ),
     );

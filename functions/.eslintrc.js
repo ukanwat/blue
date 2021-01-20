@@ -32,7 +32,7 @@ module.exports = {
     "constructor-super": "error",
     eqeqeq: ["warn", "always"],
     "import/no-deprecated": "warn",
-    "import/no-extraneous-dependencies": "error",
+    "import/no-extraneous-dependencies": "error", 
     "import/no-unassigned-import": "warn",
     "no-cond-assign": "error",
     "no-duplicate-case": "error",

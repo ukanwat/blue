@@ -105,7 +105,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ],
                   )),
-
               settingsSectionTitle(
                   'General',
                   Icon(
@@ -171,13 +170,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
           
-             
-
-              // Divider(
-              //   thickness: 6,
-              //   height: 20,
-              //   color: Theme.of(context).canvasColor,
-              // ),
               settingsSectionTitle(
                   'Privacy',
                   Icon(
@@ -260,12 +252,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 final Email email = Email(
                   body: Platform.isIOS
-                      ? '...\n\nScrible User ID: ${_deviceData['userId']}\nApp version: ${_deviceData['version']}\nDevice: ${_deviceData['name']}\nModel: ${_deviceData['model']}\nManufacturer: ${[
+                      ? '...\n\nStark User ID: ${_deviceData['userId']}\nApp version: ${_deviceData['version']}\nDevice: ${_deviceData['name']}\nModel: ${_deviceData['model']}\nManufacturer: ${[
                           'manufacturer'
                         ]}\nOS Version: ${_deviceData['utsname.version']}'
-                      : '...\n\nScrible User ID: ${_deviceData['userId']}\nApp version: ${_deviceData['version']}\nModel: ${_deviceData['model']}\nOS Version: ${_deviceData['version.release']}',
-                  subject: 'Scrible Support\n[Android]',
-                  recipients: ['support@scrible.app'],
+                      : '...\n\nStark User ID: ${_deviceData['userId']}\nApp version: ${_deviceData['version']}\nModel: ${_deviceData['model']}\nOS Version: ${_deviceData['version.release']}',
+                  subject: 'Stark Support\n[Android]',
+                  recipients: ['support@stark.social'],
                   isHTML: false,
                 );
 
@@ -276,12 +268,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
               ),
-          
-              // Divider(
-              //   thickness: 6,
-              //   height: 20,
-              //   color: Theme.of(context).canvasColor,
-              // ),
               settingsSectionTitle(
                   'About',
                   Icon(
