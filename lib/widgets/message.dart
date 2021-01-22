@@ -1,4 +1,6 @@
 // Flutter imports:
+import 'package:blue/services/boxes.dart';
+import 'package:blue/services/hasura.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -11,9 +13,9 @@ import 'package:image_downloader/image_downloader.dart';
 import 'package:blue/main.dart';
 
 class Message extends StatelessWidget {
-  final String idTo;
-  final String idFrom;
-  final Timestamp timestamp;
+  final int idTo;
+  final int idFrom;
+  final DateTime timestamp;
   final String message;
   final String type;
   Message({
@@ -26,17 +28,19 @@ class Message extends StatelessWidget {
 
   factory Message.fromDocument(Map doc) {
     return Message(
-      idTo: doc['idTo'],
-      idFrom: doc['idFrom'],
-      timestamp: doc['timestamp'],
-      message: doc['message'],
+      idTo: doc['recipient_id'],
+      idFrom: doc['sender_id'],
+      timestamp:   DateTime.parse(doc['created_at']),
+      message: doc['data'],
       type: doc['type'],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    bool myText = currentUser.id == idFrom;
+    bool myText = Boxes.currentUserBox.get('user_id') == idFrom;
+    print(idFrom);
+    print(message);
     return Container(
       padding: EdgeInsets.all(8),
       child: type == 'image' || type == 'gif'

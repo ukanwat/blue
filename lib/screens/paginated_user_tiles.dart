@@ -36,7 +36,7 @@ class _PaginatedUserTilesState extends State<PaginatedUserTiles> {
      addUserTiles()async{
      if(lastDoc == null ){
          dynamic  _u ;
-  _u =await Hasura.getUsers(); 
+  _u =await Hasura.getChatUsers(); 
         _userTiles =_u.map((doc) => UserTile(User(),widget.type)).toList();
          if(this.mounted)
          setState(() {
@@ -58,7 +58,7 @@ class _PaginatedUserTilesState extends State<PaginatedUserTiles> {
      }
      else{
          var _snapshot;
-  _snapshot =await Hasura.getUsers(); 
+  _snapshot =await Hasura.getChatUsers(); 
                 _userTiles.addAll(_snapshot.map((doc) => UserTile(User(),widget.type)).toList());
              
             

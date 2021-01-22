@@ -4,6 +4,8 @@ import 'dart:io';
 import 'dart:ui';
 
 // Flutter imports:
+import 'package:blue/services/functions.dart';
+import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:hasura_connect/hasura_connect.dart';
 import 'package:image/image.dart' as Im;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -38,17 +41,16 @@ enum MessageType { image, gif }
 class ChatMessagesScreen extends StatefulWidget {
   static const routeName = 'chat-messages';
   final User peerUser;
-  ChatMessagesScreen({this.peerUser});
+  final int convId;
+  ChatMessagesScreen({this.peerUser,this.convId});
   @override
   _ChatMessagesScreenState createState() => _ChatMessagesScreenState();
 }
 
 class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   var focusNode = new FocusNode();
-  List<DocumentSnapshot> data = [];
-  String groupChatId;
+  dynamic data = [];
   Map sendingStateMap = {'count': 0, 'id': {}, 'state': ''};
-  Future<QuerySnapshot> chatMessagesFuture;
   TextEditingController messageController = TextEditingController();
   DateTime lastMessageTime;
   bool loading = true;
@@ -71,13 +73,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         messageController.clear();
       });
 
-      await messagesRef.doc(groupChatId).collection(groupChatId).add({
-        'idFrom': currentUser.id,
-        'idTo': widget.peerUser.id,
-        'timestamp': dateTime,
-        'message': textMessage,
-        'type': 'text'
-      });
+      await Hasura.insertMessage(widget.peerUser.id, widget.convId,'text',textMessage);
 
       sendingStateMap['id'][dateTime.toString()] = true;
       bool valid = true;
@@ -114,20 +110,15 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
       Navigator.of(context)
           .pushNamed(GIFsScreen.routeName)
           .catchError((e) {})
-          .then((value) {
+          .then((value)async {
         if (value != null) {
           setState(() {
             sendingStateMap['id'][dateTime.toString()] = false;
             sendingStateMap['state'] = 'Sending';
             sendingStateMap['count'] = sendingStateMap['count'] + 1;
           });
-          messagesRef.doc(groupChatId).collection(groupChatId).add({
-            'idFrom': currentUser.id,
-            'idTo': widget.peerUser.id,
-            'timestamp': dateTime,
-            'message': value,
-            'type': 'gif'
-          }).then((_) {
+         Hasura.insertMessage(widget.peerUser.id, widget.convId,'gif', value.toString()).
+          then((_) {
             sendingStateMap['id'][dateTime.toString()] = true;
             bool valid = true;
             sendingStateMap['id'].forEach((k, v) {
@@ -163,6 +154,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   sendMedia() async {
     FocusScope.of(context).unfocus();
     try {
+      
       DateTime dateTime = DateTime.now();
       File image;
       var picker = ImagePicker();
@@ -177,23 +169,12 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         sendingStateMap['count'] = sendingStateMap['count'] + 1;
       });
       if (pickedFile != null) {
-        image = File(pickedFile.path); // TODO
-        String imageId = Uuid().v4();
-        final tempDir = await getTemporaryDirectory();
-        final path = tempDir.path;
-        final Im.Image imageFile = Im.decodeImage(image.readAsBytesSync());
-        final compressedImageFile = File('$path/img_$imageId.jpg')
-          ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
-        var imageUri = await FileStorage.upload(
-            'chat', 'chat_$imageId.jpg', compressedImageFile);
-        String downloadUrl = imageUri.toString();
-        messagesRef.doc(groupChatId).collection(groupChatId).add({
-          'idFrom': currentUser.id,
-          'idTo': widget.peerUser.id,
-          'timestamp': dateTime,
-          'message': downloadUrl,
-          'type': 'image'
-        });
+        image = File(pickedFile.path); 
+        print('file opened');
+      String downloadUrl = await  FileStorage.uploadImage('chat-messages', image);
+        
+        
+        await Hasura.insertMessage(widget.peerUser.id, widget.convId, 'image', downloadUrl);
         sendingStateMap['id'][dateTime.toString()] = true;
         bool valid = true;
         sendingStateMap['id'].forEach((k, v) {
@@ -225,11 +206,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
 
   @override
   void initState() {
-    if (currentUser.id.hashCode <= widget.peerUser.id.hashCode) {
-      groupChatId = '${currentUser.id}-${widget.peerUser.id}';
-    } else {
-      groupChatId = '${widget.peerUser.id}-${currentUser.id}';
-    }
+  
     addMessages();
     // getMessages();
     super.initState();
@@ -252,7 +229,6 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                     .pushNamed(ChatInfoScreen.routeName, arguments: {
                   'peerId': widget.peerUser.id,
                   'peerUsername': widget.peerUser.username,
-                  'groupChatId': groupChatId,
                   'peerImageUrl': widget.peerUser.avatarUrl,
                   'peerName': widget.peerUser.name,
                 });
@@ -452,39 +428,21 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     return "";
   }
 
-  addMessages() async {
-    QuerySnapshot _cachedMessages = await messagesRef
-        .doc(groupChatId)
-        .collection(groupChatId)
-        .orderBy('timestamp', descending: true) //         TODO
-        .get(GetOptions(source: Source.cache));
-    print('${_cachedMessages.docs.length} cached messages');
-    QuerySnapshot _snaps;
-    if (_cachedMessages.docs.length > 0) {
-      _snaps = await messagesRef
-          .doc(groupChatId)
-          .collection(groupChatId)
-          .where('timestamp',
-              isGreaterThan: _cachedMessages.docs.first.data()['timestamp'])
-          .orderBy('timestamp', descending: true)
-          .get();
-    } else {
-      _snaps = await messagesRef
-          .doc(groupChatId)
-          .collection(groupChatId)
-          .orderBy('timestamp', descending: true)
-          .limit(12)
-          .get();
-    }
-    setState(() {
-      data = [..._snaps.docs, ..._cachedMessages.docs];
-    });
+addMessages() async {
+  usersRef.snapshots();
+List messages =  await Hasura.getMessages(widget.convId);
+setState(() {
+  data = messages.reversed;
+  loading = false;
+});
+             
   }
 
+
   chatMessages() {
-    Timestamp lastTimestamp = Timestamp(0, 0);
+    DateTime lastTimestamp = DateTime.fromMicrosecondsSinceEpoch(0);
     bool showTime = false;
-    if (data == null || data.length == 0) {
+    if (loading) {
       return circularProgress();
     }
     List<Widget> messageItems = [];
@@ -525,7 +483,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     int i = 0;
     data.forEach((doc) {
       i++;
-      Message messageItem = Message.fromDocument(doc.data());
+      Message messageItem = Message.fromDocument(doc);
       if (i == 1) {
         messageItems.add(Visibility(
           visible: sendingStateMap['id'] != {},
@@ -576,11 +534,11 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
           lastMessage = '${MessageType.gif}';
         else
           lastMessage = '${messageItem.message}';
-        directMap[widget.peerUser.id] = {
-          /////////////////////////////////
+        directMap[widget.peerUser.id.toString()] = {//TODO
+          ///////////////////////////////
           'seen': true,
           'message': lastMessage,
-          'time': messageItem.timestamp.toDate().toString(),
+          'time': messageItem.timestamp.toString(),
           'mine': messageItem.idFrom == currentUser.id ? true : false,
         };
         direct = json.encode(directMap);
@@ -588,19 +546,18 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
       }
       showTime = 30 <
           lastTimestamp
-              .toDate()
-              .difference(messageItem.timestamp.toDate())
+              .difference(messageItem.timestamp)
               .inMinutes;
       if (showTime)
         messageItems.add(Container(
             padding: EdgeInsets.symmetric(vertical: 15),
             child: Center(
                 child: Text(
-              '${date(lastTimestamp.toDate())}, ${DateFormat.jm().format(lastTimestamp.toDate())}',
+              '${date(lastTimestamp)}, ${DateFormat.jm().format(lastTimestamp)}',
               style: TextStyle(color: Colors.grey, fontSize: 12),
             ))));
       bool myText = currentUser.id == messageItem.idFrom;
-      if (doc.data()['hide'] != true || myText)
+      if (doc['hide'] != true || myText)
         messageItems.add(InkWell(
             //TODO
             onLongPress: () {
@@ -619,7 +576,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
-                              'Sent on ${date(lastTimestamp.toDate())}, ${DateFormat.jm().format(lastTimestamp.toDate())}',
+                              'Sent on ${date(lastTimestamp)}, ${DateFormat.jm().format(lastTimestamp)}',
                               style: TextStyle(color: Colors.white),
                             ),
                           ),
@@ -627,35 +584,35 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                             onTap: () async {
                               Navigator.pop(context);
                               if (myText) {
-                                try {
-                                  await messagesRef
-                                      .doc(groupChatId)
-                                      .collection(groupChatId)
-                                      .doc(doc[0])
-                                      .delete();
-                                  if (messageItem.type == 'image') {
-                                    await FileStorage.delete(//TODO
-                                        messageItem.message);
-                                  }
-                                } catch (e) {
-                                  print(e);
-                                }
+                                // try {
+                                //   // await messagesRef
+                                //   //     .doc(groupChatId)
+                                //   //     .collection(groupChatId)
+                                //   //     .doc(doc[0])
+                                //   //     .delete();
+                                //   // if (messageItem.type == 'image') {
+                                //   //   await FileStorage.delete(//TODO
+                                //   //       messageItem.message);
+                                //   }
+                                // } catch (e) {
+                                //   print(e);
+                                // }
                               } else {
-                                await messagesRef
-                                    .doc(groupChatId)
-                                    .collection(groupChatId)
-                                    .doc(doc[0])
-                                    .set({'hide': true},
-                                        SetOptions(merge: true));
+                                // await messagesRef
+                                    // .doc(groupChatId)
+                                    // .collection(groupChatId)
+                                    // .doc(doc[0])
+                                    // .set({'hide': true},
+                                    //     SetOptions(merge: true));
                               }
-                              await messagesRef
-                                  .doc(groupChatId)
-                                  .collection(groupChatId)
-                                  .doc(doc[0])
-                                  .delete();
-                              setState(() {
-                                data.remove(doc);
-                              });
+                              // await messagesRef
+                              //     .doc(groupChatId)
+                              //     .collection(groupChatId)
+                              //     .doc(doc[0])
+                              //     .delete();
+                              // setState(() {
+                              //   data.remove(doc);
+                              // });
                             },
                             child: Container(
                                 padding: EdgeInsets.symmetric(
@@ -694,22 +651,37 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
             padding: EdgeInsets.symmetric(vertical: 15),
             child: Center(
                 child: Text(
-              '${date(lastTimestamp.toDate())}, ${DateFormat.jm().format(lastTimestamp.toDate())}',
+              '${date(lastTimestamp)}, ${DateFormat.jm().format(lastTimestamp)}',
               style: TextStyle(color: Colors.grey, fontSize: 12),
             ))));
       }
     });
     return Scrollbar(
-      thickness: 4,
+      thickness: 2,
       radius: Radius.circular(5),
       child: ListView.builder(
-        padding: EdgeInsets.only(top: 0, left: 0, right: 0, bottom: 70),
-        itemBuilder: (_, i) {
-          return messageItems[i];
-        },
-        itemCount: messageItems.length,
-        reverse: true,
-      ),
+            padding: EdgeInsets.only(top: 0, left: 0, right: 0, bottom: 70),
+            itemBuilder: (_, i) {
+              if(i == 0){
+                return StreamBuilder(
+                    stream: Hasura.subscribeMessages(widget.convId, lastMessageTime).asStream()
+                    ,
+                  builder: (context, snap){
+                    print('snap ${snap.data.toString()}');
+ return Column(mainAxisSize: MainAxisSize.min,
+                children: [Container()],
+                );
+                },
+              
+                ); 
+               
+              }
+              return messageItems[i-1];
+            },
+            itemCount: messageItems.length+1,
+            reverse: true,
+          ),
+    
     );
   }
 }

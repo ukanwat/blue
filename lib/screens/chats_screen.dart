@@ -46,9 +46,16 @@ class _ChatsScreenState extends State<ChatsScreen>
     super.initState();
   }
   getUserTiles()async{
-     dynamic data = await Hasura.getUsers();
+     dynamic data = await Hasura.getConversations();
        
         data.forEach((doc) {
+          int convId = doc['conv_id'];
+          print('convId: $convId');
+          if(doc['user1']['user_id'] == Hasura.getUserId()){
+            doc = doc['user2'];
+          }else{
+ doc = doc['user1'];
+          }
           print(doc);
           User user = User.fromDocument({
             'avatar_url':doc['avatar_url'],
@@ -61,7 +68,7 @@ class _ChatsScreenState extends State<ChatsScreen>
       OpenContainer<bool>(
               transitionType: ContainerTransitionType.fadeThrough,
               openBuilder: (BuildContext _, VoidCallback openContainer) {
-                return ChatMessagesScreen(peerUser:user);
+                return ChatMessagesScreen(peerUser:user,convId: convId,);
               },
               onClosed: null,
               tappable: false,

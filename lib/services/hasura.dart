@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:hasura_connect/hasura_connect.dart';
 
 enum Stat { upvotes, downvotes, saves, shares, comments }
@@ -8,7 +11,7 @@ enum Feedback{
 }
 class Hasura {
   static String jwtToken;
-  static const String url = 'https://hasura-test-project.hasura.app/v1/graphql';
+  static const String url = 'https://stark-development.hasura.app/v1/graphql';
   static HasuraConnect hasuraConnect = HasuraConnect(
     url,
     headers: {
@@ -17,6 +20,9 @@ class Hasura {
   );
 
   static getUserId({String uid}) async {
+     if(Boxes.currentUserBox.get('user_id') != null){
+           return Boxes.currentUserBox.get('user_id');
+     } 
     if (uid == null) {
       uid = AuthService().getCurrentUID();
     }
@@ -54,7 +60,8 @@ class Hasura {
       String website,
       String headerUrl,
       String photoUrl,
-      String avatarUrl}) async {
+      String avatarUrl,
+      String token}) async {
        int  userId = Boxes.currentUserBox.get('user_id');
       if (userId == null) {
         String uid = AuthService().getCurrentUID();
@@ -88,6 +95,9 @@ class Hasura {
     }
     if (avatarUrl != null) {
       fields = fields + 'avatar_url: "$avatarUrl",';
+    }
+      if (token != null) {
+      fields = fields + 'token: "$token",';
     }
 
     String _doc =
@@ -432,7 +442,7 @@ print(field);
    }""");
   }
 
-static getUsers()async{
+static getChatUsers()async{
   var data = await hasuraConnect.query("""query{
   users{
     avatar_url
@@ -443,5 +453,72 @@ static getUsers()async{
 }""");
 return data['data']['users'];
 } 
+
+static insertMessage(int peerId,int convId,String type,String data)async{
+  if(type != 'text'&&type !='image'&&type !='gif') {
+       return;
+  }
+   var userId = Boxes.currentUserBox.get('user_id');
+    if (userId == null) {
+      userId = await getUserId();
+    }
+  await hasuraConnect.mutation("""mutation{
+  insert_messages_one(object:{data:"$data",sender_id:$userId,recipient_id:$peerId,conv_id:$convId,type:"$type"}){created_at}
+}""");
+}
+static getConversations()async{
+     var userId = Boxes.currentUserBox.get('user_id');
+    if (userId == null) {
+      userId = await getUserId();
+    }
+     var data = await hasuraConnect.query("""query{
+  conversations(where: {_or: [{user1_id: {_eq: $userId}}, {user2_id: {_eq: $userId}}]}) {
+    conv_id
+    user1{
+      user_id
+      name
+      username
+      avatar_url
+    }
+    user2{
+       user_id
+      name
+      username
+      avatar_url
+    }
+  }
+}
+""");
+return data['data']['conversations'];
+  
+}
+static getMessages(int convId)async{
+   var data = await hasuraConnect.query("""query{
+  messages(where:{conv_id:{_eq:$convId}}){
+    created_at
+    data
+    msg_id
+    sender_id
+    recipient_id
+    type
+  }
+}
+""");
+return data['data']['messages'];
+}
+static Future<Snapshot<dynamic>> subscribeMessages(int convId, DateTime lastTime){
+
+  var snap = hasuraConnect.subscription("""subscription{
+  messages(where:{_and:[{conv_id:{_eq:$convId}},{created_at:{_gt:$lastTime}}]},){
+    created_at
+    data
+    msg_id
+    sender_id
+    recipient_id
+    type
+  }
+}""",);
+return snap;
+ }
 
 }

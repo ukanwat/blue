@@ -77,6 +77,9 @@ class PreferencesUpdate {
   String getString(
     String key,
   ) {
+    if(!Boxes.preferenceBox.containsKey('token')){
+         return null;
+    }
     return  Boxes.preferenceBox.get(key);
   }
 

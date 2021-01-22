@@ -6,7 +6,9 @@ import 'dart:io';
 // Flutter imports:
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
+import 'package:blue/services/push_notifications.dart';
 import 'package:blue/widgets/progress.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,7 +17,6 @@ import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -84,13 +85,6 @@ void main() async {
     await getPreferences();
   }
 
-
-  try {
-     if(userSignedIn){  uploadTagsInfo();
-  }
-  
-  } catch (e) {}
-  
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       systemNavigationBarColor: Colors.black,
       systemNavigationBarDividerColor: Colors.grey[900],
@@ -126,44 +120,6 @@ return;
   PreferencesUpdate().updateBool('votes_downloaded', true);
 }
 
-uploadTagsInfo() {
-  DateTime nowTime = DateTime.now();
-  String _nowMonth =
-      nowTime.month < 10 ? '0${nowTime.month}' : '${nowTime.month}';
-  String _nowDay = nowTime.day < 10 ? '0${nowTime.day}' : '${nowTime.day}';
-  DateTime todayTime = DateTime.parse("${nowTime.year}-$_nowMonth-$_nowDay");
-  Map openedTagsMap = {};
-  try {
-    String openedTagsInfo = PreferencesUpdate().getString('tags_open_info');
-
-    if (openedTagsInfo == null) {
-      PreferencesUpdate().updateString('tags_open_info', json.encode({}));
-    } else
-      openedTagsMap = json.decode(openedTagsInfo);
-  } catch (e) {}
-
-  print(todayTime);
-  String lastTagsInfoUploaded =
-      PreferencesUpdate().getString('last_tags_info_uploaded');
-  if (lastTagsInfoUploaded == null) {
-    PreferencesUpdate()
-        .updateString('last_tags_info_uploaded', DateTime.now().toString());
-    lastTagsInfoUploaded =
-        PreferencesUpdate().getString('last_tags_info_uploaded');
-  }
-  if (!todayTime.isAtSameMomentAs(DateTime.parse(lastTagsInfoUploaded))) {
-    openedTagsMap.forEach((key, value) {
-      if (DateTime.parse(key)
-          .isAtSameMomentAs(DateTime.parse(lastTagsInfoUploaded))) {
-        openedTagsRef.doc(currentUser.id).set(
-            {DateTime.parse(key).toString(): value}, SetOptions(merge: true));
-      }
-    });
-    PreferencesUpdate()
-        .updateString('last_tags_info_uploaded', todayTime.toString());
-  }
-}
-
 Future getPreferences() async {
   if (PreferencesUpdate().getStringList('followed_tags') == null) {
     await PreferencesUpdate().updateStringList('followed_tags', []);
@@ -192,13 +148,40 @@ class MyApp extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     return MyAppState();
+
   }
 }
 
 class MyAppState extends State<MyApp> {
+   
+    @override
+  void initState() {
+    
+    
+     PushNotificationsManager().init();
+  //   var androidInitialize = new AndroidInitializationSettings('@mipmap/ic_launcher');
+  // var iOSinitialize = new IOSInitializationSettings();
+  // var initilizationsSettings = InitializationSettings(android:androidInitialize,iOS: iOSinitialize);
+  // fltrNotification = new FlutterLocalNotificationsPlugin();
+  // fltrNotification.initialize(initilizationsSettings,
+  //     onSelectNotification: notificationSelected);
+    super.initState();
+  }
+Future _showNotification()async{
+  // var androidDetails = new AndroidNotificationDetails(
+  //     "Channel ID", "Desi programmer", "This is my channel",
+  //     importance: Importance.max);
+  // var iOSDetails = new IOSNotificationDetails();
+  // var generalNotificationDetails =
+  //     new NotificationDetails(android:androidDetails,iOS: iOSDetails);
+
+  //  await fltrNotification.show(
+  //      0, "Task", "You created a Task", 
+  //      generalNotificationDetails, payload: "Task");
+}
   @override
   Widget build(BuildContext context) {
-   
+   _showNotification();
     return ChangeNotifierProvider(
       create: (_) => ThemeNotifier(context),
       child: Consumer<ThemeNotifier>(
@@ -405,9 +388,17 @@ class MyAppState extends State<MyApp> {
       ),
     );
   }
+ Future notificationSelected(String payload) async {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text("Notification Clicked $payload"),
+        ),
+      );
+    }
 }
 class HomeController extends StatelessWidget {
-
+  
   @override
   Widget build(BuildContext context) {
     Boxes.currentUserBox.put('id', 9);
