@@ -118,9 +118,29 @@ class Message extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(3),
                                   child: CachedNetworkImage(
                                     imageUrl: message,
-                                    placeholder: (context, url) => Padding(
-                                      padding: const EdgeInsets.all(50.0),
-                                      child: new CircularProgressIndicator(),
+                                    placeholder: (context, url) => Center(
+                                      child: Row(mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(height: 5,
+                                        margin: EdgeInsets.all(5),
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context).iconTheme.color,
+                                          shape: BoxShape.circle),
+                                        ),
+                                         Container(height: 5,
+                                         margin: EdgeInsets.all(5),
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context).iconTheme.color.withOpacity(0.8),
+                                          shape: BoxShape.circle),
+                                        )
+                                        , Container(height: 5,
+                                         margin: EdgeInsets.all(5),
+                                        decoration: BoxDecoration(
+                                          color:Theme.of(context).iconTheme.color.withOpacity(0.4),
+                                          shape: BoxShape.circle),
+                                        )
+                                      ],
+                                      ),
                                     ),
                                     errorWidget: (context, url, error) =>
                                         Padding(

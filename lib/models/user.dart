@@ -8,7 +8,7 @@ final String username;
 final String email;
 final String photoUrl;
 final String name;
-final String bio;
+final String about;
 final String website;
 final String headerUrl;
 final String avatarUrl;
@@ -18,7 +18,7 @@ User({
   this.email,
   this.photoUrl,
   this.name,
-  this.bio,
+  this.about,
   this.website,
   this.headerUrl,
   this.avatarUrl
@@ -31,7 +31,7 @@ factory User.fromDocument(Map doc){
     username: doc['username'],
     photoUrl: doc['photo_url'],
     name: doc['name'],
-    bio: doc['bio'],
+    about: doc['about'],
     website: doc['website'],
     headerUrl: doc['header_url'],
     avatarUrl: doc['avatar_url'],

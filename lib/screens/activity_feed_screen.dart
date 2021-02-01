@@ -10,6 +10,7 @@ import 'package:blue/widgets/empty_state.dart';
 import '../widgets/activity_feed_item.dart';
 import '../widgets/progress.dart';
 import './home.dart';
+import '../services/hasura.dart';
 
 class ActivityFeedScreen extends StatefulWidget {
   @override
@@ -19,11 +20,26 @@ class ActivityFeedScreen extends StatefulWidget {
 class _ActivityFeedScreenState extends State<ActivityFeedScreen>
     with AutomaticKeepAliveClientMixin<ActivityFeedScreen> {
   List<ActivityFeedItem> data = [];
-  Timestamp timestamp = Timestamp.fromDate(DateTime.utc(2019));
+   DateTime time =DateTime.utc(2019);
   bool loading = true;
 
-  cachedFeed() async {
-    
+  getFeed() async {
+    List feedData =await Hasura.getActivityFeed();
+  data =feedData.map((doc) => ActivityFeedItem.fromDocument({
+    "username": doc['data']['username'],
+        "userId": doc['data']['user_id'],
+        "displayName": doc['data']['name'],
+        "type": doc['action'],
+        "title": doc['data']['title'],
+        "postId": doc['data']['post_id'],
+        "userProfileImg": doc['data']['image_url'],
+        "commentData": doc['data']['text'],
+        "timestamp": doc['created_at'],
+  
+  })).toList();
+  setState(() {
+    loading = false;
+  });
   }
    refreshFeed()async{
          
@@ -35,21 +51,17 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen>
 
 @override
   void initState() {
-    cachedFeed();
+    getFeed();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    // return StreamBuilder(
-    //       stream: await activityStream(),
-    //       builder: (context, snapshot){
     if (loading == true) {
       return circularProgress();
     }
     if (data.length == 0) {
-      //TODO
       return emptyState(context, 'No notifications yet', 'No messages',
           subtitle:
               'Stay tuned! Notifications about your activity will show up here');
@@ -57,11 +69,13 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen>
     return RefreshIndicator(
       onRefresh: ()async {
        await refreshFeed();
-        
       },
 
-          child: ListView(
-        children: data,
+          child: ListView.builder(
+            itemBuilder: (context,i){
+return data[i];
+            },
+            itemCount: data.length,
       ),
     );
   }

@@ -139,7 +139,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
       setState(() {
     posts = _snapshot
-          .map((doc) => Post.fromDocument(doc, isCompact: false,commentsShown: false,hasura: true,))
+          .map((doc) => Post.fromDocument(doc, isCompact: false,commentsShown: false,))
           .toList();
       });
 
@@ -159,7 +159,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     } else {
          var _snapshot = await Hasura.getPosts(length,lastDoc,"{created_at:desc}",where: _where);
       _snapshot.forEach((doc) {
-        posts.add(Post.fromDocument(doc,isCompact: false,commentsShown: false,hasura: true,));
+        posts.add(Post.fromDocument(doc,isCompact: false,commentsShown: false,));
       });
 
       if (_snapshot.length < length) {
@@ -329,6 +329,14 @@ class _ProfileScreenState extends State<ProfileScreen>
         }
         User user = User.fromDocument(snapshot.data['data']['users_by_pk'] );
        print(snapshot.data['data']['users_by_pk']);
+       Boxes.currentUserBox.put('avatar_url', user.avatarUrl);
+        Boxes.currentUserBox.put('about', user.about);
+         Boxes.currentUserBox.put('email', user.email);
+          Boxes.currentUserBox.put('header_url', user.headerUrl);
+           Boxes.currentUserBox.put('name', user.name);
+            Boxes.currentUserBox.put('photo_url', user.photoUrl);
+             Boxes.currentUserBox.put('username', user.username);
+              Boxes.currentUserBox.put('website', user.website);
         _profileUser = user;
         profileName = user.name;
         return Container(
@@ -444,7 +452,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       ),
                       Padding(
                         padding: const EdgeInsets.only(left: 20),
-                        child: Text(user.bio?? '',
+                        child: Text(user.about?? '',
                             style: TextStyle(
                               fontSize: 16,
                             )),

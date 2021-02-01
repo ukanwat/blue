@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 // Flutter imports:
+import 'package:blue/services/hasura.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -39,39 +40,29 @@ class _TagsWrapState extends State<TagsWrap> {
  
   getFollowedTags() async {
     tags =  PreferencesUpdate().getStringList('followed_tags');
-print(tags);
-    Map priorityInfo = json.decode(PreferencesUpdate().getString('tags_open_info'));
-    SortedMap priorityMap = new SortedMap(Ordering.byValue());
-    if (priorityInfo != null) {
-      priorityInfo.forEach((key, value) {
-        value.forEach((k, v) {
-          if (tags.contains(k)) {
-            if (priorityMap[k] == null) {
-              priorityMap[k] = v;
-            } else {
-              priorityMap[k] = priorityMap[k] + v;
-            }
-          }
-        });
-      });
+    if(tags.length == 0 || tags == null) {
+     dynamic tagsData =  await Hasura.getFollowedTags();
+     print(tagsData);
+     tagsData.forEach((tag) { 
+       tags.add(tag['label']);
+     });
+  
+       
     }
 
-    List sortedPriorityList = priorityMap.keys.toList();
-    print(priorityInfo);
     setState(() {
       tagLoading = false;
 
-      for (int i = 0; i < sortedPriorityList.length; i++) {
+      for (int i = 0; i < tags.length; i++) {
         tagChips.add(InkWell(
           onTap: () async {
             Navigator.of(context).pushNamed(TagScreen.routeName,
-                arguments: sortedPriorityList[i]);
-           tagsInfoUpdate(sortedPriorityList, i);
+                arguments: tags[i]);
           },
           child: Chip(
             padding: EdgeInsets.all(12),
             label: Text(
-              sortedPriorityList[i],
+              tags[i],
               style: TextStyle(
                   color: Theme.of(context).iconTheme.color, fontSize: 18),
             ),
@@ -82,8 +73,8 @@ print(tags);
         tagListTiles.add(InkWell(
           onTap: () async {
         Navigator.of(context).pushNamed(TagScreen.routeName,
-                arguments: sortedPriorityList[i]);
-            tagsInfoUpdate(sortedPriorityList, i);
+                arguments: tags[i]);
+            tagsInfoUpdate(tags, i);
           },
           child: Container(
             alignment: Alignment.center,
@@ -91,7 +82,7 @@ print(tags);
             margin: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
             padding: EdgeInsets.all(12),
             child: Text(
-              sortedPriorityList[i],
+              tags[i],
               style: TextStyle(
                   color: Theme.of(context).iconTheme.color, fontSize: 18),
             ),

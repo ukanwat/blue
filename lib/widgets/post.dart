@@ -49,7 +49,7 @@ enum CompactPostThumbnailType {
 enum Vote { down, up, none }
 
 class Post extends StatefulWidget {         
-  final String postId;
+  final int postId;
   final dynamic ownerId;
   final String username;
   final String photoUrl;
@@ -65,7 +65,6 @@ class Post extends StatefulWidget {
   final bool isCompact;
   final bool commentsShown;
   final dynamic time;
-  final bool hasura;
   final int comments;
   final int saves;
   final int shares;
@@ -88,20 +87,17 @@ class Post extends StatefulWidget {
       this.isCompact,
       this.commentsShown, // this.postInteractions
       this.time,
-      this.hasura,
       this.comments,
       this.saves,
       this.shares
       });
 
   factory Post.fromDocument(Map doc,
-      {bool isCompact, bool commentsShown, bool hasura}) {
+      {bool isCompact, bool commentsShown,}) {
     if (isCompact == null) isCompact = false;
     if (commentsShown == null) commentsShown = false;
-    hasura = hasura ?? false;
     Map data = {};
     List _tags = [];
-    if (hasura) {
       var list = doc['contents'];
       int i = 0;
       list.forEach((element) {
@@ -114,26 +110,25 @@ class Post extends StatefulWidget {
           _tags.add(element['tag']['tag']);
         });
       }
-    }
+    
     List<dynamic> stats = doc['post_stats'];
     return Post(
-      postId: doc[hasura ? 'post_id' : 'postId'],
-      ownerId: doc[hasura ? 'owner_id' : 'ownerId'],
-      username: hasura ? doc['user']['username'] : doc['username'],
-      photoUrl: hasura ? doc['user']['avatar_url'] : doc['photoUrl'],
+      postId: doc['post_id'],
+      ownerId: doc[ 'owner_id'],
+      username: doc['user']['username'],
+      photoUrl: doc['user']['avatar_url'] ,
       title: doc['title'],
-      topicName: hasura ? null : doc['topicName'],
-      topicId: hasura ? null : doc['topicId'],
-      contents: hasura ? data : doc['contents'],
-      contentsInfo: hasura ? doc['contents'] : doc['contentsInfo'],
-      upvotes: hasura ? (stats == null?0: stats.length == 0?0:stats[0]['upvotes']): doc['upvotes'],
-      downvotes: hasura ?  (stats == null?0: stats.length == 0?0:stats[0]['downvotes']): doc['downvotes'],
-      votes: hasura ? 0 : doc['votes'],
-      tags: hasura ? _tags : doc['tags'],
-      time: doc[hasura ? 'created_at' : 'timeStamp'], //TODO
+      topicName: null ,
+      topicId: null ,
+      contents: data ,
+      contentsInfo: doc['contents'],
+      upvotes: (stats == null?0: stats.length == 0?0:stats[0]['upvotes']),
+      downvotes:  (stats == null?0: stats.length == 0?0:stats[0]['downvotes']),
+      votes: 0 ,
+      tags: _tags,
+      time: doc['created_at'], //TODO
       isCompact: isCompact ?? false,
       commentsShown: commentsShown,
-      hasura: hasura,
       comments:stats == null?0: stats.length == 0?0:stats[0]['comments'],
       saves: stats == null?0: stats.length == 0?0:stats[0]['saves'],
       shares:stats == null?0:  stats.length == 0?0:stats[0]['shares'],
@@ -169,7 +164,7 @@ class _PostState extends State<Post> {
   bool isSaved = false;
   List<Widget> contentsViewList = [];
   final dynamic currentUserId = currentUser?.id;
-  final String postId;
+  final int postId;
   final dynamic ownerId;
   final String username;
   final String photoUrl;
@@ -695,11 +690,7 @@ class _PostState extends State<Post> {
           rightButtonFunction: () async {
             if (widget.ownerId != currentUser.id) return;
             // delete post itself
-            postsRef.doc(postId).get().then((doc) {
-              if (doc.exists) {
-                doc.reference.delete();
-              }
-            });
+               
             // delete uploaded image for thep ost
             // storageRef.child("post_$postId.jpg").delete();  // TODO: delete stored media
             // then delete all activity feed notifications
@@ -714,41 +705,13 @@ class _PostState extends State<Post> {
               }
             });
             // then delete all comments
-            QuerySnapshot commentsSnapshot =
-                await commentsRef.doc(postId).collection('comments').get();
-            commentsSnapshot.docs.forEach((doc) {
-              if (doc.exists) {
-                doc.reference.delete();
-              }
-            });
+           
           },
         ));
   }
 
   unvote() async {
-    if (PreferencesUpdate().getBool('votes_downloaded') == null ||
-        PreferencesUpdate().getBool('votes_downloaded') == false) {
-      QuerySnapshot query = await postsVotersRef
-          .doc(currentUser.id)
-          .collection('userVotes')
-          .where('ids', arrayContains: widget.postId)
-          .limit(1)
-          .get();
-      List<String> ids = query.docs.first.data()['ids'];
-      List<bool> votes = query.docs.first.data()['votes'];
-      int index = ids.indexOf(widget.postId);
-      votes.removeAt(index);
-      await postsVotersRef
-          .doc(currentUser.id)
-          .collection('userVotes')
-          .doc(query.docs.first.id)
-          .update({
-        'ids': FieldValue.arrayRemove([widget.postId]),
-        'votes': votes
-      });
-    } else if (PreferencesUpdate().getBool('votes_downloaded')) {
-      Boxes.voteBox.delete(widget.postId);
-    }
+  
   }
 
   getVideoThumbnail(String url) async {
@@ -866,16 +829,16 @@ class _PostState extends State<Post> {
     }
     print(contents);
     for (int i = 0; i < contents.length; i++) {
-      if (contentsInfo[widget.hasura ? i : '$i']['type'] == 'image') {
+      if (contentsInfo[i]['type'] == 'image') {
         if (thumbnailType != CompactPostThumbnailType.video) {
           thumbnailType = CompactPostThumbnailType.image;
           compactPostThumbnailData = contents['$i'];
         }
         contentsViewList.add(imageContentContainer(contents['$i'],
-            contentsInfo[widget.hasura ? i : '$i']['aspectRatio']));
-      } else if (contentsInfo[widget.hasura ? i : '$i']['type'] == 'video') {
+            contentsInfo[i]['aspectRatio']));
+      } else if (contentsInfo[i]['type'] == 'video') {
         compactPostThumbnailData =
-            contentsInfo[widget.hasura ? i : '$i']['thumbUrl'];
+            contentsInfo[i]['thumbUrl'];
         thumbnailType = CompactPostThumbnailType.video;
         _controller = VideoPlayerController.network(
           contents['$i'],
@@ -891,13 +854,13 @@ class _PostState extends State<Post> {
           contentsViewList
               .add(Container(child: VideoDisplay(flickManager, _autoplay)));
         });
-      } else if (contentsInfo[widget.hasura ? i : '$i']['type'] == 'text') {
+      } else if (contentsInfo[i]['type'] == 'text') {
         contentsViewList.add(textContentContainer(contents['$i']));
-      } else if (contentsInfo[widget.hasura ? i : '$i']['type'] == 'link') {
+      } else if (contentsInfo[i]['type'] == 'link') {
         contentsViewList.add(linkContentContainer(contents['$i']));
       } else {
         contentsViewList.add(carouselContentContainer(contents['$i'],
-            contentsInfo[widget.hasura ? i : '$i']['aspectRatio']));
+            contentsInfo[ i]['aspectRatio']));
       }
     }
     if (!widget.isCompact)
@@ -1619,7 +1582,7 @@ class _VideoContentContainerState extends State<VideoContentContainer> {
 
 class DownvoteTile extends StatefulWidget {
   final Vote vote;
-  final String postId;
+  final int postId;
   final Function callback;
   DownvoteTile(this.vote, this.postId, this.callback);
   @override
@@ -1653,6 +1616,7 @@ class DownvoteTileState extends State<DownvoteTile> {
       ),
       title: Text('Downvote'),
       onTap: () {
+        print('this is postid : ${widget.postId}' );
         PostFunctions().handleDownvoteButton(widget.postId, vote);
 
         if (vote == Vote.down) {

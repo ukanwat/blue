@@ -75,11 +75,13 @@ const notification_options = {
     timeToLive: 60 * 60 * 24,
   };
 export const messageNotification = functions.https.onRequest(async (req, resp) => {
+    console.log(req.body);
     const { event: {op, data}, table: {name, schema} } = req.body;
     console.log(name);
     console.log(schema);
     console.log(op);
     const { token, sender_id}= data.new;
+    console.log(token);
     const message = {
         notification: {
            title: 'received a new message',
@@ -87,9 +89,7 @@ export const messageNotification = functions.https.onRequest(async (req, resp) =
                },
         };
     const options =  notification_options;
-   
-    
-      admin.messaging().sendToDevice(token, message, options)
+      admin.messaging().sendToDevice("civ6SqwQSLWD0R_Bjja3yS:APA91bEtgKDtdW0ve6ZNjOBQO5PWFBO-O8yNIxJpMvpub8oqj6ISy-FRUBC9bCNd-DU8s-2PvBl60RXGubw-eo7_B5mAm-mQssuXYJEmQfWACV5iu5IAwE7rESu4b_ERMgRga-snQAbZ", message, options)
       .then( ()=>{
 
        resp.status(200).send("Notification sent successfully")

@@ -22,7 +22,7 @@ class ExploreScreen extends StatefulWidget {
 class _ExploreScreenState extends State<ExploreScreen>
     with AutomaticKeepAliveClientMixin<ExploreScreen> ,TickerProviderStateMixin{
   List<Post> posts = [];
-  List<Tab> topicTabs = [ Tab(child: Text('All',style: TextStyle(fontFamily: 'OpenSans',fontWeight: FontWeight.w600,fontSize: 16))
+  List<Tab> topicTabs = [ Tab(child: Text('Everything',style: TextStyle(fontFamily: 'OpenSans',fontWeight: FontWeight.w600,fontSize: 16))
         )];
     List<Widget> topicViews = [CategoryPostsScreen( 'All')];
  bool  loading = true; 
@@ -33,18 +33,10 @@ class _ExploreScreenState extends State<ExploreScreen>
      
 
     getTopics();
-    getExplore();
     super.initState();
   }
 
-  getExplore() async {
-    QuerySnapshot snapshot = await postsRef.limit(5).get();
-    List<Post> posts = snapshot.docs.map((doc) => Post.fromDocument(doc.data())).toList();
-    setState(() {
-      this.posts = posts;
-      loading = false;
-    });
-  }
+ 
  
    showTagsSheet() {
     showModalBottomSheet(
@@ -56,29 +48,16 @@ class _ExploreScreenState extends State<ExploreScreen>
     );
   }
   getTopics() async {
-    QuerySnapshot snapshot = await topicsRef
-        .get();
-      
-    setState(() {
-      List _topics =  snapshot.docs.first.data()['topics'];
-      print(_topics);
-      if (_topics !=  t){
-         List<Tab> _topicTabs = [];
-            List<Widget> _topicViews = [];
-      _topics.forEach((topic) {
-        _topicTabs.add(
+      t.forEach((topic) {
+        topicTabs.add(
           Tab(child: Text(topic,style: TextStyle(fontFamily: 'OpenSans',fontWeight: FontWeight.w600,fontSize: 16))
         ));
-       
-        _topicViews.add( CategoryPostsScreen( topic));
+        topicViews.add( CategoryPostsScreen( topic));
       });
-      topicViews = _topicViews;
-      topicTabs =_topicTabs;
-
-     tabController = new TabController(length: topicTabs.length , vsync: this);
-      }
-       
-    });
+      setState(() {
+            tabController = new TabController(length: t.length+1 , vsync: this);
+            loading = false;
+      });
   }
   bool get wantKeepAlive => true;
   @override

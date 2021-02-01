@@ -71,7 +71,7 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
                   tagResults = [];
                 } else {
                   print('search tag: $value');
-                  Future future = Hasura.searchTags(_searchTerm);
+                  Future future = Hasura.findTags(_searchTerm);
                   future.then((value) {
                     tagResults = value;
                   });

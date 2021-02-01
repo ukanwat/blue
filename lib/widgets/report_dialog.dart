@@ -8,7 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:blue/screens/home.dart';
 
 class ReportDialog extends StatefulWidget {
-  final String postId;
+  final int postId;
   final String postTitle;
   ReportDialog(this.postId, this.postTitle);
 
@@ -64,7 +64,6 @@ class _ReportDialogState extends State<ReportDialog> {
             SizedBox(height: 20.0),
             InkWell(
               onTap: () async {
-                 postReportsRef.doc(widget.postId).update({'abusive': FieldValue.increment(1)});
                  Navigator.of(context).pop();
               },
               child: Container(
@@ -86,7 +85,6 @@ class _ReportDialogState extends State<ReportDialog> {
             ),
             InkWell(
               onTap: () async {
-                 postReportsRef.doc(widget.postId).update({'spam': FieldValue.increment(1),});
                  Navigator.of(context).pop();
               },
               child: Container(
@@ -108,9 +106,6 @@ class _ReportDialogState extends State<ReportDialog> {
             ),
             InkWell(
               onTap: () async {
-                postReportsRef
-                    .doc(widget.postId)
-                    .update({'inappropriate': FieldValue.increment(1)});
                     Navigator.of(context).pop();
               },
               child: Container(

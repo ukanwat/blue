@@ -24,8 +24,7 @@ class PreferencesUpdate {
     bool upload,
   }) async{
     if (upload == true) {
-  await Hasura.updatePreferences(key, value);
-
+  await Hasura.updatePreferences(key, value,string: true);
     }
    await Boxes.preferenceBox.put(key, value);
     
@@ -51,9 +50,9 @@ class PreferencesUpdate {
      Boxes.preferenceBox.put(key, value);
   }
 
-  removeStringFromList(
+  removeFromList(
     String key,
-    String value,
+    dynamic value,
   ) async {
     List _list =  Boxes.preferenceBox.get(key);
     if (_list != null) {
@@ -64,13 +63,16 @@ class PreferencesUpdate {
     }
   }
 
-  addStringToList(
+  addToList(
     String key,
-    String value,
+    dynamic value,
   ) {
-    List<String> _list =  Boxes.preferenceBox.get(key);
-    if (_list == null) _list = [];
-    _list.add(value);
+    List<dynamic> _list =  Boxes.preferenceBox.get(key);
+    if (_list == null) {_list = [];}
+    if(!_list.contains(value)){
+_list.add(value);
+    }
+    
      Boxes.preferenceBox.put(key, _list);
   }
 

@@ -1,5 +1,6 @@
 import 'package:blue/main.dart';
 import 'package:blue/services/functions.dart';
+import 'package:blue/services/hasura.dart';
 import 'package:flutter/material.dart';
 class UserReportDialog extends StatefulWidget {
   final Map peer;
@@ -77,7 +78,7 @@ peer = widget.peer;
                           ),
                           InkWell(
                             onTap: () async {
-                              Functions().updateReportFirebase(peer,'spam');
+                              Functions().reportUser(peer,Report.spam);
 
                               Navigator.of(context).pop();
                             },
@@ -93,7 +94,7 @@ peer = widget.peer;
                           ),
                           InkWell(
                             onTap: () {
-                              Functions().updateReportFirebase(peer,'inappropriate');
+                              Functions().reportUser(peer,Report.inappropriate);
                               Navigator.of(context).pop();
                             },
                             child: Container(
@@ -108,7 +109,7 @@ peer = widget.peer;
                           ),
                           InkWell(
                             onTap: () {
-                              Functions().updateReportFirebase(peer,'abusive');
+                              Functions().reportUser(peer,Report.abusive);
                               Navigator.of(context).pop();
                             },
                             child: Container(

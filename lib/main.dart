@@ -92,33 +92,6 @@ void main() async {
   runApp(MyApp());
 }
 bool userSignedIn = false;
-loadVotes() async {
-  if(!userSignedIn){
-return;
-  }
-  if (PreferencesUpdate().getBool('votes_downloaded', def: false)) return;
-  QuerySnapshot query;
-  try {
-    query = await postsVotersRef
-        .doc(currentUser.id)
-        .collection('userVotes')
-        .get(GetOptions(source: Source.server));
-  } catch (e) {
-    return;
-  }
-
-  if (query.docs.length != 0)
-    query.docs.forEach((doc) {
-      List<String> ids = doc.data()['ids'];
-
-      List<bool> votes = doc.data()['votes'];
-      for (int i = 0; i < ids.length; i++) {
-        Boxes.voteBox.put(ids, votes);
-      }
-    });
-
-  PreferencesUpdate().updateBool('votes_downloaded', true);
-}
 
 Future getPreferences() async {
   if (PreferencesUpdate().getStringList('followed_tags') == null) {
@@ -154,34 +127,10 @@ class MyApp extends StatefulWidget {
 
 class MyAppState extends State<MyApp> {
    
-    @override
-  void initState() {
-    
-    
-     PushNotificationsManager().init();
-  //   var androidInitialize = new AndroidInitializationSettings('@mipmap/ic_launcher');
-  // var iOSinitialize = new IOSInitializationSettings();
-  // var initilizationsSettings = InitializationSettings(android:androidInitialize,iOS: iOSinitialize);
-  // fltrNotification = new FlutterLocalNotificationsPlugin();
-  // fltrNotification.initialize(initilizationsSettings,
-  //     onSelectNotification: notificationSelected);
-    super.initState();
-  }
-Future _showNotification()async{
-  // var androidDetails = new AndroidNotificationDetails(
-  //     "Channel ID", "Desi programmer", "This is my channel",
-  //     importance: Importance.max);
-  // var iOSDetails = new IOSNotificationDetails();
-  // var generalNotificationDetails =
-  //     new NotificationDetails(android:androidDetails,iOS: iOSDetails);
+  
 
-  //  await fltrNotification.show(
-  //      0, "Task", "You created a Task", 
-  //      generalNotificationDetails, payload: "Task");
-}
   @override
   Widget build(BuildContext context) {
-   _showNotification();
     return ChangeNotifierProvider(
       create: (_) => ThemeNotifier(context),
       child: Consumer<ThemeNotifier>(
@@ -388,14 +337,7 @@ Future _showNotification()async{
       ),
     );
   }
- Future notificationSelected(String payload) async {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          content: Text("Notification Clicked $payload"),
-        ),
-      );
-    }
+
 }
 class HomeController extends StatelessWidget {
   

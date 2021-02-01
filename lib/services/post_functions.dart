@@ -6,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/boxes.dart';
 import 'hasura.dart';
 class PostFunctions{
- handleUpvoteButton(String postId,Vote vote) async {
+ handleUpvoteButton(int postId,Vote vote) async {
    if(vote == Vote.none){
       await Hasura.insertPostVote(postId,true);
 
@@ -19,7 +19,7 @@ else{
  return;
 
   }
-   handleDownvoteButton(String postId,Vote vote) async {
+   handleDownvoteButton(int postId,Vote vote) async {
         if(vote == Vote.none){
       await Hasura.insertPostVote(postId,false);
 

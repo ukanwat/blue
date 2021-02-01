@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/services/boxes.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -70,7 +71,7 @@ bool get wantKeepAlive => true;
   Widget build(BuildContext context) {
     super.build(context);
     print(MediaQuery.of(context).viewInsets.top);
-    print(currentUser.bio);
+    print(currentUser.about);
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -89,7 +90,7 @@ bool get wantKeepAlive => true;
                   child: CircleAvatar(
                     minRadius: 22,
                     maxRadius: 22,
-                    backgroundImage: CachedNetworkImageProvider(currentUser.photoUrl??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                    backgroundImage: CachedNetworkImageProvider(Boxes.currentUserBox.get('photo_url')??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
                   ),
                 ),
                 Text(

@@ -66,7 +66,7 @@ class _SignInScreenState extends State<SignInScreen> {
           //   'photoUrl': user.photoUrl,
           //   'email': user.email,
           //   'displayName': user.displayName,
-          //   'bio': "",
+          //   'about': "",
           //   'timestamp': timestamp
           // });
      //     Navigator.of(context).pushReplacementNamed('/home');         TODO:

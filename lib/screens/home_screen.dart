@@ -101,7 +101,7 @@ OverlayEntry toggleBanner() {
   Widget build(context) {
     super.build(context);
     return Scaffold( 
-        backgroundColor: Theme.of(context).cardColor,
+        backgroundColor: Theme.of(context).backgroundColor,
         appBar: header(
           context,implyLeading: false,
           title: Text(
@@ -148,25 +148,28 @@ OverlayEntry toggleBanner() {
           centerTitle: false,
         ),
         body: PageTransitionSwitcher(
-          transitionBuilder: (
-            Widget child,
-            Animation<double> animation,
-            Animation<double> secondaryAnimation,                                                                                             
-          ) {
-            return FadeThroughTransition(
-              animation: animation,
-              secondaryAnimation: secondaryAnimation,
-              child: child,                                                                                                     
-            );
-          },
-          child: 
-          followingPosts
-              ? FollowingPostsScreen()
-              : RefreshIndicator(
-                  onRefresh: () => refreshPosts(),
-                  child:posts,
+            transitionBuilder: (
+              Widget child,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,                                                                                             
+            ) {
+              return FadeThroughTransition(
+                animation: animation,
+                secondaryAnimation: secondaryAnimation,
+                child: child,                                                                                                     
+              );
+            },
+            child: 
+            followingPosts
+                ? FollowingPostsScreen()
+                : Container(color: Theme.of(context).backgroundColor,
+                  child: RefreshIndicator(
+                      onRefresh: () => refreshPosts(),
+                      child:posts,
+                    ),
                 ),
-        ));
+          ),
+        );
   }
 }
                                                       

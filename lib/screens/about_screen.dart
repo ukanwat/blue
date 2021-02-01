@@ -1,3 +1,8 @@
+//TODO redundant screen
+
+
+
+
 // Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -124,11 +129,11 @@ class AboutScreen extends StatelessWidget {
            ),
          Padding(
            padding: const EdgeInsets.only(top: 15,left: 15,bottom: 5),
-           child: Text('Bio',style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500)),
+           child: Text('About',style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500)),
          ),
  Padding(
            padding: const EdgeInsets.only(left: 15),
-           child: Text(user.bio,style: TextStyle(fontSize: 16,)),
+           child: Text(user.about,style: TextStyle(fontSize: 16,)),
          ),
          Padding(
            padding: const EdgeInsets.only(top: 15,left: 15,bottom: 5),

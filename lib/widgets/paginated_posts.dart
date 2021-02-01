@@ -58,7 +58,7 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
        }else{
   _p =await Hasura.getPosts(widget.length<6?6:widget.length,0,widget.orderBy??"{created_at:desc}",); 
        }
-        _posts =_p.map((doc) => Post.fromDocument(doc,isCompact: widget.isCompact??false,hasura: true,)).toList();
+        _posts =_p.map((doc) => Post.fromDocument(doc,isCompact: widget.isCompact??false,)).toList();
          if(this.mounted)
          setState(() {
           
@@ -86,7 +86,7 @@ if(widget.tag!=null){
   _snapshot =await Hasura.getPosts(widget.length,0,widget.orderBy??"{created_at:desc}",); 
        }
                _snapshot.forEach((doc) { 
-                 _posts.add(Post.fromDocument(doc,isCompact: widget.isCompact??false,hasura: true,));
+                 _posts.add(Post.fromDocument(doc,isCompact: widget.isCompact??false,));
                });
              
             
@@ -115,20 +115,22 @@ if(widget.tag!=null){
           itemCount: _posts.length,
         );
     }
-    return empty? emptyState(context, "Can't find any posts ", 'none'): ListView.builder(
-      physics:AlwaysScrollableScrollPhysics(),
-      controller: _scrollController,
+    return empty? emptyState(context, "Can't find any posts ", 'none'): Container(color: Theme.of(context).backgroundColor,
+      child: ListView.builder(
+        physics:AlwaysScrollableScrollPhysics(),
+        controller: _scrollController,
 itemCount:_posts.length+1,
-      itemBuilder: (context, i) {
-        print(i);
-        if(i == _posts.length)
-        return Container(
-          height: 100,
-          child: loaded? Center(): circularProgress(),
-        );
-        return _posts.elementAt(i);
-      },
-      
+        itemBuilder: (context, i) {
+          print(i);
+          if(i == _posts.length)
+          return Container(
+            height: 100,
+            child: loaded? Center(): circularProgress(),
+          );
+          return _posts.elementAt(i);
+        },
+        
+      ),
     );
   }
 }

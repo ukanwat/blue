@@ -56,7 +56,6 @@ static Future openBoxes() async {
   draftBox =  await Hive.openBox('drafts');
   preferenceBox = await Hive.openBox('preferences');
   boxesOpened = true;
-    loadVotes();
   }catch(e){
     
   }

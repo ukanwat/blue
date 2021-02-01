@@ -22,6 +22,7 @@ import '../models/user.dart';
 import '../widgets/progress.dart';
 import './chat_messages_screen.dart';
 import './home.dart';
+import '../services/boxes.dart';
 
 class ChatsScreen extends StatefulWidget {
   @override
@@ -50,8 +51,9 @@ class _ChatsScreenState extends State<ChatsScreen>
        
         data.forEach((doc) {
           int convId = doc['conv_id'];
-          print('convId: $convId');
-          if(doc['user1']['user_id'] == Hasura.getUserId()){
+          print('convId: $convId - ${Hasura.getUserId()}');
+
+          if(doc['user1']['user_id'] == Boxes.currentUserBox.get('user_id')){
             doc = doc['user2'];
           }else{
  doc = doc['user1'];

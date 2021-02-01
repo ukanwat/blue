@@ -37,10 +37,7 @@ class _ExplorePostsScreenState extends State<ExplorePostsScreen>
  
   buildComments(Post data) {
     return StreamBuilder(
-      stream: commentsRef
-          .doc(data.postId)
-          .collection('userComments')
-          .snapshots(),
+      stream: null,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return circularProgress();
@@ -64,7 +61,7 @@ class _ExplorePostsScreenState extends State<ExplorePostsScreen>
         )];
         snapshot.data.documents.forEach(( doc) {
           print(doc);
-          comments.add(Comment.fromDocument(doc.data(),data.postId,doc.id,showReplies));
+          // comments.add(Comment.fromDocument(doc.data(),data.postId,doc.id,showReplies));
           print('d');
         });
         print(snapshot.data.documents.length);
@@ -76,15 +73,15 @@ class _ExplorePostsScreenState extends State<ExplorePostsScreen>
   }
  
   addComments(Post data) {
-    commentsRef.doc(data.postId).collection('userComments').add({
-      'username': currentUser.username,
-      'comment': commentsController.text,
-      'timeStamp': timestamp,
-      'avatarUrl': currentUser.photoUrl,
-      'userId': currentUser.id,
-      'upvotes': 0,
-      'downvotes': 0,
-    });
+    // commentsRef.doc(data.postId).collection('userComments').add({
+    //   'username': currentUser.username,
+    //   'comment': commentsController.text,
+    //   'timeStamp': timestamp,
+    //   'avatarUrl': currentUser.photoUrl,
+    //   'userId': currentUser.id,
+    //   'upvotes': 0,
+    //   'downvotes': 0,
+    // });
     // TODO data['postInteractions'].postInteractions[data['postId']] = PostInteraction( data['ownerId'], false, true, false, false);
     bool isNotPostOwner = currentUser.id == data.ownerId;
     if (isNotPostOwner) {
@@ -104,38 +101,38 @@ class _ExplorePostsScreenState extends State<ExplorePostsScreen>
   }
   addReply(Post data, String commentId,String ownerId,{String referName}){
       if(referName != null){
-   commentsRef.doc(data.postId).collection('userComments').doc(commentId).update({'replies.$timestamp': {
-            'username': currentUser.username,
-      'comment': commentsController.text,
-      'timeStamp': timestamp,
-      'avatarUrl': currentUser.photoUrl,
-      'userId': currentUser.id,
-      'upvotes': 0,
-      'downvotes': 0,
-      'referName': referName
-       },
-         'repliesWordCount': FieldValue.increment( commentsController.text.length),
-       },
+  //  commentsRef.doc(data.postId).collection('userComments').doc(commentId).update({'replies.$timestamp': {
+  //           'username': currentUser.username,
+  //     'comment': commentsController.text,
+  //     'timeStamp': timestamp,
+  //     'avatarUrl': currentUser.photoUrl,
+  //     'userId': currentUser.id,
+  //     'upvotes': 0,
+  //     'downvotes': 0,
+  //     'referName': referName
+  //      },
+  //        'repliesWordCount': FieldValue.increment( commentsController.text.length),
+  //      },
 
      
        
-       );
-      }else{
-           commentsRef.doc(data.postId).collection('userComments').doc(commentId).update({'replies.$timestamp': {
-            'username': currentUser.username,
-      'comment': commentsController.text,
-      'timeStamp': timestamp,
-      'avatarUrl': currentUser.photoUrl,
-      'userId': currentUser.id,
-      'upvotes': 0,
-      'downvotes': 0,
-       },
-         'repliesWordCount': FieldValue.increment( commentsController.text.length),
-       },
+  //      );
+  //     }else{
+      //      commentsRef.doc(data.postId).collection('userComments').doc(commentId).update({'replies.$timestamp': {
+      //       'username': currentUser.username,
+      // 'comment': commentsController.text,
+      // 'timeStamp': timestamp,
+      // 'avatarUrl': currentUser.photoUrl,
+      // 'userId': currentUser.id,
+      // 'upvotes': 0,
+      // 'downvotes': 0,
+      //  },
+      //    'repliesWordCount': FieldValue.increment( commentsController.text.length),
+      //  },
 
      
        
-       );
+      //  );
       }
     
            bool isNotPostOwner = currentUser.id == ownerId;

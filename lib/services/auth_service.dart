@@ -25,7 +25,7 @@ import 'boxes.dart';
 import 'package:blue/providers/provider_widget.dart';
 class AuthService {
   static bool verifyingEmail = false;
-  final auth.FirebaseAuth firebaseAuth = auth.FirebaseAuth.instance;
+  static final auth.FirebaseAuth firebaseAuth = auth.FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   Stream<auth.User> get onAuthStateChanged => firebaseAuth.authStateChanges();
 
@@ -171,9 +171,6 @@ currentUser = User.fromDocument(Boxes.currentUserBox.toMap());
     user.reload();
   }
   setCustomClaimToken(auth.User _user)async{
-    return;
-   var stream = metadataRef.snapshots().where((snap) => snap.docs.first.id == _user.uid);
-    await stream.first;
 Hasura.jwtToken = await  _user.getIdToken();
   }
   

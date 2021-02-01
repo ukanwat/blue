@@ -1,7 +1,20 @@
+import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+  Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {
+  if (message.containsKey('data')) {
+    // Handle data message
+    final dynamic data = message['data'];
+  }
 
+  if (message.containsKey('notification')) {
+    // Handle notification message
+    final dynamic notification = message['notification'];
+  }
+
+  // Or do other work.
+}
 class PushNotificationsManager {
 
   PushNotificationsManager._();
@@ -12,7 +25,9 @@ class PushNotificationsManager {
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   bool _initialized = false;
-
+ Future notificationSelected(String payload) async {
+     print(payload);
+    }
   Future<void> init() async {
      var token =   PreferencesUpdate().getString('token');
      if(token == null){
@@ -24,7 +39,16 @@ class PushNotificationsManager {
     if (!_initialized) {
       // For iOS request permission first.
       _firebaseMessaging.requestNotificationPermissions();
-      _firebaseMessaging.configure();
+      _firebaseMessaging.configure(  onMessage: (Map<String, dynamic> message) async {
+        print("onMessage: $message");
+      },
+      onBackgroundMessage: myBackgroundMessageHandler,
+      onLaunch: (Map<String, dynamic> message) async {
+        print("onLaunch: $message");
+      },
+      onResume: (Map<String, dynamic> message) async {
+        print("onResume: $message");
+      },);
 
       // For testing purposes print the Firebase Messaging token
       String _token = await _firebaseMessaging.getToken();

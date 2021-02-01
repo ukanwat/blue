@@ -6,6 +6,7 @@ import 'package:blue/screens/settings/general/drafts_screen.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
+import 'package:blue/services/push_notifications.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -41,11 +42,15 @@ class _TabsScreenState extends State<TabsScreen> {
     // call handle dynamic links
     await DynamicLinksService.initDynamicLinks(context);
   }
-
+@override
+  void initState() {
+    PushNotificationsManager().init();
+    super.initState();
+  }
   @override
   void didChangeDependencies() {
     if(Hasura.jwtToken == null){
-AuthService().firebaseAuth.authStateChanges().first.then((user) {
+AuthService.firebaseAuth.authStateChanges().first.then((user) {
         user.getIdToken(true).then((token) {
           setState(() {
              Hasura.jwtToken = token;
@@ -56,7 +61,7 @@ AuthService().firebaseAuth.authStateChanges().first.then((user) {
     }
     
     Timer.periodic(Duration(minutes: 29), (Timer t) {
-      AuthService().firebaseAuth.authStateChanges().first.then((user) {
+      AuthService.firebaseAuth.authStateChanges().first.then((user) {
         user.getIdToken(true).then((token) {
           Hasura.jwtToken = token;
         });

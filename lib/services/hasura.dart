@@ -2,27 +2,34 @@ import 'dart:math';
 
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
+import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hasura_connect/hasura_connect.dart';
+import 'package:hive_cache_interceptor/hive_cache_interceptor.dart';
+import './token_interceptor.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
+enum Report { abusive, spam, inappropriate }
 enum Stat { upvotes, downvotes, saves, shares, comments }
-enum Feedback{
-  suggestion,bug
-}
+enum Feedback { suggestion, bug }
+enum UserInfo { mute, block, report }
+
 class Hasura {
   static String jwtToken;
   static const String url = 'https://stark-development.hasura.app/v1/graphql';
+  static var cacheInterceptor = HiveCacheInterceptor("hasura");
   static HasuraConnect hasuraConnect = HasuraConnect(
     url,
     headers: {
       'Authorization': 'Bearer $jwtToken',
     },
+    interceptors: [TokenInterceptor(FirebaseAuth.instance),cacheInterceptor]
   );
 
   static getUserId({String uid}) async {
-     if(Boxes.currentUserBox.get('user_id') != null){
-           return Boxes.currentUserBox.get('user_id');
-     } 
+    if (Boxes.currentUserBox.get('user_id') != null) {
+      return Boxes.currentUserBox.get('user_id');
+    }
     if (uid == null) {
       uid = AuthService().getCurrentUID();
     }
@@ -46,30 +53,30 @@ class Hasura {
     String uid = AuthService().getCurrentUID();
     String _doc =
         'mutation{insert_users(objects: [{name: "$name",email: "$email",username: "$username",uid:"$uid"}]) { user_id}}';
-   var data = await hasuraConnect.mutation(
+    var data = await hasuraConnect.mutation(
       _doc,
     );
-    await Boxes.currentUserBox.put('id', data['data']['insert_users']['returning'][0]['user_id']);
+    await Boxes.currentUserBox
+        .put('id', data['data']['insert_users']['returning'][0]['user_id']);
   }
 
-  static updateUser(
-      {String name,
-      String email,
-      String username,
-      String bio,
-      String website,
-      String headerUrl,
-      String photoUrl,
-      String avatarUrl,
-      String token}) async {
-       int  userId = Boxes.currentUserBox.get('user_id');
-      if (userId == null) {
-        String uid = AuthService().getCurrentUID();
-        userId = await getUserId(uid: uid);
-      }
-        print('updating user data');
-    if (jwtToken == null) return;
-    String bioModified = bio.replaceAll("\n", "\\n"); //TODO check more
+  static updateUser( {String name,String email, String username, String about, String website,  String headerUrl, String photoUrl, String avatarUrl, String token}) async {
+    print('updating user');
+    int userId = Boxes.currentUserBox.get('user_id');
+    if (userId == null) {
+      String uid = AuthService().getCurrentUID();
+      userId = await getUserId(uid: uid);
+    }
+    print('updating user data');
+    print(jwtToken);
+    String aboutModified;
+    if (jwtToken == null) {
+      return;
+    }
+    if (about != null) {
+      aboutModified = about.replaceAll("\n", "\\n");
+    }
+    //TODO check more
 
     String fields = '';
     if (name != null) {
@@ -81,8 +88,8 @@ class Hasura {
     if (username != null) {
       fields = fields + 'username: "$username",';
     }
-    if (bio != null) {
-      fields = fields + 'bio: "$bioModified"';
+    if (about != null) {
+      fields = fields + 'about: "$aboutModified"';
     }
     if (website != null) {
       fields = fields + 'website: "$website",';
@@ -96,10 +103,10 @@ class Hasura {
     if (avatarUrl != null) {
       fields = fields + 'avatar_url: "$avatarUrl",';
     }
-      if (token != null) {
+    if (token != null) {
       fields = fields + 'token: "$token",';
     }
-
+    print(fields);
     String _doc =
         'mutation{update_users_by_pk(pk_columns: {user_id: $userId}_set:{$fields}) {name}}';
     print(_doc);
@@ -123,7 +130,7 @@ class Hasura {
     String _doc = """query{
   users_by_pk(user_id:$id){
     avatar_url
-    bio
+    about
     email
     header_url
     joined
@@ -139,7 +146,27 @@ class Hasura {
       _doc,
     );
   }
+  static getFollowedTags()async{
+    int  userId = await getUserId();
 
+    String _doc = """query{
+  users_by_pk(user_id:$userId){
+    followed_tags{
+      label
+    }
+  }
+}""";
+var data = await hasuraConnect.query(_doc);
+    return data['data']['users_by_pk']['followed_tags'];
+  }
+  static followTags(String tag)async{
+    String userId = getUserId();
+    await hasuraConnect.mutation("""mutation{
+  insert_user_followed_tags_one(object:{label:"Harry Styles",user_id:$userId}){
+    __typename
+  }
+}""");
+  }
   static insertPost(List contents, String title, {List<String> tags}) async {
     if (jwtToken == null) return;
     String uid = AuthService().getCurrentUID();
@@ -177,15 +204,21 @@ class Hasura {
     await hasuraConnect.mutation(_doc);
   }
 
-  static updatePreferences(String key, dynamic value) async {
+  static updatePreferences(String key, dynamic value,{bool string}) async {
     var userId = Boxes.currentUserBox.get('user_id');
     if (userId == null) {
       userId = await getUserId();
     }
+    string = string?? false; 
     try {
-      String field = '$key:${value == null?null: "$value"}';
-print(field);
-      hasuraConnect.mutation(
+         String field ;
+      if(!string){
+         field = '$key:${value == null ? null : "$value"}';
+      }else{
+   field = '$key:"${value == null ? null : "$value"}"';
+      }
+    
+     await hasuraConnect.mutation(
           """mutation{update_preferences_by_pk(pk_columns: {user_id: $userId}_set:{$field}) {__typename}}""");
     } catch (e) {
       insertPreferences();
@@ -193,13 +226,9 @@ print(field);
   }
 
   static insertPreferences() async {
-    int userId = Boxes.currentUserBox.get('id');
-    if (userId == null) {
-      userId = await getUserId();
-    }
-    String uid = AuthService().getCurrentUID();
+     var userId = await getUserId();
     hasuraConnect.mutation("""mutation{
-  insert_preferences_one(object:{uid:"$uid",user_id:$userId}){
+  insert_preferences_one(object:{user_id:"$userId",user_id:$userId}){
     __typename
   }
 }""");
@@ -250,12 +279,8 @@ print(field);
     return data['data']['posts'];
   }
 
-  static getTagPosts(
-    int limit,
-    int offset,
-    String orderby, {
-    String tag,
-  }) async {
+  static getTagPosts(int limit, int offset, String orderby,
+      {String tag}) async {
     print(jwtToken);
     String param = 'limit:$limit,offset:$offset';
     param = param + ',where:{tag:{_eq:"$tag"}}';
@@ -292,7 +317,7 @@ print(field);
 }""");
   }
 
-  static searchTags(String tag) async {
+  static findTags(String tag) async {
     var tagsData = await hasuraConnect.query("""query{
   tags(where: {tag: {_ilike: "%$tag%"}},order_by:{post_count:desc},limit:20) {
    tag
@@ -307,27 +332,21 @@ print(field);
     return tags;
   }
 
-  static String updateStats(Stat type, String uuid, bool inc) {
+  static String updateStats(Stat type, int id, bool inc) {          //TODO : where
     return """update_post_stats(
-   where: {id: {_eq: "$uuid"}},
+   where: {post_id: {_eq: $id}},                 
     _inc: {${type.toString().substring(5)}: ${inc ? 1 : -1}}
   ){
     affected_rows
   }""";
   }
 
-  static insertPostVote(String postId, bool up) async {
+  static insertPostVote(int postId, bool up) async {
     var userId = Boxes.currentUserBox.get('user_id');
     if (userId == null) {
       userId = await getUserId();
     }
     String string = """mutation{
-  insert_${up ? "up" : "down"}votes_one(object:{
-    post_id:"$postId",
-    user_id:$userId
-  }){
-   __typename
-  }
   ${updateStats(up ? Stat.upvotes : Stat.downvotes, postId, true)}
 }
 """;
@@ -335,7 +354,7 @@ print(field);
     await hasuraConnect.mutation(string);
   }
 
-  static deletePostVote(String postId, bool up) async {
+  static deletePostVote(int postId, bool up) async {
     var userId = Boxes.currentUserBox.get('user_id');
     if (userId == null) {
       userId = await getUserId();
@@ -359,12 +378,21 @@ print(field);
     if (userId == null) {
       userId = await getUserId();
     }
-    var data = await hasuraConnect.query("""query{
-  searches(limit:$limit,order_by:{searched_at:desc},where:{user_id:{_eq:$userId}}){
+  var time =  PreferencesUpdate().getString('searches_last_cleared');
+  String field;
+  if(time == null){
+field = "where:{user_id:{_eq:$userId}}";
+  }{
+field = 'where:{_and:[{user_id:{_eq:$userId}},{searched_at:{_gt:"$time"}}]}';
+  }
+ String doc = """query{
+  searches(limit:$limit,order_by:{searched_at:desc},$field){
     text
     search_id
   }
-}""");
+}""";
+print(doc);
+    var data = await hasuraConnect.query(doc);
     return data['data']['searches'];
   }
 
@@ -388,10 +416,9 @@ print(field);
 }""");
   }
 
-  static getSearchedPosts(String text) async {
+  static searchPosts(String text) async {
     dynamic data = await hasuraConnect.query("""query{
   search_posts(
-     
       args: {search: "$text"}){
     contents
     created_at
@@ -410,12 +437,13 @@ print(field);
       shares
       comments
       saves
-  }
+    }}
 }""");
-    return data['data']["search_users"];
+print(data["data"]["search_posts"]);
+    return data["data"]["search_posts"];
   }
 
-  static getSearchedUsers(String text) async {
+  static searchPeople(String text) async {
     dynamic data = await hasuraConnect.query("""query{
   search_users(
       args: {search: "$text"}){
@@ -427,23 +455,34 @@ print(field);
     return data['data']["search_users"];
   }
 
-  static getSearchedTags(String text) {}
+  static searchTags(String text)async {
+ dynamic data = await hasuraConnect.query("""query{
+  search_tags(
+      args: {search: "$text"}){
+    tag_id
+    tag
+    label}
+}""");
+    return data['data']["search_tags"];
 
- static insertFeedback(Feedback feedback,Map data)async{//TODO : fix user_id
- var userId = Boxes.currentUserBox.get('user_id');
+  }
+
+  static insertFeedback(Feedback feedback, Map data) async {
+    //TODO : fix user_id
+    var userId = Boxes.currentUserBox.get('user_id');
     if (userId == null) {
       userId = await getUserId();
     }
-   hasuraConnect.mutation("""mutation{
-     insert_${feedback.toString().substring(9)}s_one(object:{brand:"${data['brand']}",${feedback == Feedback.bug?"bug":"suggestion"}:"${data['bug']}",device:"${data['device']}",manufacturer:"${data['manufacturer']}",model:"${data['model']}",platform:"${data['platform']}",product:"${data['product']}",resolution:"${data['resolution']}",user_id:$userId,version:${data['version']},version_release:"${data['version.release']}"}){
+    hasuraConnect.mutation("""mutation{
+     insert_${feedback.toString().substring(9)}s_one(object:{brand:"${data['brand']}",${feedback == Feedback.bug ? "bug" : "suggestion"}:"${data['bug']}",device:"${data['device']}",manufacturer:"${data['manufacturer']}",model:"${data['model']}",platform:"${data['platform']}",product:"${data['product']}",resolution:"${data['resolution']}",user_id:$userId,version:${data['version']},version_release:"${data['version.release']}"}){
        __typename
      }
      
    }""");
   }
 
-static getChatUsers()async{
-  var data = await hasuraConnect.query("""query{
+  static getChatUsers() async {
+    var data = await hasuraConnect.query("""query{
   users{
     avatar_url
     name
@@ -451,27 +490,29 @@ static getChatUsers()async{
     username
   }
 }""");
-return data['data']['users'];
-} 
-
-static insertMessage(int peerId,int convId,String type,String data)async{
-  if(type != 'text'&&type !='image'&&type !='gif') {
-       return;
+    return data['data']['users'];
   }
-   var userId = Boxes.currentUserBox.get('user_id');
+
+  static insertMessage(int peerId, int convId, String type, String data) async {
+    if (type != 'text' && type != 'image' && type != 'gif') {
+      return;
+    }
+
+    var userId = Boxes.currentUserBox.get('user_id');
     if (userId == null) {
       userId = await getUserId();
     }
-  await hasuraConnect.mutation("""mutation{
+    await hasuraConnect.mutation("""mutation{
   insert_messages_one(object:{data:"$data",sender_id:$userId,recipient_id:$peerId,conv_id:$convId,type:"$type"}){created_at}
 }""");
-}
-static getConversations()async{
-     var userId = Boxes.currentUserBox.get('user_id');
+  }
+
+  static getConversations() async {
+    var userId = Boxes.currentUserBox.get('user_id');
     if (userId == null) {
       userId = await getUserId();
     }
-     var data = await hasuraConnect.query("""query{
+    var data = await hasuraConnect.query("""query{
   conversations(where: {_or: [{user1_id: {_eq: $userId}}, {user2_id: {_eq: $userId}}]}) {
     conv_id
     user1{
@@ -489,11 +530,11 @@ static getConversations()async{
   }
 }
 """);
-return data['data']['conversations'];
-  
-}
-static getMessages(int convId)async{
-   var data = await hasuraConnect.query("""query{
+    return data['data']['conversations'];
+  }
+
+  static getMessages(int convId) async {
+    var data = await hasuraConnect.query("""query{
   messages(where:{conv_id:{_eq:$convId}}){
     created_at
     data
@@ -504,11 +545,13 @@ static getMessages(int convId)async{
   }
 }
 """);
-return data['data']['messages'];
-}
-static Future<Snapshot<dynamic>> subscribeMessages(int convId, DateTime lastTime){
+    return data['data']['messages'];
+  }
 
-  var snap = hasuraConnect.subscription("""subscription{
+  static Future<Snapshot<dynamic>> subscribeMessages(
+      int convId, DateTime lastTime) {
+    var snap = hasuraConnect.subscription(
+      """subscription{
   messages(where:{_and:[{conv_id:{_eq:$convId}},{created_at:{_gt:$lastTime}}]},){
     created_at
     data
@@ -517,8 +560,178 @@ static Future<Snapshot<dynamic>> subscribeMessages(int convId, DateTime lastTime
     recipient_id
     type
   }
-}""",);
-return snap;
- }
+}""",
+    );
+    return snap;
+  }
+
+  static getActivityFeed({DateTime lastTime}) async {
+    int userId = await getUserId();
+    String where = '{user_id:{_eq:$userId}}';
+    if (lastTime != null) {
+      where = "{_and:[{user_id:{_eq:$userId}},{created_at:{_gt:$lastTime}}]}";
+    }
+    print("""query{
+  activity_feed(where:$where,order_by:{created_at:desc}){
+    created_at
+    data
+  }
+}""");
+    var data = await hasuraConnect.query("""query{
+  activity_feed(where:$where,order_by:{created_at:desc}){
+    created_at
+    data
+  }
+}
+""");
+    return data['data']['activity_feed'];
+  }
+
+  static muteUser(int peerId) async {
+    int id = await getUserId();
+
+    hasuraConnect.mutation("""mutation{
+  insert_user_mutes_one(object:{user_id:$id,muted_user_id:$peerId}){user_id
+  }
+}""");
+  }
+
+  static reportUser(int peerId, Report type) async {
+    int id = await getUserId();
+
+    hasuraConnect.mutation("""mutation{
+  insert_user_reports_one(object:{user_id:$id,reported_user_id:$peerId,${type.toString().substring(7)}:true},on_conflict:{
+    constraint:user_reports_pkey,
+    update_columns:[${type.toString().substring(7)}]
+  }){user_id
+  }
+}
+""");
+  }
+
+  static blockUser(int peerId) async {
+    int id = await getUserId();
+
+    hasuraConnect.mutation("""mutation{
+  insert_user_blocks_one(object:{user_id:$id,blocked_user_id:$peerId}){user_id
+  }
+}""");
+  }
+
+  static Future<bool> checkUserInfo(int id, UserInfo info) async {
+    var userId = await getUserId();
+    var c = await hasuraConnect.query("""query{
+  user_${info.toString().substring(9)}s_by_pk(${info.toString().substring(9)}${info == UserInfo.mute ? 'd' : 'ed'}_user_id:$id,user_id:$userId){
+    ${info.toString().substring(9)}${info == UserInfo.mute ? 'd' : 'ed'}_user_id
+  }
+}""");
+    print(c);
+    if (c['data']['user_${info.toString().substring(9)}s_by_pk'] == null) {
+      return false;
+    }
+    return true;
+  }
+
+  static Future<Map> checkUserAllInfo(int id) async {
+    var userId = await getUserId();
+    var c = await hasuraConnect.query("""query{
+  user_mutes_by_pk(muted_user_id:$id,user_id:$userId){
+    muted_user_id
+  }
+  user_blocks_by_pk(blocked_user_id:$id,user_id:$userId){
+    blocked_user_id
+  }
+}""");
+    Map data = {};
+    data['muted'] = c['data']['user_mutes_by_pk'] != null;
+    data['blocked'] = c['data']['user_blocks_by_pk'] != null;
+    return data;
+  }
+
+  static deleteUserInfo(int peer, UserInfo info) async {
+    int id = await getUserId();
+    print("""mutation{
+  delete_user_${info.toString().substring(9)}s_by_pk(user_id:$id,muted_user_id:$peer){
+__typename
+  }
+}""");
+    await hasuraConnect.mutation("""mutation{
+  delete_user_${info.toString().substring(9)}s_by_pk(user_id:$id,${info.toString().substring(9)}${info == UserInfo.mute ? 'd' : 'ed'}_user_id:$peer){
+__typename
+  }
+}""");
+  }
+
+  static insertComment(dynamic postId,String comment)async{
+    int userId = await getUserId();
+  dynamic data =  await hasuraConnect.mutation("""mutation{
+  insert_comments_one(object:{data:"$comment",post_id:$postId,user_id:$userId}){
+      avatar_url
+    comment_id
+    created_at
+    data
+    post_id
+    user_id
+  }
+}
+""");
+return data['data']['insert_comments_one'];
+  }
+  static insertCommentReply(dynamic postId,int commentId,String text)async{
+     int userId = await getUserId();
+  var data = await  hasuraConnect.mutation("""mutation{
+  insert_comment_replies_one(object:{comment_id:$commentId,userId:$userId,data:"$text"}){
+     avatar_url
+    comment_id
+    created_at
+    data
+     reply_id
+    user_id
+  }
+}""");
+return data['data']['insert_comment_replies_one'];
+  }
+  static getComments(String postId)async{
+  dynamic comments = await  hasuraConnect.query("""query{
+  comments{
+    avatar_url
+    comment_id
+    created_at
+    data
+    user_id
+    post_id
+    comment_replies{
+      avatar_url
+      comment_id
+      created_at
+      reply_id
+      user_id
+    }
+  }
+  
+}""");
+return comments['data']['comments'];
+  }
+  
+  static insertSavedPost(String name,int postId)async{
+    int userId = await getUserId();
+      await hasuraConnect.mutation("""mutation{
+  insert_saved_posts_one(
+    object:{collection:"$name",post_id:$postId,user_id:$userId}
+  ){__typename}
+}""");
+  }
+  static insertCollection(String name)async{
+    int userId = await getUserId();
+   await hasuraConnect.mutation("""mutation{
+  insert_collections_one(object:{collection:"$name",user_id:$userId}){
+    __typename
+    collection
+  }
+}""");
+
+  }
+  
+
 
 }

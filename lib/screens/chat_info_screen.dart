@@ -1,22 +1,21 @@
 // Flutter imports:
 import 'package:blue/services/functions.dart';
+import 'package:blue/services/hasura.dart';
 import 'package:blue/widgets/user_report_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
-import 'package:blue/screens/home.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/header.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:blue/widgets/show_dialog.dart';
-
+import '../widgets/progress.dart';
 class ChatInfoScreen extends StatefulWidget {
   static const routeName = 'chat-info';
   @override
@@ -27,7 +26,7 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
   Map peer;
   bool isMuted;
   bool isBlocked;
-
+   bool infoLoaded = false; 
   @override
   void didChangeDependencies() {
     print( ModalRoute.of(context).settings.arguments);
@@ -38,26 +37,24 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
 
     isBlocked = PreferencesUpdate()
         .containsInList('blocked_accounts', peer['peerId']);
-
+     checkValues();
     super.didChangeDependencies();
   }
-   deleteMessagesData(String peerId, DateTime peerDeleteTime)async{
-    var messagesToDelete =   await   messagesRef.doc(peer['groupChatId']).collection(peer['groupChatId']).where('timestamp',isLessThan: peerDeleteTime).get();
-    int times = (messagesToDelete.docs.length/400).ceil();
-    for(int i = 1; i < times ; i++){
-       WriteBatch _batch = FirebaseFirestore.instance.batch();
-         messagesToDelete.docs.sublist(400*(i-1),400*(i)).forEach((doc) { 
-       _batch.delete(doc.reference);
-     });
-        await _batch.commit();
-    }
-      WriteBatch _batch = FirebaseFirestore.instance.batch();
-         messagesToDelete.docs.sublist(400*times).forEach((doc) { 
-       _batch.delete(doc.reference);
-     });
-        await _batch.commit();
-//TODO devise a more foolproof way of deleting docs
-    //TODO delete images too from storage
+
+  checkValues()async
+{
+ var data= await Hasura.checkUserAllInfo(peer['peerId']);
+ print(data);
+ setState(() {
+isMuted = data['muted'];
+    isBlocked = data['blocked'];
+ });
+ infoLoaded = true;
+} 
+
+
+  deleteMessagesData(String peerId, DateTime peerDeleteTime)async{
+ 
    }
 
   @override
@@ -74,7 +71,7 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
         centerTitle: false,
         leadingButton: CupertinoNavigationBarBackButton(),
       ),
-      body: Column(
+      body: !infoLoaded?circularProgress(): Column(
         children: <Widget>[
           Container(
               height: 120,
@@ -107,6 +104,9 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                 )),
               ),
           settingsSwitchListTile('Mute Messages', isMuted, (newValue) async {
+            if(!infoLoaded){
+              return;
+            }
             if (newValue == true) {
               setState(() {
                 isMuted = newValue;
@@ -135,6 +135,9 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
           },);
           }, FluentIcons.chat_warning_24_regular),
           settingsActionTile(context, isBlocked ? 'Unblock' : 'Block', () {
+            if(!infoLoaded){
+              return;
+            }
             if (isBlocked) {
               setState(() {
                 isBlocked = false; 
@@ -170,26 +173,7 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                     rightButtonText: 'Delete',
                     rightButtonFunction: () async {
                       Navigator.pop(context);
-                      var _userDoc =
-                        await accountReportsRef.doc(currentUser.id).get();  // TODO dont need to get this doc (also in other cases)
-                      DateTime  nowTime =       DateTime.now();
-                       if (_userDoc.data() == null) {
-                      userReportsRef.doc(currentUser.id).set(
-                        {
-                          'deleteMessages': {peer['peerId']: nowTime}
-                        },
-                      );
-                    } else {
-                      userReportsRef.doc(currentUser.id).set({
-                        'deleteMessages': {peer['peerId']: nowTime}
-                      }, SetOptions(merge: true));
-                    } 
-                       var _peerDoc =
-                        await accountReportsRef.doc(currentUser.id).get(); 
-                     if(_peerDoc.data()['deleteMessages'][peer['peerId']] != null){
-                       DateTime peerDeleteTime = _peerDoc.data()['deleteMessages'][peer['peerId']];
-                       deleteMessagesData(peer['peerId'],peerDeleteTime,);
-                     }
+                     
                       
                     }));
           }, FluentIcons.delete_24_regular,isRed: true),

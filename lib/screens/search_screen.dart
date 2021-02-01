@@ -31,15 +31,17 @@ class _SearchScreenState extends State<SearchScreen>{
   Widget recentSearchesWidget;
   bool searching = false;
   bool resultsLoading = true; 
+  String search;
   handleSearch(String query)async {
     setState(() {
       if (!searching) {
         searching = true;
+        search = searchController.text;
       }
     // resultsLoading = true;
 
     });
-    await Hasura.insertSearch(query);
+       Hasura.insertSearch(query);
     // resultsLoading = false;
   }
   List<Widget> posts = [];
@@ -69,7 +71,7 @@ class _SearchScreenState extends State<SearchScreen>{
                     Material(
 
                                           child: InkWell(onTap: (){
-                                            PreferencesUpdate().updateString('searches_last_cleared',DateTime.now().toString(),upload: true);
+                                            PreferencesUpdate().updateString('searches_last_cleared',DateTime.now().toString(),upload: true,);//TODO  timezone problem 
                                           },
                                             child: Padding(
                           padding: EdgeInsets.all(10),
@@ -119,31 +121,18 @@ class _SearchScreenState extends State<SearchScreen>{
               tabs: [
                 Container(height: 45,
                   child: Center(
-                    child: Row(mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Icon(FluentIcons.star_16_regular),
-                        Text('Top',style: TextStyle(fontSize: 17,),)
-                      ],
-                    ),
+                    child:    Text('Top',style: TextStyle(fontSize: 17,),)
+                     
+                    
                   ),
                 ),
                  Container(height: 45,
                   child: Center(
-                  child: Row(
-                    children: [
-                       Icon(FluentIcons.person_16_regular),
-                        Text('Users',style: TextStyle(fontSize: 17,),)
-                    ],
-                  ),
+                    child:    Text('People',style: TextStyle(fontSize: 17,),)
                 ))
                 , Container(height: 45,
                   child: Center(
-                  child: Row(
-                    children: [
-                      Icon(FluentIcons.number_symbol_24_regular),
-                      Text('tags',style: TextStyle(fontSize: 17,),)
-                    ],
-                  ),)
+                 child:    Text('Tags',style: TextStyle(fontSize: 17,),),)
                 )
               ],
             ),
@@ -262,13 +251,9 @@ class _SearchScreenState extends State<SearchScreen>{
                     ],
                   ))
             : TabBarView(children: <Widget>[
-             SearchResultsScreen(SearchResultsType.posts),
-             ListView.builder(itemBuilder: (context,i){
-                return Container();
-              },itemCount: 10,),
-              ListView.builder(itemBuilder: (context,i){
-                return Container();
-              },itemCount: 10,),
+             SearchResultsScreen(SearchResultsType.posts,searchController.text,UniqueKey()),
+              SearchResultsScreen(SearchResultsType.people,searchController.text,UniqueKey()),
+            SearchResultsScreen(SearchResultsType.tags,searchController.text,UniqueKey())
             ],),
       ),
     );

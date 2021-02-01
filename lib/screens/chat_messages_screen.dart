@@ -9,6 +9,7 @@ import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
@@ -211,7 +212,15 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     // getMessages();
     super.initState();
   }
-
+Container sendButton({Function sendFunction}) {
+  return Container(margin: EdgeInsets.only(right: 4,left: 0),height: 41,
+      decoration: BoxDecoration(shape: BoxShape.circle,color: Colors.blue),
+    child: IconButton(
+      icon: Icon(FlutterIcons.send_fea,color: Colors.white,size: 26,),
+      onPressed: sendFunction,
+    ),
+  );
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -266,7 +275,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
               Container(
                 margin: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 child: ClipRRect(
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(40),
                     child: new BackdropFilter(
                       filter: new ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
                       child: Container(
@@ -274,33 +283,41 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                             ? Colors.grey.shade200.withOpacity(0.5)
                             : Colors.grey.shade700.withOpacity(0.5),
                         padding: EdgeInsets.only(
-                            bottom: 5, top: 7, left: 1, right: 1),
+                            bottom: 5, top: 5, ),
                         child: Row(
                           children: <Widget>[
                             Container(
                               child: GestureDetector(
                                   child: Container(
-                                      padding: EdgeInsets.only(left: 4),
-                                      child: Icon(
-                                        FluentIcons.image_24_filled,
-                                        size: 32,
-                                        color: Colors.deepOrange,
+                                    decoration: BoxDecoration(shape: BoxShape.circle,color:Theme.of(context).iconTheme.color==Colors.black? Colors.white:Colors.grey.shade100.withOpacity(0.2)),
+                                      margin: EdgeInsets.only(left: 5,right: 3),
+                                      child: SizedBox(
+                                             height: 40,
+                                             width: 40,
+                                                                              child: Icon(
+                                          FluentIcons.image_24_regular,
+                                          size: 32,
+                                          color:Theme.of(context).iconTheme.color==Colors.black? Colors.grey.shade700:Colors.white.withOpacity(0.8),
+                                        ),
                                       )),
                                   onTap: sendMedia),
-                            ),
-                            Container(
-                              height: 40,
-                              child: GestureDetector(
-                                  child: Padding(
-                                    padding: EdgeInsets.only(right: 5),
-                                    child: Icon(
-                                      FluentIcons.gif_24_filled,
-                                      size: 34,
-                                      color: Colors.red,
-                                    ),
-                                  ),
+                            ), GestureDetector(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      
+                                      shape: BoxShape.circle,color:Theme.of(context).iconTheme.color==Colors.black? Colors.white:Colors.grey.shade100.withOpacity(0.2)),
+                                      margin: EdgeInsets.only(right: 5),
+                                      child: SizedBox(
+                                      height: 41,
+                                      width: 41,
+                                        child: Icon(
+                                          FluentIcons.gif_24_regular,
+                                          size: 32,
+                                          color:Theme.of(context).iconTheme.color==Colors.black? Colors.grey.shade700:Colors.white.withOpacity(0.8),
+                                        ),
+                                      )),
                                   onTap: sendGIF),
-                            ),
+                            
                             Expanded(
                               child: Container(
                                 padding: EdgeInsets.only(bottom: 2),
@@ -325,7 +342,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                                     fillColor: Theme.of(context).canvasColor,
                                     filled: true,
                                     enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
+                                      borderRadius: BorderRadius.circular(25),
                                       borderSide: BorderSide(
                                         width: 0,
                                         color: Theme.of(context).cardColor,
@@ -351,6 +368,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
             ],
           ),
         ));
+        
   }
 
   String date(DateTime tm) {
@@ -497,14 +515,14 @@ setState(() {
                 Text(
                   sendingStateMap['state'],
                   style: TextStyle(
-                      fontSize: 16,
-                      color: Theme.of(context).iconTheme.color,
-                      fontWeight: FontWeight.w500),
+                      fontSize: 14,
+                      color: Theme.of(context).iconTheme.color.withOpacity(0.8),
+                      fontWeight: FontWeight.w400),
                 ),
                 if (sendingStateMap['state'] == 'Sending')
                   Container(
-                    height: 20,
-                    width: 20,
+                    height: 16,
+                    width: 16,
                     padding: const EdgeInsets.all(3.0),
                     child: CircularProgressIndicator(
                       strokeWidth: 2,

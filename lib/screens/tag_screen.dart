@@ -62,7 +62,7 @@ class _TagScreenState extends State<TagScreen> {
                             onSelected: (selectedValue) async {
                               if (selectedValue == 'Unfollow') {
                                 setState(() {
-                                  PreferencesUpdate().removeStringFromList(
+                                  PreferencesUpdate().removeFromList(
                                       'followed_tags', tag);
                                 });
                                 await followedTagsRef
@@ -81,7 +81,7 @@ class _TagScreenState extends State<TagScreen> {
 
                               setState(() {
                                 PreferencesUpdate()
-                                    .addStringToList('followed_tags', tag);
+                                    .addToList('followed_tags', tag);
                               });
                             },
                             icon: Icon(Icons.add, size: 34, color: Colors.blue),

@@ -31,8 +31,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
   Post data;
   buildComments(Post data) {
     return StreamBuilder(
-      stream:
-          commentsRef.doc(data.postId).collection('userComments').snapshots(),
+      stream:null,
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) {
           return circularProgress();
@@ -79,7 +78,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
         );
         }
         snapshot.data.docs.forEach((QueryDocumentSnapshot doc) {
-          comments.add(Comment.fromDocument(doc.data(), data.postId, doc.id, showReplies));
+          // comments.add(Comment.fromDocument(doc.data(), data.postId, doc.id, showReplies));
           print('d');
         });
         print(snapshot.data.docs.length);
@@ -91,15 +90,15 @@ class _CommentsScreenState extends State<CommentsScreen> {
   }
 
   addComments(Post data) {
-    commentsRef.doc(data.postId).collection('userComments').add({
-      'username': currentUser.username,
-      'comment': commentsController.text,
-      'timeStamp': FieldValue.serverTimestamp(),
-      'avatarUrl': currentUser.photoUrl,
-      'userId': currentUser.id,
-      'upvotes': 0,
-      'downvotes': 0,
-    });
+    // commentsRef.doc(data.postId).collection('userComments').add({
+    //   'username': currentUser.username,
+    //   'comment': commentsController.text,
+    //   'timeStamp': FieldValue.serverTimestamp(),
+    //   'avatarUrl': currentUser.photoUrl,
+    //   'userId': currentUser.id,
+    //   'upvotes': 0,
+    //   'downvotes': 0,
+    // });
     // TODO data['postInteractions'].postInteractions[data['postId']] = PostInteraction( data['ownerId'], false, true, false, false);
     bool isNotPostOwner = currentUser.id != data.ownerId;
     if (isNotPostOwner) {
@@ -120,46 +119,46 @@ class _CommentsScreenState extends State<CommentsScreen> {
 
   addReply(Post data, String commentId, String ownerId, {String referName}) {
     if (referName != null) {
-      commentsRef
-          .doc(data.postId)
-          .collection('userComments')
-          .doc(commentId)
-          .update(
-        {
-          'replies.$timestamp': {
-            'username': currentUser.username,
-            'comment': commentsController.text,
-            'timeStamp': FieldValue.serverTimestamp(),
-            'avatarUrl': currentUser.photoUrl,
-            'userId': currentUser.id,
-            'upvotes': 0,
-            'downvotes': 0,
-            'referName': referName
-          },
-          'repliesWordCount':
-              FieldValue.increment(commentsController.text.length),
-        },
-      );
+      // commentsRef
+      //     .doc(data.postId)
+      //     .collection('userComments')
+      //     .doc(commentId)
+      //     .update(
+      //   {
+      //     'replies.$timestamp': {
+      //       'username': currentUser.username,
+      //       'comment': commentsController.text,
+      //       'timeStamp': FieldValue.serverTimestamp(),
+      //       'avatarUrl': currentUser.photoUrl,
+      //       'userId': currentUser.id,
+      //       'upvotes': 0,
+      //       'downvotes': 0,
+      //       'referName': referName
+      //     },
+      //     'repliesWordCount':
+      //         FieldValue.increment(commentsController.text.length),
+      //   },
+      // );
     } else {
-      commentsRef
-          .doc(data.postId)
-          .collection('userComments')
-          .doc(commentId)
-          .update(
-        {
-          'replies.$timestamp': {
-            'username': currentUser.username,
-            'comment': commentsController.text,
-            'timeStamp': timestamp,
-            'avatarUrl': currentUser.photoUrl,
-            'userId': currentUser.id,
-            'upvotes': 0,
-            'downvotes': 0,
-          },
-          'repliesWordCount':
-              FieldValue.increment(commentsController.text.length),
-        },
-      );
+      // commentsRef
+      //     .doc(data.postId)
+      //     .collection('userComments')
+      //     .doc(commentId)
+      //     .update(
+      //   {
+      //     'replies.$timestamp': {
+      //       'username': currentUser.username,
+      //       'comment': commentsController.text,
+      //       'timeStamp': timestamp,
+      //       'avatarUrl': currentUser.photoUrl,
+      //       'userId': currentUser.id,
+      //       'upvotes': 0,
+      //       'downvotes': 0,
+      //     },
+      //     'repliesWordCount':
+      //         FieldValue.increment(commentsController.text.length),
+      //   },
+      // );
     }
 
     bool isNotPostOwner = currentUser.id == ownerId;
@@ -210,8 +209,8 @@ class _CommentsScreenState extends State<CommentsScreen> {
                   Consumer<CommentNotifier>(
                       builder: (context, CommentNotifier notifier, child) {
                     print(notifier.commentState);
-                    return Container( margin: EdgeInsets.symmetric(horizontal: 8,vertical: 6),decoration: BoxDecoration(borderRadius: BorderRadius.circular(18),border: Border.all(width: 1,color: Colors.grey.withOpacity(0.4))),
-                      child: Material(borderRadius: BorderRadius.circular(18),
+                    return Container( margin: EdgeInsets.symmetric(horizontal: 6,vertical: 6),decoration: BoxDecoration(borderRadius: BorderRadius.circular(30),border: Border.all(width: 1,color: Colors.grey.withOpacity(0.4))),
+                      child: Material(borderRadius: BorderRadius.circular(30),
                                           child: Column(mainAxisSize: MainAxisSize.min
                         ,
                           children: <Widget>[
@@ -273,15 +272,16 @@ class _CommentsScreenState extends State<CommentsScreen> {
                                     style: TextStyle(
                                         fontSize: 18,
                                         color: Theme.of(context).iconTheme.color),
-                                    maxLines: 6,
-                                    maxLength: 2000,
-                                    minLines: 1,
+                                    maxLines: 8,
+                                    maxLength: 1000,
+                                    minLines: 1,keyboardType: TextInputType.multiline,
+                                    textAlignVertical: TextAlignVertical.center,
                                     decoration: InputDecoration(
-                                      contentPadding: EdgeInsets.only(top: 5, left: 10),
+                                      contentPadding: EdgeInsets.only(top: 0, left: 10),
                                       hintText: notifier.commentState['type'],
                                       counter: Container(),
                                       hintStyle: TextStyle(
-                                          fontSize: 18,
+                                          fontSize: 18,height: 0.7,
                                           color: Theme.of(context)
                                               .iconTheme
                                               .color
@@ -289,14 +289,14 @@ class _CommentsScreenState extends State<CommentsScreen> {
                                       fillColor: Theme.of(context).cardColor,
                                       filled: true,
                                       enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(15),
+                                        borderRadius: BorderRadius.circular(18),
                                         borderSide: BorderSide(
                                           width: 0,
                                           color: Theme.of(context).cardColor,
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(15),
+                                        borderRadius: BorderRadius.circular(18),
                                         borderSide: BorderSide(
                                           width: 0,
                                           color: Theme.of(context).cardColor,
@@ -313,10 +313,10 @@ class _CommentsScreenState extends State<CommentsScreen> {
                                   child: GestureDetector(
                                     child: Container(
                                       decoration: BoxDecoration(
-                                          shape: BoxShape.circle, color: Colors.blue),
+                                          shape: BoxShape.circle, color: Colors.deepOrange),
                                       padding: EdgeInsets.all(6),
                                       child: Icon(
-                                        FlutterIcons.check_bold_mco,
+                                        FluentIcons.comment_arrow_right_20_regular,
                                         color: Colors.white,
                                       ),
                                     ),

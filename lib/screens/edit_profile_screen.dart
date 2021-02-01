@@ -38,12 +38,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool userLoaded = false;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController displayNameController = TextEditingController();
-  TextEditingController bioController = TextEditingController();
+  TextEditingController aboutController = TextEditingController();
   TextEditingController websiteController = TextEditingController();
   bool isLoading = false;
   User user;
   bool _displayNameValid = true;
-  bool _bioValid = true;
+  bool _aboutValid = true;
   String profilePictureUrl;
   String avatarUrl;
   String headerUrl;
@@ -59,7 +59,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     user = User.fromDocument(doc['data']['users_by_pk']);
     print(user.name);
     displayNameController.text = user.name;
-    bioController.text = user.bio;
+    aboutController.text = user.about;
     websiteController.text = user.website;
     setState(() {
       isLoading = false;
@@ -80,7 +80,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void dispose() {
     super.dispose();
     displayNameController.dispose();
-    bioController.dispose();
+    aboutController.dispose();
     websiteController.dispose();
   }
 
@@ -90,16 +90,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               displayNameController.text.isEmpty
           ? _displayNameValid = false
           : _displayNameValid = true;
-      bioController.text.trim().length > 300
-          ? _bioValid = false
-          : _bioValid = true;
+      aboutController.text.trim().length > 300
+          ? _aboutValid = false
+          : _aboutValid = true;
       Uri.parse(websiteController.text.trim()).isAbsolute || websiteController.text == null||websiteController.text == ''//TODO
           ? _websiteValid = true
           : _websiteValid = false;
     });
     if (croppedImage != null &&
         _displayNameValid &&
-        _bioValid &&
+        _aboutValid &&
         _websiteValid) {
       final tempDir = await getTemporaryDirectory();
       final path = tempDir.path;
@@ -133,7 +133,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (headerUrl == null) {
        await Hasura.updateUser(
           name: displayNameController.text,
-          bio: bioController.text,
+          about: aboutController.text,
           website: websiteController.text.trim(),
           photoUrl: profilePictureUrl,
           avatarUrl: avatarUrl
@@ -142,7 +142,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         
           await Hasura.updateUser(
           name: displayNameController.text,
-          bio: bioController.text,
+          about: aboutController.text,
           website: websiteController.text.trim(),
           photoUrl: profilePictureUrl,
           avatarUrl: avatarUrl,
@@ -159,7 +159,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
     if (croppedImage == null &&
         _displayNameValid &&
-        _bioValid&&
+        _aboutValid&&
         _websiteValid ) {
       if (headerImage != null) {
         final tempDir = await getTemporaryDirectory();
@@ -177,14 +177,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         
            await Hasura.updateUser(
           name: displayNameController.text,
-          bio: bioController.text,
+          about: aboutController.text,
           website: websiteController.text.trim(),
         );
       } else {
       
            await Hasura.updateUser(
           name: displayNameController.text,
-          bio: bioController.text,
+          about: aboutController.text,
           website: websiteController.text.trim(),
           headerUrl: headerUrl
         );
@@ -202,7 +202,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       'username': currentUser.username,
       'email': user.email,
       'displayName': displayNameController.text,
-      'bio': bioController.text,
+      'about': aboutController.text,
       'website': websiteController.text.trim(),
       'photoUrl': croppedImage == null
           ? currentUser.photoUrl
@@ -213,7 +213,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     Map currentUserMapGet = Boxes.currentUserBox.toMap();
     currentUser = User(
         id: currentUserMapGet['id'],
-        bio: currentUserMapGet['bio'],
+        about: currentUserMapGet['about'],
         name: currentUserMapGet['displayName'],
         email: currentUserMapGet['email'],
         photoUrl: currentUserMapGet['photoUrl'],
@@ -275,26 +275,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Column buildBioField() {
+  Column buildAboutField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Padding(
           padding: EdgeInsets.only(top: 12.0),
           child: Text(
-            "Bio",
+            "About",
             style: TextStyle(color: Colors.grey),
           ),
         ),
         TextField(
-          controller: bioController,
+          controller: aboutController,
           keyboardType: TextInputType.multiline,
           maxLength: 300,
           maxLines: 8,
           minLines: 1,
           decoration: InputDecoration(
-              hintText: "Update Bio",
-              errorText: _bioValid ? null : "Bio is too long"),
+              hintText: "Update About",
+              errorText: _aboutValid ? null : "About text is too long"),
         )
       ],
     );
@@ -509,7 +509,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         child: Column(
                           children: <Widget>[
                             buildDisplayNameField(),
-                            buildBioField(),
+                            buildAboutField(),
                             buildWebsiteField(),
                           ],
                         ),
