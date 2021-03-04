@@ -21,20 +21,20 @@ dependencies:
     sdk: flutter
   image: ^2.1.14
   flutter_icons: ^1.1.0
-  cloud_firestore: ^0.14.4
-  firebase_auth: ^0.18.4+1
+  cloud_firestore: ^0.16.0
+  firebase_auth: 
   flutter_local_notifications: ^3.0.3
   google_sign_in: ^4.4.1
   cached_network_image: ^2.2.0+1
   image_picker: ^0.6.5+1
-  firebase_storage: ^5.2.0
+  firebase_storage:
   intl: ^0.16.1
   timeago: ^2.0.26
   video_player: ^0.10.8+1
   flutter_video_compress: ^0.3.7+8
   provider: ^4.1.2
   video_thumbnail: ^0.2.1
-  firebase_database: ^4.4.0
+  firebase_database:
   carousel_pro: ^1.0.0
   link_previewer: ^1.2.1
   multi_image_picker: ^4.7.15
@@ -56,8 +56,8 @@ dependencies:
   flutter_link_preview: ^1.2.11
   fluentui_system_icons: ^1.1.85
   animations: ^1.1.2
-  firebase_dynamic_links: ^0.6.3
-  firebase_core: ^0.5.3
+  firebase_dynamic_links: 
+  firebase_core: ^0.7.0
   package_info: ^0.4.3+2
   page_transition: ^1.1.7+3
   sortedmap: ^0.4.2+1
@@ -71,7 +71,7 @@ dependencies:
   share: ^0.6.5+4
   string_validator: ^0.1.4
   hasura_connect: ^2.0.1
-  firebase_messaging: ^7.0.3
+  firebase_messaging:
   hive_cache_interceptor: ^1.0.0-dev.2
   auth_buttons: ^0.0.4
   blurhash_dart: ^0.2.3

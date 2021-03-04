@@ -70,7 +70,10 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
                   ),
                   child: FlatButton(
                     onPressed: (){
-                    showDialog(context: context, child:
+                    showDialog(context: context,
+                    builder: (context) {
+                      
+                    return
     EmptyDialog(Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -171,7 +174,7 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
             ),
 
 
-    ],))
+    ],));}
 );
                     },
                     child: Text(

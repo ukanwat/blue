@@ -679,8 +679,7 @@ class _PostState extends State<Post> {
 
   deletePost() async {
     showDialog(
-        context: context,
-        child: ShowDialog(
+        context: context,builder: (context) =>  ShowDialog(
           title: 'Delete Post',
           description: 'Are you sure you want to delete this Post?',
           leftButtonText: 'Cancel',
