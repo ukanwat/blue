@@ -1,14 +1,11 @@
-import 'dart:math';
-
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/preferences_update.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:hasura_connect/hasura_connect.dart';
 import 'package:hive_cache_interceptor/hive_cache_interceptor.dart';
 import './token_interceptor.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import './hasura_x.dart';
 enum Report { abusive, spam, inappropriate }
 enum Stat { upvotes, downvotes, saves, shares, comments }
 enum Feedback { suggestion, bug }
@@ -16,21 +13,41 @@ enum UserInfo { mute, block, report }
 
 class Hasura {
   static String jwtToken;
+  static String postInfo = """  contents
+    created_at
+    owner_id
+    post_id
+    title
+    user{
+      avatar_url
+      username
+    }
+    post_tags{
+      tag{tag}
+    }
+    post_stats{
+      upvotes
+      shares
+      comments
+      saves
+    }""";
   static const String url = 'https://stark-development.hasura.app/v1/graphql';
   static var cacheInterceptor = HiveCacheInterceptor("hasura");
-  static HasuraConnect hasuraConnect = HasuraConnect(
+ static int postLimit = 8;
+  static HasuraConnectX hasuraConnect = HasuraConnectX(
     url,
     headers: {
       'Authorization': 'Bearer $jwtToken',
     },
-    interceptors: [TokenInterceptor(FirebaseAuth.instance),cacheInterceptor]
+    interceptors: [TokenInterceptor(FirebaseAuth.instance),cacheInterceptor],onAuthStateChanged: AuthService().onAuthStateChanged
   );
 
   static getUserId({String uid}) async {
-    if (Boxes.currentUserBox.get('user_id') != null) {
+    
+    if (uid == null) {
+      if (Boxes.currentUserBox.get('user_id') != null) {
       return Boxes.currentUserBox.get('user_id');
     }
-    if (uid == null) {
       uid = AuthService().getCurrentUID();
     }
 
@@ -170,10 +187,7 @@ var data = await hasuraConnect.query(_doc);
   static insertPost(List contents, String title, {List<String> tags}) async {
     if (jwtToken == null) return;
     String uid = AuthService().getCurrentUID();
-    var userId = Boxes.currentUserBox.get('user_id');
-    if (userId == null) {
-      userId = await getUserId(uid: uid);
-    }
+    var userId = await getUserId(uid: uid);
     print(contents);
     String tagsString = '';
     if (tags != null) {
@@ -184,26 +198,33 @@ var data = await hasuraConnect.query(_doc);
     }
     String _doc = tags == null
         ? """mutation insertData  {
-  insert_posts_one(object: {contents: $contents, owner_id: "$userId", title: "$title", uid: "$uid", post_stats: {
+  insert_posts_one(object: {contents: $contents, owner_id: $userId, title: "$title", uid: "$uid", post_stats: {
           data: [
             {
              upvotes:0
-            }
+            }   
           ]
         }}) {
     __typename
   }
 }
 """
-        : """mutation {
-  insert_posts_one(object: {contents: $contents, owner_id: "$userId", title: "$title", uid: "$uid", post_tags: {data: [$tagsString]}}) {
+        : """mutation{
+  insert_posts_one(object: {contents: $contents, owner_id: $userId, title: "$title", uid: "$uid", post_tags: {data: [$tagsString]}}) {
     __typename
   }
 }
 """;
+print(_doc);
     await hasuraConnect.mutation(_doc);
   }
-
+  static deletePost(int postId)async{
+    await hasuraConnect.mutation("""mutation{
+  delete_posts_by_pk(post_id:$postId){
+    __typename
+  }
+}""");
+  }
   static updatePreferences(String key, dynamic value,{bool string}) async {
     var userId = Boxes.currentUserBox.get('user_id');
     if (userId == null) {
@@ -379,10 +400,12 @@ var data = await hasuraConnect.query(_doc);
       userId = await getUserId();
     }
   var time =  PreferencesUpdate().getString('searches_last_cleared');
+  DateTime timed = DateTime.parse(time).subtract(DateTime.now().timeZoneOffset);
+  time = timed.toString(); 
   String field;
-  if(time == null){
+    if(time == null){
 field = "where:{user_id:{_eq:$userId}}";
-  }{
+  }else{
 field = 'where:{_and:[{user_id:{_eq:$userId}},{searched_at:{_gt:"$time"}}]}';
   }
  String doc = """query{
@@ -617,6 +640,7 @@ print(data["data"]["search_posts"]);
   }
 }""");
   }
+  
 
   static Future<bool> checkUserInfo(int id, UserInfo info) async {
     var userId = await getUserId();
@@ -666,12 +690,14 @@ __typename
     int userId = await getUserId();
   dynamic data =  await hasuraConnect.mutation("""mutation{
   insert_comments_one(object:{data:"$comment",post_id:$postId,user_id:$userId}){
-      avatar_url
     comment_id
     created_at
     data
     post_id
     user_id
+    user{
+      avatar_url
+    }
   }
 }
 """);
@@ -691,47 +717,242 @@ return data['data']['insert_comments_one'];
 }""");
 return data['data']['insert_comment_replies_one'];
   }
-  static getComments(String postId)async{
+  static getComments(dynamic postId)async{
   dynamic comments = await  hasuraConnect.query("""query{
-  comments{
-    avatar_url
-    comment_id
+  comments(where:{post_id:{_eq:$postId}}){
+      comment_id
     created_at
     data
     user_id
     post_id
     comment_replies{
-      avatar_url
+      user{
+        avatar_url
+        username
+      }
       comment_id
       created_at
       reply_id
       user_id
+      upvotes
+      downvotes
     }
+    user{
+      avatar_url
+      username
+    }
+    upvotes
+    downvotes
   }
   
 }""");
 return comments['data']['comments'];
   }
   
-  static insertSavedPost(String name,int postId)async{
+  static updateSavedPost(String name,int postId)async{
     int userId = await getUserId();
       await hasuraConnect.mutation("""mutation{
-  insert_saved_posts_one(
-    object:{collection:"$name",post_id:$postId,user_id:$userId}
-  ){__typename}
-}""");
+  update_saved_posts_by_pk(pk_columns:{post_id:$postId,user_id:$userId},_set:{collection:"$name"}){
+   collection
+  }
+}
+
+""");
   }
   static insertCollection(String name)async{
     int userId = await getUserId();
+    try{
    await hasuraConnect.mutation("""mutation{
   insert_collections_one(object:{collection:"$name",user_id:$userId}){
     __typename
     collection
   }
-}""");
+}""");}catch(e){
+
+}
 
   }
   
+  static getCollections()async{
+  dynamic userId = await getUserId();
 
+  dynamic data = await hasuraConnect.query("""query{
+  collections(where:{user_id:{_eq:$userId}}){
+    collection
+  }
+}""");
+return data['data']['collections'];
+  }
+
+static getSavedPosts(int offset)async{
+  dynamic userId = await getUserId();
+  dynamic data = await hasuraConnect.query("""query{
+  saved_posts(limit:$postLimit,where:{user_id:{_eq:$userId}},offset:$offset,order_by:{post:{created_at:desc}}){
+    post{
+          contents
+    created_at
+    owner_id
+    post_id
+    title
+    user{
+      avatar_url
+      username
+    }
+    post_tags{
+      tag{tag}
+    }
+    post_stats{
+      upvotes
+      shares
+      comments
+      saves
+    }
+    }
+    
+  }
+}""");
+return data['data']['saved_posts'];
+}
+
+
+static getCollectionPosts(String name,int offset)async{
+  dynamic userId = await getUserId();
+  dynamic data = await hasuraConnect.query("""query{
+  saved_posts(limit:$postLimit,where:{_and:[{user_id:{_eq:$userId}},{collection:{_eq:"$name"}}]},offset:$offset,order_by:{post:{created_at:desc}}){
+    post{
+          contents
+    created_at
+    owner_id
+    post_id
+    title
+    user{
+      avatar_url
+      username
+    }
+    post_tags{
+      tag{tag}
+    }
+    post_stats{
+      upvotes
+      shares
+      comments
+      saves
+    }
+    }
+    
+  }
 
 }
+
+""");
+return data['data']['saved_posts'];
+}
+
+
+static insertSavedPost(int postId)async{
+int userId = await  getUserId();
+await hasuraConnect.mutation("""mutation{
+  insert_saved_posts_one(object:{post_id:$postId,user_id:$userId}){
+    __typename
+  }
+}
+""");
+}
+
+static deleteSavedPost(int postId)async{
+  int userId = await getUserId();
+ await  hasuraConnect.mutation("""mutation{
+  delete_saved_posts_by_pk(post_id:$postId,user_id:$userId){
+   __typename
+  }
+}
+""");
+}
+
+static insertFollow(int peerId)async{
+  int userId = await getUserId(); 
+  await hasuraConnect.mutation("""mutation{
+  insert_follows_one(object:{follower_id:$userId,following_id:$peerId}){
+    __typename
+  }
+}""");
+}
+static deleteFollow(int peerId)async{
+  int userId = await getUserId(); 
+  await hasuraConnect.mutation("""mutation{
+  delete_follows_by_pk(follower_id:$userId,following_id:$peerId){
+    __typename
+  }
+}""");
+}
+
+
+static getFollowingPosts(bool last)async{
+  int userId = await getUserId();
+  String field = '';
+  if(last){
+dynamic t = PreferencesUpdate().getString('following_posts_last_seen');
+if(t == null){
+ dynamic ti =await  hasuraConnect.query("""query{
+  preferences_by_pk(user_id:$userId){
+    following_posts_last_seen
+  }
+}
+""");
+t = ti['data']['preferences_by_pk']['following_posts_last_seen'];
+
+if(t== null){
+  t = DateTime(2021);
+}
+
+}
+ DateTime time = DateTime.parse(t);
+field = 'where:{created_at:{_gt:"$time"}}';
+  t = DateTime.now().toString();
+
+await PreferencesUpdate().updateString('following_posts_last_seen',t,upload: true);
+  }else{
+    int f = 40;//TODO following no.
+    double days = 2000/f;
+    int d = days.ceil();                          //TODO Check and also do multiple times when not enough(if needed)
+    int y = (d/365).floor();
+    d=d- y*365;
+     int m = (d/30).floor();
+      d = d-  m*30;
+    DateTime now = DateTime.now();
+    
+    DateTime lastTime = DateTime(now.year-y,now.month-m,now.day-d,now.hour,now.minute);
+  
+    field = 'where:{created_at:{_gt:"$lastTime"}}';
+  }
+ 
+dynamic data = await hasuraConnect.query("""query{
+  follows(where:{follower_id:{_eq:$userId}}){
+    following{
+      posts($field){
+        $postInfo
+      }
+    }
+  }
+}""");
+ 
+dynamic userPosts = data['data']['follows'];
+List posts = [];
+userPosts.forEach((user) { 
+posts.add(user['following']['posts']);
+});
+List p = [];
+posts.forEach((ps) { 
+  ps.forEach((pss) {
+    p.add(pss);
+   });
+});
+p.sort((a, b) {
+  return DateTime.parse(a['created_at']).compareTo(DateTime.parse(b['created_at']));
+});
+return p;
+
+}
+}
+
+

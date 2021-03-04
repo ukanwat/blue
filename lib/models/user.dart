@@ -12,6 +12,7 @@ final String about;
 final String website;
 final String headerUrl;
 final String avatarUrl;
+final dynamic userId;
 User({
   this.id,
   this.username,
@@ -21,7 +22,8 @@ User({
   this.about,
   this.website,
   this.headerUrl,
-  this.avatarUrl
+  this.avatarUrl,
+  this.userId
 });
 
 factory User.fromDocument(Map doc){
@@ -35,6 +37,7 @@ factory User.fromDocument(Map doc){
     website: doc['website'],
     headerUrl: doc['header_url'],
     avatarUrl: doc['avatar_url'],
+    userId: doc['user_id']
   );
 }
 

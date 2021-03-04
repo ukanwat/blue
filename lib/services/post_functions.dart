@@ -2,7 +2,6 @@ import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/post.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/boxes.dart';
 import 'hasura.dart';
 class PostFunctions{

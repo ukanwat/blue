@@ -1,6 +1,7 @@
 // Dart imports:
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui';
 
 // Flutter imports:
@@ -26,6 +27,7 @@ import 'package:string_validator/string_validator.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
 import '../services/hasura.dart';
+import 'package:blurhash_dart/blurhash_dart.dart';
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/providers/submit_state.dart';
@@ -78,14 +80,25 @@ class _PostScreenState extends State<PostScreen> {
   String postId = Uuid().v4();
   File compressedFile;
   bool isDrafted = false;
+String getBlurHash(File _image){
+  Uint8List fileData = _image.readAsBytesSync();
+  Im.Image img = Im.decodeImage(fileData.toList());
 
+String blurHash = encodeBlurHash(
+  img.getBytes(format: Im.Format.rgba),
+  img.width,
+  img.height,
+);
+return  "\"$blurHash\"";
+}
   handleTakePhoto() async {
     File _cameraImage;
     var picker = ImagePicker();
     var pickedFile = await picker.getImage(
       source: ImageSource.camera,
-      maxHeight: 960,
-      maxWidth: 960,
+      maxHeight: 720,
+      maxWidth: 720,
+      imageQuality: 75
     );
     _cameraImage = File(pickedFile.path);
     addImageContent(_cameraImage);
@@ -100,14 +113,18 @@ addImageContent(File _image)async{
     Map infoMap = {}; //
     infoMap['type'] = 'image'; //
     infoMap['aspectRatio'] = _aspectRatio; //
+    
+String blurHash = getBlurHash(_image);
+infoMap['blurHash'] = blurHash; //
     contentsInfo[fileIndex] = infoMap; //
     setState(() {
       if (_image == null) {
         print('File is not available');
       } else {
         contentsData.add({
-          'info': {'type': 'image', 'aspectRatio': _aspectRatio},
+          'info': {'type': 'image', 'aspectRatio': _aspectRatio,'blurHash': blurHash},
           'content': _image,
+          
           'widget': imageDisplay(_image, fileIndex, _aspectRatio)
         });
         contents.add(imageDisplay(_image, fileIndex, _aspectRatio));
@@ -118,7 +135,7 @@ addImageContent(File _image)async{
     File _galleryImage;
     var picker = ImagePicker();
     var pickedFile = await picker.getImage(
-      source: ImageSource.gallery,
+      source: ImageSource.gallery,maxHeight: 720, maxWidth:720,imageQuality:75
     );
     _galleryImage = File(pickedFile.path);
    addImageContent(_galleryImage);
@@ -150,7 +167,6 @@ addImageContent(File _image)async{
           });
 
           if ( _videoPlayerController.value.isPlaying == true) {
-            print('amsdd');
           }
         });
       });
@@ -178,10 +194,11 @@ addImageContent(File _image)async{
           takePhotoIcon: "chat",
         ),
         materialOptions: MaterialOptions(
-          actionBarColor: "#abcdef",
-          actionBarTitle: "Scrible",
+          actionBarColor: "#1EE682",
+          actionBarTitle: "Stark",
+          statusBarColor:"#1EE682",
           allViewTitle: "All Images",
-          useDetailsView: false,
+          useDetailsView: true,
           selectCircleStrokeColor: "#000000",
         ),
       );
@@ -202,13 +219,17 @@ addImageContent(File _image)async{
   }
    addCarouselContent(List<File> carouselImages,  double _aspectRatio){
  fileIndex++;
+ List<String> blurHashes = [];
+ carouselImages.forEach((i){
+      blurHashes.add(getBlurHash(i));
+ });
     setState(() {
       contentsData.add({
-        'info': {'type': 'carousel', 'aspectRatio': _aspectRatio},
+        'info': {'type': 'carousel', 'aspectRatio': _aspectRatio,'blurHashes': blurHashes},
         'content': carouselImages,
-        'widget': carouselDisplay(carouselImages, fileIndex, _aspectRatio)
+        'widget': carouselDisplay(carouselImages, fileIndex, _aspectRatio,blurHashes)
       });
-      contents.add(carouselDisplay(carouselImages, fileIndex, _aspectRatio));
+      contents.add(carouselDisplay(carouselImages, fileIndex, _aspectRatio,blurHashes));
     });
    }
   Future<File> compressImage(File file) async {
@@ -234,7 +255,7 @@ addImageContent(File _image)async{
       String _imageId = Uuid().v4();
       String _url = await FileStorage.upload(
           'posts/$postId', 'carousel_$_imageId', files[i]);
-      downloadUrls.add(_url);
+      downloadUrls.add("\"$_url\"");
     }
     return downloadUrls;
   }
@@ -246,77 +267,24 @@ addImageContent(File _image)async{
     return _url;
   }
 
-  createPostInFirestore(
+  uploadPost(
       {Map<String, dynamic> contents,
       String title,
       Map<String, Map> contentsInfo,
       String topicName,
       String topicId,
       List<String> tags}) async {
-
-
-    var lastDoc = await userPostsRef
-        .doc(currentUser.id)
-        .collection('userPosts')
-        .orderBy('order', descending: true)
-        .limit(1)
-        .get();
-
-    postsRef.doc(postId).set({
-      'postId': postId,
-      'ownerId': currentUser?.id,
-      'username':
-          currentUser?.username, //TODO username is not set in google accounts
-      'photoUrl': currentUser.photoUrl,
-      'contents': contents,
-      'contentsInfo': contentsInfo,
-      'title': title,
-      'timeStamp': timestamp, // TODO: Remove
-      'topicId': topicId,
-      'topicName': topicName,
-      'tags': tags,
-      'ownerName': currentUser?.username,
-      'upvotes': 0,
-      'downvotes': 0,
-      'votes': 0
-    }); // TODO: check if successful
     List customContents = [];
    contents.forEach((key, value) { 
       customContents.add(contentsInfo[key]);
-          customContents[int.parse(key)]['data'] = value; //TODO
+          customContents[int.parse(key)]['data'] = contentsInfo[key]['type'] == 'carousel'?"$value":"""\"$value\""""; //TODO
         });
         print(customContents);
         if(tags == []){
           tags = null;
         }
   await  Hasura.insertPost(customContents, title,tags: tags);
-    if (lastDoc.docs.length == 0) {
-      userPostsRef.doc(currentUser.id).collection('userPosts').doc().set({
-        'order': 1,
-        'posts': [
-          postId,
-        ],
-      }, SetOptions(merge: true));
-    } else if (lastDoc.docs.length == 1 &&
-        lastDoc.docs.first.data()['posts'].length < 2) {
-      List<dynamic> _postIdList = lastDoc.docs.first.data()['posts'];
-      _postIdList.add(postId);
-      userPostsRef
-          .doc(currentUser.id)
-          .collection('userPosts')
-          .doc(lastDoc.docs.first.id)
-          .set({
-        'posts': _postIdList,
-      }, SetOptions(merge: true));
-    } else if (lastDoc.docs.length == 1 &&
-        lastDoc.docs.first.data()['posts'].length > 1) {
-      userPostsRef.doc(currentUser.id).collection('userPosts').doc().set({
-        'order': lastDoc.docs.first.data()['order'] + 1,
-        'posts': [
-          postId,
-        ],
-      }, SetOptions(merge: true));
-    }
+  
   }
 
   Future<String> _uploadFile(filePath, folderName) async {
@@ -452,7 +420,7 @@ addImageContent(File _image)async{
       } else if (contentsData[i]['info']['type'] == 'video') {
         Map _videoData = await _processVideo(contentsData[i]['content']);
         firestoreContents['$x'] = _videoData['videoUrl'];
-        contentsData[i]['info']['thumbUrl'] = _videoData['thumbUrl'];
+        contentsData[i]['info']['thumbUrl'] = "\"${_videoData['thumbUrl']}\"";
         firestoreContentsInfo['$x'] = contentsData[i]['info'];
         x++;
       } else if (contentsData[i]['info']['type'] == 'carousel') {
@@ -463,7 +431,7 @@ addImageContent(File _image)async{
         x++;
       }
     }
-    await createPostInFirestore(
+    await uploadPost(
         contents: firestoreContents,
         title: titleController.text,
         contentsInfo: firestoreContentsInfo,
@@ -477,11 +445,6 @@ addImageContent(File _image)async{
       imageId = Uuid().v4();
       videoId = Uuid().v4();
       firestoreContents = {};
-    });
-    postReportsRef.doc(postId).set({
-      'abusive': 0,
-      'inappropriate': 0,
-      'spam': 0,
     });
     Navigator.pop(context);
     Navigator.pop(context);
@@ -707,10 +670,11 @@ addImageContent(File _image)async{
     return [imageFiles, firstAspectRatio];
   }
 
-  Container carouselDisplay(List<File> images, int index, double aspectRatio) {
+  Container carouselDisplay(List<File> images, int index, double aspectRatio,List<String> blurHashes) {
     Map infoMap = {};
     infoMap['type'] = 'carousel';
     infoMap['aspectRatio'] = aspectRatio;
+    infoMap['blurHashes'] = blurHashes;
     contentsInfo[index] = infoMap;
     contentsMap[index] = images;
     contentType.add('carousel');
@@ -854,7 +818,7 @@ addImageContent(File _image)async{
                       rightButtonText: "Save Draft",
                       leftButtonText: "Cancel",
                       rightButtonFunction: () async {
-                        List<Map> _modifiedContentsData = contentsData;
+                        List<dynamic> _modifiedContentsData = contentsData;
                         Directory appDocDir;
                         appDocDir = await getApplicationDocumentsDirectory();
                         await Directory(appDocDir.path + '/posts/$postId')
@@ -1120,7 +1084,7 @@ addImageContent(File _image)async{
               child: Container(
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                    border: Border(
+                    border: i ==  functions.length - 1?null:Border(
                         bottom: BorderSide(width: 0.3, color: Colors.grey))),
                 child: Text(
                   functions.keys.elementAt(i),

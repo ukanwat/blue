@@ -134,12 +134,7 @@ await Boxes.openCurrentUserBox();
     if(key != 'timestamp')
 await Boxes.currentUserBox.put(key, value);
 });
-if( !_doc.data().containsKey('username')){
-  String  username = await Navigator.of(context)
-          .pushNamed(SignInScreen.googleSignInRouteName);
-      await usersRef.doc(id).set({'username':username},SetOptions(merge: true));
-      Boxes.currentUserBox.put('username', username);
-}
+
 
 Boxes.currentUserBox.put('userSignedIn', true);
  userSignedIn = true;

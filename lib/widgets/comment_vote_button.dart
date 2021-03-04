@@ -19,9 +19,9 @@ enum CommentType{
 class CommentVoteButton extends StatefulWidget {
   final CommentType type;
   final Vote vote;
-  final String postId;
-  final String commentId;
-  final String id;
+  final int postId;
+  final int commentId;
+  final int id;
 
   CommentVoteButton(
     {
@@ -47,21 +47,21 @@ class _CommentVoteButtonState extends State<CommentVoteButton> {
                             voteButtonColor = Colors.blue;
                           });
                           if(widget.type == CommentType.reply){
-                            commentsRef
-                                  .doc(widget.postId)
-                                  .collection('userComments')
-                                  .doc(widget.commentId)
-                                  .update( widget.vote == Vote.upvote ?{ 'replies.${widget.id}.upvotes':FieldValue.increment(1)}:
-                                  { 'replies.${widget.id}.downvotes':FieldValue.increment(1)}
-                                  );
+                            // commentsRef
+                            //       .doc(widget.postId)
+                            //       .collection('userComments')
+                            //       .doc(widget.commentId)
+                            //       .update( widget.vote == Vote.upvote ?{ 'replies.${widget.id}.upvotes':FieldValue.increment(1)}:
+                            //       { 'replies.${widget.id}.downvotes':FieldValue.increment(1)}
+                            //       );
                           }else{
-                                commentsRef
-                                  .doc(widget.postId)
-                                  .collection('userComments')
-                                  .doc(widget.commentId)
-                                  .update( widget.vote == Vote.upvote ?{ 'upvotes':FieldValue.increment(1)}:
-                                  { 'downvotes':FieldValue.increment(1)}
-                                  );
+                                // commentsRef
+                                //   .doc(widget.postId)
+                                //   .collection('userComments')
+                                //   .doc(widget.commentId)
+                                //   .update( widget.vote == Vote.upvote ?{ 'upvotes':FieldValue.increment(1)}:
+                                //   { 'downvotes':FieldValue.increment(1)}
+                                //   );
                           }
 
                         },

@@ -60,7 +60,6 @@ class _ProfileScreenState extends State<ProfileScreen>
   bool compactPosts = true;
   String username = '';
   bool isFollowing = false;
-  final dynamic currentUserId = currentUser?.id;
   bool postsAreLoading = false;
   bool repostsAreLoading = false;
   int postCount = 0;
@@ -86,6 +85,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   var future;
   @override
   void didChangeDependencies() {
+    print(widget.profileId);
+    print('d');
     addPosts(Sort.Recent);
     _controller.addListener(() {
       if (_controller.position.pixels == _controller.position.maxScrollExtent &&
@@ -105,9 +106,6 @@ class _ProfileScreenState extends State<ProfileScreen>
   void initState() {
     super.initState();
 
-   if( Boxes.followingBox.containsKey(widget.profileId)){
-     isFollowing = true;
-   }
     
 
     // _controller.addListener(onScroll);
@@ -119,8 +117,8 @@ class _ProfileScreenState extends State<ProfileScreen>
         loaded = false;
       });
       print('owner-${widget.profileId}');
-    int length = 4;
-    int _id = 3;
+    int length = Hasura.postLimit;
+    int _id = widget.profileId;
     String  _where = "{owner_id:{_eq:$_id}}";
     String _orderBy;
     if (sort == Sort.Recent){
@@ -250,8 +248,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   buildProfileButton() {
-    bool isProfileOwner = currentUserId == widget.profileId;
-    print(isFollowing);
+    bool isProfileOwner = Boxes.currentUserBox.get('user_id') == widget.profileId;
     if (isProfileOwner) {
       return buildButton(
           text: 'Edit Profile',
@@ -276,7 +273,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       return buildButton(
           text: 'Follow',
           function: () {
-            // Functions().handleFollowUser(widget.profileId);
+            Functions().handleFollowUser(_profileUser.userId);
             setState(() {
               isFollowing = true;
             });
@@ -286,7 +283,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget buildProfileIconButton() {
-    bool isProfileOwner = currentUserId == widget.profileId;
+    bool isProfileOwner = Boxes.currentUserBox.get('user_id') == widget.profileId;
     if (isProfileOwner) {
       return IconButton(
           icon: Icon(
@@ -318,194 +315,190 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   buildProfileHeaderTemp() {
-    print( currentUser.id);
-  future = Hasura.getUser(id: widget.profileId,self: widget.profileId == currentUser.id? true:false);
-    return FutureBuilder(
-      future: future
-      ,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return circularProgress();
-        }
-        User user = User.fromDocument(snapshot.data['data']['users_by_pk'] );
-       print(snapshot.data['data']['users_by_pk']);
-       Boxes.currentUserBox.put('avatar_url', user.avatarUrl);
-        Boxes.currentUserBox.put('about', user.about);
-         Boxes.currentUserBox.put('email', user.email);
-          Boxes.currentUserBox.put('header_url', user.headerUrl);
-           Boxes.currentUserBox.put('name', user.name);
-            Boxes.currentUserBox.put('photo_url', user.photoUrl);
-             Boxes.currentUserBox.put('username', user.username);
-              Boxes.currentUserBox.put('website', user.website);
-        _profileUser = user;
-        profileName = user.name;
-        return Container(
-            color: Theme.of(context).backgroundColor,
-            child: Column(
-              children: <Widget>[
-                Container(
-                  color: Theme.of(context).backgroundColor,
-                  child: user.headerUrl == null
-                      ? Container(
-                          height: 150,
-                          width: double.infinity,
-                          color: Theme.of(context).cardColor,
-                        )
-                      : CachedNetworkImage(
-                          imageUrl: user.headerUrl,
-                          fit: BoxFit.cover,
-                          height: 150,
+    print('current user id ^');
+  future = Hasura.getUser(id: widget.profileId,self:  Boxes.currentUserBox.get('user_id') == widget.profileId? true:false);
+    return Container(
+      color: Colors.white == Theme.of(context).iconTheme.color? Colors.grey.shade900:Colors.white,
+      child: FutureBuilder(
+        future: future
+        ,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return circularProgress();
+          }
+          print(snapshot.data['data']['users_by_pk'] );
+          User user = User.fromDocument(snapshot.data['data']['users_by_pk'] );
+          Boxes.currentUserBox.put('avatar_url',user.avatarUrl);
+          _profileUser = user;
+          profileName = user.name;
+          return Container(
+              color: Theme.of(context).backgroundColor,
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    color: Theme.of(context).backgroundColor,
+                    child: user.headerUrl == null
+                        ? Container(
+                            height: 150,
+                            width: double.infinity,
+                            color: Theme.of(context).cardColor,
+                          )
+                        : CachedNetworkImage(
+                            imageUrl: user.headerUrl,
+                            fit: BoxFit.cover,
+                            height: 150,
+                          ),
+                    height: 150,
+                    width: double.infinity,
+                  ),
+                   ExpansionTile(backgroundColor: Theme.of(context).backgroundColor,tilePadding: EdgeInsets.symmetric(horizontal: 10,vertical: 0),
+
+                      expandedAlignment: Alignment.topLeft,
+                      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                      childrenPadding:
+                          EdgeInsets.only(left: 0, bottom: 10, top: 0, right: 0),
+                      title: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Text(
+                          '${user.username}',
+
+                          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18,color: Theme.of(context).iconTheme.color),
                         ),
-                  height: 150,
-                  width: double.infinity,
-                ),
-                 ExpansionTile(backgroundColor: Theme.of(context).backgroundColor,tilePadding: EdgeInsets.symmetric(horizontal: 10,vertical: 0),
-
-                    expandedAlignment: Alignment.topLeft,
-                    expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                    childrenPadding:
-                        EdgeInsets.only(left: 0, bottom: 10, top: 0, right: 0),
-                    title: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Text(
-                        '${user.username}',
-
-                        style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18,color: Theme.of(context).iconTheme.color),
                       ),
-                    ),
-                    leading: Stack(
-                      overflow: Overflow.visible,
-                      children: <Widget>[
-                        Container(
-                          height: 60,
-                          width: 120,
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          child: Container(
-                            decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Theme.of(context).backgroundColor),
-                            padding: EdgeInsets.all(3),
-                            child: CircleAvatar(
-                              radius: 57.0,
-                              backgroundColor: Theme.of(context).backgroundColor,
-                              backgroundImage:
-                                  CachedNetworkImageProvider(user.avatarUrl??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                      leading: Stack(
+                        overflow: Overflow.visible,
+                        children: <Widget>[
+                          Container(
+                            height: 60,
+                            width: 120,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Theme.of(context).backgroundColor),
+                              padding: EdgeInsets.all(3),
+                              child: CircleAvatar(
+                                radius: 57.0,
+                                backgroundColor: Theme.of(context).backgroundColor,
+                                backgroundImage:
+                                    CachedNetworkImageProvider(user.avatarUrl??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                              ),
                             ),
+                          ),
+                        ],
+                      ),
+                      subtitle: Padding(
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                        child: Text(
+                          '${Functions.abbreviateNumber(0)} Followers',
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color:
+                                  Theme.of(context).iconTheme.color.withOpacity(0.6)),
+                        ),
+                      ),
+                      children: <Widget>[
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Padding(
+                            padding: const EdgeInsets.only(left: 22),
+                            child: Row(
+                              children: [
+                                Column(
+                                  children: [
+                                    Text('${Functions.abbreviateNumber(0)}',
+                                        style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w600)),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text('Following',
+                                        style: TextStyle(
+                                            fontSize: 13, fontWeight: FontWeight.w400)),
+                                  ],
+                                ),SizedBox(width: 20,),
+                                 Column(
+                                  children: [
+                                    Text('${Functions.abbreviateNumber(0)}',
+                                        style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w600)),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text('Total Upvotes',
+                                        style: TextStyle(
+                                            fontSize: 13, fontWeight: FontWeight.w400)),
+                                  ],
+                                ),
+                              ],
+                            )),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 20),
+                          child: Text(user.about?? '',
+                              style: TextStyle(
+                                fontSize: 16,
+                              )),
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                         if(user.website!= null && user.website!= '')
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 20,
+                          ),
+                         
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Container(
+                                  padding: EdgeInsets.all(3),
+                                  decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Theme.of(context).cardColor),
+                                  child: Icon(
+                                    FluentIcons.link_square_24_regular,
+                                    size: 18,
+                                  )),
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Expanded(
+                                child: Linkify(
+                                  text: user.website,
+                                  linkStyle: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.blue,
+                                    decoration: TextDecoration.none,
+                                  ),
+                                  onOpen: (link) {
+                                    launchWebsite(user.website);
+                                  },
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                    subtitle: Padding(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
-                      child: Text(
-                        '${Functions.abbreviateNumber(2444)} Followers',
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color:
-                                Theme.of(context).iconTheme.color.withOpacity(0.6)),
-                      ),
-                    ),
-                    children: <Widget>[
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Padding(
-                          padding: const EdgeInsets.only(left: 22),
-                          child: Row(
-                            children: [
-                              Column(
-                                children: [
-                                  Text('${Functions.abbreviateNumber(2444)}',
-                                      style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.w600)),
-                                  SizedBox(
-                                    width: 5,
-                                  ),
-                                  Text('Following',
-                                      style: TextStyle(
-                                          fontSize: 13, fontWeight: FontWeight.w400)),
-                                ],
-                              ),SizedBox(width: 20,),
-                               Column(
-                                children: [
-                                  Text('${Functions.abbreviateNumber(9896634)}',
-                                      style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.w600)),
-                                  SizedBox(
-                                    width: 5,
-                                  ),
-                                  Text('Total Upvotes',
-                                      style: TextStyle(
-                                          fontSize: 13, fontWeight: FontWeight.w400)),
-                                ],
-                              ),
-                            ],
-                          )),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 20),
-                        child: Text(user.about?? '',
-                            style: TextStyle(
-                              fontSize: 16,
-                            )),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                       if(user.website!= null && user.website!= '')
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          left: 20,
-                        ),
-                       
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Container(
-                                padding: EdgeInsets.all(3),
-                                decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Theme.of(context).cardColor),
-                                child: Icon(
-                                  FluentIcons.link_square_24_regular,
-                                  size: 18,
-                                )),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Expanded(
-                              child: Linkify(
-                                text: user.website,
-                                linkStyle: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.none,
-                                ),
-                                onOpen: (link) {
-                                  launchWebsite(user.website);
-                                },
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                
-              ],
-            ),
-          )
-        ;
-      },
+                  
+                ],
+              ),
+            )
+          ;
+        },
+      ),
     );
   }
 
@@ -623,11 +616,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                           alignment: Alignment.centerLeft,
                           child: Row(
                             children: <Widget>[
-                              if (widget.profileId == currentUser.id)
+                              if (widget.profileId == Boxes.currentUserBox.get('user_id'))
                                 Padding(
                                   padding: EdgeInsets.only(right: 36),
                                 ),
-                              widget.profileId != currentUser.id
+                              widget.profileId != Boxes.currentUserBox.get('user_id') 
                                   ? headerButton(
                                       Icon(
                                         FluentIcons.arrow_left_24_regular,
@@ -640,7 +633,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   : Container(
                                       width: 30,
                                     ),
-                              if (!isFollowing && currentUser.id != widget.profileId)
+                              if (!isFollowing && Boxes.currentUserBox.get('user_id')  != widget.profileId)
                                 Padding(
                                   padding: EdgeInsets.only(right: 36),
                                 ),
@@ -656,7 +649,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       color: Colors.white),
                                 ),
                               )),
-                              if (!isFollowing && currentUser.id != widget.profileId)
+                              if (!isFollowing && Boxes.currentUserBox.get('user_id')  != widget.profileId)
                                 Padding(
                                   padding: EdgeInsets.only(right: 5),
                                   child: headerButton(
@@ -677,7 +670,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     );
                                   }),
                                 ),
-                              if (widget.profileId == currentUser.id)
+                              if (widget.profileId == Boxes.currentUserBox.get('user_id') )
                                 Padding(
                                   padding: EdgeInsets.only(right: 10),
                                   child: headerButton(
@@ -691,7 +684,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         context, AllSavedPostsScreen.routeName);
                                   }),
                                 ),
-                              widget.profileId == currentUser.id
+                              widget.profileId == Boxes.currentUserBox.get('user_id') 
                                   ? headerButton(
                                       Icon(
                                         FluentIcons.settings_24_regular,
@@ -705,7 +698,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   : Transform.scale(
                                       scale: 0.8,
                                       child: Container(
-                                        decoration: BoxDecoration(shape: BoxShape.circle,  color: Colors.white.withOpacity(0.25),),
+                                        decoration: BoxDecoration(shape: BoxShape.circle,  color: Colors.black.withOpacity(0.45),),
                                       margin:
                                             EdgeInsets.symmetric(horizontal: 8,vertical: 5),child: PopupMenuButton(
                                                         padding:
@@ -731,20 +724,20 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                               value: 'Report'),
                                                           PopupMenuItem(
                                                               child: Text(
-                                                                  '${PreferencesUpdate().containsInList('blocked_accounts', _profileUser.id) ? "Unblock" : "Block"} $profileName'),
+                                                                  '${PreferencesUpdate().containsInList('blocked_accounts', _profileUser.userId) ? "Unblock" : "Block"} $profileName'),
                                                               value: PreferencesUpdate().containsInList(
                                                                       'blocked_accounts',
                                                                       _profileUser
-                                                                          .id)
+                                                                          .userId)
                                                                   ? "Unblock"
                                                                   : "Block"),
                                                           PopupMenuItem(
                                                               child: Text(
-                                                                  '${PreferencesUpdate().containsInList('muted_messages', _profileUser.id) ? "Unmute" : "Mute"} $profileName'),
+                                                                  '${PreferencesUpdate().containsInList('muted_messages', _profileUser.userId) ? "Unmute" : "Mute"} $profileName'),
                                                               value: PreferencesUpdate().containsInList(
                                                                       'muted_messages',
                                                                       _profileUser
-                                                                          .id)
+                                                                          .userId)
                                                                   ? "Unmute"
                                                                   : "Mute"),
                                                         ],
@@ -758,7 +751,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                             (selectedValue) async {
                                                           Map peer = {
                                                             'peerId':
-                                                                _profileUser.id,
+                                                                _profileUser.userId,
                                                             'peerUsername':
                                                                 _profileUser
                                                                     .username,
@@ -770,14 +763,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                                     .name
                                                           };
                                                           print(
-                                                              '$selectedValue user');
+                                                              '$selectedValue user $peer');
                                                           switch (
                                                               selectedValue) {
                                                             case 'Unfollow':
-                                                              // Functions()
-                                                              //     .handleUnfollowUser(
-                                                              //         widget
-                                                              //             .profileId);
+                                                              Functions()
+                                                                  .handleUnfollowUser(
+                                                                      _profileUser.userId);
                                                               setState(() {
                                                                 isFollowing =
                                                                     false;
@@ -920,7 +912,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                     itemCount: posts.length+1,
                     itemBuilder: (context,i){
                       if(i == posts.length){
-                        return loaded ? Container() : circularProgress();
+                        return empty? Container(
+                          height: 400,
+                          child: emptyState(context, 'Nothing Here!', 'none')) :loaded?Container(): circularProgress();
                       }
                       return posts[i];
 

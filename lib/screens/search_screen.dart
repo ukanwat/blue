@@ -38,72 +38,16 @@ class _SearchScreenState extends State<SearchScreen>{
         searching = true;
         search = searchController.text;
       }
-    // resultsLoading = true;
 
     });
-       Hasura.insertSearch(query);
-    // resultsLoading = false;
+     Hasura.insertSearch(query);
   }
   List<Widget> posts = [];
    List<Widget> userTiles = [];
     List<Widget> tags = [];
 
   bool loading = true;
-  getRecentSearches() async {
-    dynamic _recentSearches = await Hasura.getSearches(10);
-    print(_recentSearches);
 
-    setState(() {
-      loading = false;
-      recentSearchesWidget = new ListView.builder(
-          shrinkWrap: true,
-          itemCount: _recentSearches.length + 1,
-          itemBuilder: (BuildContext context, int index) {
-            if (index == 0) {
-              return Container(
-                padding: EdgeInsets.all(15),
-                child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Recent Searches',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
-                    ),
-                    Material(
-
-                                          child: InkWell(onTap: (){
-                                            PreferencesUpdate().updateString('searches_last_cleared',DateTime.now().toString(),upload: true,);//TODO  timezone problem 
-                                          },
-                                            child: Padding(
-                          padding: EdgeInsets.all(10),
-                          child: Text('Clear All',style: TextStyle(color: Colors.blue,fontSize: 17,fontWeight: FontWeight.w500),)),
-                      ),
-                    )
-                  ],
-                ),
-              );
-            }
-            return ListTile(
-              key: UniqueKey(),
-              title: Text(
-                _recentSearches[index - 1]['text'],
-              ),
-              trailing: IconButton(
-                icon: Icon(
-                  Icons.clear,
-                  color: Theme.of(context).iconTheme.color,
-                ),
-                onPressed: () async {
-                  setState(() {
-                    Hasura.deleteSearch(
-                        _recentSearches[index - 1]['search_id']);
-                    _recentSearches.removeAt(index - 1);
-                  });
-                },
-              ),
-            );
-          });
-    });
-  }
 
   clearSearch() {
     WidgetsBinding.instance
@@ -215,12 +159,6 @@ class _SearchScreenState extends State<SearchScreen>{
     );
   }
    
-  
-  @override
-  void initState() {
-    getRecentSearches();
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -231,25 +169,7 @@ class _SearchScreenState extends State<SearchScreen>{
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: buildSearchField(context),
         body: !searching
-            ? (loading
-                ? circularProgress()
-                : Column(
-                    children: [
-                      Container(height: 400, child: recentSearchesWidget),
-                      Expanded(
-                          child: Container(
-                              // color: Theme.of(context).canvasColor,
-                              // child: Center(
-                              //     child: Icon(
-                              //   FluentIcons.search_28_filled,
-                              //   color: Colors.grey,
-                              //   size: 80,
-                              // ))
-                              )
-                          // emptyState(context, "Search something new!", 'Searching')
-                          )
-                    ],
-                  ))
+            ? RecentSearches()
             : TabBarView(children: <Widget>[
              SearchResultsScreen(SearchResultsType.posts,searchController.text,UniqueKey()),
               SearchResultsScreen(SearchResultsType.people,searchController.text,UniqueKey()),
@@ -261,3 +181,79 @@ class _SearchScreenState extends State<SearchScreen>{
 }
 
 
+class RecentSearches extends StatefulWidget {
+  @override
+  _RecentSearchesState createState() => _RecentSearchesState();
+}
+
+class _RecentSearchesState extends State<RecentSearches> {
+  bool loading = true;
+  dynamic _recentSearches;
+  @override
+  void initState() {
+    init();
+    super.initState();
+  }
+  init()async{  _recentSearches = await Hasura.getSearches(10);
+setState(() {
+  loading = false;
+});
+}
+
+  @override
+  Widget build(BuildContext context) {
+    return loading ?circularProgress() :ListView.builder(
+          shrinkWrap: true,
+          itemCount: _recentSearches.length + 1,
+          itemBuilder: (BuildContext context, int index) {
+            if (index == 0) {
+              return Container(
+                padding: EdgeInsets.all(15),
+                child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Recent Searches',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
+                    ),
+                    Material(
+
+                                          child: InkWell(onTap: (){
+                                            PreferencesUpdate().updateString('searches_last_cleared',DateTime.now().toString(),upload: true,);//TODO  timezone problem 
+                                            setState(() {
+                                              _recentSearches = [];
+                                            });
+                                          },
+                                            child: Padding(
+                          padding: EdgeInsets.all(5),
+                          child: Text('Clear All',style: TextStyle(color: Colors.blue,fontSize: 15,fontWeight: FontWeight.w500),)),
+                      ),
+                    )
+                  ],
+                ),
+              );
+            }
+            return ListTile(
+              key: UniqueKey(),
+              title: Text(
+                _recentSearches[index - 1]['text'],
+              ),
+              trailing: IconButton(
+                icon: Icon(
+                  Icons.clear,
+                  color: Theme.of(context).iconTheme.color,
+                ),
+                onPressed: () async {
+                  setState(() {
+                    Hasura.deleteSearch(
+                        _recentSearches[index - 1]['search_id']);
+                        setState(() {
+  _recentSearches.removeAt(index - 1);
+                        });
+                  
+                  });
+                },
+              ),
+            );
+          });
+  }
+}

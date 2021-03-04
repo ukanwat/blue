@@ -8,13 +8,14 @@ import 'dart:math' as math;
 import 'package:blue/services/dynamic_links.dart';
 import 'package:blue/services/post_functions.dart';
 import 'package:blue/widgets/show_dialog.dart';
+import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_pro/carousel_pro.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flick_video_player/flick_video_player.dart';
+// import 'package:flick_video_player/flick_video_player.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:hive/hive.dart';
@@ -40,7 +41,7 @@ import '../services/functions.dart';
 import '../services/go_to.dart';
 import '../services/boxes.dart';
 import './custom_image.dart';
-
+import '../services/hasura.dart';
 enum CompactPostThumbnailType {
   video,
   image,
@@ -155,6 +156,7 @@ class Post extends StatefulWidget {
 Vote vote;
 
 class _PostState extends State<Post> {
+  bool deleted = false;
   double topEdgeHeight;
   double bottomEdgeHeight;
   bool showSaveBar = false;
@@ -305,7 +307,7 @@ class _PostState extends State<Post> {
                               },
                               title: Text('Unfollow'),
                             ),
-                          if (currentUser.id == ownerId)
+                          if (Boxes.currentUserBox.get('user_id') == ownerId)
                             ListTile(
                               dense: true,
                               leading: Icon(
@@ -315,6 +317,7 @@ class _PostState extends State<Post> {
                               onTap: () async {
                                 overlayOptions?.remove();
                                 deletePost();
+
                               },
                               title: Text(
                                 'Delete',
@@ -356,8 +359,6 @@ class _PostState extends State<Post> {
                   child: Padding(
                     padding: const EdgeInsets.only(left: 10),
                     child: Text(
-                        // 'Hope you weren’t planning to watchiiiii Wonder Woman 1984 with an HBO Max free trial', ///////******/
-
                         widget.title,
                         style: PreferencesUpdate().getBool('serif', def: false)
                             ? TextStyle(
@@ -369,8 +370,8 @@ class _PostState extends State<Post> {
                                 height: 1.25,
                                 color: Theme.of(context).textSelectionColor)
                             : TextStyle(
-                                fontFamily: 'OpenSans',
-                                fontSize: 18,
+                                fontFamily: 'Lexend Deca',
+                                fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 0,
                                 wordSpacing: 0,
@@ -421,7 +422,7 @@ class _PostState extends State<Post> {
                       SizedBox(
                         width: 10,
                       ),
-                      if (!isFollowing && !(widget.ownerId == currentUserId))
+                      if (!isFollowing && !(widget.ownerId == Boxes.currentUserBox.get('user_id')))
                         Container(
                           height: 22,
                           child: GestureDetector(
@@ -477,8 +478,8 @@ class _PostState extends State<Post> {
                             });
                           },
                           child: Icon(
-                            FlutterIcons.ios_arrow_down_ion,
-                            size: 22,
+                            FluentIcons.number_symbol_20_filled,
+                            size: 19,
                           ),
                         ),
                       ),
@@ -550,7 +551,7 @@ class _PostState extends State<Post> {
                       SizedBox(
                         width: 5,
                       ),
-                      if (!isFollowing && !(widget.ownerId == currentUserId))
+                      if (!isFollowing && !(widget.ownerId == Boxes.currentUserBox.get('user_id')))
                         GestureDetector(
                           onTap: () {
                             Functions().handleFollowUser(
@@ -688,22 +689,17 @@ class _PostState extends State<Post> {
             Navigator.pop(context);
           },
           rightButtonFunction: () async {
-            if (widget.ownerId != currentUser.id) return;
+            if (widget.ownerId != Boxes.currentUserBox.get('user_id'))return;
             // delete post itself
                
             // delete uploaded image for thep ost
             // storageRef.child("post_$postId.jpg").delete();  // TODO: delete stored media
             // then delete all activity feed notifications
-            QuerySnapshot activityFeedSnapshot = await activityFeedRef
-                .doc(currentUser.id)
-                .collection("feedItems")
-                .where('postId', isEqualTo: postId)
-                .get();
-            activityFeedSnapshot.docs.forEach((doc) {
-              if (doc.exists) {
-                doc.reference.delete();
-              }
-            });
+           Hasura.deletePost(postId);
+           Navigator.of(context).pop();
+           setState(() {
+             deleted = true;
+           });
             // then delete all comments
            
           },
@@ -711,7 +707,7 @@ class _PostState extends State<Post> {
   }
 
   unvote() async {
-  
+  //TODO
   }
 
   getVideoThumbnail(String url) async {
@@ -824,6 +820,7 @@ class _PostState extends State<Post> {
   Timer timer;
   @override
   void didChangeDependencies() {
+    isSaved = Boxes.saveBox.containsKey(postId);
     if (this.mounted && persistentCallbackAdded == false) {
       persistentCallbackAdded = true;
     }
@@ -835,10 +832,11 @@ class _PostState extends State<Post> {
           compactPostThumbnailData = contents['$i'];
         }
         contentsViewList.add(imageContentContainer(contents['$i'],
-            contentsInfo[i]['aspectRatio']));
+            contentsInfo[i]['aspectRatio'], contentsInfo[i]['blurHash']));
       } else if (contentsInfo[i]['type'] == 'video') {
         compactPostThumbnailData =
             contentsInfo[i]['thumbUrl'];
+            print( contents['$i']);
         thumbnailType = CompactPostThumbnailType.video;
         _controller = VideoPlayerController.network(
           contents['$i'],
@@ -852,7 +850,10 @@ class _PostState extends State<Post> {
             videoPlayerController: _controller,
           );
           contentsViewList
-              .add(Container(child: VideoDisplay(flickManager, _autoplay)));
+              .add(Container(child: 
+              VideoDisplay(flickManager, _autoplay)
+  ),
+              );
         });
       } else if (contentsInfo[i]['type'] == 'text') {
         contentsViewList.add(textContentContainer(contents['$i']));
@@ -860,7 +861,7 @@ class _PostState extends State<Post> {
         contentsViewList.add(linkContentContainer(contents['$i']));
       } else {
         contentsViewList.add(carouselContentContainer(contents['$i'],
-            contentsInfo[ i]['aspectRatio']));
+            contentsInfo[ i]['aspectRatio'], contentsInfo[ i]['blurHashes']));
       }
     }
     if (!widget.isCompact)
@@ -870,16 +871,16 @@ class _PostState extends State<Post> {
     super.didChangeDependencies();
   }
 
-  Widget imageContentContainer(String url, double aspectRatio) {
+  Widget imageContentContainer(String url, double aspectRatio,String blurHash) {
     return Stack(
       alignment: Alignment.center,
       children: <Widget>[
-        (cachedNetworkImage(context, url, aspectRatio: aspectRatio)),
+        (cachedNetworkImage(context, url, aspectRatio: aspectRatio,blurHash: blurHash)),
       ],
     );
   }
 
-  Widget carouselContentContainer(List<dynamic> urls, double aspectRatio) {
+  Widget carouselContentContainer(List<dynamic> urls, double aspectRatio,List blurHashes) {
     return Container(
         height: MediaQuery.of(context).size.width / aspectRatio,
         key: UniqueKey(),
@@ -899,7 +900,7 @@ class _PostState extends State<Post> {
           moveIndicatorFromBottom: 20,
           images: List.generate(urls.length, (i) {
             return cachedNetworkImage(context, urls[i],
-                aspectRatio: aspectRatio);
+                aspectRatio: aspectRatio,blurHash:blurHashes[i]);
           }),
         ));
   }
@@ -1016,6 +1017,7 @@ class _PostState extends State<Post> {
                       ),
                       FlatButton(
                           onPressed: () {
+                            
                             setState(() {
                               showSaveBar = false;
                             });
@@ -1116,21 +1118,13 @@ class _PostState extends State<Post> {
                     children: [
                       footerButton(FluentIcons.bookmark_24_filled, Colors.blue,
                           () async {
+                            print(Boxes.saveBox.keys);
                           setState(() {
                             isSaved = false;
                             showSaveBar = false;
                           });
                           Boxes.saveBox.delete(postId);
-                          var snap = await savedPostsRef
-                              .doc(currentUser?.id)
-                              .collection('all')
-                              .where('posts', arrayContains: postId)
-                              .get();
-                          snap.docs.forEach((doc) {
-                            doc.reference.update({
-                              'posts': FieldValue.arrayRemove([postId])
-                            });
-                          });
+                      await Hasura.deleteSavedPost(postId);
                         }),
                         Padding(
                             padding: const EdgeInsets.only(right: 0, left: 0),
@@ -1148,49 +1142,10 @@ class _PostState extends State<Post> {
                           setState(() {
                             isSaved = true;
                           });
-                          var lastDoc = await savedPostsRef
-                              .doc(currentUser?.id)
-                              .collection('all')
-                              .orderBy('order', descending: true)
-                              .limit(1)
-                              .get();
-                          if (lastDoc.docs.length == 0) {
-                            savedPostsRef
-                                .doc(currentUser?.id)
-                                .collection('all')
-                                .doc()
-                                .set({
-                              'order': 1,
-                              'posts': [
-                                postId,
-                              ],
-                            }, SetOptions(merge: true));
-                          } else if (lastDoc.docs.length == 1 &&
-                              lastDoc.docs.first.data()['posts'].length < 2) {
-                            List<dynamic> _postIdList =
-                                lastDoc.docs.first.data()['posts'];
-                            _postIdList.add(postId);
-                            savedPostsRef
-                                .doc(currentUser?.id)
-                                .collection('all')
-                                .doc(lastDoc.docs.first.id)
-                                .set({
-                              'posts': _postIdList,
-                            }, SetOptions(merge: true));
-                          } else if (lastDoc.docs.length == 1 &&
-                              lastDoc.docs.first.data()['posts'].length > 1) {
-                            savedPostsRef
-                                .doc(currentUser?.id)
-                                .collection('all')
-                                .doc()
-                                .set({
-                              'order': lastDoc.docs.first.data()['order'] + 1,
-                              'posts': [
-                                postId,
-                              ],
-                            }, SetOptions(merge: true));
-                          }
-                          Boxes.saveBox.put(postId, null);
+                     
+                      await   Hasura.insertSavedPost(postId);
+                                          Boxes.saveBox.put(postId, null);
+                          
                           setState(() {
                             showSaveBar = true;
                           });
@@ -1329,33 +1284,17 @@ Text( '${Functions.abbreviateNumber(widget.shares,hideZero: true)}',
   @override
   void dispose() {
     _controller?.dispose();
-    flickManager?.dispose();
+    // flickManager?.dispose();
     super.dispose();
   }
 
-  checkVoteOnline() async {
-    var query = await postsVotersRef
-        .doc(currentUser.id)
-        .collection('userVotes')
-        .where('ids', arrayContains: widget.postId)
-        .get();
-    if (query.docs.length == 0) return;
-    List ids = query.docs.first.data()['ids'];
-    List votes = query.docs.first.data()['votes'];
-    if (ids.contains(widget.postId)) {
-      if (votes[ids.indexOf(widget.postId)] == true) {
-        vote = Vote.up;
-      } else {
-        vote = Vote.down;
-      }
-    }
-  }
+
 
   bool alreadyUpvoted = false;
 
   @override
   void initState() {
-    isOwner = currentUser.id == widget.ownerId;
+    isOwner = Boxes.currentUserBox.get('user_id') == widget.ownerId;
 
     if (Boxes.voteBox.containsKey(widget.postId)) {
       if (Boxes.voteBox.get(widget.postId)) {
@@ -1364,7 +1303,7 @@ Text( '${Functions.abbreviateNumber(widget.shares,hideZero: true)}',
       }
     } else if (PreferencesUpdate().getBool('votes_downloaded') == null ||
         PreferencesUpdate().getBool('votes_downloaded') == false) {
-      checkVoteOnline();
+    
     }
 
     if (Boxes.followingBox.containsKey(ownerId)) {
@@ -1385,7 +1324,8 @@ Text( '${Functions.abbreviateNumber(widget.shares,hideZero: true)}',
   @override
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
-    return notInterested //can do some other stuff
+    print(contentsInfo);
+    return deleted? Container(): notInterested //can do some other stuff
         ? Container(
             color: Theme.of(context).backgroundColor,
             padding: EdgeInsets.symmetric(horizontal: 15),
@@ -1476,9 +1416,9 @@ Text( '${Functions.abbreviateNumber(widget.shares,hideZero: true)}',
                 ),
               ),
               Divider(
-                thickness: 4,
+                thickness: 1.5,
                 color: Theme.of(context).cardColor,
-                height: 4,
+                height: 1.5,
               ),
             ],
           );
@@ -1616,9 +1556,8 @@ class DownvoteTileState extends State<DownvoteTile> {
       ),
       title: Text('Downvote'),
       onTap: () {
-        print('this is postid : ${widget.postId}' );
+        print('postid : ${widget.postId}' );
         PostFunctions().handleDownvoteButton(widget.postId, vote);
-
         if (vote == Vote.down) {
           setState(() {
             vote = Vote.none;

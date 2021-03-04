@@ -37,19 +37,13 @@ class _ActivityScreenState extends State<ActivityScreen> {
         children: <Widget>[
                   settingsSwitchListTile('Set your profile private', setPrivate, (newValue){
                  //TODO
-                 PreferencesUpdate().updateBool('set_private',newValue);
-                preferencesRef.doc(currentUser.id).update({
-                  'set_private': newValue
-                });
+                 PreferencesUpdate().updateBool('set_private',newValue,upload: true);
                 setState(() {
                     setPrivate = newValue;
                 });}),  Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),   
 
               settingsSwitchListTile('Personalised recommendations based on your activity', trackActivity, (newValue){
-                  PreferencesUpdate().updateBool('track_activity',newValue);
-                preferencesRef.doc(currentUser.id).update({
-                  'track_activity': newValue
-                });
+                  PreferencesUpdate().updateBool('track_activity',newValue,upload: true);
                 setState(() {
                     trackActivity = newValue;
                 });}),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),

@@ -26,39 +26,6 @@ class _HomeScreenState extends State<HomeScreen>
 Widget posts = Container();
   bool followingPosts = false;
   bool topicLoading = true;
-  bool banner = false;
-OverlayEntry tabToggleBanner;
- 
-
-OverlayEntry toggleBanner() {
-    return   
-    OverlayEntry(
-        builder: (context) => Positioned(
-              left: MediaQuery.of(context).size.width * 0.5 - 60,                                                               
-              top: 100,
-              width: 120,
-              height: 40,
-              child: Material(
-                  borderRadius: BorderRadius.circular(5),
-                  elevation: 1.0,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(5),
-                    child: Container(
-                      height: 70,
-                      width: 240,
-                      child: Text(
-                        followingPosts ? 'Following' : 'Home',
-                        style: TextStyle(color: Colors.white, fontSize: 20),
-                      ),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                          color: Theme.of(context).primaryColor),
-                    ),
-                  )),
-            ));
-  }
-
 
   showTagsSheet() {
     //  bottomBar(_scaffoldKey,'sssss',);
@@ -94,7 +61,6 @@ OverlayEntry toggleBanner() {
     super.didChangeDependencies();
 
     posts = PaginatedPosts(length: 2,key: UniqueKey(),);
-    tabToggleBanner = toggleBanner();
   }
     bool get wantKeepAlive => true;
   @override
@@ -104,36 +70,32 @@ OverlayEntry toggleBanner() {
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: header(
           context,implyLeading: false,
-          title: Text(
-            'Stark',
-            style: TextStyle(
-              fontSize: 26,
-              fontFamily: 'Techna Sans Regular',
-            ),
+          title: Row(
+            children: [
+              Text(
+                'Stark',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontFamily: 'Techna Sans Regular',
+                ),
+              ),
+              followingPosts? Padding(
+
+                padding: const EdgeInsets.only(left:10,top:8),
+                child: Text('FOLLOWING',style: TextStyle(fontSize:12, fontWeight: FontWeight.w700,color: Colors.grey.withOpacity(0.7),)),
+              ): Container(),
+            ],
           ),
           actionButton2: IconButton(
               icon: Icon(
                 followingPosts
-                    ? FluentIcons.person_24_regular
+                    ? FluentIcons.arrow_hook_up_left_24_regular
                     : FluentIcons.new_24_regular,
                 size: 26,
               ),
               onPressed: () {
                 setState(() {
                   followingPosts = !followingPosts;
-                  banner = !banner;
-                  if (banner)
-                    Overlay.of(context).insert(tabToggleBanner);
-                  else
-                    tabToggleBanner?.remove();
-                });
-                Future.delayed(const Duration(milliseconds: 1800), () {
-                  setState(() {
-                    if (banner) {
-                      tabToggleBanner?.remove();
-                      banner = false;
-                    }
-                  });
                 });
               }),
           actionButton: IconButton(

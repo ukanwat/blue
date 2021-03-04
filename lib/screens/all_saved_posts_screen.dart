@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/services/hasura.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -19,79 +20,25 @@ class AllSavedPostsScreen extends StatefulWidget {
 }
 
 class _AllSavedPostsScreenState extends State<AllSavedPostsScreen> {
- bool loading = true;
-  List<Post> posts = [];
+ bool loaded = false;
+
+  List<dynamic> posts = [];
   List<dynamic> postDocSnapshots = [];
   DocumentSnapshot lastDocument;
-  int documentLimit = 3;
+  int offset = 0;
   ScrollController _controller = ScrollController();
-  Future<List> getDocPosts()async{
-    if(lastDocument == null){
-var _postGroup = await savedPostsRef
-        .doc(currentUser.id)
-        .collection('all')
-        .orderBy('order', descending: true)
-        .limit(1)
-        .get();
-        print(_postGroup.docs.first.data()['posts']);
-         if(_postGroup.docs.length == 0){
-             print('ssssssssssss');
-          setState(() {
-            loading = false;
-         
-          });
-             return [];
-        }
-        lastDocument = _postGroup.docs.first;
-          return _postGroup.docs.first.data()['posts'];
-    }
- var _postGroup = await savedPostsRef
-        .doc(currentUser.id)
-        .collection('all')
-        .orderBy('order', descending: true)
-          .startAfterDocument(lastDocument)
-        .limit(1)
-        .get();
-        if(_postGroup.docs.length == 0){
-          setState(() {
-            loading = false;
-        
-          });
-              return [];
-        }
-         lastDocument = _postGroup.docs.first;
-        return _postGroup.docs.first.data()['posts'];
-  }
+
   getAllSavedPosts() async {
-  
-    if (!loading) {
-      return;
-    }
-   
-    List _postList = [];
-    
-    List<Future> postFutures = [];
-  int postLength = 0;
-    while(postLength < documentLimit){
-      _postList = await getDocPosts();
-      postLength  =     postLength + _postList.length;
-      if(!loading)
-      return;
-      print( postLength );
-   _postList.forEach((id) {
-     print(id);
-
-   postFutures.add(postsRef.doc(id).get());
-       });
-       
-    }
-    postDocSnapshots = await Future.wait(postFutures);
-
-    
-   
+  dynamic _data =await  Hasura.getSavedPosts(offset);
+    offset = offset + _data.length;
+   if(_data.length < 8){
+     setState(() {
+       loaded =  true;
+     });
+   }
     setState(() {
       posts = posts +
-          postDocSnapshots.map((doc) => Post.fromDocument(doc.data())).toList();
+          _data.map((doc) => Post.fromDocument(doc['post'])).toList();
     });
   }
   
@@ -100,11 +47,9 @@ var _postGroup = await savedPostsRef
     getAllSavedPosts();
     _controller.addListener(() {
       if (_controller.position.pixels == _controller.position.maxScrollExtent &&
-          loading) {
+          !loaded) {
     
-        setState(() {
           getAllSavedPosts();
-        });
       }
     });
 
@@ -124,16 +69,16 @@ var _postGroup = await savedPostsRef
       ),
       body:Container(
         color: Theme.of(context).backgroundColor,
-        child: ListView(controller: _controller, children: [
-                ...posts,
-                if(loading)
-                circularProgress(),
-             if(!loading)   Container(
-                    width: double.infinity,
-                    height: 100,
-                    color: Theme.of(context).backgroundColor),
-              ]),
-      ),
-    );
+        child: ListView.builder(controller: _controller,
+        itemBuilder: (context,i){
+          if(i ==  posts.length && !loaded){
+            return circularProgress();
+          }
+          return posts[i];
+        },
+itemCount: loaded? posts.length:posts.length+1,
+         
+        )
+    ));
   }
 }

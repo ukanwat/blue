@@ -8,14 +8,15 @@ import 'hasura.dart';
 class PreferencesUpdate {
   updateBool(
     String key,
-    bool value, {
-    bool upload,
-  }) {
+    bool value,{ bool upload}) {
     if (upload != null ? upload : false) {
-      preferencesRef.doc(currentUser.id).update({key: value});
+     uploadValue(key, value, false);
     }
     Boxes.preferenceBox.put(key, value);
       Hasura.updatePreferences(key,value);
+  }
+  uploadValue(String key, dynamic value,bool str )async{
+     await Hasura.updatePreferences(key, value,string: str);
   }
 
   updateString(
@@ -79,7 +80,7 @@ _list.add(value);
   String getString(
     String key,
   ) {
-    if(!Boxes.preferenceBox.containsKey('token')){
+    if(!Boxes.preferenceBox.containsKey(key)){
          return null;
     }
     return  Boxes.preferenceBox.get(key);

@@ -1,16 +1,14 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
 
-// Package imports:
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
 import '../services/boxes.dart';
-
+import '../services/hasura.dart';
 class SaveDialog extends StatefulWidget {
  final  Post post;
   SaveDialog(this.post);
@@ -25,59 +23,7 @@ TextEditingController commentController = TextEditingController();
 bool isLoading = true;
 List<InkWell> collectionList = [];
 savePost(String collectionName)async{
- QuerySnapshot lastDoc = await savedPostsRef
-                                .doc(currentUser?.id)
-                                .collection('userCollections')
-                                .doc(collectionName)
-                                .collection('collectionPosts')
-                                .orderBy('order', descending: true)
-                                .limit(1)
-                                .get();
-                            if (lastDoc.docs.length == 0) {
-                              savedPostsRef
-                       .doc(currentUser?.id)
-                                .collection('userCollections')
-                                .doc(collectionName)
-                                .collection('collectionPosts')
-                                  .doc()
-                                  .set({
-                                'order': 1,
-                                'posts': [
-                                  widget.post.postId,
-                                ],
-                              },SetOptions(merge: true ));
-                            } else if (lastDoc.docs.length == 1 &&
-                                lastDoc.docs.first.data()['posts'].length <
-                                    20) {
-                              List<dynamic> _postIdList =
-                                  lastDoc.docs.first.data()['posts'];
-                              _postIdList.add(widget.post.postId);
-                              savedPostsRef
-                                   .doc(currentUser?.id)
-                                .collection('userCollections')
-                                .doc(collectionName)
-                                .collection('collectionPosts')
-                                  .doc(lastDoc.docs.first.id)
-                                  .set({
-                                'posts': _postIdList,
-                              },SetOptions(merge: true ) );
-                            } else if (lastDoc.docs.length == 1 &&
-                                lastDoc.docs.first.data()['posts'].length >
-                                    19) {
-                              savedPostsRef
-                                    .doc(currentUser?.id)
-                                .collection('userCollections')
-                                .doc(collectionName)
-                                .collection('collectionPosts')
-                                  .doc()
-                                  .set({
-                                'order':
-                                    lastDoc.docs.first.data()['order'] + 1,
-                                'posts': [
-                                  widget.post.postId,
-                                ],
-                              },SetOptions(merge: true ));
-                            }
+await Hasura.updateSavedPost(collectionName, widget.post.postId);
                              Boxes.saveBox.put(widget.post.postId,collectionName );
 
 }  
@@ -87,14 +33,13 @@ savePost(String collectionName)async{
     super.initState();
   }
   getCollections()async{
-    DocumentSnapshot snapshot =await collectionsRef
-        .doc(currentUser?.id).get();
+  dynamic snapshot =await Hasura.getCollections();
     setState(() {
 
-    if(snapshot != null) {snapshot.data().forEach((key, value) {
-         collectionList.insert(int.parse(key), InkWell(
+    if(snapshot != null) {snapshot.forEach((value) { 
+         collectionList.add( InkWell(
 onTap: ()async {
-  await savePost(value);
+  await savePost(value['collection']);
   Navigator.pop(context);                // TODO dont pop if user pops using tap or back button
 },
                     child: Container(
@@ -107,7 +52,7 @@ margin: EdgeInsets.symmetric(horizontal: 5,vertical: 2),
              child:Center(
                child: Padding(
                  padding: const EdgeInsets.only(left: 8),
-                 child: Text(value,maxLines: 1,
+                 child: Text(value['collection'],maxLines: 1,
 overflow: TextOverflow.ellipsis,
                    style: TextStyle(
                      fontSize: 20,

@@ -90,7 +90,7 @@ AuthService.firebaseAuth.authStateChanges().first.then((user) {
                 Container(),
                 CommunicationTabbarScreen(),
                 ProfileScreen(
-                  profileId: Boxes.currentUserBox.get('id'),
+                  profileId: Boxes.currentUserBox.get('user_id'),
                 ),
               ],
             ),
@@ -102,9 +102,9 @@ AuthService.firebaseAuth.authStateChanges().first.then((user) {
           primaryColor: Theme.of(context).primaryColor.withOpacity(0.8),
         ),
         child: SizedBox(
-          height: 56,
+          height: 54,
           child: BottomNavigationBar(
-            iconSize: 26,
+            iconSize: 24,
             elevation: 10,
             type: BottomNavigationBarType.fixed,
             showSelectedLabels: false,
@@ -115,46 +115,54 @@ AuthService.firebaseAuth.authStateChanges().first.then((user) {
               BottomNavigationBarItem(
                 label: 'Home',
                 icon: Icon(
-                  FlutterIcons.home_fea,
-                  size: 26,
+            FluentIcons.home_24_filled,
+                  size: 24,
                 ),
                 activeIcon: Icon(
-                  FlutterIcons.home_fea,
+               FluentIcons.home_24_filled,size: 24,
                 ),
               ),
               BottomNavigationBarItem(
                 label: 'Explore',
                 icon: Icon(
-                  FlutterIcons.compass_fea, size: 26,
+                  FlutterIcons.search_faw,
+                  size: 22,
                   // size: 34,
                 ),
                 activeIcon: Icon(
-                  // FontAwesome.compass,
-                  FlutterIcons.compass_fea, size: 26,
+                FlutterIcons.search_faw,size: 22,
                 ),
               ),
               BottomNavigationBarItem(
                 label: 'Post',
-                icon: Icon(
-                  FlutterIcons.edit_fea,
-                ),
+                activeIcon:  Container(
+                  height: 24,
+                  child: Image.asset("assets/images/stark-bnb-icon-wa.png")),
+              
+                icon: Container(
+                  height: 24,
+                  child: Image.asset("assets/images/stark-bnb-icon-wi.png")),
               ),
               BottomNavigationBarItem(
                 label: 'Notifications',
                 icon: Icon(
-                  FlutterIcons.notification_ent,
-                  size: 23.6,
+                       FluentIcons.alert_24_filled,
+                  size: 24,
                 ),
                 activeIcon: Icon(
-                  FlutterIcons.notification_ent,
-                  size: 23.6,
+               FluentIcons.alert_24_filled,
+                  size: 24,
                 ),
               ),
               BottomNavigationBarItem(
                 label: 'Profile',
                 icon: Icon(
-                  FlutterIcons.user_faw5,
-                  size: 23,
+                  FlutterIcons.user_faw,
+                  size: 22,
+                ),
+                activeIcon: Icon(
+               FlutterIcons.user_faw,
+                  size: 22,
                 ),
               ),
             ],

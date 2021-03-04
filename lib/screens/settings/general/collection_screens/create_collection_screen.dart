@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/services/hasura.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -18,27 +19,22 @@ class CreateCollectionScreen extends StatefulWidget {
 
 class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
  final TextEditingController collectionNameController = TextEditingController();
- int  noOfCollections ;
-  DocumentSnapshot snapshot;
+ 
     final formKey = GlobalKey<FormState>();
 @override
   void initState() {
-      getCollections();
     super.initState();
   }
-    getCollections() async {
-  snapshot =await collectionsRef
-        .doc(currentUser?.id).get();
-        noOfCollections =  snapshot.data().length;
-   }
+
    saveCollection()async {
      formKey.currentState.validate();
-     if(snapshot != null && noOfCollections != null && !snapshot.data().values.contains(collectionNameController.text) && collectionNameController.text.length > 0 && formKey.currentState.validate()){
+     if(collectionNameController.text.length > 0 && formKey.currentState.validate()){
    
        formKey.currentState.save();
-         await collectionsRef
-        .doc(currentUser?.id).set({ noOfCollections.toString(): collectionNameController.text },SetOptions(merge: true));
-        Navigator.pop(context);
+      await  Hasura.insertCollection(collectionNameController.text);
+      Navigator.pop(context,true);
+     }else{
+        Navigator.pop(context,false);
      }
      
      
@@ -97,9 +93,7 @@ class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
 
              },
                            validator: (value){
-              if(snapshot.data().values.contains(value)){
-                return 'Collection already exists';
-              }
+              
                if(value.length == 0 ){
                 return 'Collection name must have atleast 1 character';
               }

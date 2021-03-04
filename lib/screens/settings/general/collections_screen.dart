@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/services/hasura.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -20,7 +21,7 @@ class CollectionsScreen extends StatefulWidget {
 }
 
 class _CollectionsScreenState extends State<CollectionsScreen> {
-  DocumentSnapshot  snapshot ;
+ dynamic  snapshot ;
   bool loading  = true;
   @override
   void initState() {
@@ -28,11 +29,13 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
     super.initState();
   }
       getCollections() async {
-snapshot =await collectionsRef
-        .doc(currentUser?.id).get();
-        setState((){
-          loading  = false;
-        });
+        setState(() {
+  loading = true;
+});
+snapshot =await Hasura.getCollections();
+setState(() {
+  loading = false;
+});
    }
   @override
   Widget build(BuildContext context) {
@@ -61,7 +64,11 @@ snapshot =await collectionsRef
                 onPressed: () {
                   Navigator.of(context).pushNamed(
                       CreateCollectionScreen.routeName,
-                    );
+                    ).then((value){
+                      if(value == true){
+                        getCollections();
+                      }
+                    });
                 },
                 child: Text(
                   'New',
@@ -91,12 +98,12 @@ border: Border.all(width: 2,color:  Theme.of(context).cardColor,)
            if(i== -1){
               Navigator.of(context).pushNamed( AllSavedPostsScreen.routeName);
            }else{
-              Navigator.of(context).pushNamed( CollectionPostsScreen.routeName,arguments: snapshot.data()['$i' ]);
+              Navigator.of(context).pushNamed( CollectionPostsScreen.routeName,arguments: snapshot[i]['collection']);
            }
              },
                       child:  Center(
                child: Text(i== -1? 'All Saved':
-                snapshot.data()['$i' ],maxLines: 1,overflow: TextOverflow.ellipsis,
+                snapshot[i ]['collection'],maxLines: 1,overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                
                   fontSize: 25,
@@ -107,7 +114,7 @@ border: Border.all(width: 2,color:  Theme.of(context).cardColor,)
             ),
           );
       },
-      itemCount: snapshot.data().length + 1,
+      itemCount: snapshot.length + 1,
       )
     );
   }

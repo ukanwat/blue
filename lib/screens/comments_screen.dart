@@ -18,7 +18,8 @@ import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
 import '../widgets/comment.dart';
 import './home.dart';
-
+import '../services/boxes.dart';
+import '../services/hasura.dart';
 class CommentsScreen extends StatefulWidget {
   static const routeName = '/comments';
   @override
@@ -29,14 +30,11 @@ class _CommentsScreenState extends State<CommentsScreen> {
   TextEditingController commentsController = TextEditingController();
   bool showReplies = true;
   Post data;
-  buildComments(Post data) {
-    return StreamBuilder(
-      stream:null,
-      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (!snapshot.hasData) {
-          return circularProgress();
-        }
-        print(snapshot.data.docs.length);
+  Widget commentsWidget =  circularProgress();
+  buildComments(Post data)async {
+   dynamic  snapshot = await Hasura.getComments(data.postId);
+   print(snapshot);
+        print(snapshot.length);
         List<Widget> comments = [
            Container(
              padding: EdgeInsets.only(left: 50,top: 18,bottom: 18),
@@ -72,48 +70,30 @@ class _CommentsScreenState extends State<CommentsScreen> {
                 dense: true,
               )), Container(width: double.infinity,  color: Colors.grey[400],height: 0.4,),
         ];
-        if( snapshot.data.docs.length == 0){
-                return ListView(padding: EdgeInsets.only(bottom: 90,left: 0,right: 0,top: 0),
+        if( snapshot.length == 0){
+          setState(() {
+               commentsWidget = ListView(padding: EdgeInsets.only(bottom: 90,left: 0,right: 0,top: 0),
           children: comments,
         );
+          });
+         
         }
-        snapshot.data.docs.forEach((QueryDocumentSnapshot doc) {
-          // comments.add(Comment.fromDocument(doc.data(), data.postId, doc.id, showReplies));
+        snapshot.forEach((doc) {
+          comments.add(Comment.fromDocument(doc,  doc['post_id'],  doc['comment_id']));
           print('d');
         });
-        print(snapshot.data.docs.length);
-        return ListView(padding: EdgeInsets.only(bottom: 90,left: 0,right: 0,top: 0),
+        print(snapshot.length);
+        setState(() {
+           commentsWidget =  ListView(padding: EdgeInsets.only(bottom: 90,left: 0,right: 0,top: 0),
           children: comments,
         );
-      },
-    );
+        });
+     
+   
   }
 
-  addComments(Post data) {
-    // commentsRef.doc(data.postId).collection('userComments').add({
-    //   'username': currentUser.username,
-    //   'comment': commentsController.text,
-    //   'timeStamp': FieldValue.serverTimestamp(),
-    //   'avatarUrl': currentUser.photoUrl,
-    //   'userId': currentUser.id,
-    //   'upvotes': 0,
-    //   'downvotes': 0,
-    // });
-    // TODO data['postInteractions'].postInteractions[data['postId']] = PostInteraction( data['ownerId'], false, true, false, false);
-    bool isNotPostOwner = currentUser.id != data.ownerId;
-    if (isNotPostOwner) {
-      activityFeedRef.doc(data.ownerId).collection('feedItems').add({
-        'type': 'comment',
-        'commentData': commentsController.text,
-        'username': currentUser.username,
-        'displayName': currentUser.name,
-        'title': data.title,
-        'userId': currentUser.id,
-        'userProfileImg': currentUser.photoUrl,
-        'postId': data.postId,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-    }
+  addComments(Post data){
+  Hasura.insertComment(data.postId, commentsController.text);
     commentsController.clear();
   }
 
@@ -161,7 +141,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
       // );
     }
 
-    bool isNotPostOwner = currentUser.id == ownerId;
+    bool isNotPostOwner = Boxes.currentUserBox.get('user_id') == ownerId;
     if (isNotPostOwner) {
       activityFeedRef.doc(ownerId).collection('feedItems').add({
         'type': 'comment reply',
@@ -182,7 +162,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
 
   @override
   void initState() {
-    
+   
     CommentNotifier().changeCommentType(
       {'type': 'comment'},
     );
@@ -194,8 +174,14 @@ class _CommentsScreenState extends State<CommentsScreen> {
     super.initState();
   }
   @override
+  void didChangeDependencies() {
+     data = ModalRoute.of(context).settings.arguments as Post;
+   buildComments(data);
+    super.didChangeDependencies();
+  }
+  @override
   Widget build(BuildContext context) {
-   data = ModalRoute.of(context).settings.arguments as Post;
+  
     return ChangeNotifierProvider(
       create: (_) => CommentNotifier(),
       child: Scaffold(
@@ -203,7 +189,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
         body: SafeArea(
           child: Stack(
             children: <Widget>[
-             buildComments(data),
+             commentsWidget,
               Column(
                 children: [Expanded(child: Container(),),
                   Consumer<CommentNotifier>(
@@ -258,7 +244,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
                                     maxRadius: 19,
                                     minRadius: 19,
                                     backgroundImage: CachedNetworkImageProvider(
-                                      currentUser.photoUrl,
+                                      currentUser.avatarUrl??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744" ,
                                     ),
                                   ),
                                 ),

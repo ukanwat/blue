@@ -14,16 +14,16 @@ import 'package:blue/widgets/comment_reply.dart';
 import 'package:blue/widgets/comment_vote_button.dart';
 
 class Comment extends StatefulWidget {
-  final String id;
+  final int id;
   final String username;
-  final String userId;
+  final int userId;
   final String avatarUrl;
   final String comment;
-  final Timestamp timestamp;
+  final DateTime timestamp;
   final int upvotes;
   final int downvotes;
-  final String postId;
-  final Map replies;
+  final int postId;
+  final List replies;
   final bool showReplies;
   Comment(
       {this.id,
@@ -39,22 +39,19 @@ class Comment extends StatefulWidget {
       this.showReplies});
 
   factory Comment.fromDocument(
-      Map doc, String postId, String docId, bool showReplies) {
-    if (showReplies == null) {
-      showReplies = false;
-    }
+      Map doc, int postId, int docId) {
     return Comment(
       id: docId,
-      username: doc['username'],
-      userId: doc['userId'],
-      comment: doc['comment'],
-      timestamp: doc['timeStamp'], // TODO fix 'S'
-      avatarUrl: doc['avatarUrl'],
+      username: doc['user']['username'],
+      userId: doc['user_id'],
+      comment: doc['data'],
+      timestamp: DateTime.parse(doc['created_at']), 
+      avatarUrl: doc['user']['avatar_url'],
       upvotes: doc['upvotes'],
       downvotes: doc['downvotes'],
       postId: postId,
-      replies: doc['replies'],
-      showReplies: showReplies,
+      replies: doc['comment_replies'],
+      showReplies: true,
     );
   }
 
@@ -72,19 +69,17 @@ class _CommentState extends State<Comment> {
     setState(() {
       if (repliesLoaded == false) {
         if (widget.replies != null) {
-          widget.replies.forEach((key, value) {
+          widget.replies.forEach(( value) {
             replyWidgets.add(CommentReply(
-              avatarUrl: value['avatarUrl'],
-              comment: value['comment'],
-              id: key,
-              commentId: widget.id,
-              username: value['username'],
+              avatarUrl: value['avatar_url'],
+              comment: value['data'],
+              commentId: value['reply_id'],
+              username: value['user']['username'],
               downvotes: value['downvotes'],
               postId: widget.postId,
               upvotes: value['upvotes'],
-              userId: value['userId'],
-              referName: value['referName'],
-              timestamp: value['timeStamp'],
+              userId: value['user_id'],
+              timestamp: value['created_at'],
             ));
           });
         }
@@ -130,7 +125,7 @@ class _CommentState extends State<Comment> {
                         ),
                       ),
                       Text(
-                        '${timeago.format(widget.timestamp.toDate())}',
+                        '${timeago.format(widget.timestamp)}',
                         style: TextStyle(fontSize: 13),
                       ),
                       Expanded(child: Container()),
@@ -159,11 +154,11 @@ class _CommentState extends State<Comment> {
                           onSelected: (selectedValue) {
                             if (selectedValue == 'Report') {
                               notifier.focusNode.unfocus();
-                              commentsRef
-                                  .doc(widget.postId)
-                                  .collection('userComments')
-                                  .doc(widget.id)
-                                  .update({'reports': FieldValue.increment(1)});
+                              // commentsRef
+                              //     .doc(widget.postId)
+                              //     .collection('userComments')
+                              //     .doc(widget.id)
+                              //     .update({'reports': FieldValue.increment(1)});
                             }
                           },
                         ),

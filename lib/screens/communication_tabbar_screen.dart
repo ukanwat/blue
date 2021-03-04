@@ -90,7 +90,7 @@ bool get wantKeepAlive => true;
                   child: CircleAvatar(
                     minRadius: 22,
                     maxRadius: 22,
-                    backgroundImage: CachedNetworkImageProvider(Boxes.currentUserBox.get('photo_url')??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                    backgroundImage: CachedNetworkImageProvider(Boxes.currentUserBox.get('avatar_url')??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
                   ),
                 ),
                 Text(

@@ -14,16 +14,15 @@ import 'comment_vote_button.dart';
 import 'package:timeago/timeago.dart'  as timeago; 
 
 class CommentReply extends StatelessWidget {
-    final String id;
+    final int id;
   final String username;
   final String userId;
   final String avatarUrl;
   final String comment;
-  final String commentId;
+  final int commentId;
    final int upvotes;
    final int downvotes;
-   final String postId;
-   final String referName;
+   final int postId;
    final Timestamp timestamp;
   CommentReply({
     this.id,
@@ -35,7 +34,6 @@ class CommentReply extends StatelessWidget {
     this.upvotes,
     this.downvotes,
     this.postId,
-    this.referName,
     this.timestamp
   });
   @override
@@ -93,11 +91,11 @@ class CommentReply extends StatelessWidget {
 
                         onSelected: (selectedValue) async {
                           if (selectedValue == 'Report') {
-                            commentsRef
-                                  .doc(postId)
-                                  .collection('userComments')
-                                  .doc(commentId)
-                                  .update( {'replies.$id.reports': FieldValue.increment(1)});
+                            // commentsRef
+                            //       .doc(postId)
+                            //       .collection('userComments')
+                            //       .doc(commentId)
+                            //       .update( {'replies.$id.reports': FieldValue.increment(1)});
                           }
                         },
                     ),
@@ -107,7 +105,7 @@ class CommentReply extends StatelessWidget {
          subtitle: Column(
          crossAxisAlignment: CrossAxisAlignment.start,
            children: <Widget>[
-             RichText(text:TextSpan(text:referName != null?'@$referName ': '',style: TextStyle(fontSize: 16,color: Colors.blue),
+             RichText(text:TextSpan(text:'',style: TextStyle(fontSize: 16,color: Colors.blue),
              children: <TextSpan>[TextSpan(text:'$comment',style: TextStyle(fontSize: 16,color: Theme.of(context).iconTheme.color),
             
              ),]

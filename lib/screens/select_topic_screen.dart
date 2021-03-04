@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/screens/explore_screen.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -52,8 +53,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
   }
 
   getTopics() async {
-    QuerySnapshot snapshot = await topicsRef.get();
-   topics = snapshot.docs.first.data()['topics'];
+   topics =  ['Humor','Art & Design','Technology','News','Entertainment','Lifestyle','Science'];
 
     setState(() {
       isLoading = false;

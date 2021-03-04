@@ -25,11 +25,7 @@ class SignInViewScreen extends StatelessWidget {
           Stack(
             children: <Widget>[
               Container(
-                decoration: BoxDecoration(
-                    gradient: RadialGradient(colors: [
-                  Color.fromRGBO(0, 51, 177, 1),
-                  Color.fromRGBO(0, 32, 112, 1)
-                ], center: Alignment(-1, 0.7), radius: 0.8)),
+                child: Image.asset('assets/images/sign_in_image.png',fit: BoxFit.cover,),
                 height: MediaQuery.of(context).size.height * 0.60,
               ),
               Column(
@@ -46,8 +42,8 @@ class SignInViewScreen extends StatelessWidget {
                       child: Text(
                         'Stark',
                         style: TextStyle(
-                            fontFamily: 'Diskopia',
-                            fontSize: 60 * scale,
+                            fontFamily: 'Techna Sans Regular',
+                            fontSize: 90 * scale,
                             color: Colors.white),
                       ),
                     ),

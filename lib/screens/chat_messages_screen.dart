@@ -247,6 +247,7 @@ Container sendButton({Function sendFunction}) {
               GestureDetector(
                 onTap: () {
                   GoTo().profileScreen(context, widget.peerUser.id);
+                 
                 },
                 child: Padding(
                   padding: const EdgeInsets.only(

@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/widgets/empty_dialog.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -68,12 +69,118 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
                     vertical: 15,
                   ),
                   child: FlatButton(
-                    onPressed: null,
+                    onPressed: (){
+                    showDialog(context: context, child:
+    EmptyDialog(Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+ SizedBox(height: 10.0),
+            Container(
+              width: double.infinity,
+              alignment: Alignment.center,
+              child: ClipRRect(
+                clipBehavior: Clip.antiAliasWithSaveLayer,
+                child: Text(
+                 'Set Mute Time',
+
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ),
+            SizedBox(height: 20.0), Divider(height: 1,thickness: 1,color: Theme.of(context).cardColor,),
+            InkWell(
+              onTap: () async {
+             DateTime now =   DateTime.now();
+             DateTime time = DateTime(now.year, now.month, now.day, now.hour+1, now.minute, now.second, now.millisecond, now.microsecond); 
+                PreferencesUpdate().updateString('mute_push_time', time.toString(),upload: true);
+                 Navigator.of(context).pop();
+              },
+              child: Container(
+                height: 40,
+                width: double.infinity,
+                margin: EdgeInsets.symmetric(vertical: 2),
+                child: Center(
+                  child: Text(
+                    "1 Hour",
+                    style: TextStyle(
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ), Divider(height: 1,thickness: 1,color:  Theme.of(context).cardColor,),
+           InkWell(
+              onTap: () async {
+                 DateTime now =   DateTime.now();
+             DateTime time = DateTime(now.year, now.month, now.day, now.hour+6, now.minute, now.second, now.millisecond, now.microsecond); 
+                PreferencesUpdate().updateString('mute_push_time', time.toString(),upload: true);
+                 Navigator.of(context).pop();
+              },
+              child: Container(
+                height: 40,
+                width: double.infinity,
+                margin: EdgeInsets.symmetric(vertical: 2),
+                child: Center(
+                  child: Text(
+                    "6 Hours",
+                    style: TextStyle(
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ), Divider(height: 1,thickness: 1,color: Theme.of(context).cardColor,),
+             InkWell(
+              onTap: () async {
+                 DateTime now =   DateTime.now();
+             DateTime time = DateTime(now.year, now.month, now.day, now.hour+12, now.minute, now.second, now.millisecond, now.microsecond); 
+                PreferencesUpdate().updateString('mute_push_time', time.toString(),upload: true);
+                 Navigator.of(context).pop();
+              },
+              child: Container(
+                height: 40,
+                width: double.infinity,
+                margin: EdgeInsets.symmetric(vertical: 2),
+                child: Center(
+                  child: Text(
+                    "12 Hours",
+                    style: TextStyle(
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Divider(height: 1,thickness: 1,color:  Theme.of(context).cardColor,),
+            SizedBox(height: 10.0),
+            FlatButton(
+              color: Theme.of(context).cardColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(); // To close the dialog
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Theme.of(context).iconTheme.color,
+                ),
+              ),
+            ),
+
+
+    ],))
+);
+                    },
                     child: Text(
                       'Mute All Notifications', //TODO
                       style: TextStyle(color: Colors.white),
                     ),
                     disabledColor: Colors.blue,
+                    highlightColor: Colors.blue,
+                    color: Colors.blue,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15)),
                   ),

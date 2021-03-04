@@ -3,7 +3,6 @@ import 'package:blue/services/hasura.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Project imports:
 import 'package:blue/widgets/empty_state.dart';

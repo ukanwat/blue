@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -29,7 +30,8 @@ class _TagScreenState extends State<TagScreen> {
     tag = ModalRoute.of(context).settings.arguments;
     super.didChangeDependencies();
   }
-
+  
+  List colors = [Colors.red, Colors.green, Colors.yellow,Colors.blue, Colors.amber,Colors.deepOrange,Colors.indigo,];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -106,10 +108,7 @@ class _TagScreenState extends State<TagScreen> {
                                       fontWeight: FontWeight.w700)),
                             ),
                           )),
-                      background: Image.network(
-                        "https://i.pinimg.com/564x/15/68/74/15687422736584f42e9e4962594c7a2c.jpg",
-                        fit: BoxFit.cover,
-                      )),
+                      background: Container(height: double.infinity,width: double.infinity,color:colors.elementAt(Random().nextInt(colors.length)))),
                 ),
                 SliverPersistentHeader(
                   delegate: _SliverAppBarDelegate(
