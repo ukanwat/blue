@@ -20,8 +20,8 @@ dependencies:
   flutter:
     sdk: flutter
   image: ^2.1.14
-  flutter_icons: ^1.1.0
-  cloud_firestore: ^0.16.0
+  flutter_icons: 
+  cloud_firestore:
   firebase_auth: 
   flutter_local_notifications: ^3.0.3
   google_sign_in: ^4.4.1
@@ -54,14 +54,14 @@ dependencies:
   flick_video_player: ^0.1.1
   visibility_detector: ^0.1.5
   flutter_link_preview: ^1.2.11
-  fluentui_system_icons: ^1.1.85
+  fluentui_system_icons: 
   animations: ^1.1.2
   firebase_dynamic_links: 
   firebase_core: ^0.7.0
   package_info: ^0.4.3+2
   page_transition: ^1.1.7+3
   sortedmap: ^0.4.2+1
-  flutter_svg: ^0.18.0
+  flutter_svg: ^0.19.2
   nuts_activity_indicator: ^0.1.1
   hive: ^1.4.4+1
   hive_flutter: ^0.3.1
