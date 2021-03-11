@@ -20,7 +20,7 @@ class FileStorage {
     });
     return url;
   }
-  static Future<String> uploadImage(String folder, File image,{String fileName})async{
+  static Future<String> uploadImage(String folder, File image,{String fileName, })async{
     if(fileName == null){
         fileName = Uuid().v4();
     }

@@ -65,11 +65,14 @@ class Hasura {
     return map['data']['users'][0]['user_id'];
   }
 
-  static insertUser(String name, String email, String username) async {
+  static upsertUser(String name, String email,{ String username}) async {
     if (jwtToken == null) return;
     String uid = AuthService().getCurrentUID();
     String _doc =
-        'mutation{insert_users(objects: [{name: "$name",email: "$email",username: "$username",uid:"$uid"}]) { user_id}}';
+        """mutation{insert_users(objects: [{name: "$name",email: "$email",uid:"$uid"}], on_conflict: {
+      constraint: users_uid_key,
+      update_columns: []
+    }) { user_id}}""";
     var data = await hasuraConnect.mutation(
       _doc,
     );
@@ -274,7 +277,8 @@ print(_doc);
     if (where != null) {
       param = param + ',where:$where';
     }
-    var data = await hasuraConnect.query("""query{
+    print(param);
+        var data = await hasuraConnect.query("""query{
   posts($param){
     contents
     created_at
@@ -399,7 +403,7 @@ print(_doc);
     if (userId == null) {
       userId = await getUserId();
     }
-  var time =  PreferencesUpdate().getString('searches_last_cleared');
+  var time = await PreferencesUpdate().getFuture('searches_last_cleared');
   DateTime timed = DateTime.parse(time).subtract(DateTime.now().timeZoneOffset);
   time = timed.toString(); 
   String field;

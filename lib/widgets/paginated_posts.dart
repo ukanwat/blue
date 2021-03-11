@@ -50,12 +50,15 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
     super.initState();
   }
    addPosts()async{
+     if(loaded == true)
+     return;
+
      if(lastDoc == null ){
          dynamic  _p ;
        if(widget.tag!=null){
-           _p =await Hasura.getTagPosts(widget.length<6?6:widget.length,0,widget.orderBy??"{created_at:desc}",tag:widget.tag,); 
+           _p =await Hasura.getTagPosts(widget.length,0,widget.orderBy??"{created_at:desc}",tag:widget.tag,); 
        }else{
-  _p =await Hasura.getPosts(widget.length<6?6:widget.length,0,widget.orderBy??"{created_at:desc}",); 
+  _p =await Hasura.getPosts(widget.length,0,widget.orderBy??"{created_at:desc}",where: widget.where??null); 
        }
         _posts =_p.map((doc) => Post.fromDocument(doc,isCompact: widget.isCompact??false,)).toList();
          if(this.mounted)
@@ -80,9 +83,9 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
          var _snapshot;
 if(widget.tag!=null){
   
-           _snapshot =await Hasura.getTagPosts(widget.length,0,widget.orderBy??"{created_at:desc}",tag:widget.tag); 
+           _snapshot =await Hasura.getTagPosts(widget.length, lastDoc,widget.orderBy??"{created_at:desc}",tag:widget.tag,); 
        }else{
-  _snapshot =await Hasura.getPosts(widget.length,0,widget.orderBy??"{created_at:desc}",); 
+  _snapshot =await Hasura.getPosts(widget.length, lastDoc,widget.orderBy??"{created_at:desc}",where: widget.where??null); 
        }
                _snapshot.forEach((doc) { 
                  _posts.add(Post.fromDocument(doc,isCompact: widget.isCompact??false,));

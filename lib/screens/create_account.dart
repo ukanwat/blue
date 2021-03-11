@@ -20,7 +20,7 @@ class _CreateAccountState extends State<CreateAccount> {
       SnackBar snackbar = SnackBar(
         content: Text('Welcome $username!'),
       );
-      _scaffoldKey.currentState.showSnackBar(snackbar,);
+      ScaffoldMessenger.of(context).showSnackBar(snackbar);
       Timer(Duration(seconds: 2),(){Navigator.pop(context, username);});
       
     }

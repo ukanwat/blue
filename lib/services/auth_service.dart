@@ -43,24 +43,24 @@ class AuthService {
 
   // Email & Password Sign Up
   Future<String> createUserWithEmailAndPassword(
-      String email, String password, String name,BuildContext context) async {
+      String email, String password, ) async {
     final _currentUser = await firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
              
     // Update the username
-    await _currentUser.user.updateProfile(displayName: name);
-         currentUser = User(name: name,email: email,id:_currentUser.user.uid );
+    // await _currentUser.user.updateProfile(displayName: name);
+    //      currentUser = User(name: name,email: email,id:_currentUser.user.uid );
          
     await _currentUser.user.reload();
     verifyingEmail = true;
-        Navigator.of(context).pushNamed(VerifyEmailScreen.routeName);
+        // Navigator.of(context).pushNamed(VerifyEmailScreen.routeName);
         try{  await _currentUser.user.sendEmailVerification();}catch(e){
-              logout(context);
+              // logout(context);
         }
  
-               Navigator.of(context).pop();
+              //  Navigator.of(context).pop();
               verifyingEmail = false;
     return _currentUser.user.uid;
   }
@@ -122,8 +122,8 @@ class AuthService {
     }
 
   }
-  getUserFromFirestore(String id,BuildContext context)async{
-var _doc = await usersRef.doc(id).get();
+  getUserFromHasura(int id,BuildContext context)async{
+var _doc = await Hasura.getUser(id: id);
 
 if(Boxes.currentUserBox == null){
  await Boxes.openCurrentUserBox();
@@ -153,17 +153,18 @@ currentUser = User.fromDocument(Boxes.currentUserBox.toMap());
     );
   
     var user = (await firebaseAuth.signInWithCredential(credential)).user;
-    
-   
-    await setUserToFirestore(account.id, user.displayName, user.email);
-  await getUserFromFirestore(account.id,context);
+     Hasura.upsertUser(user.displayName, user.email, );//TODO 
+  await getUserFromHasura( int.parse(account.id),context);
      await  Boxes.openBoxes();
         PreferencesUpdate().updateString('accountType','google');
        await  setCustomClaimToken(user);
 
- Hasura.insertUser(user.displayName, user.email, 'uk');//TODO 
+ Hasura.upsertUser(user.displayName, user.email,);//TODO 
   Hasura.insertPreferences();
     user.reload();
+  }
+  setInfo(int id){
+      
   }
   setCustomClaimToken(auth.User _user)async{
 Hasura.jwtToken = await  _user.getIdToken();

@@ -9,11 +9,11 @@ class DynamicLinksService {
   static Future<String> createDynamicLink(String parameter) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     print(packageInfo.packageName);
-    String uriPrefix = "https://scrible.page.link";
+    String uriPrefix = "https://starkapp.page.link";
 
     final DynamicLinkParameters parameters = DynamicLinkParameters(        //TODO
       uriPrefix: uriPrefix,
-      link: Uri.parse('https://scrible.com/$parameter'),
+      link: Uri.parse('https://stark.com/$parameter'),
       androidParameters: AndroidParameters(
         packageName: packageInfo.packageName,
       ),

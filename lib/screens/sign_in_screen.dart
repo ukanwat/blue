@@ -80,7 +80,7 @@ class _SignInScreenState extends State<SignInScreen> {
         }else if(authFormType == AuthFormType.signUp){
           
          await auth.createUserWithEmailAndPassword(
-              _email, _password, _name,context);
+              _email, _password);
       
            
 

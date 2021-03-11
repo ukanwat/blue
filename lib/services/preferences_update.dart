@@ -86,6 +86,14 @@ _list.add(value);
     return  Boxes.preferenceBox.get(key);
   }
 
+  getFuture(String key)async{
+ if(!Boxes.preferenceBox.containsKey(key)){
+    return await Hasura.getPreferences(key);
+       
+    }
+    return  Boxes.preferenceBox.get(key);
+  }
+
   List<String> getStringList(
     String key,
   ) {

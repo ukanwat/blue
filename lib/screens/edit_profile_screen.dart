@@ -5,6 +5,7 @@ import 'dart:io';
 // Flutter imports:
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/boxes.dart';
+import 'package:blue/services/functions.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -57,10 +58,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     Map doc = await Hasura.getUser(self: true);
     user = User.fromDocument(doc['data']['users_by_pk']);
-    print(user.name);
+    print(user.headerUrl);
     displayNameController.text = user.name;
     aboutController.text = user.about;
     websiteController.text = user.website;
+
     setState(() {
       isLoading = false;
     });
@@ -70,7 +72,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void didChangeDependencies() {
     if (!userLoaded) {
   getUser();
-
+ 
       userLoaded = true;
     }
     super.didChangeDependencies();
@@ -85,6 +87,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   updateProfileData() async {
+    progressOverlay(context).show();
     setState(() {
       displayNameController.text.trim().length < 3 ||
               displayNameController.text.isEmpty
@@ -103,31 +106,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _websiteValid) {
       final tempDir = await getTemporaryDirectory();
       final path = tempDir.path;
+     
       String avatarId = Uuid().v4();
       String imageId = Uuid().v4();
-      if (headerImage != null) {
-        String headerId = Uuid().v4();
-        final Im.Image headerFile =
-            Im.decodeImage(headerImage.readAsBytesSync());
-        final compressedHeaderFile = File('$path/img_$headerId.jpg')
-          ..writeAsBytesSync(Im.encodeJpg(headerFile, quality: 85));
-        headerUrl =
-            await FileStorage.upload('profile', headerId, compressedHeaderFile);
-      }
-
-      final Im.Image imageFile = Im.decodeImage(croppedImage.readAsBytesSync());
-
-      final compressedImageFile = File('$path/img_$imageId.jpg')
-        ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
+      String imageDownloadUrl =  await FileStorage.uploadImage('profile',croppedImage,fileName: 'profile_$imageId');
+    
       final Im.Image avatarFile = Im.copyResize(
           Im.decodeImage(croppedImage.readAsBytesSync()),
           width: 100);
       final compressedAvatarFile = File('$path/img_$avatarId.jpg')
         ..writeAsBytesSync(Im.encodeJpg(avatarFile, quality: 85));
-      String imageDownloadUrl = await FileStorage.upload(
-          'profile', "photo_$imageId.jpg", compressedImageFile);
-      String avatarDownloadUrl = await FileStorage.upload(
-          'profile', "avatar_$avatarId.jpg", compressedAvatarFile);
+      String avatarDownloadUrl = await FileStorage.uploadImage(
+          'profile',  compressedAvatarFile,fileName:"avatar_$avatarId.jpg");
       profilePictureUrl = imageDownloadUrl;
       avatarUrl = avatarDownloadUrl;
       if (headerUrl == null) {
@@ -150,28 +140,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         );
       }
 
-      SnackBar snackbar = SnackBar(
-        content: Text('Profile Updated!'),
-      );
-
+       progressOverlay(context).dismiss();
       Navigator.pop(context);
-      _scaffoldKey.currentState.showSnackBar(snackbar);
+       snackbar('Profile Updated!', context);
     }
     if (croppedImage == null &&
         _displayNameValid &&
         _aboutValid&&
         _websiteValid ) {
       if (headerImage != null) {
-        final tempDir = await getTemporaryDirectory();
-        final path = tempDir.path;
         String headerId = Uuid().v4();
-        final Im.Image headerFile =
-            Im.decodeImage(headerImage.readAsBytesSync());
-
-        final compressedHeaderFile = File('$path/img_$headerId.jpg')
-          ..writeAsBytesSync(Im.encodeJpg(headerFile, quality: 85));
-        headerUrl = await FileStorage.upload(
-            'profile', "header_$headerId.jpg", compressedHeaderFile);
+        headerUrl = await FileStorage.uploadImage(
+            'profile',  headerImage,fileName:"header_$headerId.jpg",);
+        
       }
       if (headerUrl == null) {
         
@@ -190,12 +171,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         );
       }
 
-      SnackBar snackbar = SnackBar(
-        content: Text('Profile Updated!'),
-      );
-
-      Navigator.pop(context);
-      _scaffoldKey.currentState.showSnackBar(snackbar);
+      
+       snackbar('Profile Updated!', context);
+         progressOverlay(context).dismiss();
+       Navigator.pop(context);
+     
     }
     Map currentUserMap = {
       'id': currentUser.id,
@@ -205,9 +185,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       'about': aboutController.text,
       'website': websiteController.text.trim(),
       'photoUrl': croppedImage == null
-          ? currentUser.photoUrl
+          ? user.photoUrl
           : profilePictureUrl, //TODO
-      'headerUrl': headerUrl == null ? currentUser.headerUrl : headerUrl,
+      'headerUrl': headerUrl == null ? user.headerUrl : headerUrl,
     };
     Boxes.currentUserBox.putAll(currentUserMap);
     Map currentUserMapGet = Boxes.currentUserBox.toMap();
@@ -220,13 +200,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         username: currentUserMapGet['username'],
         website: currentUserMapGet['website'],
         headerUrl: currentUserMapGet['headerUrl']);
+          Navigator.pop(context);
+     
   }
 
   updateProfilePicture() async {
     File imageFile;
     var picker = ImagePicker();
     var pickedFile = await picker.getImage(
-        source: ImageSource.gallery, maxHeight: 500, maxWidth: 1000);
+        source: ImageSource.gallery, maxHeight: 270, maxWidth: 270);
     if (pickedFile == null) return;
     imageFile = File(pickedFile.path);
 
@@ -244,7 +226,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     File headerFile;
     var picker = ImagePicker();
     var pickedFile =
-        await picker.getImage(source: ImageSource.gallery, imageQuality: 85);
+        await picker.getImage(source: ImageSource.gallery, imageQuality: 75,maxHeight: 320,maxWidth:720);
     if (pickedFile == null) return;
     headerFile = File(pickedFile.path);
 
@@ -326,8 +308,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(currentUser.headerUrl);
-    print('thfthfthfh');
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       key: _scaffoldKey,
@@ -351,7 +331,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           IconButton(
             onPressed: updateProfileData,
             icon: Icon(
-              Icons.save,
+            FluentIcons.save_24_regular,
               size: 30.0,
             ),
           ),
@@ -368,8 +348,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         padding: EdgeInsets.only(
                           bottom: 60.0,
                         ),
-                        child: Stack(
-                          overflow: Overflow.visible,
+                        child: Stack(clipBehavior: Clip.none,
                           children: <Widget>[
                             if (headerImage == null)
                               GestureDetector(
@@ -377,7 +356,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   child: Stack(
                                     children: <Widget>[
                                       Container(
-                                        child: currentUser.headerUrl == null
+                                        child: user.headerUrl == null
                                             ? Container(
                                                 height: 140,
                                                 color: Colors.grey,
@@ -387,7 +366,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                                 height: 140,
                                                 child: cachedNetworkImage(
                                                     context,
-                                                    currentUser.headerUrl),
+                                                    user.headerUrl),
                                                 width: double.infinity,
                                               ),
                                       ),
@@ -480,7 +459,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                         backgroundImage: croppedImage != null
                                             ? FileImage(croppedImage)
                                             : CachedNetworkImageProvider(
-                                                user.photoUrl??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744",
+                                                user.avatarUrl??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744",
                                               ),
                                       ),
                                       InkWell(
@@ -493,7 +472,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                           ),
                                           height: 120,
                                           width: 120,
-                                          child: Icon(FluentIcons.camera_add_24_filled),
+                                          child: Icon(FluentIcons.camera_add_24_filled,color: Colors.white,),
                                         ),
                                       )
                                     ],

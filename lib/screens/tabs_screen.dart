@@ -233,7 +233,7 @@ AuthService.firebaseAuth.authStateChanges().first.then((user) {
                                   )))),
                       decoration: BoxDecoration(
                           borderRadius: new BorderRadius.circular(10),
-                          color: Colors.blue[900]),
+                          color: Color(0xFF1ee682)),
                     ),
                     Container(
                       margin: EdgeInsets.symmetric(vertical: 8),

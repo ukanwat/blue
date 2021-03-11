@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:io';
 
 // Flutter imports:
+import 'package:blue/screens/email_sign_in_screen.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/push_notifications.dart';
@@ -33,6 +34,7 @@ import 'package:blue/screens/explore_posts_screen.dart';
 import 'package:blue/screens/gifs_screen.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/screens/license_screen.dart';
+import './screens/set_name_screen.dart';
 import 'package:blue/screens/package_licenses_screen.dart';
 import 'package:blue/screens/profile_image_crop_screen.dart';
 import 'package:blue/screens/search_tag_screen.dart';
@@ -85,9 +87,9 @@ void main() async {
   }
 
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      systemNavigationBarColor: Colors.black,
       systemNavigationBarDividerColor: Colors.grey[900],
-   ));
+      systemNavigationBarIconBrightness: Brightness.light
+      ));
   runApp(MyApp());
 }
 bool userSignedIn = false;
@@ -141,7 +143,7 @@ class MyAppState extends State<MyApp> {
                 title: 'Stark',
                 theme: notifier.darkTheme == true
                     ? ThemeData(
-                        accentColor: Colors.white,
+                        accentColor:Color(0xD11ee682),textSelectionTheme:  TextSelectionThemeData(selectionColor: Color.fromRGBO(245, 245, 245, 1)),
                         textSelectionColor: Color.fromRGBO(245, 245, 245, 1),
                         cardColor: Color.fromRGBO(50, 50, 50, 1),
                         canvasColor: Color.fromRGBO(32, 32, 32, 1),
@@ -155,7 +157,7 @@ class MyAppState extends State<MyApp> {
                       )
                     : ThemeData(
                         textSelectionColor: Color.fromRGBO(51, 51, 51, 1),
-                        accentColor: Colors.grey,
+                        accentColor: Color(0xD11ee682),
                         cardColor: Color.fromRGBO(238, 238, 238, 1),
                         canvasColor: Color.fromRGBO(250, 250, 250, 1),
                         primaryColor: Colors.blue,
@@ -173,7 +175,7 @@ class MyAppState extends State<MyApp> {
                       ),
                 darkTheme: notifier.darkTheme == false
                     ? ThemeData(
-                        accentColor: Colors.grey,
+                        accentColor: Color(0xD11ee682),
                         textSelectionColor: Color.fromRGBO(24, 24, 24, 1),
                         cardColor: Color.fromRGBO(238, 238, 238, 1),
                         canvasColor: Color.fromRGBO(250, 250, 250, 1),
@@ -192,7 +194,7 @@ class MyAppState extends State<MyApp> {
                     : ThemeData(
                         dividerColor: Colors.grey,
                         textSelectionColor: Color.fromRGBO(245, 245, 245, 1),
-                        accentColor: Colors.white,
+                        accentColor: Color(0xD11ee682),
                         accentTextTheme: Typography.whiteMountainView, //
                         primaryTextTheme: Typography.whiteMountainView, //
                         cardColor: Color.fromRGBO(50, 50, 50, 1),
@@ -330,6 +332,8 @@ class MyAppState extends State<MyApp> {
                   LicenseScreen.routeName: (ctx) => LicenseScreen(),
                   PackageLicensesScreen.routeName: (ctx) =>
                       PackageLicensesScreen(),
+                      EmailSignInScreen.routeName: (ctx) => EmailSignInScreen(),
+                      SetNameScreen.routeName: (ctx) => SetNameScreen(),
                 }),
           );
         },

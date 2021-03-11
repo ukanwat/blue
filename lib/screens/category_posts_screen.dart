@@ -34,7 +34,7 @@ class _CategoryPostsScreenState extends State<CategoryPostsScreen>
       setState(() {if(widget.name == 'All')
       compactPosts = PaginatedPosts(length: 8,isCompact: true ,key: UniqueKey(),);
       else
-        compactPosts = PaginatedPosts(length: 8,isCompact: true ,key: UniqueKey(),);
+        compactPosts = PaginatedPosts(length: 8,isCompact: true ,key: UniqueKey(),where: '{category:{_eq:"${widget.name}"}}',);
       }); 
   }
    @override
@@ -42,7 +42,7 @@ class _CategoryPostsScreenState extends State<CategoryPostsScreen>
     if(widget.name == 'All')
       compactPosts = PaginatedPosts(length: 8,isCompact: true ,key: UniqueKey(),);
       else
-   compactPosts =  PaginatedPosts(length: 8,isCompact: true,key: UniqueKey(),);
+   compactPosts =  PaginatedPosts(length: 8,isCompact: true,key: UniqueKey(),where: '{category:{_eq:"${widget.name}"}}',);
     super.initState();
   }
   @override

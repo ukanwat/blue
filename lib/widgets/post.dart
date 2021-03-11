@@ -8,7 +8,6 @@ import 'dart:math' as math;
 import 'package:blue/services/dynamic_links.dart';
 import 'package:blue/services/post_functions.dart';
 import 'package:blue/widgets/show_dialog.dart';
-import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -19,6 +18,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:hive/hive.dart';
+import 'package:kidd_video_player/kidd_video_player.dart';
+import 'package:kidd_video_player/models/layout_configs.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share/share.dart';
 import 'package:video_player/video_player.dart';
@@ -35,6 +36,7 @@ import 'package:blue/services/video_controls.dart';
 import 'package:blue/widgets/report_dialog.dart';
 import 'package:blue/widgets/repost_dialog.dart';
 import 'package:blue/widgets/save_dialog.dart';
+import 'package:yoyo_player/yoyo_player.dart';
 import '../screens/comments_screen.dart';
 import '../screens/home.dart';
 import '../services/functions.dart';
@@ -203,7 +205,6 @@ class _PostState extends State<Post> {
   CompactPostThumbnailType thumbnailType;
   OverlayEntry overlayOptions;
   bool isFollowing = false;
-  FlickManager flickManager;
   GlobalKey _contentsKey = GlobalKey();
   double contentsHeight;
   bool constraintContent = true;
@@ -368,7 +369,7 @@ class _PostState extends State<Post> {
                                 letterSpacing: 0,
                                 wordSpacing: 0,
                                 height: 1.25,
-                                color: Theme.of(context).textSelectionColor)
+                                color: Theme.of(context).textSelectionTheme.selectionColor)
                             : TextStyle(
                                 fontFamily: 'Lexend Deca',
                                 fontSize: 16,
@@ -391,11 +392,11 @@ class _PostState extends State<Post> {
               children: [
                 GestureDetector(
                     child: Container(
-                      height: 38,
+                      height: 38,width: 55,
                       padding: const EdgeInsets.only(
-                          bottom: 6, left: 15, right: 16, top: 3),
+                          bottom: 3, top: 6),
                       child: Icon(
-                        FluentIcons.more_20_filled,
+                        Icons.more_horiz,
                       ),
                     ),
                     onTap: () {
@@ -451,35 +452,35 @@ class _PostState extends State<Post> {
                   ),
                 ),
                 tagBarVisible
-                    ? Container(
-                        height: 38,
-                        padding: const EdgeInsets.only(
-                            bottom: 6, left: 15, right: 15, top: 3),
-                        child: GestureDetector(
+                    ?  GestureDetector(
                           onTap: () {
                             setState(() {
                               tagBarVisible = false;
                             });
                           },
-                          child: Icon(
-                            FlutterIcons.ios_arrow_up_ion,
+                          child: Container(
+                        height: 38,
+                        padding: const EdgeInsets.only(
+                            bottom: 6, left: 15, right: 15, top: 3),
+                        child:Icon(
+                           FluentIcons.chevron_up_16_filled,
                             size: 22,
                           ),
                         ),
                       )
-                    : Container(
-                        height: 38,
-                        padding: const EdgeInsets.only(
-                            bottom: 6, left: 15, right: 15, top: 3),
-                        child: GestureDetector(
+                    : GestureDetector(
                           onTap: () async {
                             setState(() {
                               tagBarVisible = true;
                             });
                           },
-                          child: Icon(
-                            FluentIcons.number_symbol_20_filled,
-                            size: 19,
+                          child: Container(
+                        height: 38,
+                           padding: const EdgeInsets.only(
+                            bottom: 6, left: 15, right: 15, top: 3),
+                        child: Icon(
+                            FluentIcons.chevron_down_16_filled,
+                            size: 22,
                           ),
                         ),
                       ),
@@ -824,6 +825,7 @@ class _PostState extends State<Post> {
       persistentCallbackAdded = true;
     }
     print(contents);
+    print(title);
     for (int i = 0; i < contents.length; i++) {
       if (contentsInfo[i]['type'] == 'image') {
         if (thumbnailType != CompactPostThumbnailType.video) {
@@ -837,23 +839,32 @@ class _PostState extends State<Post> {
             contentsInfo[i]['thumbUrl'];
             print( contents['$i']);
         thumbnailType = CompactPostThumbnailType.video;
-        _controller = VideoPlayerController.network(
-          contents['$i'],
-        );
-        _initializeVideoPlayerFuture = _controller.initialize().then((_) {
-          if (PreferencesUpdate().getBool('autoplay_videos') == null) {
-            PreferencesUpdate().updateBool('autoplay_videos', false);
-          }
-          bool _autoplay = PreferencesUpdate().getBool('autoplay_videos');
-          flickManager = FlickManager(
-            videoPlayerController: _controller,
-          );
+       
           contentsViewList
-              .add(Container(child: 
-              VideoDisplay(flickManager, _autoplay)
-  ),
+              .add(
+
+       
+       Container(height:  MediaQuery.of(context).size.width/contentsInfo[i]['aspectRatio'],
+         child: KiddVideoPlayer(
+	    fromUrl: true,
+	    videoUrl: contents['$i'],
+      layoutConfigs: KiddLayoutConfigs(
+		    backgroundColor: Colors.black,
+		    backgroundSliderColor: Colors.grey.withOpacity(0.5),
+		    iconsColor: Colors.white,
+		    inLoop: false,
+		    loaderColor: Theme.of(context).accentColor,
+		    pauseIcon: Icons.pause_circle_outline,
+		    playIcon: Icons.play_circle_outline,
+		    showFullScreenButton: true,
+		    showVideoControl: true,
+		    showVolumeControl: false,
+		    sliderColor: Colors.white,
+		    ),
+
+	),
+       )
               );
-        });
       } else if (contentsInfo[i]['type'] == 'text') {
         contentsViewList.add(textContentContainer(contents['$i']));
       } else if (contentsInfo[i]['type'] == 'link') {
@@ -948,7 +959,7 @@ class _PostState extends State<Post> {
 
   Widget footerButton(IconData iconData, Color color, Function function) {
     return Padding(
-      padding: const EdgeInsets.only(right: 0, left: 10),
+      padding: const EdgeInsets.only(right: 0, left: 2),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -959,7 +970,7 @@ class _PostState extends State<Post> {
             child: Icon(
               iconData,
               size: 26,
-              color: color,
+           
             ),
           ),
         ),
@@ -1041,7 +1052,7 @@ class _PostState extends State<Post> {
           if (widget.isCompact)
             if (tagBarVisible) tagBar(),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: widget.isCompact? MainAxisAlignment.spaceAround:MainAxisAlignment.start,
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
               if (widget.isCompact)
@@ -1076,12 +1087,124 @@ class _PostState extends State<Post> {
                             ),
                           ),
                         ),
-              if (!widget.isCompact)
-                if (contentsHeight != null)
-                  if (contentsHeight ==
+              
+              isSaved
+                  ? Container(width: 60,
+                    child: Row(mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        footerButton(FluentIcons.bookmark_24_filled, Colors.blue,
+                            () async {
+                              print(Boxes.saveBox.keys);
+                            setState(() {
+                              isSaved = false;
+                              showSaveBar = false;
+                            });
+                            Boxes.saveBox.delete(postId);
+                        await Hasura.deleteSavedPost(postId);
+                          }),
+                          Padding(
+                              padding: const EdgeInsets.only(right: 0, left: 0),
+                              child: Text( '${Functions.abbreviateNumber(widget.saves,hideZero: true)}',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500, fontSize: 19),
+                              ),
+                            ),
+                      ],
+                    ),
+                  )
+                  : Container(width: 60,
+                    child: Row(mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        footerButton(FluentIcons.bookmark_24_regular, Colors.blue,
+                            () async {
+                            setState(() {
+                              isSaved = true;
+                            });
+                       
+                        await   Hasura.insertSavedPost(postId);
+                                            Boxes.saveBox.put(postId, null);
+                            
+                            setState(() {
+                              showSaveBar = true;
+                            });
+                            Future.delayed(const Duration(milliseconds: 4000), () {
+                              setState(() {
+                                showSaveBar = false;
+                              });
+                            });
+                          }),Padding(
+                              padding: const EdgeInsets.only(right: 0, left: 0),
+                              child: Text( '${Functions.abbreviateNumber(widget.saves,hideZero: true)}',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500, fontSize: 19),
+                              ),
+                            ),
+                      ],
+                    ),
+                  ),
+                     
+                          
+              Container(width: 60,
+                child: Row(
+                    children: [ footerButton(FluentIcons.share_24_regular, Colors.orange[900],
+                          () async {
+                        String _link = await DynamicLinksService.createDynamicLink(
+                            'post?id=$postId');
+                        Share.share(_link, subject: 'Sharing this Post');
+                      }), Text( '${Functions.abbreviateNumber(widget.shares,hideZero: true)}',
+  
+                                    style: TextStyle(
+  
+                                        fontWeight: FontWeight.w500, fontSize: 19),
+  
+                                  
+),
+                    ],
+                  ),
+              ),
+              
+              if (!(widget.commentsShown || widget.isCompact))
+                Container(width: 40,
+                  child: footerButton(FluentIcons.comment_24_regular,
+                   Theme.of(context).accentColor,
+                   () {
+                    showComments(
+                      context,
+                      post: Post(
+                        commentsShown: true,
+                        contents: this.widget.contents,
+                        contentsInfo: this.widget.contentsInfo,
+                        isCompact: false,
+                        ownerId: this.widget.ownerId,
+                        photoUrl: this.widget.photoUrl,
+                        postId: this.widget.postId,
+                        tags: this.widget.tags,
+                        title: this.widget.title,
+                        topicId: this.widget.topicId,
+                        topicName: this.widget.topicName,
+                        upvotes: this.widget.upvotes,
+                        username: this.widget.username,
+                        comments: this.widget.comments,
+                        downvotes: this.widget.downvotes,
+                        saves: this.widget.saves,
+                        shares: this.widget.shares,
+                      ),
+                    );
+                  }),
+                ),
+                if (!(widget.commentsShown || widget.isCompact))
+                Container(width: 20,
+                  child: Text( '${Functions.abbreviateNumber(widget.comments,hideZero: true)}',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500, fontSize: 19),
+                              ),
+                ),
+                if (!widget.isCompact)
+               
+                Expanded(
+                  child:(contentsHeight != null)&&(contentsHeight ==
                           MediaQuery.of(context).size.height * 0.8 ||
-                      contentsHeight > MediaQuery.of(context).size.height * 0.8)
-                    Padding(
+                      contentsHeight > MediaQuery.of(context).size.height * 0.8)? Padding(
                       padding: const EdgeInsets.only(left: 13),
                       child: SizedBox(
                         height: 28,
@@ -1100,117 +1223,15 @@ class _PostState extends State<Post> {
                               });
                             }
                           },
-                          child: Transform.rotate(
-                            angle: 29.8,
-                            child: Icon(
-                              constraintContent
-                                  ? FluentIcons.arrow_previous_24_regular
-                                  : FluentIcons.arrow_next_24_regular,
-                              size: 28,
-                            ),
+                          child: Padding(padding: EdgeInsets.only(left: (MediaQuery.of(context).size.width*0.5)-206),
+                            child:     CustomPaint( //                       <-- CustomPaint widget
+        size: Size(30, 30),
+        painter: ExpandIconPainter(constraintContent?false:true),
+      ),
                           ),
                         ),
                       ),
-                    ),
-              isSaved
-                  ? Row(
-                    children: [
-                      footerButton(FluentIcons.bookmark_24_filled, Colors.blue,
-                          () async {
-                            print(Boxes.saveBox.keys);
-                          setState(() {
-                            isSaved = false;
-                            showSaveBar = false;
-                          });
-                          Boxes.saveBox.delete(postId);
-                      await Hasura.deleteSavedPost(postId);
-                        }),
-                        Padding(
-                            padding: const EdgeInsets.only(right: 0, left: 0),
-                            child: Text( '${Functions.abbreviateNumber(widget.saves,hideZero: true)}',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500, fontSize: 19),
-                            ),
-                          ),
-                    ],
-                  )
-                  : Row(
-                    children: [
-                      footerButton(FluentIcons.bookmark_24_regular, Colors.blue,
-                          () async {
-                          setState(() {
-                            isSaved = true;
-                          });
-                     
-                      await   Hasura.insertSavedPost(postId);
-                                          Boxes.saveBox.put(postId, null);
-                          
-                          setState(() {
-                            showSaveBar = true;
-                          });
-                          Future.delayed(const Duration(milliseconds: 4000), () {
-                            setState(() {
-                              showSaveBar = false;
-                            });
-                          });
-                        }),Padding(
-                            padding: const EdgeInsets.only(right: 0, left: 0),
-                            child: Text( '${Functions.abbreviateNumber(widget.saves,hideZero: true)}',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500, fontSize: 19),
-                            ),
-                          ),
-                    ],
-                  ),
-                     
-                          
-              Row(
-                children: [
-                  footerButton(FluentIcons.share_24_regular, Colors.blueAccent,
-                      () async {
-                    String _link = await DynamicLinksService.createDynamicLink(
-                        'post?id=$postId');
-                    Share.share(_link, subject: 'Sharing this Post');
-                  }),
-Text( '${Functions.abbreviateNumber(widget.shares,hideZero: true)}',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500, fontSize: 19),
-                            ),
-                ],
-              ),  
-              if (!(widget.commentsShown || widget.isCompact))
-                footerButton(FluentIcons.comment_24_regular, Colors.cyan, () {
-                  showComments(
-                    context,
-                    post: Post(
-                      commentsShown: true,
-                      contents: this.widget.contents,
-                      contentsInfo: this.widget.contentsInfo,
-                      isCompact: false,
-                      ownerId: this.widget.ownerId,
-                      photoUrl: this.widget.photoUrl,
-                      postId: this.widget.postId,
-                      tags: this.widget.tags,
-                      title: this.widget.title,
-                      topicId: this.widget.topicId,
-                      topicName: this.widget.topicName,
-                      upvotes: this.widget.upvotes,
-                      username: this.widget.username,
-                      comments: this.widget.comments,
-                      downvotes: this.widget.downvotes,
-                      saves: this.widget.saves,
-                      shares: this.widget.shares,
-                    ),
-                  );
-                }),
-                if (!(widget.commentsShown || widget.isCompact))
-                Text( '${Functions.abbreviateNumber(widget.comments,hideZero: true)}',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500, fontSize: 19),
-                            ),
-                if (!widget.isCompact)
-                Expanded(
-                  child: Container(),
+                    ):Container()
                 ),  
               Padding(
                 padding: const EdgeInsets.only(right: 5),
@@ -1260,9 +1281,7 @@ Text( '${Functions.abbreviateNumber(widget.shares,hideZero: true)}',
                                   ? FluentIcons.keyboard_shift_24_filled
                                   : FluentIcons.keyboard_shift_24_regular,
                               size: 24.0,
-                              color: vote == Vote.up
-                                  ? Colors.blue
-                                  : Theme.of(context).iconTheme.color),
+                              color: Colors.blue),
                          
                         ],
                       ),
@@ -1432,92 +1451,92 @@ showComments(
 }
 
 
-class VideoContentContainer extends StatefulWidget {
-  final Future<dynamic> initializeVideoPlayerFuture;
-  final VideoPlayerController controller;
-  final double aspectRatio;
-  VideoContentContainer(
-      {this.initializeVideoPlayerFuture, this.controller, this.aspectRatio});
-  @override
-  _VideoContentContainerState createState() => _VideoContentContainerState(
-      initializeVideoPlayerFuture: this.initializeVideoPlayerFuture,
-      controller: this.controller,
-      aspectRatio: this.aspectRatio);
-}
+// class VideoContentContainer extends StatefulWidget {
+//   final Future<dynamic> initializeVideoPlayerFuture;
+//   final VideoPlayerController controller;
+//   final double aspectRatio;
+//   VideoContentContainer(
+//       {this.initializeVideoPlayerFuture, this.controller, this.aspectRatio});
+//   @override
+//   _VideoContentContainerState createState() => _VideoContentContainerState(
+//       initializeVideoPlayerFuture: this.initializeVideoPlayerFuture,
+//       controller: this.controller,
+//       aspectRatio: this.aspectRatio);
+// }
 
-class _VideoContentContainerState extends State<VideoContentContainer> {
-  final Future<dynamic> initializeVideoPlayerFuture;
-  final VideoPlayerController controller;
-  final double aspectRatio;
-  _VideoContentContainerState(
-      {this.initializeVideoPlayerFuture, this.controller, this.aspectRatio});
-  Widget playbackButton = Container();
-  playOrPauseVideo() {
-    if (controller.value.isPlaying) {
-      setState(() {
-        playbackButton = Icon(Icons.play_arrow);
-        controller.pause();
-      });
-    } else
-      setState(() {
-        controller.play();
-      });
-  }
+// class _VideoContentContainerState extends State<VideoContentContainer> {
+//   final Future<dynamic> initializeVideoPlayerFuture;
+//   final VideoPlayerController controller;
+//   final double aspectRatio;
+//   _VideoContentContainerState(
+//       {this.initializeVideoPlayerFuture, this.controller, this.aspectRatio});
+//   Widget playbackButton = Container();
+//   playOrPauseVideo() {
+//     if (controller.value.isPlaying) {
+//       setState(() {
+//         playbackButton = Icon(Icons.play_arrow);
+//         controller.pause();
+//       });
+//     } else
+//       setState(() {
+//         controller.play();
+//       });
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    bool videoMuted = false;
-    return FutureBuilder(
-      future: initializeVideoPlayerFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          controller.play();
-          return Stack(
-            children: <Widget>[
-              GestureDetector(
-                onTap: playOrPauseVideo,
-                child: AspectRatio(
-                  aspectRatio: controller.value.aspectRatio,
-                  child: VideoPlayer(controller),
-                ),
-              ),
-              Container(
-                child: Row(
-                  children: <Widget>[
-                    playbackButton,
-                    Expanded(
-                      child: Container(),
-                    ),
-                    IconButton(
-                      icon: videoMuted
-                          ? Icon(Icons.surround_sound)
-                          : Icon(Icons.volume_mute),
-                      onPressed: () {
-                        setState(() {
-                          if (videoMuted) {
-                            controller.setVolume(1);
-                          } else {
-                            controller.setVolume(0);
-                          }
-                          videoMuted = !videoMuted;
-                        });
-                      },
-                    )
-                  ],
-                ),
-              )
-            ],
-          );
-        } else {
-          return Container(
-            color: Colors.grey,
-            height: MediaQuery.of(context).size.width / aspectRatio,
-          );
-        }
-      },
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     bool videoMuted = false;
+//     return FutureBuilder(
+//       future: initializeVideoPlayerFuture,
+//       builder: (context, snapshot) {
+//         if (snapshot.connectionState == ConnectionState.done) {
+//           controller.play();
+//           return Stack(
+//             children: <Widget>[
+//               GestureDetector(
+//                 onTap: playOrPauseVideo,
+//                 child: AspectRatio(
+//                   aspectRatio: controller.value.aspectRatio,
+//                   child: VideoPlayer(controller),
+//                 ),
+//               ),
+//               Container(
+//                 child: Row(
+//                   children: <Widget>[
+//                     playbackButton,
+//                     Expanded(
+//                       child: Container(),
+//                     ),
+//                     IconButton(
+//                       icon: videoMuted
+//                           ? Icon(Icons.surround_sound)
+//                           : Icon(Icons.volume_mute),
+//                       onPressed: () {
+//                         setState(() {
+//                           if (videoMuted) {
+//                             controller.setVolume(1);
+//                           } else {
+//                             controller.setVolume(0);
+//                           }
+//                           videoMuted = !videoMuted;
+//                         });
+//                       },
+//                     )
+//                   ],
+//                 ),
+//               )
+//             ],
+//           );
+//         } else {
+//           return Container(
+//             color: Colors.grey,
+//             height: MediaQuery.of(context).size.width / aspectRatio,
+//           );
+//         }
+//       },
+//     );
+//   }
+// }
 
 class DownvoteTile extends StatefulWidget {
   final Vote vote;
@@ -1570,3 +1589,50 @@ class DownvoteTileState extends State<DownvoteTile> {
     );
   }
 }
+
+class ExpandIconPainter extends CustomPainter { //         <-- CustomPainter class
+bool up;
+ExpandIconPainter(this.up);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+      final paint = Paint()
+    ..color = Colors.black
+    ..strokeWidth = 3;
+    if(up){
+        canvas.drawLine(Offset(0,16), Offset(12,8), paint);
+      canvas.drawLine(Offset(12,8), Offset(24,16), paint);
+    }else{
+      
+        canvas.drawLine(Offset(0,8), Offset(12,16), paint);
+      canvas.drawLine(Offset(12,16), Offset(24,8), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) {
+    return false;
+  }
+}
+
+
+
+
+
+
+
+
+//video player old 
+    // _controller = VideoPlayerController.network(
+        //   contents['$i'],
+        // );
+        // _initializeVideoPlayerFuture = _controller.initialize().then((_) {
+      //     if (PreferencesUpdate().getBool('autoplay_videos') == null) {
+      //       PreferencesUpdate().updateBool('autoplay_videos', false);
+      //     }
+      //     bool _autoplay = PreferencesUpdate().getBool('autoplay_videos');
+      //     flickManager = FlickManager(
+      //       videoPlayerController: _controller,
+      //     );
+      // print(  contents['$i'],);
+      // print('video url');

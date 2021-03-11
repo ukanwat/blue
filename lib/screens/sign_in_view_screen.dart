@@ -1,5 +1,6 @@
 // Flutter imports:
 import 'package:blue/main.dart';
+import 'package:blue/screens/email_sign_in_screen.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -99,7 +100,7 @@ class SignInViewScreen extends StatelessWidget {
                   child: InkWell(
                   onTap: () {
                     Navigator.of(context)
-                        .pushNamed(SignInScreen.signInRouteName);
+                        .pushNamed(EmailSignInScreen.routeName);
                   },
                   child: Container(
                     height: 48,
@@ -110,40 +111,40 @@ class SignInViewScreen extends StatelessWidget {
                     ),
                     child: Center(
                       child: Text(
-                        'Sign in',
+                        'Email Sign in',
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.w500),
                       ),
                     ),
                   ),
                 )),
-                SizedBox(
-                  width: 14,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40,vertical: 0),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.of(context)
-                          .pushNamed(SignInScreen.signUpRouteName);
-                    },
-                    child: Container(
-                      height: 48,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardColor,
-                        borderRadius: BorderRadius.circular(80),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Sign up',
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                // SizedBox(
+                //   width: 14,
+                // ),
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(horizontal: 40,vertical: 0),
+                //   child: InkWell(
+                //     onTap: () {
+                //       Navigator.of(context)
+                //           .pushNamed(SignInScreen.signUpRouteName);
+                //     },
+                //     child: Container(
+                //       height: 48,
+                //       width: double.infinity,
+                //       decoration: BoxDecoration(
+                //         color: Theme.of(context).cardColor,
+                //         borderRadius: BorderRadius.circular(80),
+                //       ),
+                //       child: Center(
+                //         child: Text(
+                //           'Sign up',
+                //           style: TextStyle(
+                //               fontSize: 18, fontWeight: FontWeight.w500),
+                //         ),
+                //       ),
+                //     ),
+                //   ),
+                // ),
              
           
           Expanded(child: Container()),

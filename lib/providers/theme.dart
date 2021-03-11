@@ -3,6 +3,7 @@ import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/foundation.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 // Package imports:
 
@@ -19,10 +20,11 @@ class ThemeNotifier extends ChangeNotifier {
 
   toggleTheme(var value ,BuildContext context) {
     _darkTheme = value;
+    bool dark = ((value == null)&&  (SchedulerBinding.instance.window.platformBrightness == Brightness.dark))  || (value == true);
      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-       statusBarIconBrightness: Brightness.light,
+       statusBarIconBrightness: dark? Brightness.light: Brightness.dark,
        statusBarBrightness: Brightness.light,
-       statusBarColor:value == null? Colors.grey:value? Color.fromRGBO(20, 20, 20, 1): Color.fromRGBO(170, 170, 170, 1),
+       statusBarColor:dark? Color.fromRGBO(180, 180, 180, 1): Color.fromRGBO(240, 240, 240, 1),
       systemNavigationBarDividerColor: Colors.grey[900],
       systemNavigationBarIconBrightness: Brightness.light
       ));

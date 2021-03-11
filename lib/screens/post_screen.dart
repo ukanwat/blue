@@ -13,7 +13,6 @@ import 'package:carousel_pro/carousel_pro.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:http/http.dart';
 import 'package:image/image.dart' as Im;
@@ -25,6 +24,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:string_validator/string_validator.dart';
 import 'package:uuid/uuid.dart';
+import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
 import '../services/hasura.dart';
 import 'package:blurhash_dart/blurhash_dart.dart';
@@ -144,7 +144,7 @@ infoMap['blurHash'] = blurHash; //
   handleTakeVideo() async {
     File _cameraVideo;
     var picker = ImagePicker();
-    var pickedFile = await picker.getVideo(source: ImageSource.camera);
+    var pickedFile = await picker.getVideo(source: ImageSource.camera,maxDuration: Duration(minutes: 2));
     _cameraVideo = File(pickedFile.path);
      addVideoContent(_cameraVideo);
   
@@ -175,7 +175,7 @@ infoMap['blurHash'] = blurHash; //
     File _galleryVideo;
     var picker = ImagePicker();
     var pickedFile = await picker.getVideo(
-      source: ImageSource.gallery,
+      source: ImageSource.gallery,maxDuration: Duration(minutes:2)
     );
     _galleryVideo = File(pickedFile.path);
    addVideoContent(_galleryVideo);
@@ -287,114 +287,7 @@ infoMap['blurHash'] = blurHash; //
   
   }
 
-  Future<String> _uploadFile(filePath, folderName) async {
-    final file = new File(filePath);
-    final basename = p.basename(filePath);
-    String videoUrl =
-        await FileStorage.upload('posts/$postId/$folderName', basename, file);
-    return videoUrl;
-  }
 
-  Future<String> _uploadHLSFiles(dirPath, videoName) async {
-    final videosDir = Directory(dirPath);
-
-    var playlistUrl = '';
-
-    final files = videosDir.listSync();
-    for (FileSystemEntity file in files) {
-      final fileName = p.basename(file.path);
-      final exploded = fileName.split('.');
-      final fileExtension = exploded[exploded.length - 1];
-      if (fileExtension == 'm3u8') _updatePlaylistUrls(file, videoName);
-      final downloadUrl = await _uploadFile(file.path, videoName);
-
-      if (fileName == 'master.m3u8') {
-        playlistUrl = downloadUrl;
-      }
-    }
-    return playlistUrl;
-  }
-
-  void _updatePlaylistUrls(File file, String videoName) {
-    final lines = file.readAsLinesSync();
-    var updatedLines = List<String>();
-
-    for (final String line in lines) {
-      var updatedLine = line;
-      if (line.contains('.ts') || line.contains('.m3u8')) {
-        updatedLine = '$videoName%2F$line?alt=media';
-      }
-      updatedLines.add(updatedLine);
-    }
-    final updatedContents =
-        updatedLines.reduce((value, element) => value + '\n' + element);
-
-    file.writeAsStringSync(updatedContents);
-  }
-
-  Future<Map<String, String>> _processVideo(File file) async {
-
-    final FlutterFFmpeg _encoder = FlutterFFmpeg();
-
-    final info = await VideoProcessing.getMediaInformation(file.path);
-    print(info);
-    final aspectRatio = VideoProcessing.getAspectRatio(info);
-    double videoHeight;
-    double videoWidth;
-    if (aspectRatio >= 1) {
-      videoHeight = 540;
-      videoWidth = 540 * aspectRatio;
-    } else {
-      videoWidth = 540;
-      videoHeight = 540 / aspectRatio;
-    }
-
-    Directory appDocumentDir = await getExternalStorageDirectory();
-    final String outDir = '${appDocumentDir.path}/Videos/$postId';
-    final videosDir = new Directory(outDir);
-    videosDir.createSync(recursive: true);
-    String tempArguments = '';
-    videoWidth = 960;
-    videoHeight = 540;
-    print('${VideoProcessing.checkAudio(info)}');
-    if (VideoProcessing.checkAudio(info)) {
-      tempArguments = '-y -i ${file.path} ' +
-          '-preset fast -g 48 -sc_threshold 0 ' +
-          '-map 0:0 -map 0:1 -map 0:0 -map 0:1 ' +
-          '-r:v:1 24 -s:v:1 ${videoWidth.toInt()}x${videoHeight.toInt()} -c:v:1 libx265 -b:v:1 900k ' +
-          '-r:v:0 24 -s:v:0 ${(videoWidth * (360 / 540)).toInt()}x${(videoHeight * (360 / 540)).toInt()} -c:v:0 libx265 -b:v:0 145k ' +
-          '-c:a copy ' +
-          '-var_stream_map "v:0,a:0 v:1,a:1" ' +
-          '-master_pl_name master.m3u8 ' +
-          '-f hls -hls_time 6 -hls_list_size 0 ' +
-          '-hls_segment_filename "$outDir/%v_fileSequence_%d.ts" ' +
-          '$outDir/%v_playlistVariant.m3u8';
-    } else {
-      tempArguments = '-y -i ${file.path} ' +
-          '-preset fast -g 48 -sc_threshold 0 ' +
-          '-map 0:0 -map 0:0 ' +
-          '-r:v:1 24 -s:v:1 ${videoWidth.toInt()}x${videoHeight.toInt()} -c:v:1 libx265 -b:v:1 900k ' +
-          '-r:v:0 24 -s:v:0 ${(videoWidth * (360 / 540)).toInt()}x${(videoHeight * (360 / 540)).toInt()} -c:v:0 libx265 -b:v:0 145k ' +
-          '-var_stream_map "v:0 v:1" ' +
-          '-master_pl_name master.m3u8 ' +
-          '-f hls -hls_time 6 -hls_list_size 0 ' +
-          '-hls_segment_filename "$outDir/%v_fileSequence_%d.ts" ' +
-          '$outDir/%v_playlistVariant.m3u8';
-    }
-    await _encoder
-        .execute(tempArguments)
-        .then((rc) => print("FFmpeg process exited with rc $rc"));
-
-    String thumbFilePath = await VideoProcessing.getThumb(
-        file.path,
-        (videoWidth * (300 / 540)).toInt(),
-        (videoHeight * (300 / 540)).toInt());
-
-    final String thumbUrl = await _uploadFile(thumbFilePath, 'thumbnail');
-    final String videoUrl = await _uploadHLSFiles(outDir, 'video_$postId');
-    print('$thumbUrl  $videoUrl');
-    return {'thumbUrl': thumbUrl, 'videoUrl': videoUrl};
-  }
 
   handleSubmit(String topicName, List<String> tags) async {
     setState(() {
@@ -418,7 +311,25 @@ infoMap['blurHash'] = blurHash; //
         firestoreContentsInfo['$x'] = contentsData[i]['info'];
         x++;
       } else if (contentsData[i]['info']['type'] == 'video') {
-        Map _videoData = await _processVideo(contentsData[i]['content']);
+        MediaInfo mediaInfo = await VideoCompress.compressVideo(
+contentsData[i]['content'].path,
+  quality: VideoQuality.LowQuality, 
+  deleteOrigin: false, // It's false by default
+  frameRate: 24,
+  includeAudio: true,
+);
+
+ 
+String videoId = Uuid().v4();
+String vUrl = await FileStorage.upload('post', 'video_$videoId.mp4', mediaInfo.file);
+final thumbnail = await VideoCompress.getFileThumbnail(
+ contentsData[i]['content'].path,
+  quality: 75,
+  position: -1 
+);
+String tUrl = await  FileStorage.uploadImage('post', thumbnail,fileName: 'thumb_$videoId');
+Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
+        // Map _videoData = await VideoProcessing().processVideo(contentsData[i]['content'],postId);
         firestoreContents['$x'] = _videoData['videoUrl'];
         contentsData[i]['info']['thumbUrl'] = "\"${_videoData['thumbUrl']}\"";
         firestoreContentsInfo['$x'] = contentsData[i]['info'];
@@ -807,7 +718,7 @@ infoMap['blurHash'] = blurHash; //
                 Icons.clear,
               ),
               onPressed: () {
-                if (isDrafted) {
+                if (isDrafted || contentsData.length == 0) {
                   Navigator.pop(context);
                 } else {
                   showDialog(

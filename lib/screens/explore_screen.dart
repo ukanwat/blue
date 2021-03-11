@@ -84,12 +84,6 @@ class _ExploreScreenState extends State<ExploreScreen>
             tabs: topicTabs,),
                   ),
         ),
-          actions:<Widget>[ IconButton(
-              icon: Icon(FluentIcons.add_24_regular,size: 29,
-                  color: Theme.of(context).iconTheme.color),
-              onPressed: () {
-                showTagsSheet();
-              })],
           leading: IconButton(
             icon: Icon(FlutterIcons.search_oct,
             

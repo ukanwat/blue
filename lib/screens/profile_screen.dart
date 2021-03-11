@@ -211,7 +211,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   buildButton({String text, Function function, IconData icon}) {
     return Container(
       margin: EdgeInsets.only(top: 0, left: 5, right: 5, bottom: 0),
-      height: 40,
+      height: 40,width: 140,
       child: FlatButton(
         padding: EdgeInsets.all(0),
         onPressed: function,
@@ -238,9 +238,9 @@ class _ProfileScreenState extends State<ProfileScreen>
           ),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: Colors.blue,
-            border: Border.all(color: Colors.blue),
-            borderRadius: BorderRadius.circular(10.0),
+            color:  Theme.of(context).accentColor,
+            border: Border.all(color: Theme.of(context).accentColor),
+            borderRadius: BorderRadius.circular(80.0),
           ),
         ),
       ),
@@ -698,13 +698,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   : Transform.scale(
                                       scale: 0.8,
                                       child: Container(
-                                        decoration: BoxDecoration(shape: BoxShape.circle,  color: Colors.black.withOpacity(0.45),),
+                                        decoration: BoxDecoration(shape: BoxShape.circle,  color: Colors.black.withOpacity(0.32),),
                                       margin:
-                                            EdgeInsets.symmetric(horizontal: 8,vertical: 5),child: PopupMenuButton(
+                                            EdgeInsets.symmetric(horizontal: 3,vertical: 3),child: PopupMenuButton(
                                                         padding:
                                                             EdgeInsets.zero,
                                                         color: Theme.of(context)
-                                                            .canvasColor,
+                                                            .canvasColor,iconSize: 20,
                                                         shape:
                                                             RoundedRectangleBorder(
                                                           borderRadius:
@@ -742,8 +742,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                                   : "Mute"),
                                                         ],
                                                         icon: Icon(
-                                                          FluentIcons
-                                                              .more_24_filled,
+                                                  Icons.more_horiz_outlined,
                                                           size: 24,
                                                           color: Colors.white,
                                                         ),

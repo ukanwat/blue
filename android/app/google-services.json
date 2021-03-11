@@ -8,7 +8,7 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:875602571063:android:84fd295d7f5c28786b74b2",
+        "mobilesdk_app_id": "1:875602571063:android:df2b3bfd8f126ca86b74b2",
         "android_client_info": {
           "package_name": "com.stark.android"
         }
@@ -16,43 +16,6 @@
       "oauth_client": [
         {
           "client_id": "875602571063-v223f9fbvjgkfhjdnq2e6ohn4co9k68h.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.stark.android",
-            "certificate_hash": "660f64a4d729ef6569f2d76f1efa1e131f11542a"
-          }
-        },
-        {
-          "client_id": "875602571063-45u2grpf8ea28m80kjgogrfn7ec3o7rf.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyC_NvhCQQPABh8UW49S_M8ZTvuagtO2pAo"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "875602571063-45u2grpf8ea28m80kjgogrfn7ec3o7rf.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:875602571063:android:a61c3c0447e081a06b74b2",
-        "android_client_info": {
-          "package_name": "com.stark.android"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "875602571063-sk5fhcr8fp6o1a11hr2btm7a1gjb0c47.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.stark.android",
