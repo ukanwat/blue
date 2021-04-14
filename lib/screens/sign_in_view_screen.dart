@@ -1,6 +1,10 @@
 // Flutter imports:
 import 'package:blue/main.dart';
+import 'package:blue/providers/verify_email.dart';
 import 'package:blue/screens/email_sign_in_screen.dart';
+import 'package:blue/screens/post_screen.dart';
+import 'package:blue/screens/set_name_screen.dart';
+import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,9 +13,24 @@ import 'package:flutter/services.dart';
 import 'package:blue/providers/provider_widget.dart';
 import 'package:blue/screens/sign_in_screen.dart';
 import 'package:blue/screens/tabs_screen.dart';
+import 'package:flutter_login/flutter_login.dart';
+import 'package:blue/main.dart';
 
-class SignInViewScreen extends StatelessWidget {
+bool autoLogin = false;
+
+class SignInViewScreen extends StatefulWidget {
   static const routeName = 'sign-in-view';
+
+  @override
+  _SignInViewScreenState createState() => _SignInViewScreenState();
+}
+
+class _SignInViewScreenState extends State<SignInViewScreen> {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
+
   @override
   Widget build(BuildContext context) {
     double scale = MediaQuery.of(context).size.width / 411.42857142857144;
@@ -26,7 +45,10 @@ class SignInViewScreen extends StatelessWidget {
           Stack(
             children: <Widget>[
               Container(
-                child: Image.asset('assets/images/sign_in_image.png',fit: BoxFit.cover,),
+                child: Image.asset(
+                  'assets/images/sign_in_image.png',
+                  fit: BoxFit.cover,
+                ),
                 height: MediaQuery.of(context).size.height * 0.60,
               ),
               Column(
@@ -48,7 +70,7 @@ class SignInViewScreen extends StatelessWidget {
                             color: Colors.white),
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ],
@@ -57,17 +79,28 @@ class SignInViewScreen extends StatelessWidget {
           InkWell(
             onTap: () async {
               final _auth = Provider.of(context).auth;
-             await _auth.signInWithGoogle(context);
-              Navigator.pushNamed(context, TabsScreen.routeName);//TODO replacement?
+              bool exists = await _auth.signInWithGoogle(context);
+              var result;
+              if (!exists) {
+                result = await navigatorKey.currentState.pushNamed(
+                    SetNameScreen.routeName,
+                    arguments: {"provider": "google"});
+              }
+              await _auth.signInWithGoogleMore(context, exists, result);
+
+              // Navigator.pushNamed(
+              //     context, TabsScreen.routeName); //TODO replacement?
             },
             child: Container(
               width: double.infinity,
               height: 48,
               margin: EdgeInsets.symmetric(horizontal: 40),
-              padding: EdgeInsets.symmetric(vertical: 5,horizontal: 0),
+              padding: EdgeInsets.symmetric(vertical: 5, horizontal: 0),
               child: Row(
                 children: <Widget>[
-                  CircleAvatar(backgroundImage:  AssetImage('assets/icons/google_sign_in_button.png'),
+                  CircleAvatar(
+                    backgroundImage:
+                        AssetImage('assets/icons/google_sign_in_button.png'),
                     radius: 24,
                   ),
                   Container(
@@ -92,61 +125,33 @@ class SignInViewScreen extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.only(top: 20),
-            child: Text('OR WITH EMAIL',style: TextStyle(fontWeight: FontWeight.w600,fontSize: 15),),
+            child: Text(
+              'OR WITH EMAIL',
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12),
+            ),
           ),
-         
-                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40,vertical: 15),
-                  child: InkWell(
-                  onTap: () {
-                    Navigator.of(context)
-                        .pushNamed(EmailSignInScreen.routeName);
-                  },
-                  child: Container(
-                    height: 48,
-                    width:double.infinity,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(80),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Email Sign in',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w500),
-                      ),
+          Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+              child: InkWell(
+                onTap: () {
+                  Navigator.of(context).pushNamed(EmailSignInScreen.routeName);
+                },
+                child: Container(
+                  height: 48,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(80),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Email Sign in',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                     ),
                   ),
-                )),
-                // SizedBox(
-                //   width: 14,
-                // ),
-                // Padding(
-                //   padding: const EdgeInsets.symmetric(horizontal: 40,vertical: 0),
-                //   child: InkWell(
-                //     onTap: () {
-                //       Navigator.of(context)
-                //           .pushNamed(SignInScreen.signUpRouteName);
-                //     },
-                //     child: Container(
-                //       height: 48,
-                //       width: double.infinity,
-                //       decoration: BoxDecoration(
-                //         color: Theme.of(context).cardColor,
-                //         borderRadius: BorderRadius.circular(80),
-                //       ),
-                //       child: Center(
-                //         child: Text(
-                //           'Sign up',
-                //           style: TextStyle(
-                //               fontSize: 18, fontWeight: FontWeight.w500),
-                //         ),
-                //       ),
-                //     ),
-                //   ),
-                // ),
-             
-          
+                ),
+              )),
           Expanded(child: Container()),
         ],
       ),

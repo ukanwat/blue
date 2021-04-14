@@ -5,6 +5,8 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 // Flutter imports:
+import 'package:blue/widgets/progress.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -40,6 +42,7 @@ import '../services/video_processing.dart';
 import './home.dart';
 import '../services/boxes.dart';
 
+int textLength = 0;
 enum ContentInsertOptions { Device, Camera, Carousel }
 
 class PostScreen extends StatefulWidget {
@@ -49,6 +52,17 @@ class PostScreen extends StatefulWidget {
 }
 
 class _PostScreenState extends State<PostScreen> {
+  //limits
+  int lvid = 1;
+  int limg = 10;
+  int ltxt = 500;
+  int llnk = 5;
+  //count
+  int cvid = 0;
+  int cimg = 0;
+  int clnk = 0;
+  int ctxt = 0;
+
   List<Widget> contents = [
     //**choose btween container and widget due to zefyr
     Container(),
@@ -80,81 +94,88 @@ class _PostScreenState extends State<PostScreen> {
   String postId = Uuid().v4();
   File compressedFile;
   bool isDrafted = false;
-String getBlurHash(File _image){
-  Uint8List fileData = _image.readAsBytesSync();
-  Im.Image img = Im.decodeImage(fileData.toList());
+  String getBlurHash(File _image) {
+    Uint8List fileData = _image.readAsBytesSync();
+    Im.Image img = Im.decodeImage(fileData.toList());
 
-String blurHash = encodeBlurHash(
-  img.getBytes(format: Im.Format.rgba),
-  img.width,
-  img.height,
-);
-return  "\"$blurHash\"";
-}
+    String blurHash = encodeBlurHash(
+      img.getBytes(format: Im.Format.rgba),
+      img.width,
+      img.height,
+    );
+    return "\"$blurHash\"";
+  }
+
   handleTakePhoto() async {
     File _cameraImage;
     var picker = ImagePicker();
     var pickedFile = await picker.getImage(
-      source: ImageSource.camera,
-      maxHeight: 720,
-      maxWidth: 720,
-      imageQuality: 75
-    );
+        source: ImageSource.camera,
+        maxHeight: 720,
+        maxWidth: 720,
+        imageQuality: 75);
     _cameraImage = File(pickedFile.path);
     addImageContent(_cameraImage);
   }
-addImageContent(File _image)async{
-   fileIndex++;
+
+  addImageContent(File _image) async {
+    fileIndex++;
     double _aspectRatio;
-    var decodedImage =
-        await decodeImageFromList(_image.readAsBytesSync());
+    var decodedImage = await decodeImageFromList(_image.readAsBytesSync());
     _aspectRatio =
         decodedImage.width.toDouble() / decodedImage.height.toDouble();
     Map infoMap = {}; //
     infoMap['type'] = 'image'; //
     infoMap['aspectRatio'] = _aspectRatio; //
-    
-String blurHash = getBlurHash(_image);
-infoMap['blurHash'] = blurHash; //
+
+    String blurHash = getBlurHash(_image);
+    infoMap['blurHash'] = blurHash; //
     contentsInfo[fileIndex] = infoMap; //
     setState(() {
       if (_image == null) {
         print('File is not available');
       } else {
         contentsData.add({
-          'info': {'type': 'image', 'aspectRatio': _aspectRatio,'blurHash': blurHash},
+          'info': {
+            'type': 'image',
+            'aspectRatio': _aspectRatio,
+            'blurHash': blurHash
+          },
           'content': _image,
-          
           'widget': imageDisplay(_image, fileIndex, _aspectRatio)
         });
         contents.add(imageDisplay(_image, fileIndex, _aspectRatio));
       }
     });
-}
-   handleChooseImageFromGallery() async {
+  }
+
+  handleChooseImageFromGallery() async {
     File _galleryImage;
     var picker = ImagePicker();
     var pickedFile = await picker.getImage(
-      source: ImageSource.gallery,maxHeight: 720, maxWidth:720,imageQuality:75
-    );
+        source: ImageSource.gallery,
+        maxHeight: 720,
+        maxWidth: 720,
+        imageQuality: 75);
     _galleryImage = File(pickedFile.path);
-   addImageContent(_galleryImage);
+    addImageContent(_galleryImage);
   }
-  
+
   handleTakeVideo() async {
     File _cameraVideo;
     var picker = ImagePicker();
-    var pickedFile = await picker.getVideo(source: ImageSource.camera,maxDuration: Duration(minutes: 2));
+    var pickedFile = await picker.getVideo(
+        source: ImageSource.camera, maxDuration: Duration(minutes: 2));
     _cameraVideo = File(pickedFile.path);
-     addVideoContent(_cameraVideo);
-  
+    addVideoContent(_cameraVideo);
   }
-  addVideoContent(File _video){
-     fileIndex++;
+
+  addVideoContent(File _video) {
+    fileIndex++;
     _videoPlayerController = VideoPlayerController.file(_video)
       ..initialize().then((_) {
         flickManager = FlickManager(
-          videoPlayerController:  _videoPlayerController ,
+          videoPlayerController: _videoPlayerController,
         );
         setState(() {
           contentsData.add({
@@ -166,29 +187,26 @@ infoMap['blurHash'] = blurHash; //
             'widget': Container(child: VideoDisplay(flickManager, false))
           });
 
-          if ( _videoPlayerController.value.isPlaying == true) {
-          }
+          if (_videoPlayerController.value.isPlaying == true) {}
         });
       });
   }
+
   handleChooseVideoFromGallery() async {
     File _galleryVideo;
     var picker = ImagePicker();
     var pickedFile = await picker.getVideo(
-      source: ImageSource.gallery,maxDuration: Duration(minutes:2)
-    );
+        source: ImageSource.gallery, maxDuration: Duration(minutes: 2));
     _galleryVideo = File(pickedFile.path);
-   addVideoContent(_galleryVideo);
+    addVideoContent(_galleryVideo);
   }
-
- 
 
   List<Asset> resultList = List<Asset>();
   String error = 'No Error Dectected';
   Future<void> handleCreateCarousel() async {
     try {
       resultList = await MultiImagePicker.pickImages(
-        maxImages: 12,
+        maxImages: limg - cimg,
         enableCamera: true,
         cupertinoOptions: CupertinoOptions(
           takePhotoIcon: "chat",
@@ -196,42 +214,50 @@ infoMap['blurHash'] = blurHash; //
         materialOptions: MaterialOptions(
           actionBarColor: "#1EE682",
           actionBarTitle: "Stark",
-          statusBarColor:"#1EE682",
+          statusBarColor: "#1EE682",
           allViewTitle: "All Images",
           useDetailsView: true,
           selectCircleStrokeColor: "#000000",
         ),
       );
-      if( resultList.length == 0){
+      if (resultList.length == 0) {
         return;
       }
     } on Exception catch (e) {
-      error = e.toString();//show error
+      error = e.toString(); //show error
       return;
     }
-   
+
     if (!mounted) return;
     List carouselData = await getCarouselImages(resultList);
-  
+
     List<File> carouselImages = carouselData[0];
     double _aspectRatio = carouselData[1];
-  addCarouselContent( carouselImages, _aspectRatio);
+    addCarouselContent(carouselImages, _aspectRatio);
   }
-   addCarouselContent(List<File> carouselImages,  double _aspectRatio){
- fileIndex++;
- List<String> blurHashes = [];
- carouselImages.forEach((i){
+
+  addCarouselContent(List<File> carouselImages, double _aspectRatio) {
+    fileIndex++;
+    List<String> blurHashes = [];
+    carouselImages.forEach((i) {
       blurHashes.add(getBlurHash(i));
- });
+    });
     setState(() {
       contentsData.add({
-        'info': {'type': 'carousel', 'aspectRatio': _aspectRatio,'blurHashes': blurHashes},
+        'info': {
+          'type': 'carousel',
+          'aspectRatio': _aspectRatio,
+          'blurHashes': blurHashes
+        },
         'content': carouselImages,
-        'widget': carouselDisplay(carouselImages, fileIndex, _aspectRatio,blurHashes)
+        'widget':
+            carouselDisplay(carouselImages, fileIndex, _aspectRatio, blurHashes)
       });
-      contents.add(carouselDisplay(carouselImages, fileIndex, _aspectRatio,blurHashes));
+      contents.add(
+          carouselDisplay(carouselImages, fileIndex, _aspectRatio, blurHashes));
     });
-   }
+  }
+
   Future<File> compressImage(File file) async {
     imageId = Uuid().v4();
     final tempDir = await getTemporaryDirectory();
@@ -275,19 +301,20 @@ infoMap['blurHash'] = blurHash; //
       String topicId,
       List<String> tags}) async {
     List customContents = [];
-   contents.forEach((key, value) { 
+    contents.forEach((key, value) {
       customContents.add(contentsInfo[key]);
-          customContents[int.parse(key)]['data'] = contentsInfo[key]['type'] == 'carousel'?"$value":"""\"$value\""""; //TODO
-        });
-        print(customContents);
-        if(tags == []){
-          tags = null;
-        }
-  await  Hasura.insertPost(customContents, title,tags: tags);
-  
+      customContents[int.parse(key)]['data'] =
+          contentsInfo[key]['type'] == 'carousel'
+              ? "$value"
+              : """\"$value\""""; //TODO
+    });
+    print(customContents);
+    if (tags == []) {
+      tags = null;
+    }
+    await Hasura.insertPost(customContents, title,
+        tags: tags, topicName: topicName);
   }
-
-
 
   handleSubmit(String topicName, List<String> tags) async {
     setState(() {
@@ -312,23 +339,23 @@ infoMap['blurHash'] = blurHash; //
         x++;
       } else if (contentsData[i]['info']['type'] == 'video') {
         MediaInfo mediaInfo = await VideoCompress.compressVideo(
-contentsData[i]['content'].path,
-  quality: VideoQuality.LowQuality, 
-  deleteOrigin: false, // It's false by default
-  frameRate: 24,
-  includeAudio: true,
-);
+          contentsData[i]['content'].path,
+          quality: VideoQuality.LowQuality,
+          deleteOrigin: false, // It's false by default
+          frameRate: 24,
+          includeAudio: true,
+        );
 
- 
-String videoId = Uuid().v4();
-String vUrl = await FileStorage.upload('post', 'video_$videoId.mp4', mediaInfo.file);
-final thumbnail = await VideoCompress.getFileThumbnail(
- contentsData[i]['content'].path,
-  quality: 75,
-  position: -1 
-);
-String tUrl = await  FileStorage.uploadImage('post', thumbnail,fileName: 'thumb_$videoId');
-Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
+        String videoId = Uuid().v4();
+        String vUrl = await FileStorage.upload(
+            'post', 'video_$videoId.mp4', mediaInfo.file);
+        final thumbnail = await VideoCompress.getFileThumbnail(
+            contentsData[i]['content'].path,
+            quality: 75,
+            position: -1);
+        String tUrl = await FileStorage.uploadImage('post', thumbnail,
+            fileName: 'thumb_$videoId');
+        Map _videoData = {'thumbUrl': tUrl, 'videoUrl': vUrl};
         // Map _videoData = await VideoProcessing().processVideo(contentsData[i]['content'],postId);
         firestoreContents['$x'] = _videoData['videoUrl'];
         contentsData[i]['info']['thumbUrl'] = "\"${_videoData['thumbUrl']}\"";
@@ -342,6 +369,7 @@ Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
         x++;
       }
     }
+    print("doc:$topicName");
     await uploadPost(
         contents: firestoreContents,
         title: titleController.text,
@@ -370,24 +398,36 @@ Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
     contentsMap[index] = textController;
     contentType.add('text');
     print(contentsMap);
-    return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-        child: TextField(
-          controller: textController,
-          focusNode: textFocusNode,
-          keyboardType: TextInputType.multiline,
-          decoration:
-              InputDecoration(hintText: 'Text...', border: InputBorder.none),
-          maxLines: null,
-          onTap: () {
-            if (editingText = false) {
-              setState(() {
-                editingText = true;
-                currentTextController = textController;
-              });
-            }
-          },
-        ));
+    return TextDisplayWidget(textController, textFocusNode, () {
+      int length = 0;
+      for (int i = 0; i < contentsData.length; i++) {
+        if (contentsData[i]['info']['type'] == 'text') {
+          length = length + contentsData[i]['content'].text.length;
+        }
+      }
+      textLength = length;
+    });
+    // Container(
+    // padding: const EdgeInsets.only(left: 14, right: 14, top: 8, bottom: 2),
+    // child: TextFormField(
+    //   controller: textController,
+    //   focusNode: textFocusNode,
+    //   keyboardType: TextInputType.multiline,
+    //   maxLength: ltxt - ctxt,
+    //   decoration: InputDecoration(
+    //       counter: Container(),
+    //       hintText: 'Write Something...',
+    //       border: InputBorder.none),
+    //   maxLines: null,
+    //   onTap: () {
+    //     if (editingText = false) {
+    //       setState(() {
+    //         editingText = true;
+    //         currentTextController = textController;
+    //       });
+    //     }
+    //   },
+    // ));
   }
 
   Container linkDisplay(TextEditingController linkController, bool isLoading,
@@ -581,7 +621,8 @@ Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
     return [imageFiles, firstAspectRatio];
   }
 
-  Container carouselDisplay(List<File> images, int index, double aspectRatio,List<String> blurHashes) {
+  Container carouselDisplay(List<File> images, int index, double aspectRatio,
+      List<String> blurHashes) {
     Map infoMap = {};
     infoMap['type'] = 'carousel';
     infoMap['aspectRatio'] = aspectRatio;
@@ -629,6 +670,7 @@ Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
 
   @override
   void dispose() {
+    ctxt = 0;
     _videoPlayerController?.dispose();
     flickManager?.dispose();
     super.dispose();
@@ -638,53 +680,53 @@ Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
   void didChangeDependencies() {
     int _postId = ModalRoute.of(context).settings.arguments;
     if (_postId != null) {
-      var _postData =  Boxes.draftBox.values.elementAt(_postId);
+      var _postData = Boxes.draftBox.values.elementAt(_postId);
       setState(() {
-      _postData['contentsData'].forEach((data) {
+        _postData['contentsData'].forEach((data) {
           switch (data['info']['type']) {
             case 'text':
-            TextEditingController textController =
-                            TextEditingController(text:data['content'] );
-                        FocusNode textFocusNode = FocusNode();
-                        setState(() {
-                          textControllers.add(textController);
-                          textFocusNodes.add(textFocusNode);
-                          fileIndex++;
-                          contentsData.add({
-                            'info': {'type': 'text'},
-                            'content': textController,
-                            'widget': textDisplay(
-                                textController, fileIndex, textFocusNode)
-                          });
-                          contents.add(textDisplay(
-                              textController, fileIndex, textFocusNode));
-                        });
+              TextEditingController textController =
+                  TextEditingController(text: data['content']);
+              FocusNode textFocusNode = FocusNode();
+              setState(() {
+                textControllers.add(textController);
+                textFocusNodes.add(textFocusNode);
+                fileIndex++;
+                contentsData.add({
+                  'info': {'type': 'text'},
+                  'content': textController,
+                  'widget':
+                      textDisplay(textController, fileIndex, textFocusNode)
+                });
+                contents
+                    .add(textDisplay(textController, fileIndex, textFocusNode));
+              });
               break;
             case 'link':
-               TextEditingController linkController =
-                            TextEditingController(text:data['content'] );
-                        setState(() {
-                          linkControllers.add(linkController);
-                          fileIndex++;
-                          contentsData.add({
-                            'info': {'type': 'link'},
-                            'content': linkController,
-                            'widget': linkDisplay(linkController, false)
-                          });
-                        });
+              TextEditingController linkController =
+                  TextEditingController(text: data['content']);
+              setState(() {
+                linkControllers.add(linkController);
+                fileIndex++;
+                contentsData.add({
+                  'info': {'type': 'link'},
+                  'content': linkController,
+                  'widget': linkDisplay(linkController, false)
+                });
+              });
               break;
             case 'image':
-             addImageContent(File(data['content']));
+              addImageContent(File(data['content']));
               break;
             case 'video':
-            addVideoContent(File(data['content']));
+              addVideoContent(File(data['content']));
               break;
-               case 'carousel':
-               List<File> _images = [];
-             data['content'].forEach((img) {
-                  _images.add(File(img));
+            case 'carousel':
+              List<File> _images = [];
+              data['content'].forEach((img) {
+                _images.add(File(img));
               });
-            addCarouselContent(_images, data['info']['aspectRatio']);
+              addCarouselContent(_images, data['info']['aspectRatio']);
               break;
           }
         });
@@ -699,16 +741,95 @@ Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
 
   @override
   Widget build(BuildContext context) {
+    cimg = 0;
+    cvid = 0;
+    ctxt = 0;
+    clnk = 0;
     List<Widget> _contents = [];
     // draftBox.deleteAll([0,1]);
+
     for (int i = 0; i < contentsData.length; i++) {
-      _contents.add(GestureDetector(
-          onLongPress: () {
-            showContentSettingsSheet(i + 1);
-          },
-          child: contentsData[i]['widget']));
+      if (contentsData[i]['info']['type'] == 'text') {
+        if (contentsData[i]['content'].text.length == 0) {
+          if (contentsData.length > i + 1) {
+            contentsData[i] = null;
+          } else {
+            _contents.add(Stack(
+              alignment: Alignment.topRight,
+              children: [
+                contentsData[i]['widget'],
+                GestureDetector(
+                    onTap: () {
+                      showContentSettingsSheet(i + 1);
+                    },
+                    child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        child: Icon(
+                          FluentIcons.settings_16_filled,
+                          size: 18,
+                          color: Colors.grey,
+                        ))),
+              ],
+            ));
+          }
+        } else {
+          _contents.add(Stack(
+            alignment: Alignment.topRight,
+            children: [
+              contentsData[i]['widget'],
+              GestureDetector(
+                  onTap: () {
+                    showContentSettingsSheet(i + 1);
+                  },
+                  child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 6),
+                      child: Icon(
+                        FluentIcons.settings_16_filled,
+                        size: 18,
+                        color: Colors.grey,
+                      ))),
+            ],
+          ));
+        }
+      } else {
+        _contents.add(GestureDetector(
+            onLongPress: () {
+              showContentSettingsSheet(i + 1);
+            },
+            child: contentsData[i]['widget']));
+      }
+      print('content data: $contentsData');
+      print(contentsData[i]);
+      if (contentsData[i] != null) {
+        switch (contentsData[i]['info']['type']) {
+          case 'image':
+            cimg++;
+            break;
+          case 'video':
+            cvid++;
+            break;
+          case 'carousel':
+            cimg = cimg + contentsData[i]['content'].length;
+            break;
+          case 'text':
+            ctxt = ctxt + contentsData[i]['content'].text.length;
+            break;
+          case 'link':
+            clnk++;
+            break;
+          default:
+        }
+      }
     }
-    print( Boxes.draftBox.values);
+    for (int i = 0; i < contentsData.length; i++) {
+      if (contentsData[i] == null) {
+        contentsData.removeAt(i);
+      }
+    }
+    print('cimg: $cimg');
+    print(Boxes.draftBox.values);
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       appBar: AppBar(
@@ -787,7 +908,7 @@ Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
                           }
                         }
 
-                         Boxes.draftBox.add({
+                        Boxes.draftBox.add({
                           'title': titleController.text,
                           'contentsData': _modifiedContentsData,
                           'postId': postId
@@ -817,6 +938,10 @@ Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
                   IconButton(
                     icon: Icon(FlutterIcons.image_fea),
                     onPressed: () {
+                      if (cimg >= limg) {
+                        showLimits(context);
+                        return;
+                      }
                       showDialog(
                         context: context,
                         builder: (BuildContext context) => postItemsDialog({
@@ -834,6 +959,10 @@ Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
                       size: 25.5,
                     ),
                     onPressed: () {
+                      if (cvid >= lvid) {
+                        showLimits(context);
+                        return;
+                      }
                       showDialog(
                         context: context,
                         builder: (BuildContext context) => postItemsDialog({
@@ -852,6 +981,10 @@ Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
                             TextEditingController();
                         FocusNode textFocusNode = FocusNode();
                         setState(() {
+                          if (ctxt >= ltxt) {
+                            showLimits(context);
+                            return;
+                          }
                           textControllers.add(textController);
                           textFocusNodes.add(textFocusNode);
                           fileIndex++;
@@ -871,6 +1004,10 @@ Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
                         size: 21,
                       ),
                       onPressed: () {
+                        if (clnk >= llnk) {
+                          showLimits(context);
+                          return;
+                        }
                         TextEditingController linkController =
                             TextEditingController();
                         setState(() {
@@ -907,22 +1044,42 @@ Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-              width: double.infinity,
-              child: TextField(
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                maxLines: 1,
-                minLines: 1,
-                controller: titleController,
-                decoration: InputDecoration(
-                  hintText: "Title",
-                  hintStyle: TextStyle(
-                      color:
-                          Theme.of(context).iconTheme.color.withOpacity(0.8)),
-                  border: InputBorder.none,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CircleAvatar(
+                    maxRadius: 20,
+                    backgroundImage: CachedNetworkImageProvider(Boxes
+                            .currentUserBox
+                            .get('avatar_url') ??
+                        "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                  ),
                 ),
-              ),
+                Expanded(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                    width: double.infinity,
+                    child: TextField(
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                      maxLines: 1,
+                      minLines: 1,
+                      controller: titleController,
+                      decoration: InputDecoration(
+                        hintText: "Title",
+                        hintStyle: TextStyle(
+                            color: Theme.of(context)
+                                .iconTheme
+                                .color
+                                .withOpacity(0.8)),
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
             Divider(
               color: Colors.grey,
@@ -940,14 +1097,30 @@ Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Icon(
-                        FluentIcons.collections_add_24_regular,
-                        size: 95,
-                        color: Colors.grey,
+                    Container(
+                      padding: EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Theme.of(context).cardColor),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Icon(
+                          FluentIcons.collections_add_24_regular,
+                          size: 95,
+                          color: Theme.of(context).iconTheme.color,
+                        ),
                       ),
                     ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      'Add New Stuff!',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontFamily: "Yahoo Sans Cond",
+                      ),
+                    )
                   ],
                 ),
               ),
@@ -958,6 +1131,10 @@ Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
         ),
       ),
     );
+  }
+
+  showLimits(BuildContext context) {
+    snackbar("You've reached the limit.", context);
   }
 
   postItemsDialog(Map functions, BuildContext context) {
@@ -995,8 +1172,11 @@ Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
               child: Container(
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                    border: i ==  functions.length - 1?null:Border(
-                        bottom: BorderSide(width: 0.3, color: Colors.grey))),
+                    border: i == functions.length - 1
+                        ? null
+                        : Border(
+                            bottom:
+                                BorderSide(width: 0.3, color: Colors.grey))),
                 child: Text(
                   functions.keys.elementAt(i),
                   style: TextStyle(fontSize: 18),
@@ -1083,5 +1263,41 @@ Map _videoData = {'thumbUrl':tUrl, 'videoUrl': vUrl};
                 ),
               ),
             ));
+  }
+}
+
+typedef TextLengthCallback = void Function();
+
+class TextDisplayWidget extends StatefulWidget {
+  TextDisplayWidget(this.textController, this.textFocusNode, this.onTextSelect);
+  final TextEditingController textController;
+  final FocusNode textFocusNode;
+  final TextLengthCallback onTextSelect;
+  @override
+  _TextDisplayWidgetState createState() => _TextDisplayWidgetState();
+}
+
+class _TextDisplayWidgetState extends State<TextDisplayWidget> {
+  @override
+  Widget build(BuildContext context) {
+    widget.onTextSelect();
+    return Container(
+        padding: const EdgeInsets.only(left: 14, right: 14, top: 8, bottom: 2),
+        child: TextFormField(
+          controller: widget.textController,
+          focusNode: widget.textFocusNode,
+          keyboardType: TextInputType.multiline,
+          maxLength: 500 + widget.textController.text.length - textLength,
+          decoration: InputDecoration(
+              counter: Container(),
+              hintText: 'Write Something...',
+              border: InputBorder.none),
+          maxLines: null,
+          onTap: () {
+            setState(() {
+              widget.onTextSelect();
+            });
+          },
+        ));
   }
 }

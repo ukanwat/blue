@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 
 // Flutter imports:
+import 'package:blue/services/graphql.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'package:animations/animations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 // Project imports:
@@ -32,136 +34,150 @@ class ChatsScreen extends StatefulWidget {
 class _ChatsScreenState extends State<ChatsScreen>
     with AutomaticKeepAliveClientMixin<ChatsScreen> {
   Map directMap = {};
-   List<Widget> chatUsers = [];
- bool  loading = true;
- bool empty = false;
+  List<Widget> chatUsers = [];
+  bool loading = true;
+  bool empty = false;
+  GraphQLClient _client;
   @override
   void initState() {
-    // Timer.periodic(Duration(minutes: 1), (Timer t) {   
+    // Timer.periodic(Duration(minutes: 1), (Timer t) {
     //   if(this.mounted)
     //   setState(() {
     //          var direct =  PreferencesUpdate().getString('direct');
     // directMap = direct == null ? {} : json.decode(direct);
     //     });});
-     getUserTiles();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   _client = GraphQLProvider.of(context).value;
+    // });
+    getUserTiles();
     super.initState();
   }
-  getUserTiles()async{
-     dynamic data = await Hasura.getConversations();
-       
-        data.forEach((doc) {
-          int convId = doc['conv_id'];
-          print('convId: $convId - ${Hasura.getUserId()}');
 
-          if(doc['user1']['user_id'] == Boxes.currentUserBox.get('user_id')){
-            doc = doc['user2'];
-          }else{
- doc = doc['user1'];
-          }
-          print(doc);
-          User user = User.fromDocument({
-            'avatar_url':doc['avatar_url'],
-            'id':doc['user_id'],
-            'username':doc['username'],
-            'name':doc['name']
+  getUserTiles() async {
+    dynamic data = await Hasura.getConversations();
+
+    data.forEach((doc) {
+      int convId = doc['conv_id'];
+      print('convId: $convId - ${Hasura.getUserId()}');
+
+      if (doc['user1']['user_id'] == Boxes.currentUserBox.get('user_id')) {
+        doc = doc['user2'];
+      } else {
+        doc = doc['user1'];
+      }
+      print(doc);
+      User user = User.fromDocument({
+        'avatar_url': doc['avatar_url'],
+        'id': doc['user_id'],
+        'username': doc['username'],
+        'name': doc['name']
+      });
+      print(user);
+      Widget userChat = OpenContainer<bool>(
+          transitionType: ContainerTransitionType.fadeThrough,
+          openBuilder: (BuildContext _, VoidCallback openContainer) {
+            return ChatMessagesScreen(
+              peerUser: user,
+              convId: convId,
+            );
+          },
+          onClosed: null,
+          tappable: false,
+          closedShape: const RoundedRectangleBorder(),
+          closedColor: Theme.of(context).backgroundColor,
+          closedBuilder: (BuildContext _, VoidCallback openContainer) {
+            return chatUserListTile(user, openContainer);
           });
-          print(user);
-         Widget userChat =
-      OpenContainer<bool>(
-              transitionType: ContainerTransitionType.fadeThrough,
-              openBuilder: (BuildContext _, VoidCallback openContainer) {
-                return ChatMessagesScreen(peerUser:user,convId: convId,);
-              },
-              onClosed: null,
-              tappable: false,
-              closedShape: const RoundedRectangleBorder(),closedColor: Theme.of(context).backgroundColor,
-              closedBuilder: (BuildContext _, VoidCallback openContainer) {
-                return chatUserListTile(user,openContainer);});
-          chatUsers.add(userChat);
-        });
-        if(chatUsers ==  null)  //TODO check
-        setState(() {
-           
-           loading = false;
-           empty = true;
-        });
- 
- setState(() {
-           
-           loading = false;
-        });
+      chatUsers.add(userChat);
+    });
+    if (chatUsers == null) //TODO check
+      setState(() {
+        loading = false;
+        empty = true;
+      });
+
+    setState(() {
+      loading = false;
+    });
   }
+
   bool get wantKeepAlive => true;
 
   Widget build(BuildContext context) {
     super.build(context);
-    return loading? circularProgress(): empty? emptyState(context, 'No new Messages','Message Sent',subtitle: 'Any new messages will appear here' ):
-    ListView.builder(
-      itemCount: chatUsers.length,
-      itemBuilder: (context,i){
-return chatUsers[i]; 
-    })
-    ;
+    return loading
+        ? circularProgress()
+        : empty
+            ? emptyState(context, 'No new Messages', 'Message Sent',
+                subtitle: 'Any new messages will appear here')
+            : ListView.builder(
+                itemCount: chatUsers.length,
+                itemBuilder: (context, i) {
+                  return chatUsers[i];
+                });
   }
 
-
-
-  InkWell chatUserListTile(User user,VoidCallback openContainer) {
-    
-    return InkWell(onTap: openContainer,
-              child: 
-             ListTile(
-               tileColor:  Theme.of(context).backgroundColor,
-                leading: CircleAvatar(
-                  backgroundImage: CachedNetworkImageProvider(user.avatarUrl),
-                ),
-                title: Text(
-                  user.name,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                     child:   directMap.containsKey(user.id)
-                            ? (directMap[user.id]['message'] ==
-                                    '${MessageType.gif}'
-                                ? Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                    Icon(FlutterIcons.play_box_outline_mco,size: 16,
+  InkWell chatUserListTile(User user, VoidCallback openContainer) {
+    return InkWell(
+      onTap: openContainer,
+      child: ListTile(
+        tileColor: Theme.of(context).backgroundColor,
+        leading: CircleAvatar(
+          backgroundImage: CachedNetworkImageProvider(user.avatarUrl),
+        ),
+        title: Text(
+          user.name,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        subtitle: Row(
+          children: <Widget>[
+            Expanded(
+              child: Container(
+                child: directMap.containsKey(user.id)
+                    ? (directMap[user.id]['message'] == '${MessageType.gif}'
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Icon(
+                                FlutterIcons.play_box_outline_mco,
+                                size: 16,
+                                color: Colors.grey,
+                              ),
+                              Text(' GIF')
+                            ],
+                          )
+                        : (directMap[user.id]['message'] ==
+                                '${MessageType.image}'
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Icon(
+                                    FlutterIcons.image_fea,
+                                    size: 15,
                                     color: Colors.grey,
-                                    ),
-                                    Text(' GIF')
-                                  ],
-                                ) 
-                                : (directMap[user.id]['message'] ==
-                                        '${MessageType.image}'
-                                    ? Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                    Icon(FlutterIcons.image_fea,size: 15,
-                                    color: Colors.grey,),
-                                    Text(' Image')
-                                  ],
-                                ) 
-                                    : Text(directMap[user.id]['message'],maxLines: 1,overflow: TextOverflow.ellipsis,)))
-                            : Text(user.username,maxLines: 1,),
+                                  ),
+                                  Text(' Image')
+                                ],
+                              )
+                            : Text(
+                                directMap[user.id]['message'],
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              )))
+                    : Text(
+                        user.username,
+                        maxLines: 1,
                       ),
-                    ),
-                    Text(
-                      directMap.containsKey(user.id)
-                        ? '${timeago.format(DateTime.parse(directMap[user.id]['time']))}'
-                        : 
-                        ''),
-                  ],
-                ),
               ),
-            
-          
-      
+            ),
+            Text(directMap.containsKey(user.id)
+                ? '${timeago.format(DateTime.parse(directMap[user.id]['time']))}'
+                : ''),
+          ],
+        ),
+      ),
     );
   }
 }

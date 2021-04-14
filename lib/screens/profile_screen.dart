@@ -33,7 +33,7 @@ import './home.dart';
 import './settings_screen.dart';
 import '../services/boxes.dart';
 
-enum Sort { Recent, Earliest, Best }
+enum Sort { Recent, Oldest, Best }
 
 class ProfileScreen extends StatefulWidget {
   final int profileId;
@@ -92,8 +92,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       if (_controller.position.pixels == _controller.position.maxScrollExtent &&
           empty != true &&
           loaded != true) {
-        print(
-            '');
+        print('');
         setState(() {
           addPosts(sort, changing: true);
         });
@@ -106,8 +105,6 @@ class _ProfileScreenState extends State<ProfileScreen>
   void initState() {
     super.initState();
 
-    
-
     // _controller.addListener(onScroll);
   }
 
@@ -116,29 +113,31 @@ class _ProfileScreenState extends State<ProfileScreen>
       setState(() {
         loaded = false;
       });
-      print('owner-${widget.profileId}');
+    print('owner-${widget.profileId}');
     int length = Hasura.postLimit;
     int _id = widget.profileId;
-    String  _where = "{owner_id:{_eq:$_id}}";
+    String _where = "{owner_id:{_eq:$_id}}";
     String _orderBy;
-    if (sort == Sort.Recent){
-          _orderBy = "{created_at:desc}";
+    if (sort == Sort.Recent) {
+      _orderBy = "{created_at:desc}";
+    } else if (sort == Sort.Best) {
+      _orderBy = "{created_at:desc}"; //TODO  voted ordering
+    } else {
+      _orderBy = "{created_at:asc}";
     }
-    else if (sort == Sort.Best){
-           _orderBy = "{created_at:desc}";//TODO  voted ordering 
-    }
-    else{
-           _orderBy = "{created_at:asc}";
-    }
-    
+
     if (lastDoc == 0) {
-      dynamic _snapshot = await Hasura.getPosts(length,0,_orderBy,where: _where); 
-  
+      dynamic _snapshot =
+          await Hasura.getPosts(length, 0, _orderBy, where: _where);
 
       setState(() {
-    posts = _snapshot
-          .map((doc) => Post.fromDocument(doc, isCompact: false,commentsShown: false,))
-          .toList();
+        posts = _snapshot
+            .map((doc) => Post.fromDocument(
+                  doc,
+                  isCompact: false,
+                  commentsShown: false,
+                ))
+            .toList();
       });
 
       if (_snapshot.length == 0) {
@@ -155,9 +154,15 @@ class _ProfileScreenState extends State<ProfileScreen>
         return;
       }
     } else {
-         var _snapshot = await Hasura.getPosts(length,lastDoc,"{created_at:desc}",where: _where);
+      var _snapshot = await Hasura.getPosts(
+          length, lastDoc, "{created_at:desc}",
+          where: _where);
       _snapshot.forEach((doc) {
-        posts.add(Post.fromDocument(doc,isCompact: false,commentsShown: false,));
+        posts.add(Post.fromDocument(
+          doc,
+          isCompact: false,
+          commentsShown: false,
+        ));
       });
 
       if (_snapshot.length < length) {
@@ -169,7 +174,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       lastDoc = lastDoc + _snapshot.length;
     }
   }
- 
 
   editProfile() {
     Navigator.pushNamed(
@@ -211,7 +215,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   buildButton({String text, Function function, IconData icon}) {
     return Container(
       margin: EdgeInsets.only(top: 0, left: 5, right: 5, bottom: 0),
-      height: 40,width: 140,
+      height: 40,
+      width: 140,
       child: FlatButton(
         padding: EdgeInsets.all(0),
         onPressed: function,
@@ -238,7 +243,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           ),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color:  Theme.of(context).accentColor,
+            color: Theme.of(context).accentColor,
             border: Border.all(color: Theme.of(context).accentColor),
             borderRadius: BorderRadius.circular(80.0),
           ),
@@ -248,7 +253,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   buildProfileButton() {
-    bool isProfileOwner = Boxes.currentUserBox.get('user_id') == widget.profileId;
+    bool isProfileOwner =
+        Boxes.currentUserBox.get('user_id') == widget.profileId;
     if (isProfileOwner) {
       return buildButton(
           text: 'Edit Profile',
@@ -257,8 +263,8 @@ class _ProfileScreenState extends State<ProfileScreen>
     } else if (isFollowing) {
       return buildButton(
           text: 'Message',
-          function: () {
-            if (_profileUser != null)
+          function: () async {
+            if (_profileUser != null) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -267,6 +273,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ),
                 ),
               );
+            }
           },
           icon: FlutterIcons.message1_ant);
     } else if (!isFollowing) {
@@ -283,7 +290,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget buildProfileIconButton() {
-    bool isProfileOwner = Boxes.currentUserBox.get('user_id') == widget.profileId;
+    bool isProfileOwner =
+        Boxes.currentUserBox.get('user_id') == widget.profileId;
     if (isProfileOwner) {
       return IconButton(
           icon: Icon(
@@ -301,7 +309,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             FluentIcons.chat_24_regular,
             size: 24,
           ),
-          onPressed: () {
+          onPressed: () async {
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -316,187 +324,204 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   buildProfileHeaderTemp() {
     print('current user id ^');
-  future = Hasura.getUser(id: widget.profileId,self:  Boxes.currentUserBox.get('user_id') == widget.profileId? true:false);
+    future = Hasura.getUser(
+        id: widget.profileId,
+        self: Boxes.currentUserBox.get('user_id') == widget.profileId
+            ? true
+            : false);
     return Container(
-      color: Colors.white == Theme.of(context).iconTheme.color? Colors.grey.shade900:Colors.white,
+      color: Colors.white == Theme.of(context).iconTheme.color
+          ? Colors.grey.shade900
+          : Colors.white,
       child: FutureBuilder(
-        future: future
-        ,
+        future: future,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return circularProgress();
           }
-          print(snapshot.data['data']['users_by_pk'] );
-          User user = User.fromDocument(snapshot.data['data']['users_by_pk'] );
-          Boxes.currentUserBox.put('avatar_url',user.avatarUrl);
+          print(snapshot.data['data']['users_by_pk']);
+          User user = User.fromDocument(snapshot.data['data']['users_by_pk']);
+          if (Boxes.currentUserBox.get('user_id') == widget.profileId) {
+            Boxes.currentUserBox.put('avatar_url', user.avatarUrl);
+          }
+
           _profileUser = user;
           profileName = user.name;
           return Container(
-              color: Theme.of(context).backgroundColor,
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    color: Theme.of(context).backgroundColor,
-                    child: user.headerUrl == null
-                        ? Container(
-                            height: 150,
-                            width: double.infinity,
-                            color: Theme.of(context).cardColor,
-                          )
-                        : CachedNetworkImage(
-                            imageUrl: user.headerUrl,
-                            fit: BoxFit.cover,
-                            height: 150,
-                          ),
-                    height: 150,
-                    width: double.infinity,
+            color: Theme.of(context).backgroundColor,
+            child: Column(
+              children: <Widget>[
+                Container(
+                  color: Theme.of(context).backgroundColor,
+                  child: user.headerUrl == null
+                      ? Container(
+                          height: 150,
+                          width: double.infinity,
+                          color: Theme.of(context).cardColor,
+                        )
+                      : CachedNetworkImage(
+                          imageUrl: user.headerUrl,
+                          fit: BoxFit.cover,
+                          height: 150,
+                        ),
+                  height: 150,
+                  width: double.infinity,
+                ),
+                ExpansionTile(
+                  backgroundColor: Theme.of(context).backgroundColor,
+                  tilePadding:
+                      EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                  expandedAlignment: Alignment.topLeft,
+                  expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                  childrenPadding:
+                      EdgeInsets.only(left: 0, bottom: 10, top: 0, right: 0),
+                  title: Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Text(
+                      '${user.username}',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 18,
+                          color: Theme.of(context).iconTheme.color),
+                    ),
                   ),
-                   ExpansionTile(backgroundColor: Theme.of(context).backgroundColor,tilePadding: EdgeInsets.symmetric(horizontal: 10,vertical: 0),
-
-                      expandedAlignment: Alignment.topLeft,
-                      expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                      childrenPadding:
-                          EdgeInsets.only(left: 0, bottom: 10, top: 0, right: 0),
-                      title: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Text(
-                          '${user.username}',
-
-                          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18,color: Theme.of(context).iconTheme.color),
+                  leading: Stack(
+                    overflow: Overflow.visible,
+                    children: <Widget>[
+                      Container(
+                        height: 60,
+                        width: 120,
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        child: Container(
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Theme.of(context).backgroundColor),
+                          padding: EdgeInsets.all(3),
+                          child: CircleAvatar(
+                            radius: 57.0,
+                            backgroundColor: Theme.of(context).backgroundColor,
+                            backgroundImage: CachedNetworkImageProvider(user
+                                    .avatarUrl ??
+                                "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                          ),
                         ),
                       ),
-                      leading: Stack(
-                        overflow: Overflow.visible,
-                        children: <Widget>[
-                          Container(
-                            height: 60,
-                            width: 120,
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Theme.of(context).backgroundColor),
-                              padding: EdgeInsets.all(3),
-                              child: CircleAvatar(
-                                radius: 57.0,
-                                backgroundColor: Theme.of(context).backgroundColor,
-                                backgroundImage:
-                                    CachedNetworkImageProvider(user.avatarUrl??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                    ],
+                  ),
+                  subtitle: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                    child: Text(
+                      '${Functions.abbreviateNumber(0)} Followers',
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context)
+                              .iconTheme
+                              .color
+                              .withOpacity(0.6)),
+                    ),
+                  ),
+                  children: <Widget>[
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Padding(
+                        padding: const EdgeInsets.only(left: 22),
+                        child: Row(
+                          children: [
+                            Column(
+                              children: [
+                                Text('${Functions.abbreviateNumber(0)}',
+                                    style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w600)),
+                                SizedBox(
+                                  width: 5,
+                                ),
+                                Text('Following',
+                                    style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w400)),
+                              ],
+                            ),
+                            SizedBox(
+                              width: 20,
+                            ),
+                            Column(
+                              children: [
+                                Text('${Functions.abbreviateNumber(0)}',
+                                    style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w600)),
+                                SizedBox(
+                                  width: 5,
+                                ),
+                                Text('Total Upvotes',
+                                    style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w400)),
+                              ],
+                            ),
+                          ],
+                        )),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20),
+                      child: Text(user.about ?? '',
+                          style: TextStyle(
+                            fontSize: 16,
+                          )),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    if (user.website != null && user.website != '')
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 20,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Container(
+                                padding: EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Theme.of(context).cardColor),
+                                child: Icon(
+                                  FluentIcons.link_square_24_regular,
+                                  size: 18,
+                                )),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Expanded(
+                              child: Linkify(
+                                text: user.website,
+                                linkStyle: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.none,
+                                ),
+                                onOpen: (link) {
+                                  launchWebsite(user.website);
+                                },
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      subtitle: Padding(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
-                        child: Text(
-                          '${Functions.abbreviateNumber(0)} Followers',
-                          style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color:
-                                  Theme.of(context).iconTheme.color.withOpacity(0.6)),
+                          ],
                         ),
                       ),
-                      children: <Widget>[
-                        SizedBox(
-                          height: 10,
-                        ),
-                        Padding(
-                            padding: const EdgeInsets.only(left: 22),
-                            child: Row(
-                              children: [
-                                Column(
-                                  children: [
-                                    Text('${Functions.abbreviateNumber(0)}',
-                                        style: TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.w600)),
-                                    SizedBox(
-                                      width: 5,
-                                    ),
-                                    Text('Following',
-                                        style: TextStyle(
-                                            fontSize: 13, fontWeight: FontWeight.w400)),
-                                  ],
-                                ),SizedBox(width: 20,),
-                                 Column(
-                                  children: [
-                                    Text('${Functions.abbreviateNumber(0)}',
-                                        style: TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.w600)),
-                                    SizedBox(
-                                      width: 5,
-                                    ),
-                                    Text('Total Upvotes',
-                                        style: TextStyle(
-                                            fontSize: 13, fontWeight: FontWeight.w400)),
-                                  ],
-                                ),
-                              ],
-                            )),
-                        SizedBox(
-                          height: 10,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 20),
-                          child: Text(user.about?? '',
-                              style: TextStyle(
-                                fontSize: 16,
-                              )),
-                        ),
-                        SizedBox(
-                          height: 10,
-                        ),
-                         if(user.website!= null && user.website!= '')
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 20,
-                          ),
-                         
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Container(
-                                  padding: EdgeInsets.all(3),
-                                  decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Theme.of(context).cardColor),
-                                  child: Icon(
-                                    FluentIcons.link_square_24_regular,
-                                    size: 18,
-                                  )),
-                              SizedBox(
-                                width: 10,
-                              ),
-                              Expanded(
-                                child: Linkify(
-                                  text: user.website,
-                                  linkStyle: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.blue,
-                                    decoration: TextDecoration.none,
-                                  ),
-                                  onOpen: (link) {
-                                    launchWebsite(user.website);
-                                  },
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  
-                ],
-              ),
-            )
-          ;
+                  ],
+                ),
+              ],
+            ),
+          );
         },
       ),
     );
@@ -506,23 +531,25 @@ class _ProfileScreenState extends State<ProfileScreen>
     return ClipRRect(
       borderRadius: BorderRadius.circular(50),
       child:
-      //  Material(elevation: 0,
-      //   child: 
-        InkWell(
-          onTap: fn,
-              child:
-                // child: new BackdropFilter(
-                    // filter: new ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                 Container(
-                      color:Colors.black38,
-                      child: Padding(
-                        padding: const EdgeInsets.all(6.0),
-                      child: Icon(icon.icon,color: Colors.white,),
-                      // ),
-                    // ),
-              )),
-        ),
-      
+          //  Material(elevation: 0,
+          //   child:
+          InkWell(
+        onTap: fn,
+        child:
+            // child: new BackdropFilter(
+            // filter: new ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+            Container(
+                color: Colors.black38,
+                child: Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: Icon(
+                    icon.icon,
+                    color: Colors.white,
+                  ),
+                  // ),
+                  // ),
+                )),
+      ),
     );
   }
 
@@ -590,338 +617,339 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
       body: SafeArea(
         child: NestedScrollView(
-          controller: _controller,
-          headerSliverBuilder: (context, _) {
-            return [
-              SliverList(
-                delegate: SliverChildListDelegate([
-                  Material(
-                    color: Colors.grey[300],
-                    child: StickyHeaderBuilder(
-                      overlapHeaders: true,
-                      // controller: _controller,
-                      builder: (BuildContext context, double stuckAmount) {
-                        stuckAmount = 1.0 - stuckAmount.clamp(0.0, 1.0);
-                        return Container(
-                          height: 50.0,
-                          decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                Colors.black54.withOpacity(0.7),
-                                Colors.transparent
-                              ])),
-                          padding: EdgeInsets.symmetric(horizontal: 10.0),
-                          alignment: Alignment.centerLeft,
-                          child: Row(
-                            children: <Widget>[
-                              if (widget.profileId == Boxes.currentUserBox.get('user_id'))
-                                Padding(
-                                  padding: EdgeInsets.only(right: 36),
-                                ),
-                              widget.profileId != Boxes.currentUserBox.get('user_id') 
-                                  ? headerButton(
-                                      Icon(
-                                        FluentIcons.arrow_left_24_regular,
-                                        size: 26,
-                                        color:
-                                            Theme.of(context).iconTheme.color,
-                                      ), () {
-                                      Navigator.pop(context);
-                                    })
-                                  : Container(
-                                      width: 30,
-                                    ),
-                              if (!isFollowing && Boxes.currentUserBox.get('user_id')  != widget.profileId)
-                                Padding(
-                                  padding: EdgeInsets.only(right: 36),
-                                ),
-                              Expanded(
-                                  child: Center(
-                                child: Text(
-                                  profileName,
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 19,
-                                      color: Colors.white),
-                                ),
-                              )),
-                              if (!isFollowing && Boxes.currentUserBox.get('user_id')  != widget.profileId)
-                                Padding(
-                                  padding: EdgeInsets.only(right: 5),
-                                  child: headerButton(
-                                      Icon(
-                                        FluentIcons.chat_24_regular,
-                                        size: 26,
-                                        color:
-                                            Theme.of(context).iconTheme.color,
-                                      ), () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            ChatMessagesScreen(
-                                          peerUser: _profileUser,
-                                        ),
-                                      ),
-                                    );
-                                  }),
-                                ),
-                              if (widget.profileId == Boxes.currentUserBox.get('user_id') )
-                                Padding(
-                                  padding: EdgeInsets.only(right: 10),
-                                  child: headerButton(
-                                      Icon(
-                                        FluentIcons.bookmark_24_regular,
-                                        size: 26,
-                                        color:
-                                            Theme.of(context).iconTheme.color,
-                                      ), () {
-                                    Navigator.pushNamed(
-                                        context, AllSavedPostsScreen.routeName);
-                                  }),
-                                ),
-                              widget.profileId == Boxes.currentUserBox.get('user_id') 
-                                  ? headerButton(
-                                      Icon(
-                                        FluentIcons.settings_24_regular,
-                                        size: 26,
-                                        color:
-                                            Theme.of(context).iconTheme.color,
-                                      ), () {
-                                      Navigator.pushNamed(
-                                          context, SettingsScreen.routeName);
-                                    })
-                                  : Transform.scale(
-                                      scale: 0.8,
-                                      child: Container(
-                                        decoration: BoxDecoration(shape: BoxShape.circle,  color: Colors.black.withOpacity(0.32),),
-                                      margin:
-                                            EdgeInsets.symmetric(horizontal: 3,vertical: 3),child: PopupMenuButton(
-                                                        padding:
-                                                            EdgeInsets.zero,
-                                                        color: Theme.of(context)
-                                                            .canvasColor,iconSize: 20,
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(8),
-                                                        ),
-                                                        itemBuilder: (_) => [
-                                                          if (isFollowing)
-                                                            PopupMenuItem(
-                                                                child: Text(
-                                                                    'Unfollow $profileName'),
-                                                                value:
-                                                                    'Unfollow'),
-                                                          PopupMenuItem(
-                                                              child: Text(
-                                                                  'Report $profileName'),
-                                                              value: 'Report'),
-                                                          PopupMenuItem(
-                                                              child: Text(
-                                                                  '${PreferencesUpdate().containsInList('blocked_accounts', _profileUser.userId) ? "Unblock" : "Block"} $profileName'),
-                                                              value: PreferencesUpdate().containsInList(
-                                                                      'blocked_accounts',
-                                                                      _profileUser
-                                                                          .userId)
-                                                                  ? "Unblock"
-                                                                  : "Block"),
-                                                          PopupMenuItem(
-                                                              child: Text(
-                                                                  '${PreferencesUpdate().containsInList('muted_messages', _profileUser.userId) ? "Unmute" : "Mute"} $profileName'),
-                                                              value: PreferencesUpdate().containsInList(
-                                                                      'muted_messages',
-                                                                      _profileUser
-                                                                          .userId)
-                                                                  ? "Unmute"
-                                                                  : "Mute"),
-                                                        ],
-                                                        icon: Icon(
-                                                  Icons.more_horiz_outlined,
-                                                          size: 24,
-                                                          color: Colors.white,
-                                                        ),
-                                                        onSelected:
-                                                            (selectedValue) async {
-                                                          Map peer = {
-                                                            'peerId':
-                                                                _profileUser.userId,
-                                                            'peerUsername':
-                                                                _profileUser
-                                                                    .username,
-                                                            'peerImageUrl':
-                                                                _profileUser
-                                                                    .photoUrl,
-                                                            'peerName':
-                                                                _profileUser
-                                                                    .name
-                                                          };
-                                                          print(
-                                                              '$selectedValue user $peer');
-                                                          switch (
-                                                              selectedValue) {
-                                                            case 'Unfollow':
-                                                              Functions()
-                                                                  .handleUnfollowUser(
-                                                                      _profileUser.userId);
-                                                              setState(() {
-                                                                isFollowing =
-                                                                    false;
-                                                              });
-                                                              break;
-                                                            case 'Report':
-                                                              showDialog(
-                                                                context:
-                                                                    context,
-                                                                builder:
-                                                                    (context) {
-                                                                  return UserReportDialog(
-                                                                    peer: peer
-                                                                  );
-                                                                },
-                                                              );
-                                                              break;
-                                                            case 'Block':
-                                                              Functions()
-                                                                  .blockUser(
-                                                                      peer);
-                                                              break;
-                                                            case 'Unblock':
-                                                              Functions()
-                                                                  .unblockUser(
-                                                                      peer);
-                                                              break;
-                                                            case 'Mute':
-                                                              Functions()
-                                                                  .muteUser(
-                                                                      peer);
-                                                              break;
-                                                            case 'Unmute':
-                                                              Functions()
-                                                                  .unmuteUser(
-                                                                      peer);
-                                                              break;
-                                                          }
-                                                        },
-                                                      ),
-                                                    )),
-                                     
-                            ],
-                          ),
-                        );
-                      },
-                      content: buildProfileHeaderTemp(),
-                    ),
-                  ),
-                ]),
-              ),
-            ];
-          },
-          body:RefreshIndicator(onRefresh: ()async{
-          setState(() {
-           Hasura.getUser(self: true);
-          });
-       await   Future.delayed(Duration(milliseconds: 500));
-          return;
-        },
-                  child:  Column(
-            children: [
-              if (_controller == null)
-                Container()
-              else
-                Material(
-                  color: Theme.of(context).backgroundColor,
-                  child: StickyHeaderBuilder(
-                      // controller: _controller == null?ScrollController():_controller  ,
-                      builder: (BuildContext context, double stuckAmount) {
-                        stuckAmount = 1.0 - stuckAmount.clamp(0.0, 1.0);
-                        Widget button = Container(
+            controller: _controller,
+            headerSliverBuilder: (context, _) {
+              return [
+                SliverList(
+                  delegate: SliverChildListDelegate([
+                    Material(
+                      color: Colors.grey[300],
+                      child: StickyHeaderBuilder(
+                        overlapHeaders: true,
+                        // controller: _controller,
+                        builder: (BuildContext context, double stuckAmount) {
+                          stuckAmount = 1.0 - stuckAmount.clamp(0.0, 1.0);
+                          return Container(
                             height: 50.0,
-                            color: Color.lerp(Theme.of(context).backgroundColor,
-                                Theme.of(context).backgroundColor, stuckAmount),
+                            decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                  Colors.black54.withOpacity(0.7),
+                                  Colors.transparent
+                                ])),
                             padding: EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Center(
-                              child: buildProfileButton(),
-                            ));
-                        if (stuckAmount > 0.0)
-                          button = Container(
-                              height: 50.0,
-                              color: Theme.of(context).backgroundColor,
-                              padding: EdgeInsets.symmetric(horizontal: 15.0),
-                              child: Center(
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                        child: Text(
-                                      profileName,
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 19),
-                                    )),
-                                    buildProfileButton()
-                                  ],
-                                ),
-                              ));
-                        return AnimatedSwitcher(
-                            duration: Duration(milliseconds: 100),
-                            reverseDuration: Duration(milliseconds: 100),
-                            child: button);
-                      },
-                      content: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                                width: 1, color: Theme.of(context).cardColor),
-                            color: Theme.of(context).backgroundColor,
-                          ),
-                          height: 36,
-                          margin: EdgeInsets.only(
-                              left: 10, right: 10, bottom: 6, top: 4),
-                          child: Row(
-                            children: [
-                              sortTab(Sort.Recent),
-                              Container(
-                                width: 2,
-                                height: 32,
-                                color: Theme.of(context).cardColor,
-                              ),
-                              sortTab(Sort.Best),
-                              Container(
-                                width: 2,
-                                height: 32,
-                                color: Theme.of(context).cardColor,
-                              ),
-                              sortTab(Sort.Earliest),
-                            ],
-                          ))),
+                            alignment: Alignment.centerLeft,
+                            child: Row(
+                              children: <Widget>[
+                                if (widget.profileId ==
+                                    Boxes.currentUserBox.get('user_id'))
+                                  Padding(
+                                    padding: EdgeInsets.only(right: 36),
+                                  ),
+                                widget.profileId !=
+                                        Boxes.currentUserBox.get('user_id')
+                                    ? headerButton(
+                                        Icon(
+                                          FluentIcons.arrow_left_24_regular,
+                                          size: 26,
+                                          color:
+                                              Theme.of(context).iconTheme.color,
+                                        ), () {
+                                        Navigator.pop(context);
+                                      })
+                                    : Container(
+                                        width: 30,
+                                      ),
+                                if (!isFollowing &&
+                                    Boxes.currentUserBox.get('user_id') !=
+                                        widget.profileId)
+                                  Padding(
+                                    padding: EdgeInsets.only(right: 36),
+                                  ),
+                                Expanded(
+                                    child: Center(
+                                  child: Text(
+                                    profileName,
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 19,
+                                        color: Colors.white),
+                                  ),
+                                )),
+                                if (!isFollowing &&
+                                    Boxes.currentUserBox.get('user_id') !=
+                                        widget.profileId)
+                                  Padding(
+                                    padding: EdgeInsets.only(right: 5),
+                                    child: headerButton(
+                                        Icon(
+                                          FluentIcons.chat_24_regular,
+                                          size: 26,
+                                          color:
+                                              Theme.of(context).iconTheme.color,
+                                        ), () async {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              ChatMessagesScreen(
+                                            peerUser: _profileUser,
+                                          ),
+                                        ),
+                                      );
+                                    }),
+                                  ),
+                                if (widget.profileId ==
+                                    Boxes.currentUserBox.get('user_id'))
+                                  Padding(
+                                    padding: EdgeInsets.only(right: 10),
+                                    child: headerButton(
+                                        Icon(
+                                          FluentIcons.bookmark_24_regular,
+                                          size: 26,
+                                          color:
+                                              Theme.of(context).iconTheme.color,
+                                        ), () {
+                                      Navigator.pushNamed(context,
+                                          AllSavedPostsScreen.routeName);
+                                    }),
+                                  ),
+                                widget.profileId ==
+                                        Boxes.currentUserBox.get('user_id')
+                                    ? headerButton(
+                                        Icon(
+                                          FluentIcons.settings_24_regular,
+                                          size: 26,
+                                          color:
+                                              Theme.of(context).iconTheme.color,
+                                        ), () {
+                                        Navigator.pushNamed(
+                                            context, SettingsScreen.routeName);
+                                      })
+                                    : Transform.scale(
+                                        scale: 0.8,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color:
+                                                Colors.black.withOpacity(0.32),
+                                          ),
+                                          margin: EdgeInsets.symmetric(
+                                              horizontal: 3, vertical: 3),
+                                          child: PopupMenuButton(
+                                            padding: EdgeInsets.zero,
+                                            color:
+                                                Theme.of(context).canvasColor,
+                                            iconSize: 20,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            itemBuilder: (_) => [
+                                              if (isFollowing)
+                                                PopupMenuItem(
+                                                    child: Text(
+                                                        'Unfollow $profileName'),
+                                                    value: 'Unfollow'),
+                                              PopupMenuItem(
+                                                  child: Text(
+                                                      'Report $profileName'),
+                                                  value: 'Report'),
+                                              PopupMenuItem(
+                                                  child: Text(
+                                                      '${PreferencesUpdate().containsInList('blocked_accounts', _profileUser.userId) ? "Unblock" : "Block"} $profileName'),
+                                                  value: PreferencesUpdate()
+                                                          .containsInList(
+                                                              'blocked_accounts',
+                                                              _profileUser
+                                                                  .userId)
+                                                      ? "Unblock"
+                                                      : "Block"),
+                                              PopupMenuItem(
+                                                  child: Text(
+                                                      '${PreferencesUpdate().containsInList('muted_messages', _profileUser.userId) ? "Unmute" : "Mute"} $profileName'),
+                                                  value: PreferencesUpdate()
+                                                          .containsInList(
+                                                              'muted_messages',
+                                                              _profileUser
+                                                                  .userId)
+                                                      ? "Unmute"
+                                                      : "Mute"),
+                                            ],
+                                            icon: Icon(
+                                              Icons.more_horiz_outlined,
+                                              size: 24,
+                                              color: Colors.white,
+                                            ),
+                                            onSelected: (selectedValue) async {
+                                              Map peer = {
+                                                'peerId': _profileUser.userId,
+                                                'peerUsername':
+                                                    _profileUser.username,
+                                                'peerImageUrl':
+                                                    _profileUser.photoUrl,
+                                                'peerName': _profileUser.name
+                                              };
+                                              print(
+                                                  '$selectedValue user $peer');
+                                              switch (selectedValue) {
+                                                case 'Unfollow':
+                                                  Functions()
+                                                      .handleUnfollowUser(
+                                                          _profileUser.userId);
+                                                  setState(() {
+                                                    isFollowing = false;
+                                                  });
+                                                  break;
+                                                case 'Report':
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (context) {
+                                                      return UserReportDialog(
+                                                          peer: peer);
+                                                    },
+                                                  );
+                                                  break;
+                                                case 'Block':
+                                                  Functions().blockUser(peer);
+                                                  break;
+                                                case 'Unblock':
+                                                  Functions().unblockUser(peer);
+                                                  break;
+                                                case 'Mute':
+                                                  Functions().muteUser(peer);
+                                                  break;
+                                                case 'Unmute':
+                                                  Functions().unmuteUser(peer);
+                                                  break;
+                                              }
+                                            },
+                                          ),
+                                        )),
+                              ],
+                            ),
+                          );
+                        },
+                        content: buildProfileHeaderTemp(),
+                      ),
+                    ),
+                  ]),
                 ),
-              Divider(
-                height: 1,
-                thickness: 1,
-                color: Theme.of(context).cardColor,
-              ),
-              Expanded(
-                  child: ListView.builder(
+              ];
+            },
+            body: RefreshIndicator(
+              onRefresh: () async {
+                setState(() {
+                  Hasura.getUser(self: true);
+                });
+                await Future.delayed(Duration(milliseconds: 500));
+                return;
+              },
+              child: Column(
+                children: [
+                  if (_controller == null)
+                    Container()
+                  else
+                    Material(
+                      color: Theme.of(context).backgroundColor,
+                      child: StickyHeaderBuilder(
+                          // controller: _controller == null?ScrollController():_controller  ,
+                          builder: (BuildContext context, double stuckAmount) {
+                            stuckAmount = 1.0 - stuckAmount.clamp(0.0, 1.0);
+                            Widget button = Container(
+                                height: 50.0,
+                                color: Color.lerp(
+                                    Theme.of(context).backgroundColor,
+                                    Theme.of(context).backgroundColor,
+                                    stuckAmount),
+                                padding: EdgeInsets.symmetric(horizontal: 10.0),
+                                child: Center(
+                                  child: buildProfileButton(),
+                                ));
+                            if (stuckAmount > 0.0)
+                              button = Container(
+                                  height: 50.0,
+                                  color: Theme.of(context).backgroundColor,
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 15.0),
+                                  child: Center(
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                            child: Text(
+                                          profileName,
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 19),
+                                        )),
+                                        buildProfileButton()
+                                      ],
+                                    ),
+                                  ));
+                            return AnimatedSwitcher(
+                                duration: Duration(milliseconds: 100),
+                                reverseDuration: Duration(milliseconds: 100),
+                                child: button);
+                          },
+                          content: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    width: 1,
+                                    color: Theme.of(context).cardColor),
+                                color: Theme.of(context).backgroundColor,
+                              ),
+                              height: 36,
+                              margin: EdgeInsets.only(
+                                  left: 10, right: 10, bottom: 6, top: 4),
+                              child: Row(
+                                children: [
+                                  sortTab(Sort.Recent),
+                                  Container(
+                                    width: 2,
+                                    height: 32,
+                                    color: Theme.of(context).cardColor,
+                                  ),
+                                  sortTab(Sort.Best),
+                                  Container(
+                                    width: 2,
+                                    height: 32,
+                                    color: Theme.of(context).cardColor,
+                                  ),
+                                  sortTab(Sort.Oldest),
+                                ],
+                              ))),
+                    ),
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: Theme.of(context).cardColor,
+                  ),
+                  Expanded(
+                      child: ListView.builder(
                     padding: EdgeInsets.only(bottom: 100),
-                    itemCount: posts.length+1,
-                    itemBuilder: (context,i){
-                      if(i == posts.length){
-                        return empty? Container(
-                          height: 400,
-                          child: emptyState(context, 'Nothing Here!', 'none')) :loaded?Container(): circularProgress();
+                    itemCount: posts.length + 1,
+                    itemBuilder: (context, i) {
+                      if (i == posts.length) {
+                        return empty
+                            ? Container(
+                                height: 400,
+                                child: emptyState(
+                                    context, 'Nothing Here!', 'none'))
+                            : loaded
+                                ? Container()
+                                : circularProgress();
                       }
                       return posts[i];
-
                     },
-              ))
-            ],
-          ),)
-        ),
+                  ))
+                ],
+              ),
+            )),
       ),
     );
   }

@@ -7,6 +7,7 @@ import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/push_notifications.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -42,24 +43,25 @@ class _TabsScreenState extends State<TabsScreen> {
     // call handle dynamic links
     await DynamicLinksService.initDynamicLinks(context);
   }
-@override
+
+  @override
   void initState() {
     PushNotificationsManager().init();
     super.initState();
   }
+
   @override
   void didChangeDependencies() {
-    if(Hasura.jwtToken == null){
-AuthService.firebaseAuth.authStateChanges().first.then((user) {
+    if (Hasura.jwtToken == null) {
+      AuthService.firebaseAuth.authStateChanges().first.then((user) {
         user.getIdToken(true).then((token) {
           setState(() {
-             Hasura.jwtToken = token;
+            Hasura.jwtToken = token;
           });
-         
         });
       });
     }
-    
+
     Timer.periodic(Duration(minutes: 29), (Timer t) {
       AuthService.firebaseAuth.authStateChanges().first.then((user) {
         user.getIdToken(true).then((token) {
@@ -115,11 +117,12 @@ AuthService.firebaseAuth.authStateChanges().first.then((user) {
               BottomNavigationBarItem(
                 label: 'Home',
                 icon: Icon(
-            FluentIcons.home_24_filled,
+                  FluentIcons.home_24_filled,
                   size: 24,
                 ),
                 activeIcon: Icon(
-               FluentIcons.home_24_filled,size: 24,
+                  FluentIcons.home_24_filled,
+                  size: 24,
                 ),
               ),
               BottomNavigationBarItem(
@@ -130,39 +133,45 @@ AuthService.firebaseAuth.authStateChanges().first.then((user) {
                   // size: 34,
                 ),
                 activeIcon: Icon(
-                FlutterIcons.search_faw,size: 22,
+                  FlutterIcons.search_faw,
+                  size: 22,
                 ),
               ),
               BottomNavigationBarItem(
                 label: 'Post',
-                activeIcon:  Container(
-                  height: 24,
-                  child: Image.asset("assets/images/stark-bnb-icon-wa.png")),
-              
+                activeIcon: Container(
+                    height: 24,
+                    child: Image.asset("assets/images/stark-bnb-icon-wa.png")),
                 icon: Container(
-                  height: 24,
-                  child: Image.asset("assets/images/stark-bnb-icon-wi.png")),
+                    height: 24,
+                    child: Image.asset("assets/images/stark-bnb-icon-wi.png")),
               ),
               BottomNavigationBarItem(
                 label: 'Notifications',
                 icon: Icon(
-                       FluentIcons.alert_24_filled,
+                  FluentIcons.alert_24_filled,
                   size: 24,
                 ),
                 activeIcon: Icon(
-               FluentIcons.alert_24_filled,
+                  FluentIcons.alert_24_filled,
                   size: 24,
                 ),
               ),
               BottomNavigationBarItem(
                 label: 'Profile',
-                icon: Icon(
-                  FlutterIcons.user_faw,
-                  size: 22,
+                icon: CircleAvatar(
+                  maxRadius: 12,
+                  backgroundImage: CachedNetworkImageProvider(Boxes
+                          .currentUserBox
+                          .get("avatar_url") ??
+                      "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
                 ),
-                activeIcon: Icon(
-               FlutterIcons.user_faw,
-                  size: 22,
+                activeIcon: CircleAvatar(
+                  maxRadius: 12,
+                  backgroundImage: CachedNetworkImageProvider(Boxes
+                          .currentUserBox
+                          .get("avatar_url") ??
+                      "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
                 ),
               ),
             ],

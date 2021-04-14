@@ -4,7 +4,11 @@ import 'dart:convert';
 import 'dart:io';
 
 // Flutter imports:
+import 'package:blue/models/hive_data_model.dart';
+import 'package:blue/providers/verify_email.dart';
 import 'package:blue/screens/email_sign_in_screen.dart';
+import 'package:blue/screens/empty_text_screen.dart';
+import 'package:blue/screens/show_screen.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/push_notifications.dart';
@@ -13,10 +17,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 
 // Package imports:
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_login/flutter_login.dart';
+import 'package:hive/hive.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -70,28 +77,33 @@ import './screens/settings_screen.dart';
 import 'models/user.dart';
 import 'screens/settings/general/account_screens/email_screen.dart';
 import './screens/verify_email_screen.dart';
+import './widgets/email_verify_dialog.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   await Firebase.initializeApp();
+  var dir = await getApplicationDocumentsDirectory();
+  Hive.init(dir.path);
+
   await getCurrentUser();
 
- 
   await Boxes.openBoxes();
- if(userSignedIn){
-    await getPreferences();
-  }
-
+  Hive.registerAdapter<HiveUser>(HiveUserAdapter());
+  Hive.registerAdapter<HivePost>(HivePostAdapter());
+  bool dark = PreferencesUpdate().getBool('theme') == true;
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.black.withOpacity(0),
       systemNavigationBarDividerColor: Colors.grey[900],
-      systemNavigationBarIconBrightness: Brightness.light
-      ));
+      systemNavigationBarColor: Colors.grey,
+      systemNavigationBarIconBrightness:
+          dark ? Brightness.light : Brightness.light));
   runApp(MyApp());
 }
+
 bool userSignedIn = false;
 
 Future getPreferences() async {
@@ -105,10 +117,8 @@ Future getCurrentUser() async {
   try {
     Map currentUserMap = Boxes.currentUserBox.toMap();
     print(currentUserMap);
-  userSignedIn = currentUserMap['userSignedIn']?? false;
+    userSignedIn = currentUserMap['userSignedIn'] ?? false;
     currentUser = User.fromDocument(currentUserMap);
-
-     
   } catch (e) {
     print(e);
   }
@@ -118,18 +128,25 @@ bool boxesOpened;
 
 User currentUser;
 
+final GlobalKey<NavigatorState> navigatorKey = new GlobalKey<NavigatorState>();
+Widget buildError(BuildContext context, FlutterErrorDetails error) {
+  return Scaffold(
+    body: Center(
+      child: Text(
+        "Error appeared.",
+      ),
+    ),
+  );
+}
+
 class MyApp extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     return MyAppState();
-
   }
 }
 
 class MyAppState extends State<MyApp> {
-   
-  
-
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -143,7 +160,10 @@ class MyAppState extends State<MyApp> {
                 title: 'Stark',
                 theme: notifier.darkTheme == true
                     ? ThemeData(
-                        accentColor:Color(0xD11ee682),textSelectionTheme:  TextSelectionThemeData(selectionColor: Color.fromRGBO(245, 245, 245, 1)),
+                        brightness: Brightness.dark,
+                        accentColor: Color(0xD11ee682),
+                        textSelectionTheme: TextSelectionThemeData(
+                            selectionColor: Color.fromRGBO(245, 245, 245, 1)),
                         textSelectionColor: Color.fromRGBO(245, 245, 245, 1),
                         cardColor: Color.fromRGBO(50, 50, 50, 1),
                         canvasColor: Color.fromRGBO(32, 32, 32, 1),
@@ -156,6 +176,7 @@ class MyAppState extends State<MyApp> {
                         unselectedWidgetColor: Colors.white,
                       )
                     : ThemeData(
+                        brightness: Brightness.light,
                         textSelectionColor: Color.fromRGBO(51, 51, 51, 1),
                         accentColor: Color(0xD11ee682),
                         cardColor: Color.fromRGBO(238, 238, 238, 1),
@@ -175,6 +196,7 @@ class MyAppState extends State<MyApp> {
                       ),
                 darkTheme: notifier.darkTheme == false
                     ? ThemeData(
+                        brightness: Brightness.light,
                         accentColor: Color(0xD11ee682),
                         textSelectionColor: Color.fromRGBO(24, 24, 24, 1),
                         cardColor: Color.fromRGBO(238, 238, 238, 1),
@@ -192,6 +214,7 @@ class MyAppState extends State<MyApp> {
                         unselectedWidgetColor: Colors.grey[700],
                       )
                     : ThemeData(
+                        brightness: Brightness.dark,
                         dividerColor: Colors.grey,
                         textSelectionColor: Color.fromRGBO(245, 245, 245, 1),
                         accentColor: Color(0xD11ee682),
@@ -208,6 +231,14 @@ class MyAppState extends State<MyApp> {
                         unselectedWidgetColor: Colors.white,
                       ),
                 home: HomeController(),
+                navigatorKey: navigatorKey,
+                // builder: (BuildContext context, Widget widget) {
+                //   ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+                //     return buildError(context, errorDetails);
+                //   };
+
+                //   return widget;
+                // },
                 onGenerateRoute: (settings) {
                   switch (settings.name) {
                     case AllTopicsScreen.routeName:
@@ -284,6 +315,16 @@ class MyAppState extends State<MyApp> {
                           child: CommentsScreen(),
                           type: PageTransitionType.rightToLeft,
                           settings: settings);
+                    case ShowScreen.routeName:
+                      return PageTransition(
+                          child: ShowScreen(),
+                          type: PageTransitionType.scale,
+                          settings: settings);
+                    case SetNameScreen.routeName:
+                      return PageTransition(
+                          child: SetNameScreen(),
+                          type: PageTransitionType.scale,
+                          settings: settings);
                       break;
                   }
                   return CupertinoPageRoute(
@@ -293,15 +334,6 @@ class MyAppState extends State<MyApp> {
                 },
                 routes: {
                   TabsScreen.routeName: (ctx) => TabsScreen(),
-                  SignInScreen.signInRouteName: (ctx) => SignInScreen(
-                        authFormType: AuthFormType.signIn,
-                      ),
-                  SignInScreen.signUpRouteName: (ctx) => SignInScreen(
-                        authFormType: AuthFormType.signUp,
-                      ),
-                  SignInScreen.googleSignInRouteName: (ctx) => SignInScreen(
-                        authFormType: AuthFormType.googleSignIn,
-                      ),
                   SearchScreen.routeName: (ctx) => SearchScreen(),
                   EditProfileScreen.routeName: (ctx) => EditProfileScreen(),
                   PostScreen.routeName: (ctx) => PostScreen(),
@@ -320,7 +352,8 @@ class MyAppState extends State<MyApp> {
                   ExplorePostsScreen.routeName: (ctx) => ExplorePostsScreen(),
                   EmailScreen.routeName: (ctx) => EmailScreen(),
                   PasswordScreen.routeName: (ctx) => PasswordScreen(),
-                  DeactivateAccountScreen.routeName: (ctx) => DeactivateAccountScreen(),
+                  DeactivateAccountScreen.routeName: (ctx) =>
+                      DeactivateAccountScreen(),
                   CreateCollectionScreen.routeName: (ctx) =>
                       CreateCollectionScreen(),
                   BlockedAccountsScreen.routeName: (ctx) =>
@@ -332,41 +365,36 @@ class MyAppState extends State<MyApp> {
                   LicenseScreen.routeName: (ctx) => LicenseScreen(),
                   PackageLicensesScreen.routeName: (ctx) =>
                       PackageLicensesScreen(),
-                      EmailSignInScreen.routeName: (ctx) => EmailSignInScreen(),
-                      SetNameScreen.routeName: (ctx) => SetNameScreen(),
+                  EmailSignInScreen.routeName: (ctx) => EmailSignInScreen(),
+                  ShowScreen.routeName: (ctx) => ShowScreen(),
                 }),
           );
         },
       ),
     );
   }
-
 }
+
 class HomeController extends StatelessWidget {
-  
   @override
   Widget build(BuildContext context) {
-    Boxes.currentUserBox.put('id', 9);
-    
     final AuthService authenticate = PW.Provider.of(context).auth;
     return StreamBuilder<auth.User>(
       stream: authenticate.onAuthStateChanged,
       builder: (context, AsyncSnapshot<auth.User> snapshot) {
-        if (AuthService.verifyingEmail) {
-          return VerifyEmailScreen();
-        }
         if (snapshot.connectionState == ConnectionState.active) {
           if (snapshot.data != null) {
-          snapshot.data.getIdTokenResult(true).then((value) {
+            snapshot.data.getIdTokenResult(true).then((value) {
               print(value.token);
               Hasura.jwtToken = value.token;
-              
             });
           }
-          final bool _signedIn = snapshot.hasData;
-          return _signedIn & (userSignedIn?? false) 
-              ? TabsScreen()
-              : SignInViewScreen();
+          final bool signedIn = snapshot.hasData;
+          bool finalCheck = signedIn && (userSignedIn ?? false);
+          print(finalCheck);
+          print(signedIn);
+          print(userSignedIn);
+          return finalCheck ? TabsScreen() : SignInViewScreen();
         }
         return circularProgress();
       },

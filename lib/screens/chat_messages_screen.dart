@@ -4,7 +4,9 @@ import 'dart:io';
 import 'dart:ui';
 
 // Flutter imports:
+import 'package:blue/services/boxes.dart';
 import 'package:blue/services/functions.dart';
+import 'package:blue/services/graphql.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/cupertino.dart';
@@ -15,6 +17,8 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:hasura_connect/hasura_connect.dart';
 import 'package:image/image.dart' as Im;
 import 'package:image_picker/image_picker.dart';
@@ -43,13 +47,14 @@ class ChatMessagesScreen extends StatefulWidget {
   static const routeName = 'chat-messages';
   final User peerUser;
   final int convId;
-  ChatMessagesScreen({this.peerUser,this.convId});
+  ChatMessagesScreen({this.peerUser, this.convId});
   @override
   _ChatMessagesScreenState createState() => _ChatMessagesScreenState();
 }
 
 class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   var focusNode = new FocusNode();
+  bool first = false;
   dynamic data = [];
   Map sendingStateMap = {'count': 0, 'id': {}, 'state': ''};
   TextEditingController messageController = TextEditingController();
@@ -74,7 +79,8 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         messageController.clear();
       });
 
-      await Hasura.insertMessage(widget.peerUser.id, widget.convId,'text',textMessage);
+      await Hasura.insertMessage(
+          widget.peerUser.id, widget.convId, 'text', textMessage);
 
       sendingStateMap['id'][dateTime.toString()] = true;
       bool valid = true;
@@ -111,15 +117,16 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
       Navigator.of(context)
           .pushNamed(GIFsScreen.routeName)
           .catchError((e) {})
-          .then((value)async {
+          .then((value) async {
         if (value != null) {
           setState(() {
             sendingStateMap['id'][dateTime.toString()] = false;
             sendingStateMap['state'] = 'Sending';
             sendingStateMap['count'] = sendingStateMap['count'] + 1;
           });
-         Hasura.insertMessage(widget.peerUser.id, widget.convId,'gif', value.toString()).
-          then((_) {
+          Hasura.insertMessage(
+                  widget.peerUser.id, widget.convId, 'gif', value.toString())
+              .then((_) {
             sendingStateMap['id'][dateTime.toString()] = true;
             bool valid = true;
             sendingStateMap['id'].forEach((k, v) {
@@ -155,7 +162,6 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   sendMedia() async {
     FocusScope.of(context).unfocus();
     try {
-      
       DateTime dateTime = DateTime.now();
       File image;
       var picker = ImagePicker();
@@ -170,12 +176,13 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         sendingStateMap['count'] = sendingStateMap['count'] + 1;
       });
       if (pickedFile != null) {
-        image = File(pickedFile.path); 
+        image = File(pickedFile.path);
         print('file opened');
-      String downloadUrl = await  FileStorage.uploadImage('chat-messages', image);
-        
-        
-        await Hasura.insertMessage(widget.peerUser.id, widget.convId, 'image', downloadUrl);
+        String downloadUrl =
+            await FileStorage.uploadImage('chat-messages', image);
+
+        await Hasura.insertMessage(
+            widget.peerUser.id, widget.convId, 'image', downloadUrl);
         sendingStateMap['id'][dateTime.toString()] = true;
         bool valid = true;
         sendingStateMap['id'].forEach((k, v) {
@@ -205,22 +212,32 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     }
   }
 
+  GraphQLClient _client;
   @override
   void initState() {
-  
     addMessages();
-    // getMessages();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   _client = GraphQLProvider.of(context).value;
+    // });
     super.initState();
   }
-Container sendButton({Function sendFunction}) {
-  return Container(margin: EdgeInsets.only(right: 4,left: 0),height: 41,
-      decoration: BoxDecoration(shape: BoxShape.circle,color: Colors.blue),
-    child: IconButton(
-      icon: Icon(FlutterIcons.send_fea,color: Colors.white,size: 26,),
-      onPressed: sendFunction,
-    ),
-  );
-}
+
+  Container sendButton({Function sendFunction}) {
+    return Container(
+      margin: EdgeInsets.only(right: 4, left: 0),
+      height: 41,
+      decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.blue),
+      child: IconButton(
+        icon: Icon(
+          FlutterIcons.send_fea,
+          color: Colors.white,
+          size: 26,
+        ),
+        onPressed: sendFunction,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -238,7 +255,8 @@ Container sendButton({Function sendFunction}) {
                     .pushNamed(ChatInfoScreen.routeName, arguments: {
                   'peerId': widget.peerUser.id,
                   'peerUsername': widget.peerUser.username,
-                  'peerImageUrl': widget.peerUser.avatarUrl,
+                  'peerImageUrl': widget.peerUser.avatarUrl ??
+                      "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744",
                   'peerName': widget.peerUser.name,
                 });
               }),
@@ -247,14 +265,14 @@ Container sendButton({Function sendFunction}) {
               GestureDetector(
                 onTap: () {
                   GoTo().profileScreen(context, widget.peerUser.id);
-                 
                 },
                 child: Padding(
                   padding: const EdgeInsets.only(
                       left: 0, right: 15, bottom: 5, top: 5),
                   child: CircleAvatar(
-                    backgroundImage:
-                        CachedNetworkImageProvider(widget.peerUser.avatarUrl),
+                    backgroundImage: CachedNetworkImageProvider(widget
+                            .peerUser.avatarUrl ??
+                        "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
                   ),
                 ),
               ),
@@ -284,41 +302,66 @@ Container sendButton({Function sendFunction}) {
                             ? Colors.grey.shade200.withOpacity(0.5)
                             : Colors.grey.shade700.withOpacity(0.5),
                         padding: EdgeInsets.only(
-                            bottom: 5, top: 5, ),
+                          bottom: 5,
+                          top: 5,
+                        ),
                         child: Row(
                           children: <Widget>[
                             Container(
                               child: GestureDetector(
                                   child: Container(
-                                    decoration: BoxDecoration(shape: BoxShape.circle,color:Theme.of(context).iconTheme.color==Colors.black? Colors.white:Colors.grey.shade100.withOpacity(0.2)),
-                                      margin: EdgeInsets.only(left: 5,right: 3),
+                                      decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Theme.of(context)
+                                                      .iconTheme
+                                                      .color ==
+                                                  Colors.black
+                                              ? Colors.white
+                                              : Colors.grey.shade100
+                                                  .withOpacity(0.2)),
+                                      margin:
+                                          EdgeInsets.only(left: 5, right: 3),
                                       child: SizedBox(
-                                             height: 40,
-                                             width: 40,
-                                                                              child: Icon(
+                                        height: 40,
+                                        width: 40,
+                                        child: Icon(
                                           FluentIcons.image_24_regular,
                                           size: 32,
-                                          color:Theme.of(context).iconTheme.color==Colors.black? Colors.grey.shade700:Colors.white.withOpacity(0.8),
+                                          color: Theme.of(context)
+                                                      .iconTheme
+                                                      .color ==
+                                                  Colors.black
+                                              ? Colors.grey.shade700
+                                              : Colors.white.withOpacity(0.8),
                                         ),
                                       )),
                                   onTap: sendMedia),
-                            ), GestureDetector(
-                                  child: Container(
+                            ),
+                            GestureDetector(
+                                child: Container(
                                     decoration: BoxDecoration(
-                                      
-                                      shape: BoxShape.circle,color:Theme.of(context).iconTheme.color==Colors.black? Colors.white:Colors.grey.shade100.withOpacity(0.2)),
-                                      margin: EdgeInsets.only(right: 5),
-                                      child: SizedBox(
+                                        shape: BoxShape.circle,
+                                        color:
+                                            Theme.of(context).iconTheme.color ==
+                                                    Colors.black
+                                                ? Colors.white
+                                                : Colors.grey.shade100
+                                                    .withOpacity(0.2)),
+                                    margin: EdgeInsets.only(right: 5),
+                                    child: SizedBox(
                                       height: 41,
                                       width: 41,
-                                        child: Icon(
-                                          FluentIcons.gif_24_regular,
-                                          size: 32,
-                                          color:Theme.of(context).iconTheme.color==Colors.black? Colors.grey.shade700:Colors.white.withOpacity(0.8),
-                                        ),
-                                      )),
-                                  onTap: sendGIF),
-                            
+                                      child: Icon(
+                                        FluentIcons.gif_24_regular,
+                                        size: 32,
+                                        color:
+                                            Theme.of(context).iconTheme.color ==
+                                                    Colors.black
+                                                ? Colors.grey.shade700
+                                                : Colors.white.withOpacity(0.8),
+                                      ),
+                                    )),
+                                onTap: sendGIF),
                             Expanded(
                               child: Container(
                                 padding: EdgeInsets.only(bottom: 2),
@@ -369,7 +412,6 @@ Container sendButton({Function sendFunction}) {
             ],
           ),
         ));
-        
   }
 
   String date(DateTime tm) {
@@ -447,18 +489,20 @@ Container sendButton({Function sendFunction}) {
     return "";
   }
 
-addMessages() async {
-  usersRef.snapshots();
-List messages =  await Hasura.getMessages(widget.convId);
-setState(() {
-  data = messages.reversed;
-  loading = false;
-});
-             
+  addMessages() async {
+    usersRef.snapshots();
+    List messages = await Hasura.getMessages(widget.convId);
+    if (messages.length == 0) {
+      first = true;
+    }
+    setState(() {
+      data = messages.reversed;
+      loading = false;
+    });
   }
 
-
   chatMessages() {
+    DateTime firstTime;
     DateTime lastTimestamp = DateTime.fromMicrosecondsSinceEpoch(0);
     bool showTime = false;
     if (loading) {
@@ -545,7 +589,7 @@ setState(() {
           ),
         ));
         String lastMessage = '';
-        var direct =   PreferencesUpdate().getString('direct');
+        var direct = PreferencesUpdate().getString('direct');
         Map directMap = direct == null ? {} : json.decode(direct);
         if (messageItem.type == 'image')
           lastMessage = '${MessageType.image}';
@@ -553,7 +597,8 @@ setState(() {
           lastMessage = '${MessageType.gif}';
         else
           lastMessage = '${messageItem.message}';
-        directMap[widget.peerUser.id.toString()] = {//TODO
+        directMap[widget.peerUser.id.toString()] = {
+          //TODO
           ///////////////////////////////
           'seen': true,
           'message': lastMessage,
@@ -561,146 +606,171 @@ setState(() {
           'mine': messageItem.idFrom == currentUser.id ? true : false,
         };
         direct = json.encode(directMap);
-          PreferencesUpdate().updateString('direct',direct);
+        PreferencesUpdate().updateString('direct', direct);
       }
-      showTime = 30 <
-          lastTimestamp
-              .difference(messageItem.timestamp)
-              .inMinutes;
+      showTime = 30 < lastTimestamp.difference(messageItem.timestamp).inMinutes;
       if (showTime)
         messageItems.add(Container(
             padding: EdgeInsets.symmetric(vertical: 15),
             child: Center(
                 child: Text(
-              '${date(lastTimestamp)}, ${DateFormat.jm().format(lastTimestamp)}',
+              '${date(lastTimestamp.toLocal())}, ${DateFormat.jm().format(lastTimestamp.toLocal())}',
               style: TextStyle(color: Colors.grey, fontSize: 12),
             ))));
       bool myText = currentUser.id == messageItem.idFrom;
       if (doc['hide'] != true || myText)
-        messageItems.add(InkWell(
-            //TODO
-            onLongPress: () {
-              FocusScope.of(context).unfocus();
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context) => Dialog(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      elevation: 0.0,
-                      backgroundColor: Colors.transparent,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              'Sent on ${date(lastTimestamp)}, ${DateFormat.jm().format(lastTimestamp)}',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                          InkWell(
-                            onTap: () async {
-                              Navigator.pop(context);
-                              if (myText) {
-                                // try {
-                                //   // await messagesRef
-                                //   //     .doc(groupChatId)
-                                //   //     .collection(groupChatId)
-                                //   //     .doc(doc[0])
-                                //   //     .delete();
-                                //   // if (messageItem.type == 'image') {
-                                //   //   await FileStorage.delete(//TODO
-                                //   //       messageItem.message);
-                                //   }
-                                // } catch (e) {
-                                //   print(e);
-                                // }
-                              } else {
-                                // await messagesRef
-                                    // .doc(groupChatId)
-                                    // .collection(groupChatId)
-                                    // .doc(doc[0])
-                                    // .set({'hide': true},
-                                    //     SetOptions(merge: true));
-                              }
-                              // await messagesRef
-                              //     .doc(groupChatId)
-                              //     .collection(groupChatId)
-                              //     .doc(doc[0])
-                              //     .delete();
-                              // setState(() {
-                              //   data.remove(doc);
-                              // });
-                            },
-                            child: Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 15, horizontal: 20),
-                                decoration: new BoxDecoration(
-                                  color: Theme.of(context).canvasColor,
-                                  shape: BoxShape.rectangle,
-                                  borderRadius: BorderRadius.circular(10),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black26,
-                                      blurRadius: 10.0,
-                                      offset: const Offset(0.0, 10.0),
-                                    ),
-                                  ],
-                                ),
-                                child: Container(
-                                  height: 20,
-                                  child: Center(
-                                      child: Text(
-                                    myText
-                                        ? 'Delete this Message'
-                                        : 'Delete for me',
-                                    style: TextStyle(fontSize: 16),
-                                  )),
-                                )),
-                          ),
-                        ],
-                      )));
-            },
-            child: messageItem));
-
+        messageItems.add(messageTransform(messageItem, myText));
+      print(lastTimestamp.toString());
       lastTimestamp = messageItem.timestamp;
+      if (firstTime == null) {
+        firstTime = lastTimestamp;
+      }
       if (length == i) {
+        print(lastTimestamp.toString());
         messageItems.add(Container(
             padding: EdgeInsets.symmetric(vertical: 15),
             child: Center(
                 child: Text(
-              '${date(lastTimestamp)}, ${DateFormat.jm().format(lastTimestamp)}',
+              '${date(lastTimestamp.toLocal())}, ${DateFormat.jm().format(lastTimestamp.toLocal())}',
               style: TextStyle(color: Colors.grey, fontSize: 12),
             ))));
       }
     });
+    print("lastt $lastTimestamp");
     return Scrollbar(
       thickness: 2,
       radius: Radius.circular(5),
       child: ListView.builder(
-            padding: EdgeInsets.only(top: 0, left: 0, right: 0, bottom: 70),
-            itemBuilder: (_, i) {
-              if(i == 0){
-                return StreamBuilder(
-                    stream: Hasura.subscribeMessages(widget.convId, lastMessageTime).asStream()
-                    ,
-                  builder: (context, snap){
-                    print('snap ${snap.data.toString()}');
- return Column(mainAxisSize: MainAxisSize.min,
-                children: [Container()],
-                );
-                },
-              
-                ); 
-               
-              }
-              return messageItems[i-1];
-            },
-            itemCount: messageItems.length+1,
-            reverse: true,
-          ),
-    
+        padding: EdgeInsets.only(top: 0, left: 0, right: 0, bottom: 70),
+        itemBuilder: (_, i) {
+          if (i == 0) {
+            return messageItems[0];
+          }
+          if (i == 1) {
+            return GraphQLProvider(
+                client: Config.initailizeClient(),
+                child: CacheProvider(
+                    child: Subscription(
+                  options: SubscriptionOptions(document: gql("""subscription{
+ messages(where:{_and:[{conv_id:{_eq:${widget.convId}}},{created_at:{_gt:"$firstTime"}}]},){
+  created_at
+   data
+    msg_id
+     sender_id
+     type
+   }
+ }""")),
+                  builder: (result) {
+                    if (result.data == null) return Container();
+                    print('subs: $result');
+                    return ListView.builder(
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemBuilder: (context, j) {
+                        return messageTransform(
+                            Message.fromDocument(result.data['messages'][j]),
+                            currentUser.id ==
+                                result.data['messages'][j]['sender_id']);
+                      },
+                      itemCount: result.data['messages'].length,
+                    );
+                  },
+                )));
+          }
+          return messageItems[i - 1];
+        },
+        itemCount: messageItems.length + 1,
+        reverse: true,
+      ),
     );
+  }
+
+  messageTransform(Message messageItem, bool myText) {
+    return InkWell(
+        //TODO
+        onLongPress: () {
+          FocusScope.of(context).unfocus();
+          showDialog(
+              context: context,
+              builder: (BuildContext context) => Dialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  elevation: 0.0,
+                  backgroundColor: Colors.transparent,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          'Sent on ${date(messageItem.timestamp.toLocal())}, ${DateFormat.jm().format(messageItem.timestamp.toLocal())}',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () async {
+                          Navigator.pop(context);
+                          if (myText) {
+                            // try {
+                            //   // await messagesRef
+                            //   //     .doc(groupChatId)
+                            //   //     .collection(groupChatId)
+                            //   //     .doc(doc[0])
+                            //   //     .delete();
+                            //   // if (messageItem.type == 'image') {
+                            //   //   await FileStorage.delete(//TODO
+                            //   //       messageItem.message);
+                            //   }
+                            // } catch (e) {
+                            //   print(e);
+                            // }
+                          } else {
+                            // await messagesRef
+                            // .doc(groupChatId)
+                            // .collection(groupChatId)
+                            // .doc(doc[0])
+                            // .set({'hide': true},
+                            //     SetOptions(merge: true));
+                          }
+                          // await messagesRef
+                          //     .doc(groupChatId)
+                          //     .collection(groupChatId)
+                          //     .doc(doc[0])
+                          //     .delete();
+                          // setState(() {
+                          //   data.remove(doc);
+                          // });
+                        },
+                        child: Container(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 15, horizontal: 20),
+                            decoration: new BoxDecoration(
+                              color: Theme.of(context).canvasColor,
+                              shape: BoxShape.rectangle,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 10.0,
+                                  offset: const Offset(0.0, 10.0),
+                                ),
+                              ],
+                            ),
+                            child: Container(
+                              height: 20,
+                              child: Center(
+                                  child: Text(
+                                myText
+                                    ? 'Delete this Message'
+                                    : 'Delete for me',
+                                style: TextStyle(fontSize: 16),
+                              )),
+                            )),
+                      ),
+                    ],
+                  )));
+        },
+        child: messageItem);
   }
 }

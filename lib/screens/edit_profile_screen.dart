@@ -68,11 +68,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
   }
 
- @override
+  @override
   void didChangeDependencies() {
     if (!userLoaded) {
-  getUser();
- 
+      getUser();
+
       userLoaded = true;
     }
     super.didChangeDependencies();
@@ -96,7 +96,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       aboutController.text.trim().length > 300
           ? _aboutValid = false
           : _aboutValid = true;
-      Uri.parse(websiteController.text.trim()).isAbsolute || websiteController.text == null||websiteController.text == ''//TODO
+      RegExp regExp = new RegExp(
+        r"((http|https|ftp)://)?((\\w)*|([0-9]*)|([-|_])*)+([\\.|/]((\\w)*|([0-9]*)|([-|_])*))+",
+        caseSensitive: false,
+        multiLine: false,
+      );
+      bool _isUrl = regExp.hasMatch(websiteController.text.trim());
+      _isUrl ||
+              websiteController.text == null ||
+              websiteController.text == '' //TODO
           ? _websiteValid = true
           : _websiteValid = false;
     });
@@ -106,76 +114,74 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _websiteValid) {
       final tempDir = await getTemporaryDirectory();
       final path = tempDir.path;
-     
+
       String avatarId = Uuid().v4();
       String imageId = Uuid().v4();
-      String imageDownloadUrl =  await FileStorage.uploadImage('profile',croppedImage,fileName: 'profile_$imageId');
-    
+      String imageDownloadUrl = await FileStorage.uploadImage(
+          'profile', croppedImage,
+          fileName: 'profile_$imageId');
+
       final Im.Image avatarFile = Im.copyResize(
           Im.decodeImage(croppedImage.readAsBytesSync()),
           width: 100);
       final compressedAvatarFile = File('$path/img_$avatarId.jpg')
         ..writeAsBytesSync(Im.encodeJpg(avatarFile, quality: 85));
       String avatarDownloadUrl = await FileStorage.uploadImage(
-          'profile',  compressedAvatarFile,fileName:"avatar_$avatarId.jpg");
+          'profile', compressedAvatarFile,
+          fileName: "avatar_$avatarId.jpg");
       profilePictureUrl = imageDownloadUrl;
       avatarUrl = avatarDownloadUrl;
       if (headerUrl == null) {
-       await Hasura.updateUser(
-          name: displayNameController.text,
-          about: aboutController.text,
-          website: websiteController.text.trim(),
-          photoUrl: profilePictureUrl,
-          avatarUrl: avatarUrl
-        );
+        await Hasura.updateUser(
+            name: displayNameController.text,
+            about: aboutController.text,
+            website: websiteController.text.trim(),
+            photoUrl: profilePictureUrl,
+            avatarUrl: avatarUrl);
       } else {
-        
-          await Hasura.updateUser(
-          name: displayNameController.text,
-          about: aboutController.text,
-          website: websiteController.text.trim(),
-          photoUrl: profilePictureUrl,
-          avatarUrl: avatarUrl,
-          headerUrl: headerUrl
-        );
+        await Hasura.updateUser(
+            name: displayNameController.text,
+            about: aboutController.text,
+            website: websiteController.text.trim(),
+            photoUrl: profilePictureUrl,
+            avatarUrl: avatarUrl,
+            headerUrl: headerUrl);
       }
 
-       progressOverlay(context).dismiss();
+      progressOverlay(context).dismiss();
+
       Navigator.pop(context);
-       snackbar('Profile Updated!', context);
+      snackbar('Profile Updated!', context);
     }
     if (croppedImage == null &&
         _displayNameValid &&
-        _aboutValid&&
-        _websiteValid ) {
+        _aboutValid &&
+        _websiteValid) {
       if (headerImage != null) {
         String headerId = Uuid().v4();
         headerUrl = await FileStorage.uploadImage(
-            'profile',  headerImage,fileName:"header_$headerId.jpg",);
-        
+          'profile',
+          headerImage,
+          fileName: "header_$headerId.jpg",
+        );
       }
       if (headerUrl == null) {
-        
-           await Hasura.updateUser(
+        await Hasura.updateUser(
           name: displayNameController.text,
           about: aboutController.text,
           website: websiteController.text.trim(),
         );
       } else {
-      
-           await Hasura.updateUser(
-          name: displayNameController.text,
-          about: aboutController.text,
-          website: websiteController.text.trim(),
-          headerUrl: headerUrl
-        );
+        await Hasura.updateUser(
+            name: displayNameController.text,
+            about: aboutController.text,
+            website: websiteController.text.trim(),
+            headerUrl: headerUrl);
       }
 
-      
-       snackbar('Profile Updated!', context);
-         progressOverlay(context).dismiss();
-       Navigator.pop(context);
-     
+      progressOverlay(context).dismiss();
+      Navigator.pop(context);
+      snackbar('Profile Updated!', context);
     }
     Map currentUserMap = {
       'id': currentUser.id,
@@ -184,9 +190,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       'displayName': displayNameController.text,
       'about': aboutController.text,
       'website': websiteController.text.trim(),
-      'photoUrl': croppedImage == null
-          ? user.photoUrl
-          : profilePictureUrl, //TODO
+      'photoUrl':
+          croppedImage == null ? user.photoUrl : profilePictureUrl, //TODO
       'headerUrl': headerUrl == null ? user.headerUrl : headerUrl,
     };
     Boxes.currentUserBox.putAll(currentUserMap);
@@ -200,8 +205,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         username: currentUserMapGet['username'],
         website: currentUserMapGet['website'],
         headerUrl: currentUserMapGet['headerUrl']);
-          Navigator.pop(context);
-     
+    Navigator.pop(context);
   }
 
   updateProfilePicture() async {
@@ -225,8 +229,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   updateHeaderPicture() async {
     File headerFile;
     var picker = ImagePicker();
-    var pickedFile =
-        await picker.getImage(source: ImageSource.gallery, imageQuality: 75,maxHeight: 320,maxWidth:720);
+    var pickedFile = await picker.getImage(
+        source: ImageSource.gallery,
+        imageQuality: 75,
+        maxHeight: 320,
+        maxWidth: 720);
     if (pickedFile == null) return;
     headerFile = File(pickedFile.path);
 
@@ -297,10 +304,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           controller: websiteController,
           keyboardType: TextInputType.url,
           decoration: InputDecoration(
-              hintText: "Website Address",
-              errorText:  _websiteValid ? null : "Invalid url",
-              
-              ),
+            hintText: "Website Address",
+            errorText: _websiteValid ? null : "Invalid url",
+          ),
         )
       ],
     );
@@ -324,14 +330,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         elevation: 1,
         title: Text(
           "Edit Profile",
-          
           style: TextStyle(),
         ),
         actions: <Widget>[
           IconButton(
             onPressed: updateProfileData,
             icon: Icon(
-            FluentIcons.save_24_regular,
+              FluentIcons.save_24_regular,
               size: 30.0,
             ),
           ),
@@ -348,7 +353,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         padding: EdgeInsets.only(
                           bottom: 60.0,
                         ),
-                        child: Stack(clipBehavior: Clip.none,
+                        child: Stack(
+                          clipBehavior: Clip.none,
                           children: <Widget>[
                             if (headerImage == null)
                               GestureDetector(
@@ -365,8 +371,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                             : Container(
                                                 height: 140,
                                                 child: cachedNetworkImage(
-                                                    context,
-                                                    user.headerUrl),
+                                                    context, user.headerUrl),
                                                 width: double.infinity,
                                               ),
                                       ),
@@ -459,7 +464,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                         backgroundImage: croppedImage != null
                                             ? FileImage(croppedImage)
                                             : CachedNetworkImageProvider(
-                                                user.avatarUrl??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744",
+                                                user.avatarUrl ??
+                                                    "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744",
                                               ),
                                       ),
                                       InkWell(
@@ -472,7 +478,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                           ),
                                           height: 120,
                                           width: 120,
-                                          child: Icon(FluentIcons.camera_add_24_filled,color: Colors.white,),
+                                          child: Icon(
+                                            FluentIcons.camera_add_24_filled,
+                                            color: Colors.white,
+                                          ),
                                         ),
                                       )
                                     ],

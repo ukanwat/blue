@@ -1,24 +1,36 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { KoidFactory } from 'koid';
 admin.initializeApp(functions.config().firebase);
-export const Register = functions.auth.user().onCreate((user) => {
-    const koid = KoidFactory({node:1,epoch:(2020-1970)*31536000*1000});
-    const uid = koid.nextBigint;
+import BillingLimiter from "firebase-billing-limiter";
+
+exports.BillingLimiter = BillingLimiter({
+    disableProjectAmount: 100, // The amount that will trigger the disabling (in your project billing currency).
+    topicId: "billing", // The topicid created on the quotas.
+  });
+
+const db = admin.firestore();
+export const Register = functions.auth.user().onCreate(async (user) => {
+    const data = await db.collection('auth').orderBy('user_id','desc').limit(1).get();
+   
+    let uid:number = 0;
+ data.docs.forEach(doc => { uid = doc.data().user_id +1
+});
+     if(uid === 0){
+         return;      //show error or retry
+     }
         const customClaims = {
-            "uid": uid,
             "https://hasura.io/jwt/claims": {
                 "x-hasura-default-role": "user",
                 "x-hasura-allowed-roles": ["user"],
-                "x-hasura-user-id": uid,
+                "x-hasura-user-id": uid.toString(),
             },
         };
   return admin
     .auth()
     .setCustomUserClaims(user.uid, customClaims)
     .then(() => {
-      const metadataRef = admin.database().ref(`metadata/${user.uid}`);
-      return metadataRef.set({ refreshTime: new Date().getTime()});
+    return db.collection('auth').doc(user.uid).set({'user_id':uid, 'refresh_time': new Date().getTime(),'uid': user.uid });
+    
     });
 });
 
@@ -28,21 +40,15 @@ const notification_options = {
     timeToLive: 60 * 60 * 24,
   };
 export const messageNotification = functions.https.onRequest(async (req, resp) => {
-    console.log(req.body);
-    const { event: {op, data}, table: {name, schema} } = req.body;
-    console.log(name);
-    console.log(schema);
-    console.log(op);
-    const { token, sender_id}= data.new;
-    console.log(token);
+    const messageData = req.body.event.data.new;
     const message = {
         notification: {
-           title: 'received a new message',
-           body: sender_id,
+           title: 'Someone just commented on your Post',
+           body: messageData.data,
                },
         };
     const options =  notification_options;
-      admin.messaging().sendToDevice("civ6SqwQSLWD0R_Bjja3yS:APA91bEtgKDtdW0ve6ZNjOBQO5PWFBO-O8yNIxJpMvpub8oqj6ISy-FRUBC9bCNd-DU8s-2PvBl60RXGubw-eo7_B5mAm-mQssuXYJEmQfWACV5iu5IAwE7rESu4b_ERMgRga-snQAbZ", message, options)
+      admin.messaging().sendToDevice(messageData.payload.token, message, options)
       .then( ()=>{
 
        resp.status(200).send("Notification sent successfully")
@@ -52,4 +58,46 @@ export const messageNotification = functions.https.onRequest(async (req, resp) =
           console.log(error);
       });
   
+  });
+
+  export const commentReplyNotification = functions.https.onRequest((req, resp) => {
+    console.log(req.body.event.data.new);
+    const options =  notification_options;
+    const messageData = req.body.event.data.new;
+    const message = {
+        notification: {
+           title: 'Someone just Messaged you',
+           body: messageData.data,
+
+               },
+        };
+      admin.messaging().sendToDevice(messageData.payload.token, message, options)
+      .then( ()=>{
+       resp.status(200).send("Notification sent successfully")
+      })
+      .catch( error => {
+          console.log(error);
+      });
+  });
+
+
+  export const commentNotification = functions.https.onRequest((req, resp) => {
+    console.log(req.body.event.data.new);
+    const options =  notification_options;
+    const messageData = req.body.event.data.new;
+    const message = {
+        notification: {
+           title: 'Someone just commented on yout post',
+           body: messageData.data,
+               },
+        };
+      admin.messaging().sendToDevice(messageData.payload.token, message, options)
+      .then( ()=>{
+
+       resp.status(200).send("Notification sent successfully")
+       
+      })
+      .catch( error => {
+          console.log(error);
+      });
   });

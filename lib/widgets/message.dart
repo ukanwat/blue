@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:full_screen_image/full_screen_image.dart';
-import 'package:image_downloader/image_downloader.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
@@ -30,7 +30,7 @@ class Message extends StatelessWidget {
     return Message(
       idTo: doc['recipient_id'],
       idFrom: doc['sender_id'],
-      timestamp:   DateTime.parse(doc['created_at']),
+      timestamp: DateTime.parse(doc['created_at']),
       message: doc['data'],
       type: doc['type'],
     );
@@ -64,14 +64,8 @@ class Message extends StatelessWidget {
                               child: InkWell(
                                 onTap: () async {
                                   Navigator.pop(context);
-                                  await ImageDownloader.downloadImage( // might not work after changing rules
-                                    message,
-                                    destination: AndroidDestinationType.custom(  
-                                        directory: '/Pictures/Scrible'),
-                                    outputMimeType: type == 'image'
-                                        ? "image/jpg"
-                                        : "image/gif",
-                                  );
+                                  await GallerySaver.saveImage(message,
+                                      albumName: 'Stark');
                                 },
                                 child: Container(
                                     padding: EdgeInsets.symmetric(
@@ -119,27 +113,39 @@ class Message extends StatelessWidget {
                                   child: CachedNetworkImage(
                                     imageUrl: message,
                                     placeholder: (context, url) => Center(
-                                      child: Row(mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Container(height: 5,
-                                        margin: EdgeInsets.all(5),
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(context).iconTheme.color,
-                                          shape: BoxShape.circle),
-                                        ),
-                                         Container(height: 5,
-                                         margin: EdgeInsets.all(5),
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(context).iconTheme.color.withOpacity(0.8),
-                                          shape: BoxShape.circle),
-                                        )
-                                        , Container(height: 5,
-                                         margin: EdgeInsets.all(5),
-                                        decoration: BoxDecoration(
-                                          color:Theme.of(context).iconTheme.color.withOpacity(0.4),
-                                          shape: BoxShape.circle),
-                                        )
-                                      ],
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            height: 5,
+                                            margin: EdgeInsets.all(5),
+                                            decoration: BoxDecoration(
+                                                color: Theme.of(context)
+                                                    .iconTheme
+                                                    .color,
+                                                shape: BoxShape.circle),
+                                          ),
+                                          Container(
+                                            height: 5,
+                                            margin: EdgeInsets.all(5),
+                                            decoration: BoxDecoration(
+                                                color: Theme.of(context)
+                                                    .iconTheme
+                                                    .color
+                                                    .withOpacity(0.8),
+                                                shape: BoxShape.circle),
+                                          ),
+                                          Container(
+                                            height: 5,
+                                            margin: EdgeInsets.all(5),
+                                            decoration: BoxDecoration(
+                                                color: Theme.of(context)
+                                                    .iconTheme
+                                                    .color
+                                                    .withOpacity(0.4),
+                                                shape: BoxShape.circle),
+                                          )
+                                        ],
                                       ),
                                     ),
                                     errorWidget: (context, url, error) =>

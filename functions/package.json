@@ -15,7 +15,11 @@
   "main": "lib/index.js",
   "dependencies": {
     "firebase-admin": "^9.2.0",
+    "firebase-billing-limiter": "^1.2.0",
     "firebase-functions": "^3.11.0",
+    "google-auth-library": "^7.0.2",
+    "googleapis": "^68.0.0",
+    "graphql-request": "^3.4.0",
     "koid": "^3.0.0"
   },
   "devDependencies": {

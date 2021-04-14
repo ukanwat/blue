@@ -1,17 +1,21 @@
 // Package imports:
+import 'package:blue/screens/set_name_screen.dart';
+import 'package:blue/services/hasura.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:package_info/package_info.dart';
 import 'package:flutter/material.dart';
 import '../screens/comments_screen.dart';
 import '../screens/home.dart';
 import '../widgets/post.dart';
+
 class DynamicLinksService {
   static Future<String> createDynamicLink(String parameter) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     print(packageInfo.packageName);
     String uriPrefix = "https://starkapp.page.link";
 
-    final DynamicLinkParameters parameters = DynamicLinkParameters(        //TODO
+    final DynamicLinkParameters parameters = DynamicLinkParameters(
+      //TODO
       uriPrefix: uriPrefix,
       link: Uri.parse('https://stark.com/$parameter'),
       androidParameters: AndroidParameters(
@@ -27,15 +31,10 @@ class DynamicLinksService {
         medium: 'social',
         source: 'orkut',
       ),
-      itunesConnectAnalyticsParameters: ItunesConnectAnalyticsParameters(
-        providerToken: '123456',
-        campaignToken: 'example-promo',
-      ),
       socialMetaTagParameters: SocialMetaTagParameters(
           title: 'Dynamic link',
           description: 'This link works whether app is installed or not!',
-          imageUrl: Uri.parse(
-              "https://www.google.com")),
+          imageUrl: Uri.parse("https://www.stark.social")),
     );
 
     // final Uri dynamicUrl = await parameters.buildUrl();
@@ -45,35 +44,45 @@ class DynamicLinksService {
   }
 
   static Future initDynamicLinks(BuildContext context) async {
-    final PendingDynamicLinkData data = await FirebaseDynamicLinks.instance.getInitialLink();
+    final PendingDynamicLinkData data =
+        await FirebaseDynamicLinks.instance.getInitialLink();
 
-    handleDynamicLink(data,context);
+    handleDynamicLink(data, context);
 
     FirebaseDynamicLinks.instance.onLink(
         onSuccess: (PendingDynamicLinkData dynamicLink) async {
-          handleDynamicLink(dynamicLink,context);
-        }, onError: (OnLinkErrorException e) async {
+      handleDynamicLink(dynamicLink, context);
+    }, onError: (OnLinkErrorException e) async {
       print('onLinkError');
       print(e.message);
     });
   }
 
-  static handleDynamicLink(PendingDynamicLinkData data,BuildContext context) async {
+  static handleDynamicLink(
+      PendingDynamicLinkData data, BuildContext context) async {
     final Uri deepLink = data?.link;
 
     if (deepLink == null) {
       return;
     }
-    print(deepLink);
+    print(deepLink); //TODO
     if (deepLink.pathSegments.contains('post')) {
-      var postId = deepLink.queryParameters['id'];
-      var doc= await postsRef.doc(postId).get();
+      String postId = deepLink.queryParameters['id'];
+
+      var doc = await Hasura.getPost(int.parse(postId));
+      print(doc);
       if (postId != null) {
-
-        Navigator.of(context).pushNamed(CommentsScreen.routeName,arguments: Post.fromDocument(doc.data(),commentsShown: true,isCompact: false,));
-
-
+        Navigator.of(context).pushNamed(CommentsScreen.routeName,
+            arguments: Post.fromDocument(
+              doc,
+              commentsShown: true,
+              isCompact: false,
+            ));
       }
+    } else if (deepLink.pathSegments.contains('verify')) {
+      // var email = deepLink.queryParameters['email'];   TODO
+      // Navigator.of(context).pushNamed(SetNameScreen.routeName,
+      //   arguments: {'email': email, 'provider': 'email'});
     }
   }
 }

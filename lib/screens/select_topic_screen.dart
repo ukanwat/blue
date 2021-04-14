@@ -1,5 +1,6 @@
 // Flutter imports:
 import 'package:blue/screens/explore_screen.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -29,7 +30,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
   bool postSubmitting = false;
   List<Widget> tagChips = [];
   List<String> tags = [];
-    List topics ;
+  List topics;
   @override
   void initState() {
     getTopics();
@@ -53,7 +54,15 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
   }
 
   getTopics() async {
-   topics =  ['Humor','Art & Design','Technology','News','Entertainment','Lifestyle','Science'];
+    topics = [
+      'Humor',
+      'Art & Design',
+      'Technology',
+      'News',
+      'Entertainment',
+      'Lifestyle',
+      'Other'
+    ];
 
     setState(() {
       isLoading = false;
@@ -155,8 +164,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                             ));
                   });
 
-                  postData['post-function'](
-                      selectedTopicTile,  tags);
+                  postData['post-function'](selectedTopicTile, tags);
                 }
               },
               child: Text(
@@ -185,8 +193,8 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                   width: 16,
                 ),
                 Text(
-                  'Tags',
-                  style: TextStyle(fontSize: 16),
+                  'TAGS',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(
                   width: 8,
@@ -196,13 +204,17 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                     addTag();
                   },
                   child: Container(
-                    height: 26,
-                    width: 26,
-                    decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(5)),
-                    child: Icon(Icons.add, size: 24, color: Colors.white),
-                  ),
+                      height: 26,
+                      width: 86,
+                      decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(5)),
+                      child: Center(
+                        child: Text(
+                          'Add Tag',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                      )),
                 ),
               ],
             ),
@@ -220,18 +232,15 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                 alignment: Alignment.center,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding:
+                          const EdgeInsets.only(left: 50, bottom: 5, top: 5),
                       child: Icon(
-                        FlutterIcons.tag_ant,
-                        size: 25,
+                        FluentIcons.number_symbol_square_20_regular,
+                        size: 55,
                       ),
-                    ),
-                    Text(
-                      'Add Tags (atleast 1)',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
@@ -248,9 +257,17 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
             ),
             Padding(
               padding: const EdgeInsets.only(left: 16),
-              child: Text(
-                'Select Topic',
-                style: TextStyle(fontSize: 16),
+              child: Row(
+                children: [
+                  Text(
+                    'SELECT CATEGORY',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  Icon(
+                    FluentIcons.chevron_right_12_filled,
+                    color: Colors.blue,
+                  )
+                ],
               ),
             ),
             SizedBox(
@@ -276,8 +293,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                             : null,
                         onTap: () {
                           setState(() {
-                            if (selectedTopicTile ==
-                                topics[i]) {
+                            if (selectedTopicTile == topics[i]) {
                               selectedTopicTile = null;
                             } else {
                               selectedTopicTile = topics[i];

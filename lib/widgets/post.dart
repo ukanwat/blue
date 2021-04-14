@@ -44,6 +44,7 @@ import '../services/go_to.dart';
 import '../services/boxes.dart';
 import './custom_image.dart';
 import '../services/hasura.dart';
+
 enum CompactPostThumbnailType {
   video,
   image,
@@ -51,7 +52,7 @@ enum CompactPostThumbnailType {
 }
 enum Vote { down, up, none }
 
-class Post extends StatefulWidget {         
+class Post extends StatefulWidget {
   final int postId;
   final dynamic ownerId;
   final String username;
@@ -71,6 +72,8 @@ class Post extends StatefulWidget {
   final int comments;
   final int saves;
   final int shares;
+  final int commentCount;
+  final bool upvoted;
   // final PostInteractions postInteractions;
 
   Post(
@@ -88,53 +91,79 @@ class Post extends StatefulWidget {
       this.downvotes,
       this.tags,
       this.isCompact,
-      this.commentsShown, // this.postInteractions
+      this.commentsShown,
       this.time,
       this.comments,
       this.saves,
-      this.shares
-      });
+      this.shares,
+      this.commentCount,
+      this.upvoted});
 
-  factory Post.fromDocument(Map doc,
-      {bool isCompact, bool commentsShown,}) {
+  factory Post.fromDocument(
+    Map doc, {
+    bool isCompact,
+    bool commentsShown,
+  }) {
     if (isCompact == null) isCompact = false;
     if (commentsShown == null) commentsShown = false;
     Map data = {};
     List _tags = [];
-      var list = doc['contents'];
-      int i = 0;
-      list.forEach((element) {
-        data['$i'] = element['data'];
-        i++;
+    var list = doc['contents'];
+    int i = 0;
+    list.forEach((element) {
+      data['$i'] = element['data'];
+      i++;
+    });
+    var tagDataList = doc['post_tags'];
+    if (tagDataList != null) {
+      tagDataList.forEach((element) {
+        _tags.add(element['tag']['tag']);
       });
-      var tagDataList = doc['post_tags'];
-      if (tagDataList != null) {
-        tagDataList.forEach((element) {
-          _tags.add(element['tag']['tag']);
-        });
-      }
-    
+    }
+    print(doc['upvoted_by_user']);
     List<dynamic> stats = doc['post_stats'];
     return Post(
+      upvoted: doc['upvoted_by_user'],
       postId: doc['post_id'],
-      ownerId: doc[ 'owner_id'],
+      ownerId: doc['owner_id'],
       username: doc['user']['username'],
-      photoUrl: doc['user']['avatar_url'] ,
+      photoUrl: doc['user']['avatar_url'],
       title: doc['title'],
-      topicName: null ,
-      topicId: null ,
-      contents: data ,
+      topicName: null,
+      topicId: null,
+      contents: data,
       contentsInfo: doc['contents'],
-      upvotes: (stats == null?0: stats.length == 0?0:stats[0]['upvotes']),
-      downvotes:  (stats == null?0: stats.length == 0?0:stats[0]['downvotes']),
-      votes: 0 ,
+      upvotes: (stats == null
+          ? 0
+          : stats.length == 0
+              ? 0
+              : stats[0]['upvotes']),
+      downvotes: (stats == null
+          ? 0
+          : stats.length == 0
+              ? 0
+              : stats[0]['downvotes']),
+      votes: 0,
       tags: _tags,
       time: doc['created_at'], //TODO
       isCompact: isCompact ?? false,
       commentsShown: commentsShown,
-      comments:stats == null?0: stats.length == 0?0:stats[0]['comments'],
-      saves: stats == null?0: stats.length == 0?0:stats[0]['saves'],
-      shares:stats == null?0:  stats.length == 0?0:stats[0]['shares'],
+      commentCount: doc['comment_count'],
+      comments: stats == null
+          ? 0
+          : stats.length == 0
+              ? 0
+              : stats[0]['comments'],
+      saves: stats == null
+          ? 0
+          : stats.length == 0
+              ? 0
+              : stats[0]['saves'],
+      shares: stats == null
+          ? 0
+          : stats.length == 0
+              ? 0
+              : stats[0]['shares'],
     );
   }
 
@@ -152,7 +181,8 @@ class Post extends StatefulWidget {
       upvotes: this.upvotes,
       votes: this.votes,
       downvotes: this.downvotes,
-      tags: this.tags);
+      tags: this.tags,
+      commentCount: this.commentCount);
 }
 
 Vote vote;
@@ -181,6 +211,7 @@ class _PostState extends State<Post> {
   final int votes;
   final int upvotes;
   final int downvotes;
+  final int commentCount;
   _PostState(
       {this.postId,
       this.ownerId,
@@ -194,7 +225,8 @@ class _PostState extends State<Post> {
       this.upvotes,
       this.tags,
       this.votes,
-      this.downvotes});
+      this.downvotes,
+      this.commentCount});
   //
   Vote vote = Vote.none;
   bool isOwner = false;
@@ -318,7 +350,6 @@ class _PostState extends State<Post> {
                               onTap: () async {
                                 overlayOptions?.remove();
                                 deletePost();
-
                               },
                               title: Text(
                                 'Delete',
@@ -352,15 +383,15 @@ class _PostState extends State<Post> {
                   },
                   child: CircleAvatar(
                     radius: 18,
-                    backgroundImage: CachedNetworkImageProvider(photoUrl),
+                    backgroundImage: CachedNetworkImageProvider(photoUrl ??
+                        "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
                     backgroundColor: Colors.grey,
                   ),
                 ),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(left: 10),
-                    child: Text(
-                        widget.title,
+                    child: Text(widget.title,
                         style: PreferencesUpdate().getBool('serif', def: false)
                             ? TextStyle(
                                 fontFamily: 'Georgia',
@@ -369,7 +400,9 @@ class _PostState extends State<Post> {
                                 letterSpacing: 0,
                                 wordSpacing: 0,
                                 height: 1.25,
-                                color: Theme.of(context).textSelectionTheme.selectionColor)
+                                color: Theme.of(context)
+                                    .textSelectionTheme
+                                    .selectionColor)
                             : TextStyle(
                                 fontFamily: 'Lexend Deca',
                                 fontSize: 16,
@@ -392,9 +425,9 @@ class _PostState extends State<Post> {
               children: [
                 GestureDetector(
                     child: Container(
-                      height: 38,width: 55,
-                      padding: const EdgeInsets.only(
-                          bottom: 3, top: 6),
+                      height: 38,
+                      width: 55,
+                      padding: const EdgeInsets.only(bottom: 3, top: 6),
                       child: Icon(
                         Icons.more_horiz,
                       ),
@@ -423,7 +456,9 @@ class _PostState extends State<Post> {
                       SizedBox(
                         width: 10,
                       ),
-                      if (!isFollowing && !(widget.ownerId == Boxes.currentUserBox.get('user_id')))
+                      if (!isFollowing &&
+                          !(widget.ownerId ==
+                              Boxes.currentUserBox.get('user_id')))
                         Container(
                           height: 22,
                           child: GestureDetector(
@@ -452,33 +487,33 @@ class _PostState extends State<Post> {
                   ),
                 ),
                 tagBarVisible
-                    ?  GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              tagBarVisible = false;
-                            });
-                          },
-                          child: Container(
-                        height: 38,
-                        padding: const EdgeInsets.only(
-                            bottom: 6, left: 15, right: 15, top: 3),
-                        child:Icon(
-                           FluentIcons.chevron_up_16_filled,
+                    ? GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            tagBarVisible = false;
+                          });
+                        },
+                        child: Container(
+                          height: 38,
+                          padding: const EdgeInsets.only(
+                              bottom: 6, left: 15, right: 15, top: 3),
+                          child: Icon(
+                            FluentIcons.chevron_up_16_filled,
                             size: 22,
                           ),
                         ),
                       )
                     : GestureDetector(
-                          onTap: () async {
-                            setState(() {
-                              tagBarVisible = true;
-                            });
-                          },
-                          child: Container(
-                        height: 38,
-                           padding: const EdgeInsets.only(
-                            bottom: 6, left: 15, right: 15, top: 3),
-                        child: Icon(
+                        onTap: () async {
+                          setState(() {
+                            tagBarVisible = true;
+                          });
+                        },
+                        child: Container(
+                          height: 38,
+                          padding: const EdgeInsets.only(
+                              bottom: 6, left: 15, right: 15, top: 3),
+                          child: Icon(
                             FluentIcons.chevron_down_16_filled,
                             size: 22,
                           ),
@@ -522,8 +557,9 @@ class _PostState extends State<Post> {
                           children: [
                             CircleAvatar(
                               radius: 11.5,
-                              backgroundImage:
-                                  CachedNetworkImageProvider(photoUrl),
+                              backgroundImage: CachedNetworkImageProvider(
+                                  photoUrl ??
+                                      "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
                               backgroundColor: Colors.grey,
                             ),
                             SizedBox(
@@ -552,7 +588,9 @@ class _PostState extends State<Post> {
                       SizedBox(
                         width: 5,
                       ),
-                      if (!isFollowing && !(widget.ownerId == Boxes.currentUserBox.get('user_id')))
+                      if (!isFollowing &&
+                          !(widget.ownerId ==
+                              Boxes.currentUserBox.get('user_id')))
                         GestureDetector(
                           onTap: () {
                             Functions().handleFollowUser(
@@ -588,9 +626,7 @@ class _PostState extends State<Post> {
                               left: 10,
                               right: 10,
                             ),
-                            child: Icon(
-                              FluentIcons.more_20_filled,
-                            ),
+                            child: Icon(Icons.more_horiz),
                           ),
                           onTap: () {
                             showOptions(context);
@@ -680,34 +716,35 @@ class _PostState extends State<Post> {
 
   deletePost() async {
     showDialog(
-        context: context,builder: (context) =>  ShowDialog(
-          title: 'Delete Post',
-          description: 'Are you sure you want to delete this Post?',
-          leftButtonText: 'Cancel',
-          rightButtonText: 'delete',
-          leftButtonFunction: () {
-            Navigator.pop(context);
-          },
-          rightButtonFunction: () async {
-            if (widget.ownerId != Boxes.currentUserBox.get('user_id'))return;
-            // delete post itself
-               
-            // delete uploaded image for thep ost
-            // storageRef.child("post_$postId.jpg").delete();  // TODO: delete stored media
-            // then delete all activity feed notifications
-           Hasura.deletePost(postId);
-           Navigator.of(context).pop();
-           setState(() {
-             deleted = true;
-           });
-            // then delete all comments
-           
-          },
-        ));
+        context: context,
+        builder: (context) => ShowDialog(
+              title: 'Delete Post',
+              description: 'Are you sure you want to delete this Post?',
+              leftButtonText: 'Cancel',
+              rightButtonText: 'delete',
+              leftButtonFunction: () {
+                Navigator.pop(context);
+              },
+              rightButtonFunction: () async {
+                if (widget.ownerId != Boxes.currentUserBox.get('user_id'))
+                  return;
+                // delete post itself
+
+                // delete uploaded image for thep ost
+                // storageRef.child("post_$postId.jpg").delete();  // TODO: delete stored media
+                // then delete all activity feed notifications
+                Hasura.deletePost(postId);
+                Navigator.of(context).pop();
+                setState(() {
+                  deleted = true;
+                });
+                // then delete all comments
+              },
+            ));
   }
 
   unvote() async {
-  //TODO
+    //TODO
   }
 
   getVideoThumbnail(String url) async {
@@ -835,43 +872,38 @@ class _PostState extends State<Post> {
         contentsViewList.add(imageContentContainer(contents['$i'],
             contentsInfo[i]['aspectRatio'], contentsInfo[i]['blurHash']));
       } else if (contentsInfo[i]['type'] == 'video') {
-        compactPostThumbnailData =
-            contentsInfo[i]['thumbUrl'];
-            print( contents['$i']);
+        compactPostThumbnailData = contentsInfo[i]['thumbUrl'];
+        print(contents['$i']);
         thumbnailType = CompactPostThumbnailType.video;
-       
-          contentsViewList
-              .add(
 
-       
-       Container(height:  MediaQuery.of(context).size.width/contentsInfo[i]['aspectRatio'],
-         child: KiddVideoPlayer(
-	    fromUrl: true,
-	    videoUrl: contents['$i'],
-      layoutConfigs: KiddLayoutConfigs(
-		    backgroundColor: Colors.black,
-		    backgroundSliderColor: Colors.grey.withOpacity(0.5),
-		    iconsColor: Colors.white,
-		    inLoop: false,
-		    loaderColor: Theme.of(context).accentColor,
-		    pauseIcon: Icons.pause_circle_outline,
-		    playIcon: Icons.play_circle_outline,
-		    showFullScreenButton: true,
-		    showVideoControl: true,
-		    showVolumeControl: false,
-		    sliderColor: Colors.white,
-		    ),
-
-	),
-       )
-              );
+        contentsViewList.add(Container(
+          height: MediaQuery.of(context).size.width /
+              contentsInfo[i]['aspectRatio'],
+          child: KiddVideoPlayer(
+            fromUrl: true,
+            videoUrl: contents['$i'],
+            layoutConfigs: KiddLayoutConfigs(
+              backgroundColor: Colors.black,
+              backgroundSliderColor: Colors.grey.withOpacity(0.5),
+              iconsColor: Colors.white,
+              inLoop: false,
+              loaderColor: Theme.of(context).accentColor,
+              pauseIcon: Icons.pause_circle_outline,
+              playIcon: Icons.play_circle_outline,
+              showFullScreenButton: true,
+              showVideoControl: true,
+              showVolumeControl: false,
+              sliderColor: Colors.white,
+            ),
+          ),
+        ));
       } else if (contentsInfo[i]['type'] == 'text') {
         contentsViewList.add(textContentContainer(contents['$i']));
       } else if (contentsInfo[i]['type'] == 'link') {
         contentsViewList.add(linkContentContainer(contents['$i']));
       } else {
         contentsViewList.add(carouselContentContainer(contents['$i'],
-            contentsInfo[ i]['aspectRatio'], contentsInfo[ i]['blurHashes']));
+            contentsInfo[i]['aspectRatio'], contentsInfo[i]['blurHashes']));
       }
     }
     if (!widget.isCompact)
@@ -881,16 +913,19 @@ class _PostState extends State<Post> {
     super.didChangeDependencies();
   }
 
-  Widget imageContentContainer(String url, double aspectRatio,String blurHash) {
+  Widget imageContentContainer(
+      String url, double aspectRatio, String blurHash) {
     return Stack(
       alignment: Alignment.center,
       children: <Widget>[
-        (cachedNetworkImage(context, url, aspectRatio: aspectRatio,blurHash: blurHash)),
+        (cachedNetworkImage(context, url,
+            aspectRatio: aspectRatio, blurHash: blurHash)),
       ],
     );
   }
 
-  Widget carouselContentContainer(List<dynamic> urls, double aspectRatio,List blurHashes) {
+  Widget carouselContentContainer(
+      List<dynamic> urls, double aspectRatio, List blurHashes) {
     return Container(
         height: MediaQuery.of(context).size.width / aspectRatio,
         key: UniqueKey(),
@@ -910,7 +945,7 @@ class _PostState extends State<Post> {
           moveIndicatorFromBottom: 20,
           images: List.generate(urls.length, (i) {
             return cachedNetworkImage(context, urls[i],
-                aspectRatio: aspectRatio,blurHash:blurHashes[i]);
+                aspectRatio: aspectRatio, blurHash: blurHashes[i]);
           }),
         ));
   }
@@ -970,7 +1005,6 @@ class _PostState extends State<Post> {
             child: Icon(
               iconData,
               size: 26,
-           
             ),
           ),
         ),
@@ -1027,7 +1061,6 @@ class _PostState extends State<Post> {
                       ),
                       FlatButton(
                           onPressed: () {
-                            
                             setState(() {
                               showSaveBar = false;
                             });
@@ -1052,122 +1085,132 @@ class _PostState extends State<Post> {
           if (widget.isCompact)
             if (tagBarVisible) tagBar(),
           Row(
-            mainAxisAlignment: widget.isCompact? MainAxisAlignment.spaceAround:MainAxisAlignment.start,
+            mainAxisAlignment: widget.isCompact
+                ? MainAxisAlignment.spaceAround
+                : MainAxisAlignment.start,
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
               if (widget.isCompact)
                 tagBarVisible
-                    ?SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                tagBarVisible = false;
-                              });
-                            },
-                            child: Icon(
-                              FlutterIcons.ios_arrow_up_ion,
-                              size: 22,
-                            ),
-                          ),
-                        )
-                    : SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: GestureDetector(
-                            onTap: () async {
-                              setState(() {
-                                tagBarVisible = true;
-                              });
-                            },
-                            child: Icon(
-                              FlutterIcons.ios_arrow_down_ion,
-                              size: 22,
-                            ),
+                    ? SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              tagBarVisible = false;
+                            });
+                          },
+                          child: Icon(
+                            FlutterIcons.ios_arrow_up_ion,
+                            size: 22,
                           ),
                         ),
-              
+                      )
+                    : SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: GestureDetector(
+                          onTap: () async {
+                            setState(() {
+                              tagBarVisible = true;
+                            });
+                          },
+                          child: Icon(
+                            FlutterIcons.ios_arrow_down_ion,
+                            size: 22,
+                          ),
+                        ),
+                      ),
               isSaved
-                  ? Container(width: 60,
-                    child: Row(mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        footerButton(FluentIcons.bookmark_24_filled, Colors.blue,
-                            () async {
-                              print(Boxes.saveBox.keys);
+                  ? Container(
+                      width: 60,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          footerButton(
+                              FluentIcons.bookmark_24_filled, Colors.blue,
+                              () async {
+                            print(Boxes.saveBox.keys);
                             setState(() {
                               isSaved = false;
                               showSaveBar = false;
                             });
                             Boxes.saveBox.delete(postId);
-                        await Hasura.deleteSavedPost(postId);
+                            await Hasura.deleteSavedPost(postId);
                           }),
                           Padding(
-                              padding: const EdgeInsets.only(right: 0, left: 0),
-                              child: Text( '${Functions.abbreviateNumber(widget.saves,hideZero: true)}',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w500, fontSize: 19),
-                              ),
+                            padding: const EdgeInsets.only(right: 0, left: 0),
+                            child: Text(
+                              '${Functions.abbreviateNumber(widget.saves, hideZero: true)}',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500, fontSize: 19),
                             ),
-                      ],
-                    ),
-                  )
-                  : Container(width: 60,
-                    child: Row(mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        footerButton(FluentIcons.bookmark_24_regular, Colors.blue,
-                            () async {
+                          ),
+                        ],
+                      ),
+                    )
+                  : Container(
+                      width: 60,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          footerButton(
+                              FluentIcons.bookmark_24_regular, Colors.blue,
+                              () async {
                             setState(() {
                               isSaved = true;
                             });
-                       
-                        await   Hasura.insertSavedPost(postId);
-                                            Boxes.saveBox.put(postId, null);
-                            
+
+                            await Hasura.insertSavedPost(postId);
+                            Boxes.saveBox.put(postId, null);
+
                             setState(() {
                               showSaveBar = true;
                             });
-                            Future.delayed(const Duration(milliseconds: 4000), () {
+                            Future.delayed(const Duration(milliseconds: 4000),
+                                () {
                               setState(() {
                                 showSaveBar = false;
                               });
                             });
-                          }),Padding(
-                              padding: const EdgeInsets.only(right: 0, left: 0),
-                              child: Text( '${Functions.abbreviateNumber(widget.saves,hideZero: true)}',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w500, fontSize: 19),
-                              ),
+                          }),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 0, left: 0),
+                            child: Text(
+                              '${Functions.abbreviateNumber(widget.saves, hideZero: true)}',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500, fontSize: 19),
                             ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                     
-                          
-              Container(width: 60,
+              Container(
+                width: 60,
                 child: Row(
-                    children: [ footerButton(FluentIcons.share_24_regular, Colors.orange[900],
-                          () async {
-                        String _link = await DynamicLinksService.createDynamicLink(
-                            'post?id=$postId');
-                        Share.share(_link, subject: 'Sharing this Post');
-                      }), Text( '${Functions.abbreviateNumber(widget.shares,hideZero: true)}',
-  
-                                    style: TextStyle(
-  
-                                        fontWeight: FontWeight.w500, fontSize: 19),
-  
-                                  
-),
-                    ],
-                  ),
+                  children: [
+                    footerButton(
+                        FluentIcons.share_24_regular, Colors.orange[900],
+                        () async {
+                      String _link =
+                          await DynamicLinksService.createDynamicLink(
+                              'post?id=$postId');
+                      Share.share(_link, subject: 'Sharing this Post');
+                    }),
+                    Text(
+                      '${Functions.abbreviateNumber(widget.shares, hideZero: true)}',
+                      style:
+                          TextStyle(fontWeight: FontWeight.w500, fontSize: 19),
+                    ),
+                  ],
+                ),
               ),
-              
               if (!(widget.commentsShown || widget.isCompact))
-                Container(width: 40,
+                Container(
+                  width: 40,
                   child: footerButton(FluentIcons.comment_24_regular,
-                   Theme.of(context).accentColor,
-                   () {
+                      Theme.of(context).accentColor, () {
                     showComments(
                       context,
                       post: Post(
@@ -1188,51 +1231,63 @@ class _PostState extends State<Post> {
                         downvotes: this.widget.downvotes,
                         saves: this.widget.saves,
                         shares: this.widget.shares,
+                        commentCount: this.commentCount,
+                        time: widget.time,
+                        votes: widget.votes,
                       ),
                     );
                   }),
                 ),
-                if (!(widget.commentsShown || widget.isCompact))
-                Container(width: 20,
-                  child: Text( '${Functions.abbreviateNumber(widget.comments,hideZero: true)}',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w500, fontSize: 19),
-                              ),
+              if (!(widget.commentsShown || widget.isCompact))
+                Container(
+                  width: 20,
+                  child: Text(
+                    '${Functions.abbreviateNumber(widget.comments, hideZero: true)}',
+                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 19),
+                  ),
                 ),
-                if (!widget.isCompact)
-               
+              if (!widget.isCompact)
                 Expanded(
-                  child:(contentsHeight != null)&&(contentsHeight ==
-                          MediaQuery.of(context).size.height * 0.8 ||
-                      contentsHeight > MediaQuery.of(context).size.height * 0.8)? Padding(
-                      padding: const EdgeInsets.only(left: 13),
-                      child: SizedBox(
-                        height: 28,
-                        width: 30,
-                        child: GestureDetector(
-                          onTap: () {
-                            if (!constraintContent) {
-                              setState(() {
-                                constraintContent = true;
-                                getContentSize();
-                              });
-                            } else {
-                              setState(() {
-                                constraintContent = false;
-                                getContentSize();
-                              });
-                            }
-                          },
-                          child: Padding(padding: EdgeInsets.only(left: (MediaQuery.of(context).size.width*0.5)-206),
-                            child:     CustomPaint( //                       <-- CustomPaint widget
-        size: Size(30, 30),
-        painter: ExpandIconPainter(constraintContent?false:true),
-      ),
-                          ),
-                        ),
-                      ),
-                    ):Container()
-                ),  
+                    child: (contentsHeight != null) &&
+                            (contentsHeight ==
+                                    MediaQuery.of(context).size.height * 0.8 ||
+                                contentsHeight >
+                                    MediaQuery.of(context).size.height * 0.8)
+                        ? Padding(
+                            padding: const EdgeInsets.only(left: 13),
+                            child: SizedBox(
+                              height: 28,
+                              width: 30,
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (!constraintContent) {
+                                    setState(() {
+                                      constraintContent = true;
+                                      getContentSize();
+                                    });
+                                  } else {
+                                    setState(() {
+                                      constraintContent = false;
+                                      getContentSize();
+                                    });
+                                  }
+                                },
+                                child: Padding(
+                                  padding: EdgeInsets.only(
+                                      left: (MediaQuery.of(context).size.width *
+                                              0.5) -
+                                          206),
+                                  child: CustomPaint(
+                                    //                       <-- CustomPaint widget
+                                    size: Size(30, 30),
+                                    painter: ExpandIconPainter(
+                                        constraintContent ? false : true),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        : Container()),
               Padding(
                 padding: const EdgeInsets.only(right: 5),
                 child: Material(
@@ -1264,14 +1319,14 @@ class _PostState extends State<Post> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                           Padding(
+                          Padding(
                             padding: const EdgeInsets.only(right: 3, left: 6),
                             child: Text(
                               increment == null
-                                  ?  '${Functions.abbreviateNumber(upvotes,hideZero: true)}'
+                                  ? '${Functions.abbreviateNumber(upvotes, hideZero: true)}'
                                   : increment
-                                      ? '${Functions.abbreviateNumber(upvotes+1, hideZero: true)}'
-                                      : '${Functions.abbreviateNumber(upvotes-1, hideZero: true)}',
+                                      ? '${Functions.abbreviateNumber(upvotes + 1, hideZero: true)}'
+                                      : '${Functions.abbreviateNumber(upvotes - 1, hideZero: true)}',
                               style: TextStyle(
                                   fontWeight: FontWeight.w500, fontSize: 19),
                             ),
@@ -1282,7 +1337,6 @@ class _PostState extends State<Post> {
                                   : FluentIcons.keyboard_shift_24_regular,
                               size: 24.0,
                               color: Colors.blue),
-                         
                         ],
                       ),
                     ),
@@ -1306,23 +1360,11 @@ class _PostState extends State<Post> {
     super.dispose();
   }
 
-
-
   bool alreadyUpvoted = false;
 
   @override
   void initState() {
     isOwner = Boxes.currentUserBox.get('user_id') == widget.ownerId;
-
-    if (Boxes.voteBox.containsKey(widget.postId)) {
-      if (Boxes.voteBox.get(widget.postId)) {
-        alreadyUpvoted = true;
-        vote = Vote.up;
-      }
-    } else if (PreferencesUpdate().getBool('votes_downloaded') == null ||
-        PreferencesUpdate().getBool('votes_downloaded') == false) {
-    
-    }
 
     if (Boxes.followingBox.containsKey(ownerId)) {
       isFollowing = true;
@@ -1343,103 +1385,106 @@ class _PostState extends State<Post> {
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
     print(contentsInfo);
-    return deleted? Container(): notInterested //can do some other stuff
-        ? Container(
-            color: Theme.of(context).backgroundColor,
-            padding: EdgeInsets.symmetric(horizontal: 15),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(
-                  "You won't see this post again",
+    return deleted
+        ? Container()
+        : notInterested //can do some other stuff
+            ? Container(
+                color: Theme.of(context).backgroundColor,
+                padding: EdgeInsets.symmetric(horizontal: 15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(
+                      "You won't see this post again",
+                    ),
+                    FlatButton(
+                      onPressed: () {
+                        setState(() {
+                          notInterested = false;
+                        });
+                      },
+                      child: Text(
+                        'Undo',
+                        style: TextStyle(
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                FlatButton(
-                  onPressed: () {
-                    setState(() {
-                      notInterested = false;
-                    });
-                  },
-                  child: Text(
-                    'Undo',
-                    style: TextStyle(
-                      color: Colors.blue,
+              )
+            : Column(
+                children: [
+                  Material(
+                    color: Theme.of(context).backgroundColor,
+                    child: InkWell(
+                      onTap: widget.isCompact
+                          ? () {
+                              showComments(
+                                context,
+                                post: Post(
+                                  commentsShown: true,
+                                  contents: this.widget.contents,
+                                  contentsInfo: this.widget.contentsInfo,
+                                  isCompact: false,
+                                  ownerId: this.widget.ownerId,
+                                  photoUrl: this.widget.photoUrl,
+                                  postId: this.widget.postId,
+                                  tags: this.widget.tags,
+                                  title: this.widget.title,
+                                  topicId: this.widget.topicId,
+                                  topicName: this.widget.topicName,
+                                  upvotes: this.widget.upvotes,
+                                  username: this.widget.username,
+                                ),
+                              );
+                              // Navigator.of(context).pushNamed(
+                              //     ExplorePostsScreen.routeName,
+                              //     arguments: this.widget);
+                            }
+                          : null,
+                      child: Column(
+                        children: <Widget>[
+                          widget.isCompact
+                              ? buildCompactPostHeader()
+                              : buildPostHeader(),
+                          if (!widget.isCompact)
+                            ConstrainedBox(
+                              constraints: constraintContent
+                                  ? BoxConstraints(
+                                      maxHeight:
+                                          MediaQuery.of(context).size.height *
+                                              0.8)
+                                  : BoxConstraints(),
+                              child: Stack(
+                                clipBehavior: Clip.antiAlias,
+                                alignment: AlignmentDirectional.topStart,
+                                children: [
+                                  ListView.builder(
+                                    key: _contentsKey,
+                                    padding: EdgeInsets.all(0),
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    itemBuilder: (_, i) {
+                                      return contentsViewList[i];
+                                    },
+                                    itemCount: contents.length,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          buildPostFooter(),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          )
-        : Column(
-            children: [
-              Material(
-                color: Theme.of(context).backgroundColor,
-                child: InkWell(
-                  onTap: widget.isCompact
-                      ? () {
-                          showComments(
-                            context,
-                            post: Post(
-                              commentsShown: true,
-                              contents: this.widget.contents,
-                              contentsInfo: this.widget.contentsInfo,
-                              isCompact: false,
-                              ownerId: this.widget.ownerId,
-                              photoUrl: this.widget.photoUrl,
-                              postId: this.widget.postId,
-                              tags: this.widget.tags,
-                              title: this.widget.title,
-                              topicId: this.widget.topicId,
-                              topicName: this.widget.topicName,
-                              upvotes: this.widget.upvotes,
-                              username: this.widget.username,
-                            ),
-                          );
-                          // Navigator.of(context).pushNamed(
-                          //     ExplorePostsScreen.routeName,
-                          //     arguments: this.widget);
-                        }
-                      : null,
-                  child: Column(
-                    children: <Widget>[
-                      widget.isCompact
-                          ? buildCompactPostHeader()
-                          : buildPostHeader(),
-                      if (!widget.isCompact)
-                        ConstrainedBox(
-                          constraints: constraintContent
-                              ? BoxConstraints(
-                                  maxHeight:
-                                      MediaQuery.of(context).size.height * 0.8)
-                              : BoxConstraints(),
-                          child: Stack(
-                            clipBehavior: Clip.antiAlias,
-                            alignment: AlignmentDirectional.topStart,
-                            children: [
-                              ListView.builder(
-                                key: _contentsKey,
-                                padding: EdgeInsets.all(0),
-                                shrinkWrap: true,
-                                physics: NeverScrollableScrollPhysics(),
-                                itemBuilder: (_, i) {
-                                  return contentsViewList[i];
-                                },
-                                itemCount: contents.length,
-                              ),
-                            ],
-                          ),
-                        ),
-                      buildPostFooter(),
-                    ],
+                  Divider(
+                    thickness: 1.5,
+                    color: Theme.of(context).cardColor,
+                    height: 1.5,
                   ),
-                ),
-              ),
-              Divider(
-                thickness: 1.5,
-                color: Theme.of(context).cardColor,
-                height: 1.5,
-              ),
-            ],
-          );
+                ],
+              );
   }
 }
 
@@ -1449,7 +1494,6 @@ showComments(
 }) {
   Navigator.pushNamed(context, CommentsScreen.routeName, arguments: post);
 }
-
 
 // class VideoContentContainer extends StatefulWidget {
 //   final Future<dynamic> initializeVideoPlayerFuture;
@@ -1574,7 +1618,7 @@ class DownvoteTileState extends State<DownvoteTile> {
       ),
       title: Text('Downvote'),
       onTap: () {
-        print('postid : ${widget.postId}' );
+        print('postid : ${widget.postId}');
         PostFunctions().handleDownvoteButton(widget.postId, vote);
         if (vote == Vote.down) {
           setState(() {
@@ -1590,22 +1634,22 @@ class DownvoteTileState extends State<DownvoteTile> {
   }
 }
 
-class ExpandIconPainter extends CustomPainter { //         <-- CustomPainter class
-bool up;
-ExpandIconPainter(this.up);
+class ExpandIconPainter extends CustomPainter {
+  //         <-- CustomPainter class
+  bool up;
+  ExpandIconPainter(this.up);
 
   @override
   void paint(Canvas canvas, Size size) {
-      final paint = Paint()
-    ..color = Colors.black
-    ..strokeWidth = 3;
-    if(up){
-        canvas.drawLine(Offset(0,16), Offset(12,8), paint);
-      canvas.drawLine(Offset(12,8), Offset(24,16), paint);
-    }else{
-      
-        canvas.drawLine(Offset(0,8), Offset(12,16), paint);
-      canvas.drawLine(Offset(12,16), Offset(24,8), paint);
+    final paint = Paint()
+      ..color = Colors.black
+      ..strokeWidth = 3;
+    if (up) {
+      canvas.drawLine(Offset(0, 16), Offset(12, 8), paint);
+      canvas.drawLine(Offset(12, 8), Offset(24, 16), paint);
+    } else {
+      canvas.drawLine(Offset(0, 8), Offset(12, 16), paint);
+      canvas.drawLine(Offset(12, 16), Offset(24, 8), paint);
     }
   }
 
@@ -1615,24 +1659,17 @@ ExpandIconPainter(this.up);
   }
 }
 
-
-
-
-
-
-
-
-//video player old 
-    // _controller = VideoPlayerController.network(
-        //   contents['$i'],
-        // );
-        // _initializeVideoPlayerFuture = _controller.initialize().then((_) {
-      //     if (PreferencesUpdate().getBool('autoplay_videos') == null) {
-      //       PreferencesUpdate().updateBool('autoplay_videos', false);
-      //     }
-      //     bool _autoplay = PreferencesUpdate().getBool('autoplay_videos');
-      //     flickManager = FlickManager(
-      //       videoPlayerController: _controller,
-      //     );
-      // print(  contents['$i'],);
-      // print('video url');
+//video player old
+// _controller = VideoPlayerController.network(
+//   contents['$i'],
+// );
+// _initializeVideoPlayerFuture = _controller.initialize().then((_) {
+//     if (PreferencesUpdate().getBool('autoplay_videos') == null) {
+//       PreferencesUpdate().updateBool('autoplay_videos', false);
+//     }
+//     bool _autoplay = PreferencesUpdate().getBool('autoplay_videos');
+//     flickManager = FlickManager(
+//       videoPlayerController: _controller,
+//     );
+// print(  contents['$i'],);
+// print('video url');

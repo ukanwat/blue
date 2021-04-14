@@ -26,32 +26,58 @@ class _CategoryPostsScreenState extends State<CategoryPostsScreen>
   bool blank = false;
   Widget compactPosts;
 
-  
-
- 
-
-    Future refreshPosts()async{
-      setState(() {if(widget.name == 'All')
-      compactPosts = PaginatedPosts(length: 8,isCompact: true ,key: UniqueKey(),);
+  Future refreshPosts() async {
+    setState(() {
+      if (widget.name == 'All')
+        compactPosts = PaginatedPosts(
+          length: 8,
+          isCompact: true,
+          key: UniqueKey(),
+        );
       else
-        compactPosts = PaginatedPosts(length: 8,isCompact: true ,key: UniqueKey(),where: '{category:{_eq:"${widget.name}"}}',);
-      }); 
+        compactPosts = PaginatedPosts(
+          length: 8,
+          isCompact: true,
+          key: UniqueKey(),
+          where: '{category:{_eq:"${widget.name}"}}',
+        );
+    });
   }
-   @override
+
+  @override
   void initState() {
-    if(widget.name == 'All')
-      compactPosts = PaginatedPosts(length: 8,isCompact: true ,key: UniqueKey(),);
-      else
-   compactPosts =  PaginatedPosts(length: 8,isCompact: true,key: UniqueKey(),where: '{category:{_eq:"${widget.name}"}}',);
+    if (widget.name == 'All')
+      compactPosts = PaginatedPosts(
+        length: 8,
+        isCompact: true,
+        key: UniqueKey(),
+      );
+    else
+      compactPosts = PaginatedPosts(
+        length: 8,
+        isCompact: true,
+        key: UniqueKey(),
+        where: '{category:{_eq:"${widget.name}"}}',
+      );
     super.initState();
   }
+
   @override
   bool get wantKeepAlive => true;
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return Container(
-     decoration: BoxDecoration(border: Border(top: BorderSide(color: Theme.of(context).cardColor,width: 1))),
-     child:compactPosts);
+      color: Theme.of(context).backgroundColor,
+      child: RefreshIndicator(
+        onRefresh: () => refreshPosts(),
+        child: Container(
+            decoration: BoxDecoration(
+                border: Border(
+                    top: BorderSide(
+                        color: Theme.of(context).cardColor, width: 1))),
+            child: compactPosts),
+      ),
+    );
   }
 }

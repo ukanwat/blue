@@ -11,7 +11,7 @@ description: A new Flutter project.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ">=2.9.0 <3.0.0"
@@ -20,7 +20,7 @@ dependencies:
   flutter:
     sdk: flutter
   image: ^2.1.14
-  flutter_icons: 
+  flutter_icons: ^1.1.0
   cloud_firestore:
   firebase_auth: 
   flutter_local_notifications: ^3.0.3
@@ -52,7 +52,7 @@ dependencies:
   webview_flutter: ^1.0.7
   visibility_detector: ^0.1.5
   flutter_link_preview: ^1.2.11
-  fluentui_system_icons: 
+  fluentui_system_icons: ^1.1.106
   animations: ^1.1.2
   firebase_dynamic_links: 
   firebase_core: ^0.7.0
@@ -61,7 +61,7 @@ dependencies:
   sortedmap: ^0.4.2+1
   flutter_svg: ^0.19.2
   nuts_activity_indicator: ^0.1.1
-  hive: ^1.4.4+1
+  hive: 
   hive_flutter: ^0.3.1
   path_provider: ^1.6.24
   sticky_headers: ^0.1.8+1
@@ -79,14 +79,22 @@ dependencies:
   yoyo_player: 
   kidd_video_player: ^0.0.12
   flutter_login: ^1.0.14
+  argon_buttons_flutter: ^1.0.6
+  gallery_saver: ^2.0.3
+  graphql_flutter: ^4.0.1
+  
+  
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
+  http: ^0.12.2
 
 dev_dependencies:
   flutter_test: 
     sdk: flutter
-                                                    
+  hive_generator:
+  build_runner:                                                
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

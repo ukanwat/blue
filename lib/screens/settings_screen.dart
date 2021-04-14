@@ -28,6 +28,7 @@ import 'package:blue/screens/settings/notification/push_notifications_screen.dar
 import 'package:blue/screens/settings/privacy/activity_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screen.dart';
 import 'package:blue/widgets/settings_widgets.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 
 class SettingsScreen extends StatefulWidget {
   static const routeName = 'settings';
@@ -112,7 +113,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: Colors.blueAccent,
                   ),
                   context),
-             
+
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Material(
@@ -132,13 +133,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         settingsPageNavigationTile(context, 'Collections',
                             CollectionsScreen.routeName),
                         settingsPageNavigationTile(
-                            context, 'Drafts', DraftsScreen.routeName,removeBorder: true),
+                            context, 'Drafts', DraftsScreen.routeName,
+                            removeBorder: true),
                       ],
                     ),
                   ),
                 ),
               ),
-         
 
               settingsSectionTitle(
                   'Notifications',
@@ -147,8 +148,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: Colors.blueAccent,
                   ),
                   context),
-           
-                  Padding(
+
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Material(
                   borderRadius: BorderRadius.circular(12),
@@ -160,16 +161,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
-                         settingsPageNavigationTile(context, 'Email Notifications',
-                  EmailNotificationsScreen.routeName),
-              settingsPageNavigationTile(context, 'Push Notifications',
-                  PushNotificationsScreen.routeName,removeBorder: true),
+                        settingsPageNavigationTile(
+                            context,
+                            'Email Notifications',
+                            EmailNotificationsScreen.routeName),
+                        settingsPageNavigationTile(
+                            context,
+                            'Push Notifications',
+                            PushNotificationsScreen.routeName,
+                            removeBorder: true),
                       ],
                     ),
                   ),
                 ),
               ),
-          
+
               settingsSectionTitle(
                   'Privacy',
                   Icon(
@@ -177,7 +183,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: Colors.blueAccent,
                   ),
                   context),
-                      Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Material(
                   borderRadius: BorderRadius.circular(12),
@@ -189,16 +195,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
-                     settingsPageNavigationTile(
-                  context, 'Safety', SafetyScreen.routeName),
-              settingsPageNavigationTile(
-                  context, 'Activity', ActivityScreen.routeName,removeBorder: true),
+                        settingsPageNavigationTile(
+                            context, 'Safety', SafetyScreen.routeName),
+                        settingsPageNavigationTile(
+                            context, 'Activity', ActivityScreen.routeName,
+                            removeBorder: true),
                       ],
                     ),
                   ),
                 ),
               ),
-         
+
               // Divider(
               //   thickness: 6,
               //   height: 20,
@@ -212,7 +219,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   context),
 
-                 Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Material(
                   borderRadius: BorderRadius.circular(12),
@@ -224,45 +231,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
-                     settingsActionTile(context, 'Give a Suggestion', () {
-                Navigator.of(context)
-                    .pushNamed(GiveASuggestionScreen.routeName);
-              }, FluentIcons.person_feedback_24_regular),
+                        settingsActionTile(context, 'Give a Suggestion', () {
+                          Navigator.of(context)
+                              .pushNamed(GiveASuggestionScreen.routeName);
+                        }, FluentIcons.person_feedback_24_regular),
+                        settingsActionTile(context, 'Report a Bug', () {
+                          Navigator.of(context)
+                              .pushNamed(ReportABugScreen.routeName);
+                        }, FluentIcons.bug_24_regular),
+                        settingsActionTile(context, 'Get Help', () async {
+                          Map<String, dynamic> deviceData;
+                          try {
+                            if (Platform.isAndroid) {
+                              deviceData = _readAndroidBuildData(
+                                  await deviceInfoPlugin.androidInfo);
+                            } else if (Platform.isIOS) {
+                              deviceData = _readIosDeviceInfo(
+                                  await deviceInfoPlugin.iosInfo);
+                            }
+                          } on PlatformException {
+                            deviceData = <String, dynamic>{
+                              'Error:': 'Failed to get platform version.'
+                            };
+                            return;
+                          }
+                          _deviceData = deviceData;
 
-              settingsActionTile(context, 'Report a Bug', () {
-                Navigator.of(context).pushNamed(ReportABugScreen.routeName);
-              }, FluentIcons.bug_24_regular),
-              settingsActionTile(context, 'Get Help', () async {
-                Map<String, dynamic> deviceData;
-                try {
-                  if (Platform.isAndroid) {
-                    deviceData = _readAndroidBuildData(
-                        await deviceInfoPlugin.androidInfo);
-                  } else if (Platform.isIOS) {
-                    deviceData =
-                        _readIosDeviceInfo(await deviceInfoPlugin.iosInfo);
-                  }
-                } on PlatformException {
-                  deviceData = <String, dynamic>{
-                    'Error:': 'Failed to get platform version.'
-                  };
-                  return;
-                }
-                _deviceData = deviceData;
+                          final Email email = Email(
+                            body: Platform.isIOS
+                                ? '...\n\nStark User ID: ${_deviceData['userId']}\nApp version: ${_deviceData['version']}\nDevice: ${_deviceData['name']}\nModel: ${_deviceData['model']}\nManufacturer: ${[
+                                    'manufacturer'
+                                  ]}\nOS Version: ${_deviceData['utsname.version']}'
+                                : '...\n\nStark User ID: ${_deviceData['userId']}\nApp version: ${_deviceData['version']}\nModel: ${_deviceData['model']}\nOS Version: ${_deviceData['version.release']}',
+                            subject: 'Stark Support\n[Android]',
+                            recipients: ['support@stark.social'],
+                            isHTML: false,
+                          );
 
-                final Email email = Email(
-                  body: Platform.isIOS
-                      ? '...\n\nStark User ID: ${_deviceData['userId']}\nApp version: ${_deviceData['version']}\nDevice: ${_deviceData['name']}\nModel: ${_deviceData['model']}\nManufacturer: ${[
-                          'manufacturer'
-                        ]}\nOS Version: ${_deviceData['utsname.version']}'
-                      : '...\n\nStark User ID: ${_deviceData['userId']}\nApp version: ${_deviceData['version']}\nModel: ${_deviceData['model']}\nOS Version: ${_deviceData['version.release']}',
-                  subject: 'Stark Support\n[Android]',
-                  recipients: ['support@stark.social'],
-                  isHTML: false,
-                );
-
-                await FlutterEmailSender.send(email);
-              }, FluentIcons.chat_help_24_regular,removeBorder: true),
+                          await FlutterEmailSender.send(email);
+                        }, FluentIcons.chat_help_24_regular,
+                            removeBorder: true),
                       ],
                     ),
                   ),
@@ -287,31 +295,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
-                         settingsActionTile(
-                context,
-                'Terms of Use',
-                () {
-                  Navigator.of(context)
-                      .pushNamed(TermsOfServiceScreen.routeName);
-                },
-                FluentIcons.textbox_24_regular,
-              ),
-              settingsActionTile(context, 'Privacy policy', () {
-                Navigator.of(context).pushNamed(PrivacyPolicyScreen.routeName);
-              }, FluentIcons.lock_24_regular),
-              settingsActionTile(context, 'acknowledgements', () {
-                Navigator.of(context).pushNamed(LicenseScreen.routeName);
-              }, FluentIcons.ribbon_24_regular,removeBorder: true),
+                        settingsActionTile(
+                          context,
+                          'Terms of Use',
+                          () {
+                            Navigator.of(context)
+                                .pushNamed(TermsOfServiceScreen.routeName);
+                          },
+                          FluentIcons.textbox_24_regular,
+                        ),
+                        settingsActionTile(context, 'Privacy policy', () {
+                          Navigator.of(context)
+                              .pushNamed(PrivacyPolicyScreen.routeName);
+                        }, FlutterIcons.lock_mco),
+                        settingsActionTile(context, 'acknowledgements', () {
+                          Navigator.of(context)
+                              .pushNamed(LicenseScreen.routeName);
+                        }, FluentIcons.ribbon_24_regular, removeBorder: true),
                       ],
                     ),
                   ),
                 ),
               ),
-         
+
               Container(
                 padding: EdgeInsets.only(top: 8),
                 width: double.infinity,
-                color: dark?Theme.of(context).backgroundColor  :Theme.of(context).canvasColor,
+                color: dark
+                    ? Theme.of(context).backgroundColor
+                    : Theme.of(context).canvasColor,
                 height: 40,
                 child: Center(
                   child: Text('v1.0'),
