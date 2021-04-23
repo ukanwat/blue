@@ -6,6 +6,7 @@ import 'package:blue/screens/settings/general/drafts_screen.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
+import 'package:blue/services/preferences_update.dart';
 import 'package:blue/services/push_notifications.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -47,6 +48,10 @@ class _TabsScreenState extends State<TabsScreen> {
   @override
   void initState() {
     PushNotificationsManager().init();
+    if (Boxes.followingBox.isEmpty) {
+      PreferencesUpdate().setFollowings();
+    }
+
     super.initState();
   }
 

@@ -41,25 +41,6 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
   @override
   void initState() {
     addPosts();
-    // _scrollController.addListener(() {
-    //   if (true) {
-    //     print('${_scrollController.position.pixels}');
-    //     print('max');
-    //     print('${_scrollController.position.maxScrollExtent}');
-    //   }
-    //   if (((_scrollController.position.pixels >
-    //               _scrollController.position.maxScrollExtent - 50) &&
-    //           (_scrollController.position.pixels <=
-    //               _scrollController.position.maxScrollExtent)) &&
-    //       empty != true &&
-    //       loaded != true &&
-    //       (pos - _scrollController.position.pixels > 51 ||
-    //           pos - _scrollController.position.pixels < -51)) {
-    //     pos = _scrollController.position.pixels;
-    //     print('adding');
-    //     addPosts();
-    //   }
-    // });
     super.initState();
   }
 
@@ -76,6 +57,9 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
           widget.orderBy ?? "{created_at:desc}",
           tag: widget.tag,
         );
+        for (int i = 0; i < _p.length; i++) {
+          _p[i] = _p[i]['post'];
+        }
       } else {
         _p = await Hasura.getPosts(
             widget.length, 0, widget.orderBy ?? "{created_at:desc}",
@@ -112,6 +96,9 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
           widget.orderBy ?? "{created_at:desc}",
           tag: widget.tag,
         );
+        for (int i = 0; i < _snapshot.length; i++) {
+          _snapshot[i] = _snapshot[i]['post'];
+        }
       } else {
         _snapshot = await Hasura.getPosts(
             widget.length, lastDoc, widget.orderBy ?? "{created_at:desc}",
@@ -159,7 +146,9 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
                 return true;
               },
               child: ListView.builder(
-                physics: AlwaysScrollableScrollPhysics(),
+                physics: widget.tag == null
+                    ? AlwaysScrollableScrollPhysics()
+                    : NeverScrollableScrollPhysics(),
                 itemCount: _posts.length,
                 itemBuilder: (context, i) {
                   return _posts.elementAt(i);

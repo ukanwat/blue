@@ -48,30 +48,26 @@ class Hasura {
     uid = FirebaseAuth.instance.currentUser.uid;
     if (uid == null) {
       if (Boxes.currentUserBox != null) {
-        if (Boxes.currentUserBox.get('user_id') != null) {
-          return Boxes.currentUserBox.get('user_id');
-        }
-      } else {
         Boxes.openCurrentUserBox();
+      }
+      if (Boxes.currentUserBox.get('user_id') != null) {
+        return Boxes.currentUserBox.get('user_id');
       }
     }
     print(uid);
-    var doc = await authRef.where('uid', isEqualTo: uid).get();
-    print(doc.docs.first.data());
-    return doc.docs.first.data()['user_id'];
 
-//     if (jwtToken == null) return;
-//     String _doc = """query{
-//   users(where:{uid:{_eq:"$uid"}}){
-//     user_id
-//   }
-// }""";
+    if (jwtToken == null) return;
+    String _doc = """query{
+  users(where:{uid:{_eq:"$uid"}}){
+    user_id
+  }
+ }""";
 
-//     var map = await hasuraConnect.query(_doc);
-//     print(map);
-//     Boxes.currentUserBox.put('user_id',
-//         map['data']['users'][0]['user_id']); // check if there are no results
-//     return map['data']['users'][0]['user_id'];
+    var map = await hasuraConnect.query(_doc);
+    print(map);
+    Boxes.currentUserBox.put('user_id',
+        map['data']['users'][0]['user_id']); // check if there are no results
+    return map['data']['users'][0]['user_id'];
   }
 
   // static upsertUser(String name, String email, {String username}) async {
@@ -223,10 +219,19 @@ class Hasura {
     return data['data']['users_by_pk']['followed_tags'];
   }
 
-  static followTags(String tag) async {
-    String userId = getUserId();
+  static followTag(String tag) async {
+    int userId = await getUserId();
     await hasuraConnect.mutation("""mutation{
-  insert_user_followed_tags_one(object:{label:"Harry Styles",user_id:$userId}){
+  insert_user_followed_tags_one(object:{tag:"$tag",user_id:$userId}){
+    __typename
+  }
+}""");
+  }
+
+  static unfollowTag(String tag) async {
+    int userId = await getUserId();
+    await hasuraConnect.mutation("""mutation{
+  delete_user_followed_tags_by_pk(tag:"$tag", user_id:$userId){
     __typename
   }
 }""");
@@ -275,18 +280,23 @@ class Hasura {
             }   
           ]
         }}) {
-    __typename
+    post_id
   }
 }
 """
         : """mutation{
   insert_posts_one(object: {contents: $contents, owner_id: $userId, title: "$title", uid: "$uid",$topic post_tags: {data: [$tagsString]}}) {
-    __typename
+    post_id
   }
 }
 """;
     print(_doc);
-    await hasuraConnect.mutation(_doc);
+
+    dynamic _data = await hasuraConnect.mutation(_doc);
+    print(_data);
+    await hasuraConnect.mutation("""mutation{
+  insert_post_stats_one(object:{post_id:${_data['data']['insert_posts_one']['post_id']},}){post_id}
+}""");
   }
 
   static deletePost(int postId) async {
@@ -333,10 +343,7 @@ class Hasura {
   }
 
   static dynamic getPreferences(String key) async {
-    int userId = Boxes.currentUserBox.get('user_id');
-    if (userId == null) {
-      userId = await getUserId();
-    }
+    int userId = await getUserId();
     dynamic data = await hasuraConnect.query("""query{
    preferences_by_pk(user_id:$userId){
     $key
@@ -346,6 +353,62 @@ class Hasura {
       return DateTime(2020).toString();
     }
     return data['data']['preferences_by_pk'][key];
+  }
+
+  static dynamic getAllPreferences() async {
+    int userId = await getUserId();
+    print('userId:$userId');
+    print("""query{
+   preferences_by_pk(user_id:$userId){
+    email_announcements
+    email_feedbacks
+    hide_sensitive_content
+    push_comment_replies
+    push_comments
+    push_direct_requests
+    push_features
+    push_upvotes
+    push_new_followers
+    push_reminders
+    serif
+    is_private
+    track_activity
+    autoplay_videos
+    dark_mode
+    theme
+    searches_last_cleared
+    set_private
+    following_posts_last_seen
+    mute_push_time
+  }
+}""");
+    dynamic data = await hasuraConnect.query("""query{
+   preferences_by_pk(user_id:$userId){
+    email_announcements
+    email_feedbacks
+    hide_sensitive_content
+    push_comment_replies
+    push_comments
+    push_direct_requests
+    push_features
+    push_upvotes
+    push_new_followers
+    push_reminders
+    serif
+    is_private
+    track_activity
+    autoplay_videos
+    dark_mode
+    theme
+    searches_last_cleared
+    set_private
+    following_posts_last_seen
+    mute_push_time
+  }
+}""");
+    print(data);
+
+    return data['data']['preferences_by_pk'];
   }
 
   static getPosts(int limit, int offset, String orderby, {String where}) async {
@@ -394,17 +457,26 @@ class Hasura {
     tag_posts{
       post{
          contents
-          created_at
-           owner_id
-             post_id
-           title
-          user{
-           avatar_url
-              username
-            }
+    created_at
+    owner_id
+    post_id
+    title
+    upvoted_by_user
+    comment_count
+    user{
+      avatar_url
+      username
+    }
     post_tags{
       tag{tag}
     }
+    post_stats{
+      upvotes
+      shares
+      comments
+      saves
+    }
+
       }
     }
   }
@@ -447,16 +519,23 @@ class Hasura {
   }
 
   static insertPostVote(int postId, bool up) async {
-    var userId = Boxes.currentUserBox.get('user_id');
-    if (userId == null) {
-      userId = await getUserId();
-    }
+    var userId = await getUserId();
     String string = """mutation{
   ${updateStats(up ? Stat.upvotes : Stat.downvotes, postId, true)}
 }
 """;
     print(string);
     await hasuraConnect.mutation(string);
+    print("""mutation{
+  insert_upvotes_one(object:{post_id:$postId,user_id:$userId}){
+   __typename
+  }
+}""");
+    await hasuraConnect.mutation("""mutation{
+  insert_upvotes_one(object:{post_id:$postId,user_id:$userId}){
+   __typename
+  }
+}""");
   }
 
   static deletePostVote(int postId, bool up) async {
@@ -812,10 +891,30 @@ __typename
     comment_id
     created_at
     data
-    post_id
     user_id
-    user{
+    post_id
+    reply_count
+    user_vote
+     user{
       avatar_url
+      username
+    }
+    upvotes
+    downvotes
+    
+    comment_replies{
+      user{
+        avatar_url
+        username
+      }
+      user_vote
+      comment_id
+      created_at
+      reply_id
+      user_id
+      upvotes
+      downvotes
+      data
     }
   }
 }
@@ -836,12 +935,18 @@ __typename
     String token = await getToken(commenterId);
     String doc = """mutation{
   insert_comment_replies_one(object:{comment_id:$commentId,user_id:$userId,data:"$text", avatar_url:"${Boxes.currentUserBox.get("avatar_url")}", payload:{token:"$token"}}){                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
-     avatar_url
-    comment_id
-    created_at
-    data
-     reply_id
-    user_id
+    user{
+        avatar_url
+        username
+      }
+      user_vote
+      comment_id
+      created_at
+      reply_id
+      user_id
+      upvotes
+      downvotes
+      data
   }
 }
 
@@ -888,11 +993,20 @@ __typename
     user_id
     post_id
     reply_count
+    user_vote
+     user{
+      avatar_url
+      username
+    }
+    upvotes
+    downvotes
+
     comment_replies{
       user{
         avatar_url
         username
       }
+      user_vote
       comment_id
       created_at
       reply_id
@@ -901,12 +1015,7 @@ __typename
       downvotes
       data
     }
-    user{
-      avatar_url
-      username
-    }
-    upvotes
-    downvotes
+   
   }
   
 }""");
@@ -1169,5 +1278,63 @@ __typename
   }
 }""");
     return doc['data']['users_by_pk']['token'];
+  }
+
+  static getFollowingIds() async {
+    int userId = await getUserId();
+    dynamic doc = await hasuraConnect
+        .query("""query{follows(where:{follower_id:{_eq:$userId}}){
+  following_id
+}}""");
+    return doc['data']['follows'];
+  }
+
+  static deleteCommentVote(bool reply, int id, bool upinc, bool downinc,
+      {String time, int postId, int replyId}) async {
+    dynamic userId = await getUserId();
+    String cr = reply ? "comment_reply" : "comment";
+    String r = reply ? "reply" : "comment";
+    await hasuraConnect.mutation("""mutation{
+  delete_${cr}_votes_by_pk(${r}_id: $id,user_id:$userId){__typename}
+}""");
+    String pk =
+        !reply ? 'created_at:"$time",post_id:$postId' : 'reply_id:$replyId';
+    await hasuraConnect.mutation("""mutation{
+  update_comments_by_pk(pk_columns:{$pk},_inc:{upvotes:${upinc == null ? 0 : upinc ? 1 : -1},downvotes:${downinc == null ? 0 : downinc ? 1 : -1}},},){
+    __typename
+    
+  }
+}""");
+  }
+
+  static insertCommentVote(
+      bool reply, int id, bool vote, bool upinc, bool downinc,
+      {String time, int postId, int replyId}) async {
+    dynamic userId = await getUserId();
+    String cr = reply ? "comment_reply" : "comment";
+    String r = reply ? "reply" : "comment";
+    try {
+      await hasuraConnect.mutation("""
+    mutation{
+  insert_${cr}_votes_one(object:{user_id:$userId,${r}_id:$id, upvote: $vote, },on_conflict: {
+constraint: ${cr}_upvotes_pkey,
+update_columns: [upvote]
+}){
+    __typename
+  }
+}
+    """);
+    } catch (e) {}
+
+    String pk =
+        !reply ? 'created_at:"$time",post_id:$postId' : 'reply_id:$replyId';
+    String doc = """mutation{
+  update_comments_by_pk(pk_columns:{$pk},_inc:{upvotes:${upinc == null ? 0 : upinc ? 1 : -1},downvotes:${downinc == null ? 0 : downinc ? 1 : -1}},){
+    __typename
+    
+  }
+}""";
+    print(doc);
+    await hasuraConnect.mutation(doc);
   }
 }

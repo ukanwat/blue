@@ -33,6 +33,7 @@ class Comment extends StatefulWidget {
   final List replies;
   final bool showReplies;
   final int replyCount;
+  final bool vote;
   Comment(
       {this.id,
       this.username,
@@ -45,7 +46,8 @@ class Comment extends StatefulWidget {
       this.postId,
       this.replies,
       this.showReplies,
-      this.replyCount});
+      this.replyCount,
+      this.vote});
 
   factory Comment.fromDocument(Map doc, int postId, int docId) {
     return Comment(
@@ -61,6 +63,7 @@ class Comment extends StatefulWidget {
       replies: doc['comment_replies'],
       showReplies: true,
       replyCount: doc['reply_count'],
+      vote: doc['user_vote'],
     );
   }
 
@@ -74,6 +77,16 @@ class _CommentState extends State<Comment> {
   int maxLines = 8;
   bool canExceedChanged = false;
   bool canExceed = false;
+  insertVote(bool _vote, bool upinc, bool downinc) async {
+    await Hasura.insertCommentVote(false, widget.id, _vote, upinc, downinc,
+        postId: widget.postId, time: widget.timestamp.toString());
+  }
+
+  deleteVote(bool upinc, bool downinc) async {
+    await Hasura.deleteCommentVote(false, widget.id, upinc, downinc,
+        postId: widget.postId, time: widget.timestamp.toString());
+  }
+
   toggleReplies() {
     setState(() {
       if (repliesLoaded == false) {
@@ -88,7 +101,10 @@ class _CommentState extends State<Comment> {
               postId: widget.postId,
               upvotes: value['upvotes'],
               userId: value['user_id'],
-              timestamp: DateTime.parse(value['created_at']),
+              timestamp: DateTime.parse(
+                value['created_at'],
+              ),
+              vote: value['user_vote'],
             ));
           });
         }
@@ -105,6 +121,12 @@ class _CommentState extends State<Comment> {
   void initState() {
     if (widget.showReplies == true) {
       toggleReplies();
+    }
+    if (widget.vote == true) {
+      vote = CommentVote.upvote;
+    }
+    if (widget.vote == false) {
+      vote = CommentVote.downvote;
     }
     super.initState();
   }
@@ -252,7 +274,7 @@ class _CommentState extends State<Comment> {
                       ),
                       Row(
                         children: <Widget>[
-                          if (widget.replies != null)
+                          if (widget.replyCount > 0)
                             InkWell(
                               onTap: () {
                                 toggleReplies();
@@ -268,7 +290,7 @@ class _CommentState extends State<Comment> {
                                           ? Icons.expand_less
                                           : Icons.expand_more,
                                       color: Colors.blue,
-                                      size: 20,
+                                      size: 18,
                                     ),
                                     Text(
                                       repliesLoaded == true
@@ -317,25 +339,77 @@ class _CommentState extends State<Comment> {
                                 fontSize: 20, fontWeight: FontWeight.w500),
                           ),
                           SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () {
-                              print('dd');
-                              setState(() {
-                                vote = CommentVote.downvote;
-                              });
-                            },
-                            child: commentVoteButton(
-                                false, vote == CommentVote.downvote),
+                          Material(
+                            child: InkWell(
+                              onTap: () {
+                                if (vote == CommentVote.downvote) {
+                                  setState(() {
+                                    vote = null;
+                                  });
+                                  deleteVote(null, false);
+                                } else if (vote == CommentVote.upvote) {
+                                  setState(() {
+                                    vote = CommentVote.downvote;
+                                  });
+
+                                  insertVote(false, false, true);
+                                } else {
+                                  setState(() {
+                                    vote = CommentVote.downvote;
+                                  });
+                                  insertVote(false, null, true);
+                                }
+                              },
+                              child: Container(
+                                  child: Padding(
+                                padding: EdgeInsets.only(right: 10),
+                                child: Transform.rotate(
+                                    angle: math.pi,
+                                    child: Icon(
+                                      FluentIcons.keyboard_shift_16_filled,
+                                      size: 24,
+                                      color: vote == CommentVote.downvote
+                                          ? Colors.blue
+                                          : Colors.grey,
+                                    )),
+                              )),
+                            ),
                           ),
                           SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                vote = CommentVote.downvote;
-                              });
-                            },
-                            child: commentVoteButton(
-                                true, vote == CommentVote.upvote),
+                          Material(
+                            child: InkWell(
+                              onTap: () {
+                                if (vote == CommentVote.upvote) {
+                                  setState(() {
+                                    vote = null;
+                                  });
+
+                                  deleteVote(false, null);
+                                } else if (vote == CommentVote.downvote) {
+                                  setState(() {
+                                    vote = CommentVote.upvote;
+                                  });
+
+                                  insertVote(true, true, false);
+                                } else {
+                                  setState(() {
+                                    vote = CommentVote.upvote;
+                                  });
+                                  insertVote(true, true, null);
+                                }
+                              },
+                              child: Container(
+                                  child: Padding(
+                                padding: EdgeInsets.only(right: 0, left: 10),
+                                child: Icon(
+                                  FluentIcons.keyboard_shift_16_filled,
+                                  size: 24,
+                                  color: vote == CommentVote.upvote
+                                      ? Colors.blue
+                                      : Colors.grey,
+                                ),
+                              )),
+                            ),
                           ),
                         ],
                       ),
@@ -384,27 +458,5 @@ class _CommentState extends State<Comment> {
                 ),
               ],
             ));
-  }
-
-  commentVoteButton(bool up, bool change) {
-    return Container(
-        child: up
-            ? Padding(
-                padding: EdgeInsets.only(left: 10),
-                child: Icon(
-                  FluentIcons.keyboard_shift_16_filled,
-                  size: 24,
-                  color: change ? Colors.blue : Colors.grey,
-                ))
-            : Padding(
-                padding: EdgeInsets.only(right: 10),
-                child: Transform.rotate(
-                    angle: math.pi,
-                    child: Icon(
-                      FluentIcons.keyboard_shift_16_filled,
-                      size: 24,
-                      color: change ? Colors.blue : Colors.grey,
-                    )),
-              ));
   }
 }

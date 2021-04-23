@@ -2,6 +2,7 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:blue/services/hasura.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -30,8 +31,16 @@ class _TagScreenState extends State<TagScreen> {
     tag = ModalRoute.of(context).settings.arguments;
     super.didChangeDependencies();
   }
-  
-  List colors = [Colors.red, Colors.green, Colors.yellow,Colors.blue, Colors.amber,Colors.deepOrange,Colors.indigo,];
+
+  List colors = [
+    Colors.red,
+    Colors.green,
+    Colors.yellow,
+    Colors.blue,
+    Colors.amber,
+    Colors.deepOrange,
+    Colors.indigo,
+  ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,8 +57,7 @@ class _TagScreenState extends State<TagScreen> {
                   pinned: true,
                   backgroundColor: Theme.of(context).backgroundColor,
                   actions: [
-                    PreferencesUpdate()
-                            .containsInList('followed_tags', tag)
+                    PreferencesUpdate().containsInList('followed_tags', tag)
                         ? PopupMenuButton(
                             padding: EdgeInsets.zero,
                             color: Theme.of(context).canvasColor,
@@ -65,11 +73,11 @@ class _TagScreenState extends State<TagScreen> {
                               if (selectedValue == 'Unfollow') {
                                 setState(() {
                                   PreferencesUpdate().removeFromList(
-                                      'followed_tags', tag);
+                                    'followed_tags',
+                                    tag,
+                                  );
                                 });
-                                await followedTagsRef
-                                    .doc(currentUser.id)
-                                    .update({tag: FieldValue.delete()});
+                                Hasura.unfollowTag(tag);
                               }
                             },
                           )
@@ -82,9 +90,12 @@ class _TagScreenState extends State<TagScreen> {
                               }, SetOptions(merge: true));
 
                               setState(() {
-                                PreferencesUpdate()
-                                    .addToList('followed_tags', tag);
+                                PreferencesUpdate().addToList(
+                                  'followed_tags',
+                                  tag,
+                                );
                               });
+                              Hasura.followTag(tag);
                             },
                             icon: Icon(Icons.add, size: 34, color: Colors.blue),
                           )
@@ -108,7 +119,11 @@ class _TagScreenState extends State<TagScreen> {
                                       fontWeight: FontWeight.w700)),
                             ),
                           )),
-                      background: Container(height: double.infinity,width: double.infinity,color:colors.elementAt(Random().nextInt(colors.length)))),
+                      background: Container(
+                          height: double.infinity,
+                          width: double.infinity,
+                          color: colors
+                              .elementAt(Random().nextInt(colors.length)))),
                 ),
                 SliverPersistentHeader(
                   delegate: _SliverAppBarDelegate(
@@ -147,10 +162,9 @@ class _TagScreenState extends State<TagScreen> {
               ];
             },
             body: TabBarView(children: <Widget>[
-              SingleChildScrollView(child: TagPopularScreen(tag)),
-              SingleChildScrollView(child: TagRecentScreen(tag))
+              TagPopularScreen(tag),
+              TagRecentScreen(tag)
             ])),
-        
       ),
     );
   }

@@ -6,29 +6,27 @@ import 'package:blue/services/boxes.dart';
 import 'hasura.dart';
 
 class PreferencesUpdate {
-  updateBool(
-    String key,
-    bool value,{ bool upload}) {
+  updateBool(String key, bool value, {bool upload}) {
     if (upload != null ? upload : false) {
-     uploadValue(key, value, false);
+      uploadValue(key, value, false);
     }
     Boxes.preferenceBox.put(key, value);
-      Hasura.updatePreferences(key,value);
+    Hasura.updatePreferences(key, value);
   }
-  uploadValue(String key, dynamic value,bool str )async{
-     await Hasura.updatePreferences(key, value,string: str);
+
+  uploadValue(String key, dynamic value, bool str) async {
+    await Hasura.updatePreferences(key, value, string: str);
   }
 
   updateString(
     String key,
     String value, {
     bool upload,
-  }) async{
+  }) async {
     if (upload == true) {
-  await Hasura.updatePreferences(key, value,string: true);
+      await Hasura.updatePreferences(key, value, string: true);
     }
-   await Boxes.preferenceBox.put(key, value);
-    
+    await Boxes.preferenceBox.put(key, value);
   }
 
   bool containsInList(
@@ -48,19 +46,19 @@ class PreferencesUpdate {
     String key,
     List<String> value,
   ) {
-     Boxes.preferenceBox.put(key, value);
+    Boxes.preferenceBox.put(key, value);
   }
 
   removeFromList(
     String key,
     dynamic value,
   ) async {
-    List _list =  Boxes.preferenceBox.get(key);
+    List _list = Boxes.preferenceBox.get(key);
     if (_list != null) {
       _list.remove(value);
-      await  Boxes.preferenceBox.put(key, _list);
+      await Boxes.preferenceBox.put(key, _list);
     } else {
-      await  Boxes.preferenceBox.put(key, []);
+      await Boxes.preferenceBox.put(key, []);
     }
   }
 
@@ -68,51 +66,60 @@ class PreferencesUpdate {
     String key,
     dynamic value,
   ) {
-    List<dynamic> _list =  Boxes.preferenceBox.get(key);
-    if (_list == null) {_list = [];}
-    if(!_list.contains(value)){
-_list.add(value);
+    List<dynamic> _list = Boxes.preferenceBox.get(key);
+    if (_list == null) {
+      _list = [];
     }
-    
-     Boxes.preferenceBox.put(key, _list);
+    if (!_list.contains(value)) {
+      _list.add(value);
+    }
+
+    Boxes.preferenceBox.put(key, _list);
   }
 
   String getString(
     String key,
   ) {
-    if(!Boxes.preferenceBox.containsKey(key)){
-         return null;
+    if (!Boxes.preferenceBox.containsKey(key)) {
+      return null;
     }
-    return  Boxes.preferenceBox.get(key);
+    return Boxes.preferenceBox.get(key);
   }
 
-  getFuture(String key)async{
- if(!Boxes.preferenceBox.containsKey(key)){
-    return await Hasura.getPreferences(key);
-       
+  getFuture(String key) async {
+    if (!Boxes.preferenceBox.containsKey(key)) {
+      return await Hasura.getPreferences(key);
     }
-    return  Boxes.preferenceBox.get(key);
+    return Boxes.preferenceBox.get(key);
   }
 
   List<String> getStringList(
     String key,
   ) {
-    List<String> _list =  Boxes.preferenceBox.get(key);
+    List<String> _list = Boxes.preferenceBox.get(key);
     if (_list == null) {
       return [];
     }
     return _list;
   }
-  getSetValue(String key)async{
-    dynamic value =await Hasura.getPreferences(key);
-     Boxes.preferenceBox.put(key, value);
-     return value;
+
+  getSetValue(String key) async {
+    dynamic value = await Hasura.getPreferences(key);
+    Boxes.preferenceBox.put(key, value);
+    return value;
   }
+
   bool getBool(String key, {bool def}) {
     if (def != null) {
-      if ( Boxes.preferenceBox.get(key) == null) return def;
+      if (Boxes.preferenceBox.get(key) == null) return def;
     }
 
-    return  Boxes.preferenceBox.get(key);
+    return Boxes.preferenceBox.get(key);
+  }
+
+  setFollowings() async {
+    List followings = await Hasura.getFollowingIds();
+    Map map = {for (var item in followings) item['following_id']: true};
+    await Boxes.followingBox.putAll(map);
   }
 }

@@ -104,6 +104,8 @@ class Post extends StatefulWidget {
     bool isCompact,
     bool commentsShown,
   }) {
+    print('doc:');
+    print(doc);
     if (isCompact == null) isCompact = false;
     if (commentsShown == null) commentsShown = false;
     Map data = {};
@@ -910,6 +912,9 @@ class _PostState extends State<Post> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (this.mounted) getContentSize();
       });
+    if (widget.upvoted == true) {
+      vote = Vote.up;
+    }
     super.didChangeDependencies();
   }
 
@@ -1012,33 +1017,9 @@ class _PostState extends State<Post> {
     );
   }
 
+  bool increment;
   buildPostFooter() {
-    bool increment;
-    if (alreadyUpvoted) {
-      switch (vote) {
-        case Vote.up:
-          increment = null;
-          break;
-        case Vote.none:
-          increment = false;
-          break;
-        case Vote.down:
-          increment = false;
-          break;
-      }
-    } else {
-      switch (vote) {
-        case Vote.up:
-          increment = true;
-          break;
-        case Vote.none:
-          increment = null;
-          break;
-        case Vote.down:
-          increment = null;
-          break;
-      }
-    }
+    print("increment:$increment");
     return Padding(
       padding: EdgeInsets.only(top: 5),
       child: Column(
@@ -1253,8 +1234,7 @@ class _PostState extends State<Post> {
                                     MediaQuery.of(context).size.height * 0.8 ||
                                 contentsHeight >
                                     MediaQuery.of(context).size.height * 0.8)
-                        ? Padding(
-                            padding: const EdgeInsets.only(left: 13),
+                        ? Center(
                             child: SizedBox(
                               height: 28,
                               width: 30,
@@ -1273,15 +1253,13 @@ class _PostState extends State<Post> {
                                   }
                                 },
                                 child: Padding(
-                                  padding: EdgeInsets.only(
-                                      left: (MediaQuery.of(context).size.width *
-                                              0.5) -
-                                          206),
+                                  padding: EdgeInsets.only(left: 0),
                                   child: CustomPaint(
                                     //                       <-- CustomPaint widget
                                     size: Size(30, 30),
                                     painter: ExpandIconPainter(
-                                        constraintContent ? false : true),
+                                        constraintContent ? false : true,
+                                        context),
                                   ),
                                 ),
                               ),
@@ -1295,20 +1273,34 @@ class _PostState extends State<Post> {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () {
-                      if (ownerId == currentUser.id) {
-                        return;
-                      }
-
                       PostFunctions().handleUpvoteButton(postId, vote);
                       if (vote == Vote.up) {
                         setState(() {
                           vote = Vote.none;
                         });
-                        unvote();
-                      } else
+                        if (increment == null) {
+                          setState(() {
+                            increment = false;
+                          });
+                        } else {
+                          setState(() {
+                            increment = false;
+                          });
+                        }
+                      } else if (vote == Vote.none) {
                         setState(() {
                           vote = Vote.up;
                         });
+                        if (increment == null) {
+                          setState(() {
+                            increment = true;
+                          });
+                        } else {
+                          setState(() {
+                            increment = null;
+                          });
+                        }
+                      }
                     },
                     customBorder: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -1389,7 +1381,10 @@ class _PostState extends State<Post> {
         ? Container()
         : notInterested //can do some other stuff
             ? Container(
-                color: Theme.of(context).backgroundColor,
+                decoration: BoxDecoration(
+                    color: Theme.of(context).backgroundColor,
+                    border: Border.fromBorderSide(
+                        BorderSide(color: Colors.grey, width: 1))),
                 padding: EdgeInsets.symmetric(horizontal: 15),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1637,12 +1632,13 @@ class DownvoteTileState extends State<DownvoteTile> {
 class ExpandIconPainter extends CustomPainter {
   //         <-- CustomPainter class
   bool up;
-  ExpandIconPainter(this.up);
+  BuildContext context;
+  ExpandIconPainter(this.up, this.context);
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.black
+      ..color = Theme.of(context).iconTheme.color.withOpacity(0.6)
       ..strokeWidth = 3;
     if (up) {
       canvas.drawLine(Offset(0, 16), Offset(12, 8), paint);

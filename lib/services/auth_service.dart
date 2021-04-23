@@ -173,6 +173,7 @@ class AuthService {
 
   auth.User _user;
   signInWithGoogleMore(BuildContext context, bool exists, var result) async {
+    progressOverlay(context).show();
     auth.User user = _user;
     _user = null;
     print(result);
@@ -183,22 +184,31 @@ class AuthService {
 
       await createHasuraUser(
           user.uid, info['user_id'], user.email, user.displayName, result);
+      Hasura.insertPreferences(
+        user.uid,
+      );
     } else {
       var _doc = await authRef.where('uid', isEqualTo: user.uid).get();
       info['user_id'] = _doc.docs.first.data()['user_id'];
     }
-
+    progressOverlay(context).dismiss();
     Hasura.jwtToken = await user.getIdToken(true);
     await getUserFromHasura(info['user_id'], context); //TODO
     await Boxes.openBoxes();
     PreferencesUpdate().updateString('accountType', 'google');
     await setCustomClaimToken(user);
+    await setPreferences();
 
-    Hasura.insertPreferences(
-      user.uid,
-    );
     userSignedIn = true;
+
     user.reload();
+  }
+
+  setPreferences() async {
+    // dynamic data = await Hasura.getAllPreferences();
+    // data.forEach((key, value) {
+    //   PreferencesUpdate().updateString(key, value);
+    // });
   }
 
   setCustomClaimToken(auth.User _user) async {
@@ -231,23 +241,27 @@ class AuthService {
   Future<String> loginUser(LoginData data, BuildContext context) async {
     print('Email: ${data.name}, Password: ${data.password}');
     userSignedIn = false;
-
+    progressOverlay(context).show();
     await AuthService().signInWithEmailAndPassword(data.name, data.password);
     var _user;
     while (_user == null) {
       _user = AuthService.firebaseAuth.currentUser;
       Future.delayed(Duration(seconds: 1));
     }
+    progressOverlay(context).dismiss();
     print('verified: ${_user.emailVerified}');
     if (!_user.emailVerified) {
       await navigatorKey.currentState.pushNamed(ShowScreen.routeName);
     }
+    progressOverlay(context).show();
     bool hasuraUserExists = await Hasura.userExists(_user.uid);
     print('hasura user exists: $hasuraUserExists ');
     if (!hasuraUserExists) {
       Map info = await AuthService().listenCreateUser(_user.uid, context);
+      progressOverlay(context).dismiss();
       dynamic result = await navigatorKey.currentState
           .pushNamed(SetNameScreen.routeName, arguments: {"provider": "email"});
+      progressOverlay(context).show();
       await createHasuraUser(_user.uid, info['user_id'], data.name,
           result['name'], result['username']);
 
@@ -270,6 +284,9 @@ class AuthService {
       await AuthService().setCustomClaimToken(_user);
       _user.reload();
     }
+    await setPreferences();
+    progressOverlay(context).dismiss();
+
     userSignedIn = true;
     return null;
   }

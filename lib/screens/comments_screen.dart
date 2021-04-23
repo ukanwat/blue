@@ -90,10 +90,11 @@ class _CommentsScreenState extends State<CommentsScreen> {
   @override
   void didChangeDependencies() {
     data = ModalRoute.of(context).settings.arguments as Post;
-
+    comments = Comments(data, UniqueKey());
     super.didChangeDependencies();
   }
 
+  Widget comments;
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -102,7 +103,11 @@ class _CommentsScreenState extends State<CommentsScreen> {
         body: SafeArea(
           child: Stack(
             children: <Widget>[
-              Comments(data),
+              RefreshIndicator(
+                  onRefresh: () async {
+                    comments = Comments(data, UniqueKey());
+                  },
+                  child: comments),
               Column(
                 children: [
                   Expanded(
@@ -335,7 +340,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
 
 class Comments extends StatefulWidget {
   final Post post;
-  Comments(this.post);
+  Comments(this.post, Key key) : super(key: key);
   @override
   _CommentsState createState() => _CommentsState();
 }
@@ -361,11 +366,13 @@ class _CommentsState extends State<Comments> {
           .add(Comment.fromDocument(doc, doc['post_id'], doc['comment_id']));
     });
     setState(() {});
-    if (snapshot.length < count) {
+
+    if (snapshot.length < length) {
       setState(() {
         loaded = true;
       });
     }
+    print('loaded:$loaded  ${snapshot.length}');
   }
 
   @override
@@ -416,6 +423,19 @@ class _CommentsState extends State<Comments> {
                         style: TextStyle(fontSize: 20),
                       ),
                       Expanded(child: Container()),
+                      IconButton(
+                        icon: Icon(FluentIcons.arrow_clockwise_24_regular),
+                        onPressed: () {
+                          setState(() {
+                            loaded = false;
+                            comments = [];
+                            count = 0;
+                          });
+                        },
+                      ),
+                      SizedBox(
+                        width: 5,
+                      ),
                       Text(
                         sort.toString().substring(12),
                         style: TextStyle(fontSize: 20),

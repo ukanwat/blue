@@ -31,6 +31,7 @@ class CommentReply extends StatefulWidget {
   final int downvotes;
   final int postId;
   final DateTime timestamp;
+  final bool vote;
   CommentReply(
       {this.id,
       this.username,
@@ -41,7 +42,8 @@ class CommentReply extends StatefulWidget {
       this.upvotes,
       this.downvotes,
       this.postId,
-      this.timestamp});
+      this.timestamp,
+      this.vote});
 
   @override
   _CommentReplyState createState() => _CommentReplyState();
@@ -49,6 +51,16 @@ class CommentReply extends StatefulWidget {
 
 class _CommentReplyState extends State<CommentReply> {
   CommentVote vote;
+  insertVote(bool _vote, bool upinc, bool downinc) async {
+    await Hasura.insertCommentVote(false, widget.id, _vote, upinc, downinc,
+        postId: widget.postId, time: widget.timestamp.toString());
+  }
+
+  deleteVote(bool upinc, bool downinc) async {
+    await Hasura.deleteCommentVote(false, widget.id, upinc, downinc,
+        replyId: widget.id);
+  }
+
   commentVoteButton(bool up, bool change) {
     return Container(
         child: up
@@ -219,24 +231,77 @@ class _CommentReplyState extends State<CommentReply> {
                                 fontSize: 20, fontWeight: FontWeight.w500),
                           ),
                           SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                vote = CommentVote.downvote;
-                              });
-                            },
-                            child: commentVoteButton(
-                                false, vote == CommentVote.downvote),
+                          Material(
+                            child: InkWell(
+                              onTap: () {
+                                if (vote == CommentVote.downvote) {
+                                  setState(() {
+                                    vote = null;
+                                  });
+                                  deleteVote(null, false);
+                                } else if (vote == CommentVote.upvote) {
+                                  setState(() {
+                                    vote = CommentVote.downvote;
+                                  });
+
+                                  insertVote(false, false, true);
+                                } else {
+                                  setState(() {
+                                    vote = CommentVote.downvote;
+                                  });
+                                  insertVote(false, null, true);
+                                }
+                              },
+                              child: Container(
+                                  child: Padding(
+                                padding: EdgeInsets.only(right: 10),
+                                child: Transform.rotate(
+                                    angle: math.pi,
+                                    child: Icon(
+                                      FluentIcons.keyboard_shift_16_filled,
+                                      size: 24,
+                                      color: vote == CommentVote.downvote
+                                          ? Colors.blue
+                                          : Colors.grey,
+                                    )),
+                              )),
+                            ),
                           ),
                           SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                vote = CommentVote.downvote;
-                              });
-                            },
-                            child: commentVoteButton(
-                                true, vote == CommentVote.upvote),
+                          Material(
+                            child: InkWell(
+                              onTap: () {
+                                if (vote == CommentVote.upvote) {
+                                  setState(() {
+                                    vote = null;
+                                  });
+
+                                  deleteVote(false, null);
+                                } else if (vote == CommentVote.downvote) {
+                                  setState(() {
+                                    vote = CommentVote.upvote;
+                                  });
+
+                                  insertVote(true, true, false);
+                                } else {
+                                  setState(() {
+                                    vote = CommentVote.upvote;
+                                  });
+                                  insertVote(true, true, null);
+                                }
+                              },
+                              child: Container(
+                                  child: Padding(
+                                padding: EdgeInsets.only(right: 0, left: 10),
+                                child: Icon(
+                                  FluentIcons.keyboard_shift_16_filled,
+                                  size: 24,
+                                  color: vote == CommentVote.upvote
+                                      ? Colors.blue
+                                      : Colors.grey,
+                                ),
+                              )),
+                            ),
                           ),
                         ],
                       ),

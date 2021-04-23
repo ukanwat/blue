@@ -98,9 +98,9 @@ void main() async {
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.black.withOpacity(0),
       systemNavigationBarDividerColor: Colors.grey[900],
-      systemNavigationBarColor: Colors.grey,
+      systemNavigationBarColor: dark == true ? Colors.black : Colors.white,
       systemNavigationBarIconBrightness:
-          dark ? Brightness.light : Brightness.light));
+          dark == true ? Brightness.light : Brightness.light));
   runApp(MyApp());
 }
 
@@ -394,6 +394,7 @@ class HomeController extends StatelessWidget {
           print(finalCheck);
           print(signedIn);
           print(userSignedIn);
+
           return finalCheck ? TabsScreen() : SignInViewScreen();
         }
         return circularProgress();

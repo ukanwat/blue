@@ -9,7 +9,7 @@ class Boxes {
   static Box draftBox;
   static Box preferenceBox;
   static Box currentUserBox;
-
+  static Box commentVoteBox;
   Future<Box> userBox() async {
     var box = await Hive.openBox<HiveUser>('user');
     return box;
@@ -22,6 +22,7 @@ class Boxes {
   static Future clearBoxes() async {
     if (saveBox != null) await saveBox.deleteFromDisk();
     if (followingBox != null) await followingBox.deleteFromDisk();
+    if (commentVoteBox != null) await commentVoteBox.deleteFromDisk();
     if (draftBox != null) await draftBox.deleteFromDisk();
     if (preferenceBox != null) await preferenceBox.deleteFromDisk();
     if (currentUserBox != null) await currentUserBox.deleteFromDisk();
@@ -32,6 +33,7 @@ class Boxes {
     followingBox = await Hive.openBox('followings');
     draftBox = await Hive.openBox('drafts');
     preferenceBox = await Hive.openBox('preferences');
+    commentVoteBox = await Hive.openBox('comment_votes');
     boxesOpened = true;
   }
 }
