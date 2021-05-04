@@ -51,15 +51,6 @@ class CommentReply extends StatefulWidget {
 
 class _CommentReplyState extends State<CommentReply> {
   CommentVote vote;
-  insertVote(bool _vote, bool upinc, bool downinc) async {
-    await Hasura.insertCommentVote(false, widget.id, _vote, upinc, downinc,
-        postId: widget.postId, time: widget.timestamp.toString());
-  }
-
-  deleteVote(bool upinc, bool downinc) async {
-    await Hasura.deleteCommentVote(false, widget.id, upinc, downinc,
-        replyId: widget.id);
-  }
 
   commentVoteButton(bool up, bool change) {
     return Container(
@@ -81,6 +72,16 @@ class _CommentReplyState extends State<CommentReply> {
                       color: change ? Colors.blue : Colors.grey,
                     )),
               ));
+  }
+
+  insertVote(bool _vote, bool upinc, bool downinc) async {
+    await Hasura.insertCommentVote(true, widget.id, _vote, upinc, downinc,
+        replyId: widget.id);
+  }
+
+  deleteVote(bool upinc, bool downinc) async {
+    await Hasura.deleteCommentVote(true, widget.id, upinc, downinc,
+        replyId: widget.id);
   }
 
   @override

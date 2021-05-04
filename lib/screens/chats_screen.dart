@@ -123,7 +123,8 @@ class _ChatsScreenState extends State<ChatsScreen>
       child: ListTile(
         tileColor: Theme.of(context).backgroundColor,
         leading: CircleAvatar(
-          backgroundImage: CachedNetworkImageProvider(user.avatarUrl),
+          backgroundImage: CachedNetworkImageProvider(user.avatarUrl ??
+              "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
         ),
         title: Text(
           user.name,

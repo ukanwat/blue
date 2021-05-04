@@ -286,6 +286,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
           ),
         ),
         body: Container(
+          padding: EdgeInsets.only(bottom: Platform.isIOS ? 20 : 0),
           color: Theme.of(context).backgroundColor,
           child: Stack(
             alignment: Alignment.bottomCenter,
@@ -692,6 +693,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
           FocusScope.of(context).unfocus();
           showDialog(
               context: context,
+              barrierDismissible: true,
               builder: (BuildContext context) => Dialog(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -712,19 +714,8 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                         onTap: () async {
                           Navigator.pop(context);
                           if (myText) {
-                            // try {
-                            //   // await messagesRef
-                            //   //     .doc(groupChatId)
-                            //   //     .collection(groupChatId)
-                            //   //     .doc(doc[0])
-                            //   //     .delete();
-                            //   // if (messageItem.type == 'image') {
-                            //   //   await FileStorage.delete(//TODO
-                            //   //       messageItem.message);
-                            //   }
-                            // } catch (e) {
-                            //   print(e);
-                            // }
+                            if (messageItem.type == 'text') {
+                            } else if (messageItem.type == 'text') {}
                           } else {
                             // await messagesRef
                             // .doc(groupChatId)
@@ -748,7 +739,9 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                             decoration: new BoxDecoration(
                               color: Theme.of(context).canvasColor,
                               shape: BoxShape.rectangle,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(10),
+                                  topRight: Radius.circular(10)),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black26,
@@ -764,6 +757,41 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                                 myText
                                     ? 'Delete this Message'
                                     : 'Delete for me',
+                                style: TextStyle(fontSize: 16),
+                              )),
+                            )),
+                      ),
+                      Divider(
+                        color: Theme.of(context).cardColor,
+                        height: 1,
+                        thickness: 1,
+                      ),
+                      InkWell(
+                        onTap: () async {
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 15, horizontal: 20),
+                            decoration: new BoxDecoration(
+                              color: Theme.of(context).canvasColor,
+                              shape: BoxShape.rectangle,
+                              borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(10),
+                                  bottomRight: Radius.circular(10)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 10.0,
+                                  offset: const Offset(0.0, 10.0),
+                                ),
+                              ],
+                            ),
+                            child: Container(
+                              height: 20,
+                              child: Center(
+                                  child: Text(
+                                'Cancel',
                                 style: TextStyle(fontSize: 16),
                               )),
                             )),

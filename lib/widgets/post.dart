@@ -1431,6 +1431,13 @@ class _PostState extends State<Post> {
                                   topicName: this.widget.topicName,
                                   upvotes: this.widget.upvotes,
                                   username: this.widget.username,
+                                  comments: this.widget.comments,
+                                  downvotes: this.widget.downvotes,
+                                  saves: this.widget.saves,
+                                  shares: this.widget.shares,
+                                  commentCount: this.commentCount,
+                                  time: widget.time,
+                                  votes: widget.votes,
                                 ),
                               );
                               // Navigator.of(context).pushNamed(

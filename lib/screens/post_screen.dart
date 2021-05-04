@@ -1114,13 +1114,6 @@ class _PostScreenState extends State<PostScreen> {
                     SizedBox(
                       height: 10,
                     ),
-                    Text(
-                      'Add New Stuff!',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontFamily: "Yahoo Sans Cond",
-                      ),
-                    )
                   ],
                 ),
               ),

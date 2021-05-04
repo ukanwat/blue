@@ -441,11 +441,12 @@ class _CommentsState extends State<Comments> {
                         style: TextStyle(fontSize: 20),
                       ),
                       PopupMenuButton(
+                        elevation: 2,
                         padding: EdgeInsets.zero,
-                        color: Theme.of(context).canvasColor,
+                        color: Theme.of(context).backgroundColor,
                         iconSize: 20,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         itemBuilder: (_) => [
                           PopupMenuItem(child: Text('Best'), value: 'Best'),

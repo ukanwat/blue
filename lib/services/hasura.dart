@@ -443,6 +443,7 @@ class Hasura {
 
   }
 }""");
+    print(data);
     return data['data']['posts'];
   }
 
@@ -729,6 +730,7 @@ class Hasura {
     msg_id
     sender_id
     type
+    deleted_by_sender
   }
 }
 """);
@@ -934,7 +936,7 @@ __typename
     int userId = await getUserId();
     String token = await getToken(commenterId);
     String doc = """mutation{
-  insert_comment_replies_one(object:{comment_id:$commentId,user_id:$userId,data:"$text", avatar_url:"${Boxes.currentUserBox.get("avatar_url")}", payload:{token:"$token"}}){                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+  insert_comment_replies_one(object:{comment_id:$commentId,user_id:$userId,data:"$text",  payload:{token:"$token"}}){                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
     user{
         avatar_url
         username
@@ -1294,13 +1296,16 @@ __typename
     dynamic userId = await getUserId();
     String cr = reply ? "comment_reply" : "comment";
     String r = reply ? "reply" : "comment";
+    print("""mutation{
+  delete_${cr}_votes_by_pk(${r}_id: $id,user_id:$userId){__typename}
+}""");
     await hasuraConnect.mutation("""mutation{
   delete_${cr}_votes_by_pk(${r}_id: $id,user_id:$userId){__typename}
 }""");
     String pk =
         !reply ? 'created_at:"$time",post_id:$postId' : 'reply_id:$replyId';
     await hasuraConnect.mutation("""mutation{
-  update_comments_by_pk(pk_columns:{$pk},_inc:{upvotes:${upinc == null ? 0 : upinc ? 1 : -1},downvotes:${downinc == null ? 0 : downinc ? 1 : -1}},},){
+  update_comments_by_pk(pk_columns:{$pk},_inc:{upvotes:${upinc == null ? 0 : upinc ? 1 : -1},downvotes:${downinc == null ? 0 : downinc ? 1 : -1},},){
     __typename
     
   }
@@ -1312,24 +1317,24 @@ __typename
       {String time, int postId, int replyId}) async {
     dynamic userId = await getUserId();
     String cr = reply ? "comment_reply" : "comment";
+    String crs = reply ? "comment_replies" : "comments";
     String r = reply ? "reply" : "comment";
-    try {
-      await hasuraConnect.mutation("""
+
+    await hasuraConnect.mutation("""
     mutation{
   insert_${cr}_votes_one(object:{user_id:$userId,${r}_id:$id, upvote: $vote, },on_conflict: {
-constraint: ${cr}_upvotes_pkey,
+constraint: ${cr}_${reply ? '' : 'up'}votes_pkey,
 update_columns: [upvote]
 }){
     __typename
   }
 }
     """);
-    } catch (e) {}
 
     String pk =
         !reply ? 'created_at:"$time",post_id:$postId' : 'reply_id:$replyId';
     String doc = """mutation{
-  update_comments_by_pk(pk_columns:{$pk},_inc:{upvotes:${upinc == null ? 0 : upinc ? 1 : -1},downvotes:${downinc == null ? 0 : downinc ? 1 : -1}},){
+  update_${crs}_by_pk(pk_columns:{$pk},_inc:{upvotes:${upinc == null ? 0 : upinc ? 1 : -1},downvotes:${downinc == null ? 0 : downinc ? 1 : -1}},){
     __typename
     
   }

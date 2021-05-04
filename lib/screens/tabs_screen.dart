@@ -1,5 +1,6 @@
 // Flutter imports:
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:blue/screens/settings/general/drafts_screen.dart';
@@ -47,7 +48,7 @@ class _TabsScreenState extends State<TabsScreen> {
 
   @override
   void initState() {
-    PushNotificationsManager().init();
+    PushNotificationsManager().initMessage();
     if (Boxes.followingBox.isEmpty) {
       PreferencesUpdate().setFollowings();
     }
@@ -109,7 +110,7 @@ class _TabsScreenState extends State<TabsScreen> {
           primaryColor: Theme.of(context).primaryColor.withOpacity(0.8),
         ),
         child: SizedBox(
-          height: 54,
+          height: Platform.isIOS ? 82 : 54,
           child: BottomNavigationBar(
             iconSize: 24,
             elevation: 10,

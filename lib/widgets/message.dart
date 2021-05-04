@@ -18,13 +18,14 @@ class Message extends StatelessWidget {
   final DateTime timestamp;
   final String message;
   final String type;
-  Message({
-    this.idTo,
-    this.idFrom,
-    this.timestamp,
-    this.message,
-    this.type,
-  });
+  final bool deletedBySender;
+  Message(
+      {this.idTo,
+      this.idFrom,
+      this.timestamp,
+      this.message,
+      this.type,
+      this.deletedBySender});
 
   factory Message.fromDocument(Map doc) {
     return Message(
@@ -33,6 +34,7 @@ class Message extends StatelessWidget {
       timestamp: DateTime.parse(doc['created_at']),
       message: doc['data'],
       type: doc['type'],
+      deletedBySender: doc['deletedBySender'],
     );
   }
 

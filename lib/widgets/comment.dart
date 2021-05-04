@@ -93,9 +93,10 @@ class _CommentState extends State<Comment> {
         if (widget.replies != null) {
           widget.replies.forEach((value) {
             replyWidgets.add(CommentReply(
+              id: value['reply_id'],
               avatarUrl: value['user']['avatar_url'],
               comment: value['data'],
-              commentId: value['reply_id'],
+              commentId: widget.id,
               username: value['user']['username'],
               downvotes: value['downvotes'],
               postId: widget.postId,

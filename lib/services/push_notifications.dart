@@ -2,20 +2,33 @@ import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {
-  if (message.containsKey('data')) {
-    // Handle data message
-    final dynamic data = message['data'];
-  }
-
-  if (message.containsKey('notification')) {
-    // Handle notification message
-    final dynamic notification = message['notification'];
-  }
-
-  // Or do other work.
+String messagToken;
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print('Handling a background message ${message.messageId}');
+  print(message.data);
+  flutterLocalNotificationsPlugin.show(
+      message.data.hashCode,
+      message.data['title'],
+      message.data['body'],
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          channel.id,
+          channel.name,
+          channel.description,
+        ),
+      ));
 }
+
+const AndroidNotificationChannel channel = AndroidNotificationChannel(
+  'high_importance_channel', // id
+  'High Importance Notifications', // title
+  'This channel is used for important notifications.', // description
+  importance: Importance.high,
+);
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 class PushNotificationsManager {
   PushNotificationsManager._();
@@ -25,13 +38,75 @@ class PushNotificationsManager {
   static final PushNotificationsManager _instance =
       PushNotificationsManager._();
 
+  initMessage() {
+    var initialzationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    var initialzationSettingsiOS = IOSInitializationSettings();
+    var initializationSettings = InitializationSettings(
+        android: initialzationSettingsAndroid, iOS: initialzationSettingsiOS);
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      RemoteNotification notification = message.notification;
+      AndroidNotification android = message.notification?.android;
+      if (notification != null && android != null) {
+        flutterLocalNotificationsPlugin.show(
+            notification.hashCode,
+            notification.title,
+            notification.body,
+            NotificationDetails(
+              android: AndroidNotificationDetails(
+                channel.id,
+                channel.name,
+                channel.description,
+                // TODO add a proper drawable resource to android, for now using
+                //      one that already exists in example app.
+                icon: 'launch_background',
+              ),
+            ));
+      }
+    });
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      RemoteNotification notification = message.notification;
+      AndroidNotification android = message.notification?.android;
+      if (notification != null && android != null) {
+        flutterLocalNotificationsPlugin.show(
+            notification.hashCode,
+            notification.title,
+            notification.body,
+            NotificationDetails(
+              android: AndroidNotificationDetails(
+                channel.id,
+                channel.name,
+                channel.description,
+                icon: android?.smallIcon,
+              ),
+            ));
+      }
+    });
+    getToken();
+  }
+
+  initNotif() async {
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+  }
+
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  bool _initialized = false;
+
   Future notificationSelected(String payload) async {
     print(payload);
   }
 
-  Future<void> init() async {
+  Future<void> getToken() async {
     var token = PreferencesUpdate().getString('token');
     print('dev token : $token');
     if (token == null) {
@@ -41,29 +116,6 @@ class PushNotificationsManager {
       });
     } else {
       Hasura.updateUser(token: token);
-    }
-    if (!_initialized) {
-      // For iOS request permission first.
-      _firebaseMessaging.requestPermission();
-      // _firebaseMessaging.configure(  onMessage: (Map<String, dynamic> message) async {//TODO
-      //   print("onMessage: $message");
-      // },
-      // onBackgroundMessage: myBackgroundMessageHandler,
-      // onLaunch: (Map<String, dynamic> message) async {
-      //   print("onLaunch: $message");
-      // },
-      // onResume: (Map<String, dynamic> message) async {
-      //   print("onResume: $message");
-      // },);
-
-      // For testing purposes print the Firebase Messaging token
-      String _token = await _firebaseMessaging.getToken();
-      if (_token != PreferencesUpdate().getString('token')) {
-        Hasura.updateUser(token: _token);
-      }
-      print("FirebaseMessaging token: $_token");
-
-      _initialized = true;
     }
   }
 }

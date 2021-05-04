@@ -22,6 +22,7 @@ import 'package:flutter_icons/flutter_icons.dart';
 // Package imports:
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:hive/hive.dart';
 import 'package:page_transition/page_transition.dart';
@@ -78,14 +79,15 @@ import 'models/user.dart';
 import 'screens/settings/general/account_screens/email_screen.dart';
 import './screens/verify_email_screen.dart';
 import './widgets/email_verify_dialog.dart';
+import './services/push_notifications.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
   ]);
   await Firebase.initializeApp();
+  await PushNotificationsManager().initNotif();
   var dir = await getApplicationDocumentsDirectory();
   Hive.init(dir.path);
 
@@ -147,6 +149,8 @@ class MyApp extends StatefulWidget {
 }
 
 class MyAppState extends State<MyApp> {
+ 
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(

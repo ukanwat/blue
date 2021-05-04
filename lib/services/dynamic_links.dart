@@ -24,7 +24,7 @@ class DynamicLinksService {
       iosParameters: IosParameters(
         bundleId: packageInfo.packageName,
         minimumVersion: packageInfo.version,
-        appStoreId: '123456789',
+        appStoreId: '123456789', //TODO:imp
       ),
       googleAnalyticsParameters: GoogleAnalyticsParameters(
         campaign: 'example-promo',
@@ -32,9 +32,10 @@ class DynamicLinksService {
         source: 'orkut',
       ),
       socialMetaTagParameters: SocialMetaTagParameters(
-          title: 'Dynamic link',
-          description: 'This link works whether app is installed or not!',
-          imageUrl: Uri.parse("https://www.stark.social")),
+          title: 'Stark',
+          description: '',
+          imageUrl: Uri.parse(
+              "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/stark-wg.png?alt=media&token=ded28aaf-3bea-41e3-96b5-fa07a973ca00")),
     );
 
     // final Uri dynamicUrl = await parameters.buildUrl();
