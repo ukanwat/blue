@@ -620,7 +620,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
             ))));
       bool myText = currentUser.id == messageItem.idFrom;
       if (doc['hide'] != true || myText)
-        messageItems.add(messageTransform(messageItem, myText));
+        messageItems.add(messageTransform(messageItem, myText, i));
       print(lastTimestamp.toString());
       lastTimestamp = messageItem.timestamp;
       if (firstTime == null) {
@@ -659,6 +659,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     msg_id
      sender_id
      type
+     deleted_by_sender
    }
  }""")),
                   builder: (result) {
@@ -669,9 +670,12 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                       shrinkWrap: true,
                       itemBuilder: (context, j) {
                         return messageTransform(
-                            Message.fromDocument(result.data['messages'][j]),
+                            Message.fromDocument(
+                              result.data['messages'][j],
+                            ),
                             currentUser.id ==
-                                result.data['messages'][j]['sender_id']);
+                                result.data['messages'][j]['sender_id'],
+                            i);
                       },
                       itemCount: result.data['messages'].length,
                     );
@@ -686,7 +690,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     );
   }
 
-  messageTransform(Message messageItem, bool myText) {
+  messageTransform(Message messageItem, bool myText, int index) {
     return InkWell(
         //TODO
         onLongPress: () {
@@ -714,24 +718,25 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                         onTap: () async {
                           Navigator.pop(context);
                           if (myText) {
-                            if (messageItem.type == 'text') {
-                            } else if (messageItem.type == 'text') {}
+                            if (messageItem.deletedBySender == false) {
+                              await Hasura.deleteMessage(messageItem.id);
+                            } else {
+                              await Hasura.messageDeleteForMe(
+                                  messageItem.id, true);
+                            }
                           } else {
-                            // await messagesRef
-                            // .doc(groupChatId)
-                            // .collection(groupChatId)
-                            // .doc(doc[0])
-                            // .set({'hide': true},
-                            //     SetOptions(merge: true));
+                            if (messageItem.deletedBySender == true) {
+                              await Hasura.deleteMessage(messageItem.id);
+                            } else {
+                              await Hasura.messageDeleteForMe(
+                                  messageItem.id, false);
+                            }
                           }
-                          // await messagesRef
-                          //     .doc(groupChatId)
-                          //     .collection(groupChatId)
-                          //     .doc(doc[0])
-                          //     .delete();
-                          // setState(() {
-                          //   data.remove(doc);
-                          // });
+                          setState(() {
+                            data = null;
+                            addMessages();
+                            loading = true;
+                          });
                         },
                         child: Container(
                             padding: EdgeInsets.symmetric(

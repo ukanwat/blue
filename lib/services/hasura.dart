@@ -248,10 +248,30 @@ class Hasura {
       id1 = userId;
     }
     await hasuraConnect.mutation("""mutation{
-  insert_conversations_one(object:{user1_id:$id1,user2_id:$id2}){
+  insert_conversations_one(object:{user1_id:$id1,user2_id:$id2, user${id1 == userId ? '1' : '2'}_removed: true,on_conflict:{constraint:conversations_pkey,update_columns:[user${id1 == userId ? '1' : '2'}_removed]}}){
     conv_id
   }
 }""");
+  }
+
+  static hideConversation(
+    int peerId,
+  ) async {
+    int userId = await getUserId();
+    int id1, id2;
+    if (peerId > userId) {
+      id1 = peerId;
+      id2 = userId;
+    } else {
+      id2 = peerId;
+      id1 = userId;
+    }
+    await hasuraConnect.mutation("""mutation {
+  update_conversations_by_pk(pk_columns: {user1_id: $id1, user2_id: $id2}, _set: {user${id1 == userId ? '1' : '2'}_removed: true}) {
+    __typename
+  }
+}
+""");
   }
 
   static insertPost(List contents, String title,
@@ -1088,6 +1108,20 @@ __typename
     return data['data']['saved_posts'];
   }
 
+  static getSaveIds() async {
+    dynamic userId = await getUserId();
+    dynamic data = await hasuraConnect.query("""query{
+  saved_posts(where:{user_id:{_eq:$userId}},order_by:{post:{created_at:desc}}){
+    post{
+    post_id
+    
+    }
+    
+  }
+}""");
+    return data['data']['saved_posts'];
+  }
+
   static getCollectionPosts(String name, int offset) async {
     dynamic userId = await getUserId();
     dynamic data = await hasuraConnect.query("""query{
@@ -1341,5 +1375,23 @@ update_columns: [upvote]
 }""";
     print(doc);
     await hasuraConnect.mutation(doc);
+  }
+
+  static messageDeleteForMe(int msgId, bool bySender) async {
+    await hasuraConnect.mutation("""mutation{
+  update_messages_by_pk(pk_columns:{msg_id:$msgId},_set:{deleted_by_sender:$bySender  }){
+    __typename
+  }
+}""");
+  }
+
+  static deleteMessage(
+    int msgId,
+  ) async {
+    await hasuraConnect.mutation("""mutation{
+  delete_messages_by_pk(msg_id:$msgId){
+    __typename
+  }
+}""");
   }
 }

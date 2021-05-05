@@ -122,4 +122,10 @@ class PreferencesUpdate {
     Map map = {for (var item in followings) item['following_id']: true};
     await Boxes.followingBox.putAll(map);
   }
+
+  setSaves() async {
+    List saves = await Hasura.getSaveIds();
+    Map map = {for (var item in saves) item['post']['post_id']: true};
+    await Boxes.saveBox.putAll(map);
+  }
 }

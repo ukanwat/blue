@@ -27,10 +27,7 @@ class _ExploreScreenState extends State<ExploreScreen>
   List<Tab> topicTabs = [
     Tab(
         child: Text('Everything',
-            style: TextStyle(
-                fontFamily: 'OpenSans',
-                fontWeight: FontWeight.w600,
-                fontSize: 16)))
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)))
   ];
   List<Widget> topicViews = [CategoryPostsScreen('All')];
   bool loading = true;
@@ -62,10 +59,7 @@ class _ExploreScreenState extends State<ExploreScreen>
     t.forEach((topic) {
       topicTabs.add(Tab(
           child: Text(topic,
-              style: TextStyle(
-                  fontFamily: 'OpenSans',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16))));
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16))));
       topicViews.add(CategoryPostsScreen(topic));
     });
     setState(() {

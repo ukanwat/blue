@@ -15,6 +15,7 @@ import './search_results_screen.dart';
 import '../services/hasura.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../services/preferences_update.dart';
+
 class SearchScreen extends StatefulWidget {
   static const routeName = '/search';
 
@@ -22,7 +23,7 @@ class SearchScreen extends StatefulWidget {
   _SearchScreenState createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen>{
+class _SearchScreenState extends State<SearchScreen> {
   QuerySnapshot searches;
   TextEditingController searchController = TextEditingController();
   Future<QuerySnapshot> peopleResultsFuture;
@@ -30,75 +31,94 @@ class _SearchScreenState extends State<SearchScreen>{
   bool recentSearchesLoading = false;
   Widget recentSearchesWidget;
   bool searching = false;
-  bool resultsLoading = true; 
+  bool resultsLoading = true;
   String search;
-  handleSearch(String query)async {
+  handleSearch(String query) async {
     setState(() {
       if (!searching) {
         searching = true;
         search = searchController.text;
       }
-
     });
-     Hasura.insertSearch(query);
+    Hasura.insertSearch(query);
   }
+
   List<Widget> posts = [];
-   List<Widget> userTiles = [];
-    List<Widget> tags = [];
+  List<Widget> userTiles = [];
+  List<Widget> tags = [];
 
   bool loading = true;
-
 
   clearSearch() {
     WidgetsBinding.instance
         .addPostFrameCallback((_) => searchController.clear());
   }
+
   PreferredSize buildSearchField(context) {
     return PreferredSize(
-      preferredSize: Size.fromHeight(searching?95.0:50),
+      preferredSize: Size.fromHeight(searching ? 95.0 : 50),
       child: AppBar(
         titleSpacing: 0,
         automaticallyImplyLeading: false,
-        bottom: !searching? PreferredSize(child: Container(),preferredSize: Size.fromHeight(0),):  TabBar(indicatorColor: Colors.deepOrange,
-        indicatorPadding: EdgeInsets.symmetric(vertical: 4,horizontal: 20),
-        indicatorWeight: 2.0,
-              tabs: [
-                Container(height: 45,
-                  child: Center(
-                    child:    Text('Top',style: TextStyle(fontSize: 17,),)
-                     
-                    
+        bottom: !searching
+            ? PreferredSize(
+                child: Container(),
+                preferredSize: Size.fromHeight(0),
+              )
+            : TabBar(
+                indicatorColor: Colors.deepOrange,
+                indicatorPadding:
+                    EdgeInsets.symmetric(vertical: 4, horizontal: 20),
+                indicatorWeight: 2.0,
+                tabs: [
+                  Container(
+                    height: 45,
+                    child: Center(
+                        child: Text(
+                      'Top',
+                      style: TextStyle(
+                        fontSize: 17,
+                      ),
+                    )),
                   ),
-                ),
-                 Container(height: 45,
-                  child: Center(
-                    child:    Text('People',style: TextStyle(fontSize: 17,),)
-                ))
-                , Container(height: 45,
-                  child: Center(
-                 child:    Text('Tags',style: TextStyle(fontSize: 17,),),)
-                )
-              ],
-            ),
-        leading: 
-            Container(
-              margin: EdgeInsets.all(6),
-              width: 15,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Theme.of(context).cardColor,
+                  Container(
+                      height: 45,
+                      child: Center(
+                          child: Text(
+                        'People',
+                        style: TextStyle(
+                          fontSize: 17,
+                        ),
+                      ))),
+                  Container(
+                      height: 45,
+                      child: Center(
+                        child: Text(
+                          'Tags',
+                          style: TextStyle(
+                            fontSize: 17,
+                          ),
+                        ),
+                      ))
+                ],
               ),
-              child: IconButton(
-                  iconSize: 18,
-                  icon: Icon(
-                    Icons.arrow_back_ios,
-                    color: Colors.blue,
-                    size: 18,
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }),
-            
+        leading: Container(
+          margin: EdgeInsets.all(6),
+          width: 15,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Theme.of(context).cardColor,
+          ),
+          child: IconButton(
+              iconSize: 18,
+              icon: Icon(
+                Icons.arrow_back_ios,
+                color: Colors.blue,
+                size: 18,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+              }),
         ),
         elevation: 1,
         backgroundColor: Theme.of(context).canvasColor,
@@ -148,38 +168,40 @@ class _SearchScreenState extends State<SearchScreen>{
                   ),
                 ),
               ),
-              onFieldSubmitted: (search) async{
-                 await handleSearch(search);
+              onFieldSubmitted: (search) async {
+                await handleSearch(search);
               },
-              
             ),
           ),
         ),
       ),
     );
   }
-   
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 3,
       initialIndex: 0,
-          child: Scaffold(
+      child: Scaffold(
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: buildSearchField(context),
         body: !searching
             ? RecentSearches()
-            : TabBarView(children: <Widget>[
-             SearchResultsScreen(SearchResultsType.posts,searchController.text,UniqueKey()),
-              SearchResultsScreen(SearchResultsType.people,searchController.text,UniqueKey()),
-            SearchResultsScreen(SearchResultsType.tags,searchController.text,UniqueKey())
-            ],),
+            : TabBarView(
+                children: <Widget>[
+                  SearchResultsScreen(SearchResultsType.posts,
+                      searchController.text, UniqueKey()),
+                  SearchResultsScreen(SearchResultsType.people,
+                      searchController.text, UniqueKey()),
+                  SearchResultsScreen(SearchResultsType.tags,
+                      searchController.text, UniqueKey())
+                ],
+              ),
       ),
     );
   }
 }
-
 
 class RecentSearches extends StatefulWidget {
   @override
@@ -194,66 +216,92 @@ class _RecentSearchesState extends State<RecentSearches> {
     init();
     super.initState();
   }
-  init()async{  _recentSearches = await Hasura.getSearches(10);
-setState(() {
-  loading = false;
-});
-}
 
+  init() async {
+    _recentSearches = await Hasura.getSearches(10);
+    setState(() {
+      loading = false;
+    });
+  }
+
+  bool showClearAll = true;
   @override
   Widget build(BuildContext context) {
-    return loading ?circularProgress() :ListView.builder(
-          shrinkWrap: true,
-          itemCount: _recentSearches.length + 1,
-          itemBuilder: (BuildContext context, int index) {
-            if (index == 0) {
-              return Container(
-                padding: EdgeInsets.all(15),
-                child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Recent Searches',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
-                    ),
-                    Material(
-
-                                          child: InkWell(onTap: (){
-                                            PreferencesUpdate().updateString('searches_last_cleared',DateTime.now().toString(),upload: true,);//TODO  timezone problem 
-                                            setState(() {
-                                              _recentSearches = [];
-                                            });
-                                          },
-                                            child: Padding(
-                          padding: EdgeInsets.all(5),
-                          child: Text('Clear All',style: TextStyle(color: Colors.blue,fontSize: 15,fontWeight: FontWeight.w500),)),
+    if (_recentSearches.length == null) {
+      showClearAll = false;
+    } else {
+      if (_recentSearches.length == 0) {
+        showClearAll = false;
+      }
+    }
+    return loading
+        ? circularProgress()
+        : !showClearAll
+            ? emptyState(context, 'No Searches Yet.', 'none')
+            : ListView.builder(
+                shrinkWrap: true,
+                itemCount: _recentSearches.length + 1,
+                itemBuilder: (BuildContext context, int index) {
+                  if (index == 0) {
+                    return Container(
+                      padding: EdgeInsets.all(15),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Recent Searches',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600, fontSize: 20),
+                          ),
+                          Material(
+                            borderRadius: BorderRadius.circular(8),
+                            child: InkWell(
+                              onTap: () {
+                                PreferencesUpdate().updateString(
+                                  'searches_last_cleared',
+                                  DateTime.now().toString(),
+                                  upload: true,
+                                ); //TODO  timezone problem
+                                setState(() {
+                                  _recentSearches = [];
+                                });
+                              },
+                              child: Container(
+                                  padding: EdgeInsets.all(5),
+                                  child: Text(
+                                    'Clear All',
+                                    style: TextStyle(
+                                        color: Colors.blue,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500),
+                                  )),
+                            ),
+                          )
+                        ],
                       ),
-                    )
-                  ],
-                ),
-              );
-            }
-            return ListTile(
-              key: UniqueKey(),
-              title: Text(
-                _recentSearches[index - 1]['text'],
-              ),
-              trailing: IconButton(
-                icon: Icon(
-                  Icons.clear,
-                  color: Theme.of(context).iconTheme.color,
-                ),
-                onPressed: () async {
-                  setState(() {
-                    Hasura.deleteSearch(
-                        _recentSearches[index - 1]['search_id']);
+                    );
+                  }
+                  return ListTile(
+                    key: UniqueKey(),
+                    title: Text(
+                      _recentSearches[index - 1]['text'],
+                    ),
+                    trailing: IconButton(
+                      icon: Icon(
+                        Icons.clear,
+                        color: Theme.of(context).iconTheme.color,
+                      ),
+                      onPressed: () async {
                         setState(() {
-  _recentSearches.removeAt(index - 1);
+                          Hasura.deleteSearch(
+                              _recentSearches[index - 1]['search_id']);
+                          setState(() {
+                            _recentSearches.removeAt(index - 1);
+                          });
                         });
-                  
-                  });
-                },
-              ),
-            );
-          });
+                      },
+                    ),
+                  );
+                });
   }
 }

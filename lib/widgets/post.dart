@@ -985,7 +985,7 @@ class _PostState extends State<Post> {
             child: Material(
               child: InkWell(
                 onTap: () {
-                  Functions().launchURL(link);
+                  Functions().launchURL(link, context);
                 },
                 child: LinkPreview(
                   url: link,
@@ -1144,7 +1144,7 @@ class _PostState extends State<Post> {
                             });
 
                             await Hasura.insertSavedPost(postId);
-                            Boxes.saveBox.put(postId, null);
+                            Boxes.saveBox.put(postId, true);
 
                             setState(() {
                               showSaveBar = true;

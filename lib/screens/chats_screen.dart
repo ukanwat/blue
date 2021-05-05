@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:blue/services/graphql.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
+import 'package:blue/widgets/empty_dialog.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -55,7 +56,7 @@ class _ChatsScreenState extends State<ChatsScreen>
 
   getUserTiles() async {
     dynamic data = await Hasura.getConversations();
-
+    int i = 0;
     data.forEach((doc) {
       int convId = doc['conv_id'];
       print('convId: $convId - ${Hasura.getUserId()}');
@@ -86,9 +87,10 @@ class _ChatsScreenState extends State<ChatsScreen>
           closedShape: const RoundedRectangleBorder(),
           closedColor: Theme.of(context).backgroundColor,
           closedBuilder: (BuildContext _, VoidCallback openContainer) {
-            return chatUserListTile(user, openContainer);
+            return chatUserListTile(user, openContainer, i);
           });
       chatUsers.add(userChat);
+      i++;
     });
     if (chatUsers == null) //TODO check
       setState(() {
@@ -117,10 +119,35 @@ class _ChatsScreenState extends State<ChatsScreen>
                 });
   }
 
-  InkWell chatUserListTile(User user, VoidCallback openContainer) {
+  InkWell chatUserListTile(User user, VoidCallback openContainer, int i) {
     return InkWell(
       onTap: openContainer,
       child: ListTile(
+        onLongPress: () {
+          showDialog(
+              context: context,
+              builder: (ctx) {
+                return EmptyDialog(Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        setState(() {
+                          print(i);
+                          chatUsers.removeAt(i - 1);
+                        });
+                        // Hasura.hideConversation(user.userId);
+                      },
+                      child: Container(
+                        height: 15,
+                        child: Text('Remove from View'),
+                      ),
+                    ),
+                  ],
+                ));
+              });
+        },
         tileColor: Theme.of(context).backgroundColor,
         leading: CircleAvatar(
           backgroundImage: CachedNetworkImageProvider(user.avatarUrl ??

@@ -6,6 +6,8 @@ import 'dart:ui';
 import 'package:blue/screens/settings/general/drafts_screen.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
+import 'package:blue/services/global_network/displaytype.dart';
+import 'package:blue/services/global_network/global_network.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/services/push_notifications.dart';
@@ -21,6 +23,7 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:blue/main.dart';
 import 'package:blue/screens/communication_tabbar_screen.dart';
 import 'package:blue/screens/post_screen.dart';
+import 'package:flutter_offline/flutter_offline.dart';
 import './explore_screen.dart';
 import './home.dart';
 import './profile_screen.dart';
@@ -51,6 +54,9 @@ class _TabsScreenState extends State<TabsScreen> {
     PushNotificationsManager().initMessage();
     if (Boxes.followingBox.isEmpty) {
       PreferencesUpdate().setFollowings();
+    }
+    if (Boxes.saveBox.isEmpty) {
+      PreferencesUpdate().setSaves();
     }
 
     super.initState();
