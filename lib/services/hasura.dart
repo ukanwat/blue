@@ -10,7 +10,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import './hasura_x.dart';
 
 enum Report { abusive, spam, inappropriate }
-enum Stat { upvotes, downvotes, saves, shares, comments }
+enum Stat {
+  upvote_count,
+  downvote_count,
+  save_count,
+  share_count,
+  comment_count
+}
 enum Feedback { suggestion, bug }
 enum UserInfo { mute, block, report }
 
@@ -28,13 +34,13 @@ class Hasura {
     post_tags{
       tag{tag}
     }
-    post_stats{
-      upvotes
-      shares
-      comments
-      saves
-    }""";
-  static const String url = 'https://stark-development.hasura.app/v1/graphql';
+       upvote_count
+        downvote_count
+      share_count
+      comment_count
+      save_count
+      """;
+  static const String url = 'https://app.stark.social/v1/graphql';
   static var cacheInterceptor = HiveCacheInterceptor("hasura");
   static int postLimit = 8;
   static HasuraConnectX hasuraConnect = HasuraConnectX(url,
@@ -47,9 +53,8 @@ class Hasura {
   static getUserId({String uid}) async {
     uid = FirebaseAuth.instance.currentUser.uid;
     if (uid == null) {
-      if (Boxes.currentUserBox != null) {
-        Boxes.openCurrentUserBox();
-      }
+      Boxes.openCurrentUserBox();
+
       if (Boxes.currentUserBox.get('user_id') != null) {
         return Boxes.currentUserBox.get('user_id');
       }
@@ -65,6 +70,7 @@ class Hasura {
 
     var map = await hasuraConnect.query(_doc);
     print(map);
+    await Boxes.openCurrentUserBox();
     Boxes.currentUserBox.put('user_id',
         map['data']['users'][0]['user_id']); // check if there are no results
     return map['data']['users'][0]['user_id'];
@@ -99,12 +105,12 @@ class Hasura {
     post_tags{
       tag{tag}
     }
-    post_stats{
-      upvotes
-      shares
-      comments
-      saves
-    }
+      upvote_count
+      share_count
+      comment_count
+      save_count
+         downvote_count
+    
 }}""");
     return doc['data']['posts_by_pk'];
   }
@@ -293,13 +299,8 @@ class Hasura {
     }
     String _doc = tags == null
         ? """mutation insertData  {
-  insert_posts_one(object: {contents: $contents, owner_id: $userId, title: "$title", uid: "$uid",$topic post_stats: {
-          data: [
-            {
-             upvotes:0
-            }   
-          ]
-        }}) {
+  insert_posts_one(object: {contents: $contents, owner_id: $userId, title: "$title", uid: "$uid",$topic }
+        ) {
     post_id
   }
 }
@@ -314,9 +315,6 @@ class Hasura {
 
     dynamic _data = await hasuraConnect.mutation(_doc);
     print(_data);
-    await hasuraConnect.mutation("""mutation{
-  insert_post_stats_one(object:{post_id:${_data['data']['insert_posts_one']['post_id']},}){post_id}
-}""");
   }
 
   static deletePost(int postId) async {
@@ -454,12 +452,11 @@ class Hasura {
     post_tags{
       tag{tag}
     }
-    post_stats{
-      upvotes
-      shares
-      comments
-      saves
-    }
+      upvote_count
+      share_count
+      comment_count
+      save_count
+         downvote_count
 
   }
 }""");
@@ -491,13 +488,11 @@ class Hasura {
     post_tags{
       tag{tag}
     }
-    post_stats{
-      upvotes
-      shares
-      comments
-      saves
-    }
-
+      upvote_count
+      share_count
+      comment_count
+      save_count
+         downvote_count
       }
     }
   }
@@ -531,7 +526,7 @@ class Hasura {
 
   static String updateStats(Stat type, int id, bool inc) {
     //TODO : where
-    return """update_post_stats(
+    return """update_posts(
    where: {post_id: {_eq: $id}},                 
     _inc: {${type.toString().substring(5)}: ${inc ? 1 : -1}}
   ){
@@ -542,7 +537,7 @@ class Hasura {
   static insertPostVote(int postId, bool up) async {
     var userId = await getUserId();
     String string = """mutation{
-  ${updateStats(up ? Stat.upvotes : Stat.downvotes, postId, true)}
+  ${updateStats(up ? Stat.upvote_count : Stat.downvote_count, postId, true)}
 }
 """;
     print(string);
@@ -571,7 +566,7 @@ class Hasura {
   ){
    __typename
   }
-  ${updateStats(up ? Stat.upvotes : Stat.downvotes, postId, false)}
+  ${updateStats(up ? Stat.upvote_count : Stat.downvote_count, postId, false)}
 }
 """;
     print(string);
@@ -641,12 +636,12 @@ class Hasura {
     post_tags{
       tag{tag}
     }
-    post_stats{
-      upvotes
-      shares
-      comments
-      saves
-    }}
+       upvote_count
+      share_count
+      comment_count
+      save_count
+         downvote_count
+    }
 }""");
     print(data["data"]["search_posts"]);
     return data["data"]["search_posts"];
@@ -1095,12 +1090,11 @@ __typename
     post_tags{
       tag{tag}
     }
-    post_stats{
-      upvotes
-      shares
-      comments
-      saves
-    }
+       downvote_count
+       upvote_count
+      share_count
+      comment_count
+      save_count
     }
     
   }
@@ -1139,12 +1133,11 @@ __typename
     post_tags{
       tag{tag}
     }
-    post_stats{
-      upvotes
-      shares
-      comments
-      saves
-    }
+       downvote_count
+      upvote_count
+      share_count
+      comment_count
+      save_count
     }
     
   }

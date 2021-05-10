@@ -24,7 +24,6 @@ import 'package:flutter_icons/flutter_icons.dart';
 // Package imports:
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:hive/hive.dart';
 import 'package:page_transition/page_transition.dart';
@@ -104,7 +103,7 @@ void main() async {
       systemNavigationBarDividerColor: Colors.grey[900],
       systemNavigationBarColor: dark == true ? Colors.black : Colors.white,
       systemNavigationBarIconBrightness:
-          dark == true ? Brightness.light : Brightness.light));
+          dark == true ? Brightness.light : Brightness.dark));
   runApp(MyApp());
 }
 
@@ -405,6 +404,7 @@ class HomeController extends StatelessWidget {
               Hasura.jwtToken = value.token;
             });
           }
+
           final bool signedIn = snapshot.hasData;
           bool finalCheck = signedIn && (userSignedIn ?? false);
           print(finalCheck);

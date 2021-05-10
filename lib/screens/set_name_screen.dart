@@ -27,7 +27,7 @@ class _SetNameScreenState extends State<SetNameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Theme.of(context).accentColor,
+        backgroundColor: Colors.black,
         body: Container(
           padding: EdgeInsets.symmetric(horizontal: 10),
           width: double.infinity,
@@ -40,7 +40,7 @@ class _SetNameScreenState extends State<SetNameScreen> {
               Text(
                 'Stark',
                 style: TextStyle(
-                    color: Colors.white,
+                    color: Theme.of(context).accentColor,
                     fontSize: 50,
                     fontFamily: 'Techna Sans Regular'),
               ),
@@ -48,7 +48,7 @@ class _SetNameScreenState extends State<SetNameScreen> {
                 child: Card(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20)),
-                    color: Colors.white,
+                    color: Theme.of(context).cardColor,
                     elevation: 10,
                     margin: EdgeInsets.all(30),
                     child: Form(
@@ -68,11 +68,9 @@ class _SetNameScreenState extends State<SetNameScreen> {
                                 if (data['provider'] != 'google')
                                   TextFormField(
                                     controller: nameController,
-                                    style: TextStyle(color: Colors.black),
+                                    style: TextStyle(color: Colors.white),
                                     decoration: InputDecoration(
-                                        fillColor: Theme.of(context)
-                                            .accentColor
-                                            .withOpacity(0.13),
+                                        fillColor: Colors.grey.shade700,
                                         isDense: true,
                                         filled: true,
                                         border: OutlineInputBorder(
@@ -93,13 +91,11 @@ class _SetNameScreenState extends State<SetNameScreen> {
                                   controller: usernameController,
                                   inputFormatters: [
                                     new FilteringTextInputFormatter.allow(
-                                        RegExp("[a-zA-Z0-9.]")),
+                                        RegExp("[a-z0-9.]")),
                                   ],
-                                  style: TextStyle(color: Colors.black),
+                                  style: TextStyle(color: Colors.white),
                                   decoration: InputDecoration(
-                                      fillColor: Theme.of(context)
-                                          .accentColor
-                                          .withOpacity(0.13),
+                                      fillColor: Colors.grey.shade700,
                                       isDense: true,
                                       filled: true,
                                       border: OutlineInputBorder(
@@ -126,22 +122,34 @@ class _SetNameScreenState extends State<SetNameScreen> {
                                 TextButton(
                                   style: TextButton.styleFrom(
                                     padding: EdgeInsets.symmetric(
-                                        horizontal: 20, vertical: 10),
+                                        horizontal: 14, vertical: 6),
                                     elevation: 3,
                                     backgroundColor:
                                         Theme.of(context).accentColor,
                                     shape: const RoundedRectangleBorder(
                                         borderRadius: BorderRadius.all(
-                                            Radius.circular(15))),
+                                            Radius.circular(50))),
                                   ),
-                                  child: Text('DONE',
+                                  child: Text('Done',
                                       style: TextStyle(
-                                          color: Colors.white, fontSize: 20)),
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.white,
+                                          fontSize: 18)),
                                   onPressed: () async {
-                                    progressOverlay(context).show();
+                                    if (nameController.text == "") {
+                                      snackbar('display name is empty', context,
+                                          color: Colors.red);
+                                      return;
+                                    }
+                                    if (usernameController.text == "") {
+                                      snackbar('username is empty', context,
+                                          color: Colors.red);
+                                      return;
+                                    }
+                                    progressOverlay(context: context).show();
                                     bool notExists = await Hasura.checkUsername(
                                         usernameController.text);
-                                    progressOverlay(context).dismiss();
+                                    progressOverlay(context: context).dismiss();
                                     print('noexists');
                                     print(notExists);
                                     if (notExists) {

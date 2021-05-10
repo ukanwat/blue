@@ -24,7 +24,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share/share.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
-
+import '../services/functions.dart';
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/screens/explore_posts_screen.dart';
@@ -123,7 +123,6 @@ class Post extends StatefulWidget {
       });
     }
     print(doc['upvoted_by_user']);
-    List<dynamic> stats = doc['post_stats'];
     return Post(
       upvoted: doc['upvoted_by_user'],
       postId: doc['post_id'],
@@ -135,37 +134,17 @@ class Post extends StatefulWidget {
       topicId: null,
       contents: data,
       contentsInfo: doc['contents'],
-      upvotes: (stats == null
-          ? 0
-          : stats.length == 0
-              ? 0
-              : stats[0]['upvotes']),
-      downvotes: (stats == null
-          ? 0
-          : stats.length == 0
-              ? 0
-              : stats[0]['downvotes']),
+      upvotes: doc['upvote_count'],
+      downvotes: doc['downvote_count'],
       votes: 0,
       tags: _tags,
       time: doc['created_at'], //TODO
       isCompact: isCompact ?? false,
       commentsShown: commentsShown,
       commentCount: doc['comment_count'],
-      comments: stats == null
-          ? 0
-          : stats.length == 0
-              ? 0
-              : stats[0]['comments'],
-      saves: stats == null
-          ? 0
-          : stats.length == 0
-              ? 0
-              : stats[0]['saves'],
-      shares: stats == null
-          ? 0
-          : stats.length == 0
-              ? 0
-              : stats[0]['shares'],
+      comments: doc['comments'],
+      saves: doc['save_count'],
+      shares: doc['share_count'],
     );
   }
 
@@ -367,6 +346,81 @@ class _PostState extends State<Post> {
             ));
   }
 
+  String _date(DateTime tm) {
+    DateTime today = new DateTime.now();
+    Duration oneDay = new Duration(days: 1);
+    Duration twoDay = new Duration(days: 2);
+    Duration oneWeek = new Duration(days: 7);
+    String month;
+    switch (tm.month) {
+      case 1:
+        month = "January";
+        break;
+      case 2:
+        month = "February";
+        break;
+      case 3:
+        month = "March";
+        break;
+      case 4:
+        month = "April";
+        break;
+      case 5:
+        month = "May";
+        break;
+      case 6:
+        month = "June";
+        break;
+      case 7:
+        month = "July";
+        break;
+      case 8:
+        month = "August";
+        break;
+      case 9:
+        month = "September";
+        break;
+      case 10:
+        month = "October";
+        break;
+      case 11:
+        month = "November";
+        break;
+      case 12:
+        month = "December";
+        break;
+    }
+    Duration difference = today.difference(tm);
+
+    if (difference.compareTo(oneDay) < 1) {
+      return "Today";
+    } else if (difference.compareTo(twoDay) < 1) {
+      return "Yesterday";
+    } else if (difference.compareTo(oneWeek) < 1) {
+      switch (tm.weekday) {
+        case 1:
+          return "Monday";
+        case 2:
+          return "Tuesday";
+        case 3:
+          return "Wednesday";
+        case 4:
+          return "Thurdsday";
+        case 5:
+          return "Friday";
+        case 6:
+          return "Saturday";
+        case 7:
+          return "Sunday";
+      }
+    } else if (tm.year == today.year) {
+      return '${tm.day} $month';
+    } else {
+      return '${tm.day} $month ${tm.year}';
+    }
+    return "";
+  }
+
   buildPostHeader() {
     return Container(
       color: Theme.of(context).backgroundColor,
@@ -443,16 +497,18 @@ class _PostState extends State<Post> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Expanded(
-                        child: Text(widget.username,
+                        child: Text(
+                            '${widget.username} · ${_date(DateTime.parse(widget.time).toLocal())}',
                             maxLines: 1,
                             overflow: TextOverflow.fade,
                             softWrap: false,
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
                               color: Theme.of(context)
                                   .iconTheme
                                   .color
-                                  .withOpacity(0.95),
+                                  .withOpacity(0.83),
                             )),
                       ),
                       SizedBox(
@@ -1481,10 +1537,11 @@ class _PostState extends State<Post> {
                     ),
                   ),
                   Divider(
-                    thickness: 1.5,
-                    color: Theme.of(context).cardColor,
-                    height: 1.5,
-                  ),
+                      thickness: 1,
+                      indent: 10,
+                      endIndent: 10,
+                      color: Theme.of(context).cardColor,
+                      height: 1),
                 ],
               );
   }

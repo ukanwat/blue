@@ -235,7 +235,7 @@ class _RecentSearchesState extends State<RecentSearches> {
       }
     }
     return loading
-        ? circularProgress()
+        ? Center(child: circularProgress())
         : !showClearAll
             ? emptyState(context, 'No Searches Yet.', 'none')
             : ListView.builder(

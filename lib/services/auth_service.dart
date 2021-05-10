@@ -7,6 +7,7 @@ import 'package:blue/models/user.dart';
 import 'package:blue/providers/verify_email.dart';
 import 'package:blue/screens/set_name_screen.dart';
 import 'package:blue/screens/show_screen.dart';
+import 'package:blue/screens/tabs_screen.dart';
 import 'package:blue/screens/verify_email_screen.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
@@ -173,7 +174,7 @@ class AuthService {
 
   auth.User _user;
   signInWithGoogleMore(BuildContext context, bool exists, var result) async {
-    progressOverlay(context).show();
+    progressOverlay(context: context).show();
     auth.User user = _user;
     _user = null;
     print(result);
@@ -191,14 +192,14 @@ class AuthService {
       var _doc = await authRef.where('uid', isEqualTo: user.uid).get();
       info['user_id'] = _doc.docs.first.data()['user_id'];
     }
-    progressOverlay(context).dismiss();
+    progressOverlay(context: context).dismiss();
     Hasura.jwtToken = await user.getIdToken(true);
     await getUserFromHasura(info['user_id'], context); //TODO
     await Boxes.openBoxes();
     PreferencesUpdate().updateString('accountType', 'google');
     await setCustomClaimToken(user);
     await setPreferences();
-
+    Navigator.pushReplacementNamed(context, TabsScreen.routeName);
     userSignedIn = true;
 
     user.reload();
@@ -220,14 +221,14 @@ class AuthService {
     var doc = await authRef.where('uid', isEqualTo: uid).get();
     int i = 0;
     if (doc.docs.length == 0) {
-      progressOverlay(context).show();
+      progressOverlay(context: context).show();
       while (doc.docs.length == 0 && i != 60) {
         //TODO show error after 120 sec
         Future.delayed(Duration(seconds: 2));
         doc = await authRef.where('uid', isEqualTo: uid).get();
         i++;
       }
-      progressOverlay(context).dismiss();
+      progressOverlay(context: context).dismiss();
     }
     print('doc: $doc');
     return doc.docs.first.data();
@@ -241,27 +242,27 @@ class AuthService {
   Future<String> loginUser(LoginData data, BuildContext context) async {
     print('Email: ${data.name}, Password: ${data.password}');
     userSignedIn = false;
-    progressOverlay(context).show();
+    progressOverlay(context: context).show();
     await AuthService().signInWithEmailAndPassword(data.name, data.password);
     var _user;
     while (_user == null) {
       _user = AuthService.firebaseAuth.currentUser;
       Future.delayed(Duration(seconds: 1));
     }
-    progressOverlay(context).dismiss();
+    progressOverlay(context: context).dismiss();
     print('verified: ${_user.emailVerified}');
     if (!_user.emailVerified) {
       await navigatorKey.currentState.pushNamed(ShowScreen.routeName);
     }
-    progressOverlay(context).show();
+    progressOverlay(context: context).show();
     bool hasuraUserExists = await Hasura.userExists(_user.uid);
     print('hasura user exists: $hasuraUserExists ');
     if (!hasuraUserExists) {
       Map info = await AuthService().listenCreateUser(_user.uid, context);
-      progressOverlay(context).dismiss();
+      progressOverlay(context: context).dismiss();
       dynamic result = await navigatorKey.currentState
           .pushNamed(SetNameScreen.routeName, arguments: {"provider": "email"});
-      progressOverlay(context).show();
+      progressOverlay().show();
       await createHasuraUser(_user.uid, info['user_id'], data.name,
           result['name'], result['username']);
 
@@ -273,6 +274,10 @@ class AuthService {
       await AuthService().setCustomClaimToken(_user);
 
       Hasura.insertPreferences(_user.uid);
+      await setPreferences();
+      progressOverlay().dismiss();
+      Navigator.pushReplacementNamed(context, TabsScreen.routeName);
+      userSignedIn = true;
       _user.reload();
     } else {
       Hasura.jwtToken = await _user.getIdToken(true);
@@ -282,10 +287,12 @@ class AuthService {
       await Boxes.openBoxes();
       PreferencesUpdate().updateString('accountType', 'email');
       await AuthService().setCustomClaimToken(_user);
+      await setPreferences();
+      progressOverlay(context: context).dismiss();
+      Navigator.pushReplacementNamed(context, TabsScreen.routeName);
+      userSignedIn = true;
       _user.reload();
     }
-    await setPreferences();
-    progressOverlay(context).dismiss();
 
     userSignedIn = true;
     return null;

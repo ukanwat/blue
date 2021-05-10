@@ -18,27 +18,35 @@ class TagPopularScreen extends StatefulWidget {
 }
 
 class _TagPopularScreenState extends State<TagPopularScreen> {
- Widget posts = Container();
- 
- Future refreshPosts()async{
-      setState(() {
-        posts = PaginatedPosts(length: 6,key: UniqueKey(),neverScroll: true,orderBy: "{created_at:desc}",tag: widget.tag,);
-      }); 
+  Widget posts = Container();
+
+  Future refreshPosts() async {
+    setState(() {
+      posts = PaginatedPosts(
+        length: 6,
+        key: UniqueKey(),
+        neverScroll: true,
+        orderBy: "{score:desc}",
+        tag: widget.tag,
+      );
+    });
   }
 
   @override
   void didChangeDependencies() {
-   
     super.didChangeDependencies();
 
-    posts = PaginatedPosts(length: 6,key: UniqueKey(),neverScroll: true,orderBy: "{created_at:desc}",tag: widget.tag,);
-   
+    posts = PaginatedPosts(
+      length: 6,
+      key: UniqueKey(),
+      neverScroll: true,
+      orderBy: "{score:desc}",
+      tag: widget.tag,
+    );
   }
+
   @override
   Widget build(BuildContext context) {
-    return 
-        Container(
-              child: posts
-        );
+    return Container(child: posts);
   }
 }

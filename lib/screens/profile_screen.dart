@@ -121,7 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     if (sort == Sort.Recent) {
       _orderBy = "{created_at:desc}";
     } else if (sort == Sort.Best) {
-      _orderBy = "{created_at:desc}"; //TODO  voted ordering
+      _orderBy = "{score:desc}"; //TODO  voted ordering
     } else {
       _orderBy = "{created_at:asc}";
     }

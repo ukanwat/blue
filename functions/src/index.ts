@@ -80,6 +80,26 @@ export const messageNotification = functions.https.onRequest(async (req, resp) =
       });
   });
 
+  export const notification = functions.https.onRequest((req, resp) => {
+    console.log(req.body.event.data.new);
+    const options =  notification_options;
+    const messageData = req.body.event.data.new;
+    const message = {
+        notification: {
+           title: 'Someone just commented on yout post',
+           body: messageData.data,
+               },
+        };
+      admin.messaging().sendToDevice(messageData.payload.token, message, options)
+      .then( ()=>{
+
+       resp.status(200).send("Notification sent successfully")
+       
+      })
+      .catch( error => {
+          console.log(error);
+      });
+  });
 
   export const commentNotification = functions.https.onRequest((req, resp) => {
     console.log(req.body.event.data.new);

@@ -32,7 +32,7 @@ class DeactivateAccountScreen extends StatelessWidget {
           Padding(
             padding: EdgeInsets.all(10),
             child: Text(
-              "!!! Deactivating your account will not delete the content of posts and comments you've made on Stark. To do so please delete them individually.",
+              "Deactivating your account will not delete the content of posts and comments you've made on Stark. To do so please delete them individually.",
               style: TextStyle(color: Colors.red),
             ),
           )

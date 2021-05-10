@@ -53,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen>
       posts = PaginatedPosts(
         length: 5,
         key: UniqueKey(),
+        orderBy: '{score:desc}',
       );
     });
   }
@@ -62,8 +63,9 @@ class _HomeScreenState extends State<HomeScreen>
     super.didChangeDependencies();
 
     posts = PaginatedPosts(
-      length: 2,
+      length: 4,
       key: UniqueKey(),
+      orderBy: '{score:desc}',
     );
   }
 

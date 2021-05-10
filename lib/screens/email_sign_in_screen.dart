@@ -88,9 +88,44 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
       messages: LoginMessages(),
       onRecoverPassword: _recoverPassword,
       theme: LoginTheme(
-          primaryColor: Theme.of(context).accentColor,
-          bodyStyle: TextStyle(color: Colors.black),
-          cardTheme: CardTheme(color: Colors.white)),
+          titleStyle: TextStyle(
+              fontFamily: 'Techna Sans Regular',
+              color: Theme.of(context).accentColor,
+              fontSize: 30),
+          primaryColor: Colors.black,
+          accentColor: Colors.white,
+          inputTheme: InputDecorationTheme(
+              fillColor: Colors.grey[800],
+              focusColor: Colors.grey,
+              labelStyle: TextStyle(color: Colors.white),
+              filled: true,
+              border: InputBorder.none,
+              focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.transparent),
+                  borderRadius: BorderRadius.circular(50)),
+              disabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.transparent),
+                  borderRadius: BorderRadius.circular(50)),
+              enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.transparent),
+                  borderRadius: BorderRadius.circular(50))),
+          buttonStyle: TextStyle(
+            color: Colors.white,
+            decorationStyle: TextDecorationStyle.solid,
+          ),
+          buttonTheme: LoginButtonTheme(
+            backgroundColor: Theme.of(context).accentColor,
+            highlightColor: Theme.of(context).accentColor,
+          ),
+          textFieldStyle: TextStyle(color: Colors.white),
+          bodyStyle: TextStyle(
+            decorationColor: Colors.white,
+            color: Colors.white,
+            fontStyle: FontStyle.normal,
+          ),
+          cardTheme: CardTheme(
+            color: Theme.of(context).cardColor,
+          )),
     );
   }
 }

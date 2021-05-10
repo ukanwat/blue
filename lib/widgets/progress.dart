@@ -33,7 +33,7 @@ Container linearProgress() {
   );
 }
 
-ArsProgressDialog progressOverlay(BuildContext context) {
+ArsProgressDialog progressOverlay({BuildContext context}) {
   return ArsProgressDialog(context,
       blur: 2,
       loadingWidget: Stack(
@@ -41,7 +41,9 @@ ArsProgressDialog progressOverlay(BuildContext context) {
         children: [
           Container(
             decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
+                color: context == null
+                    ? Colors.grey[900]
+                    : Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(20)),
             height: 80,
             width: 80,

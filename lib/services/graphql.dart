@@ -4,12 +4,12 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 
 class Config {
   static final HttpLink httpLink = HttpLink(
-    'https://stark-development.hasura.app/v1/graphql',
+    'https://app.stark.social/v1/graphql',
   );
   static final AuthLink authLink =
       AuthLink(getToken: () async => 'Bearer ${Hasura.jwtToken}');
   static final WebSocketLink websocketLink = WebSocketLink(
-    'wss://stark-development.hasura.app/v1/graphql',
+    'wss://app.stark.social/v1/graphql',
     config: SocketClientConfig(
       autoReconnect: true,
       inactivityTimeout: Duration(seconds: 30),

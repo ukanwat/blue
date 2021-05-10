@@ -87,7 +87,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   updateProfileData() async {
-    progressOverlay(context).show();
+    progressOverlay(context: context).show();
     setState(() {
       displayNameController.text.trim().length < 3 ||
               displayNameController.text.isEmpty
@@ -148,7 +148,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             headerUrl: headerUrl);
       }
 
-      progressOverlay(context).dismiss();
+      progressOverlay(context: context).dismiss();
 
       Navigator.pop(context);
       snackbar('Profile Updated!', context);
@@ -179,7 +179,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             headerUrl: headerUrl);
       }
 
-      progressOverlay(context).dismiss();
+      progressOverlay(context: context).dismiss();
       Navigator.pop(context);
       snackbar('Profile Updated!', context);
     }
@@ -304,7 +304,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           controller: websiteController,
           keyboardType: TextInputType.url,
           decoration: InputDecoration(
-            hintText: "Website Address",
+            hintText: "Web Address",
             errorText: _websiteValid ? null : "Invalid url",
           ),
         )

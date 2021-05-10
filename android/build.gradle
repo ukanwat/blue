@@ -1,6 +1,5 @@
 buildscript {
     ext {
-//   flutterFFmpegPackage  = "min-gpl-lts"
   kotlin_version = '1.4.10'
 }
     repositories {

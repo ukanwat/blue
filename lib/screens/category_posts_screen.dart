@@ -33,6 +33,7 @@ class _CategoryPostsScreenState extends State<CategoryPostsScreen>
           length: 8,
           isCompact: true,
           key: UniqueKey(),
+          orderBy: '{score:desc}',
         );
       else
         compactPosts = PaginatedPosts(
@@ -40,6 +41,7 @@ class _CategoryPostsScreenState extends State<CategoryPostsScreen>
           isCompact: true,
           key: UniqueKey(),
           where: '{category:{_eq:"${widget.name}"}}',
+          orderBy: '{score:desc}',
         );
     });
   }
@@ -51,6 +53,7 @@ class _CategoryPostsScreenState extends State<CategoryPostsScreen>
         length: 8,
         isCompact: true,
         key: UniqueKey(),
+        orderBy: '{score:desc}',
       );
     else
       compactPosts = PaginatedPosts(
@@ -58,6 +61,7 @@ class _CategoryPostsScreenState extends State<CategoryPostsScreen>
         isCompact: true,
         key: UniqueKey(),
         where: '{category:{_eq:"${widget.name}"}}',
+        orderBy: '{score:desc}',
       );
     super.initState();
   }
