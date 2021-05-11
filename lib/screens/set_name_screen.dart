@@ -65,7 +65,8 @@ class _SetNameScreenState extends State<SetNameScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                if (data['provider'] != 'google')
+                                if ((data['provider'] != 'google') &&
+                                    (data['provider'] != 'facebook'))
                                   TextFormField(
                                     controller: nameController,
                                     style: TextStyle(color: Colors.white),
@@ -85,7 +86,8 @@ class _SetNameScreenState extends State<SetNameScreen> {
                                           color: Colors.grey,
                                         )),
                                   ),
-                                if (data['provider'] != 'google')
+                                if ((data['provider'] != 'google') &&
+                                    (data['provider'] != 'facebook'))
                                   SizedBox(height: 20),
                                 TextFormField(
                                   controller: usernameController,
@@ -166,7 +168,8 @@ class _SetNameScreenState extends State<SetNameScreen> {
                                         'username': usernameController.text
                                       });
                                       print('noexists');
-                                    } else if (data['provider'] == 'google') {
+                                    } else if ((data['provider'] == 'google') ||
+                                        (data['provider'] == 'facebook')) {
                                       Navigator.of(context).pop();
                                       Navigator.pop(
                                           context, usernameController.text);

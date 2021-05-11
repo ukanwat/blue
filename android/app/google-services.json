@@ -31,6 +31,14 @@
           }
         },
         {
+          "client_id": "875602571063-j683ldse1f2u0oc32p7ubop7t0maddoa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.stark.android",
+            "certificate_hash": "e4417e53c94eaa41cf7c21c10ca06b2bdf5ff8a8"
+          }
+        },
+        {
           "client_id": "875602571063-v223f9fbvjgkfhjdnq2e6ohn4co9k68h.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

@@ -31,6 +31,7 @@ target 'Runner' do
   
   pod 'Firebase/Core'
   pod 'Firebase/Analytics'
+  pod 'FBSDKLoginKit'
   
   use_frameworks!
   use_modular_headers!

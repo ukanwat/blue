@@ -42,7 +42,19 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
           SetNameScreen.routeName,
           arguments: {"provider": "google"});
     }
-    await _auth.signInWithGoogleMore(context, exists, result);
+    await _auth.signInContinue(context, exists, result);
+  }
+
+  facebookSignIn() async {
+    final _auth = Provider.of(context).auth;
+    bool exists = await _auth.signInWithFacebook(context);
+    var result;
+    if (!exists) {
+      result = await navigatorKey.currentState.pushNamed(
+          SetNameScreen.routeName,
+          arguments: {"provider": "facebook"});
+    }
+    await _auth.signInContinue(context, exists, result);
   }
 
   @override

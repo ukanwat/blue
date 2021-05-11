@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 // Package imports:
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hasura_connect/hasura_connect.dart';
@@ -159,6 +160,18 @@ class AuthService {
     currentUser = User.fromDocument(Boxes.currentUserBox.toMap());
   }
 
+  signInWithFacebook(BuildContext context) async {
+    final LoginResult result = await FacebookAuth.instance.login();
+    // Create a credential from the access token
+    final auth.OAuthCredential credential =
+        auth.FacebookAuthProvider.credential(result.accessToken.token);
+    // Once signed in, return the UserCredential
+    _user = (await auth.FirebaseAuth.instance.signInWithCredential(credential))
+        .user;
+    bool hasuraUserExists = await Hasura.userExists(_user.uid);
+    return hasuraUserExists;
+  }
+
   signInWithGoogle(BuildContext context) async {
     final GoogleSignInAccount account = await _googleSignIn.signIn();
     final GoogleSignInAuthentication _googleAuth = await account.authentication;
@@ -173,7 +186,7 @@ class AuthService {
   }
 
   auth.User _user;
-  signInWithGoogleMore(BuildContext context, bool exists, var result) async {
+  signInContinue(BuildContext context, bool exists, var result) async {
     progressOverlay(context: context).show();
     auth.User user = _user;
     _user = null;
