@@ -196,7 +196,7 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
             height: 45,
             child: GoogleAuthButton(
                 onPressed: () {
-                  facebookSignIn(context);
+                  googleSignIn(context);
                 },
                 darkMode: true,
                 style: AuthButtonStyle(

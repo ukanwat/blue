@@ -184,7 +184,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       snackbar('Profile Updated!', context);
     }
     Map currentUserMap = {
-      'id': currentUser.id,
+      'id': currentUser.userId,
       'username': currentUser.username,
       'email': user.email,
       'displayName': displayNameController.text,

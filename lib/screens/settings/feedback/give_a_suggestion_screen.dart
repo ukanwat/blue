@@ -27,9 +27,10 @@ class _GiveASuggestionScreenState extends State<GiveASuggestionScreen> {
   Map<String, dynamic> _deviceData = <String, dynamic>{};
   @override
   void initState() {
-  initPlatformState();
+    initPlatformState();
     super.initState();
   }
+
   Future<void> initPlatformState() async {
     Map<String, dynamic> deviceData;
 
@@ -54,17 +55,18 @@ class _GiveASuggestionScreenState extends State<GiveASuggestionScreen> {
 
   Map<String, dynamic> _readAndroidBuildData(AndroidDeviceInfo build) {
     return <String, dynamic>{
-      'version.release': build. version. release,
+      'version.release': build.version.release,
       'brand': build.brand,
       'device': build.device,
       'manufacturer': build.manufacturer,
       'model': build.model,
       'product': build.product,
       'platform': 'android',
-      'userId': currentUser.id,
-      'version': 1.0,                 //TODO
-     
-        'resolution': '${window.physicalSize.height} X ${window.physicalSize.width}'
+      'userId': currentUser.userId,
+      'version': 1.0, //TODO
+
+      'resolution':
+          '${window.physicalSize.height} X ${window.physicalSize.width}'
     };
   }
 
@@ -77,11 +79,12 @@ class _GiveASuggestionScreenState extends State<GiveASuggestionScreen> {
       'localizedModel': data.localizedModel,
       'utsname.release:': data.utsname.release,
       'utsname.version:': data.utsname.version,
-        'platform': 'iOS',
-           'userId': currentUser.id,
-      'version': 1.0,                  //TODO
-      
-        'resolution': '${window.physicalSize.height} X ${window.physicalSize.width}'
+      'platform': 'iOS',
+      'userId': currentUser.userId,
+      'version': 1.0, //TODO
+
+      'resolution':
+          '${window.physicalSize.height} X ${window.physicalSize.width}'
     };
   }
 
@@ -94,76 +97,74 @@ class _GiveASuggestionScreenState extends State<GiveASuggestionScreen> {
           Padding(
             padding: const EdgeInsets.all(14.0),
             child: TextField(
-                                controller: suggestionController,
-                                style: TextStyle(
-                                    fontSize: 18,
-                                    color: Theme.of(context).iconTheme.color),
-                                maxLines: 10,
-                                maxLength: 2000,
-                                minLines: 10,
-                                decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.only(top: 15, left: 10,right: 10),
-                                  hintText: 'Suggestion details...',
-                                  counter: Container(),
-                                  hintStyle: TextStyle(
-                                      fontSize: 18,
-                                      color: Theme.of(context)
-                                          .iconTheme
-                                          .color
-                                          .withOpacity(0.8)),
-                                  fillColor: Theme.of(context).cardColor,
-                                  filled: true,
-                                  enabledBorder: OutlineInputBorder(
-                                    
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(
-                                      width: 0,
-                                      color: Theme.of(context).cardColor,
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(
-                                      width: 0,
-                                      color: Theme.of(context).cardColor,
-                                    ),
-                                  ),
-                                ),
-                              ),
+              controller: suggestionController,
+              style: TextStyle(
+                  fontSize: 18, color: Theme.of(context).iconTheme.color),
+              maxLines: 10,
+              maxLength: 2000,
+              minLines: 10,
+              decoration: InputDecoration(
+                contentPadding: EdgeInsets.only(top: 15, left: 10, right: 10),
+                hintText: 'Suggestion details...',
+                counter: Container(),
+                hintStyle: TextStyle(
+                    fontSize: 18,
+                    color: Theme.of(context).iconTheme.color.withOpacity(0.8)),
+                fillColor: Theme.of(context).cardColor,
+                filled: true,
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(
+                    width: 0,
+                    color: Theme.of(context).cardColor,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(
+                    width: 0,
+                    color: Theme.of(context).cardColor,
+                  ),
+                ),
+              ),
+            ),
           ),
           InkWell(
-            onTap: (){
+            onTap: () {
               _deviceData['suggestion'] = suggestionController.text;
-                   Hasura.insertFeedback(Feedback.suggestion, _deviceData);
-                                  Navigator.of(context).pop();
+              Hasura.insertFeedback(Feedback.suggestion, _deviceData);
+              Navigator.of(context).pop();
             },
-                      child: Container(
-              
+            child: Container(
               width: double.infinity,
-              decoration: BoxDecoration(color: Colors.blue,
-              borderRadius: BorderRadius.circular(10)
+              decoration: BoxDecoration(
+                  color: Colors.blue, borderRadius: BorderRadius.circular(10)),
+              padding: EdgeInsets.symmetric(
+                vertical: 15,
               ),
-              padding: EdgeInsets.symmetric(vertical: 15,),
               child: Center(
-                child: Text('Submit',style: TextStyle(color: Colors.white,
-            fontSize: 18,fontWeight: FontWeight.w600
-            ),),
+                child: Text(
+                  'Submit',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600),
+                ),
               ),
-            margin: EdgeInsets.symmetric(vertical: 0,horizontal: 14),
+              margin: EdgeInsets.symmetric(vertical: 0, horizontal: 14),
             ),
           ),
-                    Container(
-            
+          Container(
             width: double.infinity,
             child: Center(
-              child: Text('Your feedback will be used to help us better understand your experience and improve the app features.',style: TextStyle(
-          fontSize: 12,
-          color: Colors.grey  //TODO
-          ),),
+              child: Text(
+                'Your feedback will be used to help us better understand your experience and improve the app features.',
+                style: TextStyle(fontSize: 12, color: Colors.grey //TODO
+                    ),
+              ),
             ),
-          margin: EdgeInsets.symmetric(vertical: 20,horizontal: 14),
+            margin: EdgeInsets.symmetric(vertical: 20, horizontal: 14),
           ),
-
         ],
       ),
     );

@@ -16,31 +16,42 @@ class SafetyScreen extends StatefulWidget {
 }
 
 class _SafetyScreenState extends State<SafetyScreen> {
-  bool sensitiveContent =  true;
+  bool sensitiveContent = true;
   @override
   void initState() {
-  sensitiveContent = PreferencesUpdate().getBool('hide_sensitive_content',def: true);
+    sensitiveContent =
+        PreferencesUpdate().getBool('hide_sensitive_content', def: true);
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(    backgroundColor: Theme.of(context).backgroundColor,                                   // TODO
+    return Scaffold(
+      backgroundColor: Theme.of(context).backgroundColor, // TODO
       appBar: settingsHeader(context, 'Safety'),
       body: ListView(
         children: <Widget>[
           settingsPageNavigationTile(
               context, 'Muted Accounts', MutedAccountsScreen.routeName),
-                settingsPageNavigationTile(
+          settingsPageNavigationTile(
               context, 'Blocked Accounts', BlockedAccountsScreen.routeName),
-              settingsSwitchListTile('Hide Sensitive Content', sensitiveContent, (newValue){
-                PreferencesUpdate().updateBool( 'hide_sensitive_content', newValue);
-                preferencesRef.doc(currentUser.id).update({
-                  'hide_sensitive_content': newValue
-                });
-                setState(() {
-                    sensitiveContent = newValue;
-                });
-              }),Container(width: double.infinity,decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Theme.of(context).iconTheme.color.withOpacity(0.16),width: 1),)),),
+          settingsSwitchListTile('Hide Sensitive Content', sensitiveContent,
+              (newValue) {
+            PreferencesUpdate().updateBool('hide_sensitive_content', newValue);
+
+            setState(() {
+              sensitiveContent = newValue;
+            });
+          }),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+                border: Border(
+              bottom: BorderSide(
+                  color: Theme.of(context).iconTheme.color.withOpacity(0.16),
+                  width: 1),
+            )),
+          ),
         ],
       ),
     );

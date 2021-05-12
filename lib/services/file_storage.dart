@@ -15,7 +15,7 @@ class FileStorage {
     if (bucket == null) {
       ref = FirebaseStorage.instance.ref().child(folder).child(fileName);
     } else {
-      FirebaseStorage.instanceFor(bucket: bucket)
+      ref = FirebaseStorage.instanceFor(bucket: bucket)
           .ref()
           .child(folder)
           .child(fileName);

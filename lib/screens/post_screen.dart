@@ -261,7 +261,9 @@ class _PostScreenState extends State<PostScreen> {
     });
   }
 
-  Future<File> compressImage(File file, {bool thumb}) async {
+  Future<File> compressImage(
+    File file,
+  ) async {
     imageId = Uuid().v4();
     final tempDir = await getTemporaryDirectory();
     final path = tempDir.path;
@@ -271,9 +273,10 @@ class _PostScreenState extends State<PostScreen> {
     return compressedImageFile;
   }
 
-  Future<String> uploadImage(File file) async {
+  Future<String> uploadImage(File file, {bool thumb}) async {
     //Upload Profile Photo
-    String _url = await FileStorage.upload('$postId', 'image_$imageId', file,
+    String _url = await FileStorage.upload(
+        '$postId', '${thumb == true ? 'thumbnail' : 'image'}_$imageId', file,
         bucket: 'user-posts');
     return _url;
   }
@@ -282,8 +285,11 @@ class _PostScreenState extends State<PostScreen> {
     List<String> downloadUrls = [];
     for (int i = 0; i < files.length; i++) {
       String _imageId = Uuid().v4();
+      File file = await compressImage(
+        files[i],
+      );
       String _url = await FileStorage.upload(
-          '$postId', 'carousel_$_imageId', files[i],
+          '$postId', 'carousel_$_imageId', file,
           bucket: 'user-posts');
       downloadUrls.add("\"$_url\"");
     }
@@ -391,6 +397,7 @@ class _PostScreenState extends State<PostScreen> {
           thumbIndex = i;
           _thumbContent = ThumbContent.carousel;
         }
+
         List<String> mediaUrl =
             await uploadCarousel(contentsData[i]['content']);
         firestoreContents['$x'] = mediaUrl;
@@ -423,7 +430,7 @@ class _PostScreenState extends State<PostScreen> {
       final compressedImageFile = File('$path/img_$id.jpg')
         ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
 
-      thumbUrl = await uploadImage(compressedImageFile);
+      thumbUrl = await uploadImage(compressedImageFile, thumb: true);
     }
 
     print("doc:$topicName");

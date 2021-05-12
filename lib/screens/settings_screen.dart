@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:ui';
 
 // Flutter imports:
+import 'package:blue/services/boxes.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +50,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       'manufacturer': build.manufacturer,
       'model': build.model,
       'product': build.product,
-      'userId': currentUser.id,
+      'userId': currentUser.userId,
       'version': 1.0, //TODO
     };
   }
@@ -254,16 +255,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             deviceData = <String, dynamic>{
                               'Error:': 'Failed to get platform version.'
                             };
+
                             return;
                           }
                           _deviceData = deviceData;
 
                           final Email email = Email(
                             body: Platform.isIOS
-                                ? '...\n\nStark User ID: ${_deviceData['userId']}\nApp version: ${_deviceData['version']}\nDevice: ${_deviceData['name']}\nModel: ${_deviceData['model']}\nManufacturer: ${[
+                                ? '...\n\nStark User ID: ${Boxes.currentUserBox.get('user_id')}\nApp version: ${_deviceData['version']}\nDevice: ${_deviceData['name']}\nModel: ${_deviceData['model']}\nManufacturer: ${[
                                     'manufacturer'
                                   ]}\nOS Version: ${_deviceData['utsname.version']}'
-                                : '...\n\nStark User ID: ${_deviceData['userId']}\nApp version: ${_deviceData['version']}\nModel: ${_deviceData['model']}\nOS Version: ${_deviceData['version.release']}',
+                                : '...\n\nStark User ID: ${Boxes.currentUserBox.get('user_id')}\nApp version: ${_deviceData['version']}\nModel: ${_deviceData['model']}\nOS Version: ${_deviceData['version.release']}',
                             subject: 'Stark Support\n[Android]',
                             recipients: ['support@stark.social'],
                             isHTML: false,

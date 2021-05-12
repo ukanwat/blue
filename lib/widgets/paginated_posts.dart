@@ -65,6 +65,8 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
             widget.length, 0, widget.orderBy ?? "{created_at:desc}",
             where: widget.where ?? null);
       }
+
+      print('ddddgg $_p');
       _posts = _p
           .map((doc) => Post.fromDocument(
                 doc,

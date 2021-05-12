@@ -298,7 +298,7 @@ class _PostState extends State<Post> {
                               });
                             },
                           ),
-                          if (ownerId != currentUser.id)
+                          if (ownerId != currentUser.userId)
                             DownvoteTile(vote, postId, () {
                               if (vote == Vote.down) {
                                 setState(() {

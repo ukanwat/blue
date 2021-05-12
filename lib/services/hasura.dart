@@ -1240,73 +1240,37 @@ __typename
 }""");
   }
 
-  static getFollowingPosts(bool last) async {
+  static getFollowingPosts(int limit, int offset) async {
     int userId = await getUserId();
-    String field = '';
-    if (last) {
-      dynamic t = PreferencesUpdate().getString('following_posts_last_seen');
-      if (t == null) {
-        dynamic ti = await hasuraConnect.query("""query{
-  preferences_by_pk(user_id:$userId){
-    following_posts_last_seen
-  }
-}
-""");
-        t = ti['data']['preferences_by_pk']['following_posts_last_seen'];
+    String params = 'limit:$limit,offset:$offset';
 
-        if (t == null) {
-          t = DateTime(2021);
-        }
-      }
-      DateTime time = DateTime.parse(t);
-      field = 'where:{created_at:{_gt:"$time"}}';
-      t = DateTime.now().toString();
-
-      await PreferencesUpdate()
-          .updateString('following_posts_last_seen', t, upload: true);
-    } else {
-      int f = 40; //TODO following no.
-      double days = 2000 / f;
-      int d = days
-          .ceil(); //TODO Check and also do multiple times when not enough(if needed)
-      int y = (d / 365).floor();
-      d = d - y * 365;
-      int m = (d / 30).floor();
-      d = d - m * 30;
-      DateTime now = DateTime.now();
-
-      DateTime lastTime = DateTime(
-          now.year - y, now.month - m, now.day - d, now.hour, now.minute);
-
-      field = 'where:{created_at:{_gt:"$lastTime"}}';
+    dynamic doc = hasuraConnect.query("""query{
+  following_feed($params,where:{user_id:{_eq:$userId}}){
+     post{
+       contents
+    created_at
+    owner_id
+    post_id
+    title
+    thumbnail
+    upvoted_by_user
+    comment_count
+    user{
+      avatar_url
+      username
     }
-
-    dynamic data = await hasuraConnect.query("""query{
-  follows(where:{follower_id:{_eq:$userId}}){
-    following{
-      posts($field){
-        $postInfo
-      }
+    post_tags{
+      tag{tag}
+    }
+      upvote_count
+      share_count
+      comment_count
+      save_count
+         downvote_count
     }
   }
 }""");
-
-    dynamic userPosts = data['data']['follows'];
-    List posts = [];
-    userPosts.forEach((user) {
-      posts.add(user['following']['posts']);
-    });
-    List p = [];
-    posts.forEach((ps) {
-      ps.forEach((pss) {
-        p.add(pss);
-      });
-    });
-    p.sort((a, b) {
-      return DateTime.parse(a['created_at'])
-          .compareTo(DateTime.parse(b['created_at']));
-    });
-    return p;
+    return doc['data']['following_feed'];
   }
 
 //--------------------miscellaneous----------------------

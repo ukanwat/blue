@@ -92,9 +92,6 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
     bool value,
   ) {
     PreferencesUpdate().updateBool(name, value);
-    preferencesRef
-        .doc(currentUser.id)
-        .set({name: value}, SetOptions(merge: true));
   }
 
   @override
@@ -116,160 +113,167 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
                       showDialog(
                           context: context,
                           builder: (context) {
-                            return EmptyDialog(Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SizedBox(height: 10.0),
-                                Container(
-                                  width: double.infinity,
-                                  alignment: Alignment.center,
-                                  child: ClipRRect(
-                                    clipBehavior: Clip.antiAliasWithSaveLayer,
-                                    child: Text(
-                                      'Set Mute Time',
-                                      style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: 20.0),
-                                Divider(
-                                  height: 1,
-                                  thickness: 1,
-                                  color: Theme.of(context).cardColor,
-                                ),
-                                InkWell(
-                                  onTap: () async {
-                                    DateTime now = DateTime.now();
-                                    DateTime time = DateTime(
-                                        now.year,
-                                        now.month,
-                                        now.day,
-                                        now.hour + 1,
-                                        now.minute,
-                                        now.second,
-                                        now.millisecond,
-                                        now.microsecond);
-                                    PreferencesUpdate().updateString(
-                                        'mute_push_time', time.toString(),
-                                        upload: true);
-                                    Navigator.of(context).pop();
-                                    disable();
-                                  },
-                                  child: Container(
-                                    height: 40,
-                                    width: double.infinity,
-                                    margin: EdgeInsets.symmetric(vertical: 2),
-                                    child: Center(
-                                      child: Text(
-                                        "1 Hour",
-                                        style: TextStyle(
-                                          fontSize: 20,
+                            return EmptyDialog(
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(height: 10.0),
+                                    Container(
+                                      width: double.infinity,
+                                      alignment: Alignment.center,
+                                      child: ClipRRect(
+                                        clipBehavior:
+                                            Clip.antiAliasWithSaveLayer,
+                                        child: Text(
+                                          'Set Mute Time',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w500),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                                Divider(
-                                  height: 1,
-                                  thickness: 1,
-                                  color: Theme.of(context).cardColor,
-                                ),
-                                InkWell(
-                                  onTap: () async {
-                                    DateTime now = DateTime.now();
-                                    DateTime time = DateTime(
-                                        now.year,
-                                        now.month,
-                                        now.day,
-                                        now.hour + 6,
-                                        now.minute,
-                                        now.second,
-                                        now.millisecond,
-                                        now.microsecond);
-                                    PreferencesUpdate().updateString(
-                                        'mute_push_time', time.toString(),
-                                        upload: true);
-                                    Navigator.of(context).pop();
-                                    disable();
-                                  },
-                                  child: Container(
-                                    height: 40,
-                                    width: double.infinity,
-                                    margin: EdgeInsets.symmetric(vertical: 2),
-                                    child: Center(
-                                      child: Text(
-                                        "6 Hours",
-                                        style: TextStyle(
-                                          fontSize: 20,
+                                    SizedBox(height: 20.0),
+                                    Divider(
+                                      height: 1,
+                                      thickness: 1,
+                                      color: Theme.of(context).cardColor,
+                                    ),
+                                    InkWell(
+                                      onTap: () async {
+                                        DateTime now = DateTime.now();
+                                        DateTime time = DateTime(
+                                            now.year,
+                                            now.month,
+                                            now.day,
+                                            now.hour + 1,
+                                            now.minute,
+                                            now.second,
+                                            now.millisecond,
+                                            now.microsecond);
+                                        PreferencesUpdate().updateString(
+                                            'mute_push_time', time.toString(),
+                                            upload: true);
+                                        Navigator.of(context).pop();
+                                        disable();
+                                      },
+                                      child: Container(
+                                        height: 40,
+                                        width: double.infinity,
+                                        margin:
+                                            EdgeInsets.symmetric(vertical: 2),
+                                        child: Center(
+                                          child: Text(
+                                            "1 Hour",
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                                Divider(
-                                  height: 1,
-                                  thickness: 1,
-                                  color: Theme.of(context).cardColor,
-                                ),
-                                InkWell(
-                                  onTap: () async {
-                                    DateTime now = DateTime.now();
-                                    DateTime time = DateTime(
-                                        now.year,
-                                        now.month,
-                                        now.day,
-                                        now.hour + 12,
-                                        now.minute,
-                                        now.second,
-                                        now.millisecond,
-                                        now.microsecond);
-                                    PreferencesUpdate().updateString(
-                                        'mute_push_time', time.toString(),
-                                        upload: true);
-                                    Navigator.of(context).pop();
-                                    disable();
-                                  },
-                                  child: Container(
-                                    height: 40,
-                                    width: double.infinity,
-                                    margin: EdgeInsets.symmetric(vertical: 2),
-                                    child: Center(
-                                      child: Text(
-                                        "12 Hours",
-                                        style: TextStyle(
-                                          fontSize: 20,
+                                    Divider(
+                                      height: 1,
+                                      thickness: 1,
+                                      color: Theme.of(context).cardColor,
+                                    ),
+                                    InkWell(
+                                      onTap: () async {
+                                        DateTime now = DateTime.now();
+                                        DateTime time = DateTime(
+                                            now.year,
+                                            now.month,
+                                            now.day,
+                                            now.hour + 6,
+                                            now.minute,
+                                            now.second,
+                                            now.millisecond,
+                                            now.microsecond);
+                                        PreferencesUpdate().updateString(
+                                            'mute_push_time', time.toString(),
+                                            upload: true);
+                                        Navigator.of(context).pop();
+                                        disable();
+                                      },
+                                      child: Container(
+                                        height: 40,
+                                        width: double.infinity,
+                                        margin:
+                                            EdgeInsets.symmetric(vertical: 2),
+                                        child: Center(
+                                          child: Text(
+                                            "6 Hours",
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                                Divider(
-                                  height: 1,
-                                  thickness: 1,
-                                  color: Theme.of(context).cardColor,
-                                ),
-                                SizedBox(height: 10.0),
-                                FlatButton(
-                                  color: Theme.of(context).cardColor,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  onPressed: () {
-                                    Navigator.of(context)
-                                        .pop(); // To close the dialog
-                                  },
-                                  child: Text(
-                                    'Cancel',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      color: Theme.of(context).iconTheme.color,
+                                    Divider(
+                                      height: 1,
+                                      thickness: 1,
+                                      color: Theme.of(context).cardColor,
                                     ),
-                                  ),
+                                    InkWell(
+                                      onTap: () async {
+                                        DateTime now = DateTime.now();
+                                        DateTime time = DateTime(
+                                            now.year,
+                                            now.month,
+                                            now.day,
+                                            now.hour + 12,
+                                            now.minute,
+                                            now.second,
+                                            now.millisecond,
+                                            now.microsecond);
+                                        PreferencesUpdate().updateString(
+                                            'mute_push_time', time.toString(),
+                                            upload: true);
+                                        Navigator.of(context).pop();
+                                        disable();
+                                      },
+                                      child: Container(
+                                        height: 40,
+                                        width: double.infinity,
+                                        margin:
+                                            EdgeInsets.symmetric(vertical: 2),
+                                        child: Center(
+                                          child: Text(
+                                            "12 Hours",
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Divider(
+                                      height: 1,
+                                      thickness: 1,
+                                      color: Theme.of(context).cardColor,
+                                    ),
+                                    SizedBox(height: 10.0),
+                                    FlatButton(
+                                      color: Theme.of(context).cardColor,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.of(context)
+                                            .pop(); // To close the dialog
+                                      },
+                                      child: Text(
+                                        'Cancel',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          color:
+                                              Theme.of(context).iconTheme.color,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ));
+                                noHorizontalPadding: true);
                           });
                     },
                     child: Text(
