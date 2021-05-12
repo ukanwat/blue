@@ -29,7 +29,7 @@ class ThemeNotifier extends ChangeNotifier {
         statusBarBrightness: Brightness.light,
         statusBarColor: Colors.transparent,
         systemNavigationBarColor: dark ? Colors.black : Colors.white,
-        systemNavigationBarDividerColor: dark ? Colors.grey[900] : Colors.white,
+        systemNavigationBarDividerColor: Colors.grey[900],
         systemNavigationBarIconBrightness: Brightness.light));
     _saveToPrefs();
     notifyListeners();

@@ -25,10 +25,36 @@ class TagScreen extends StatefulWidget {
 
 class _TagScreenState extends State<TagScreen> {
   String tag;
+  Map tagMap;
   bool isFollowing = false;
+  setTag() async {
+    tagMap = await Hasura.getTag(tag);
+  }
+
   @override
   void didChangeDependencies() {
     tag = ModalRoute.of(context).settings.arguments;
+    List tags = PreferencesUpdate().getStringList('followed_tags');
+
+    tags = PreferencesUpdate().getStringList('followed_tags');
+    print('$tag $tags');
+    if (tags != null) {
+      setState(() {
+        tags.forEach((_tag) {
+          if (tag == _tag['tag']) {
+            isFollowing = true;
+            tagMap = _tag;
+          }
+        });
+      });
+      print('isFollowing: $isFollowing');
+
+      if (!isFollowing) {
+        setTag();
+      }
+      PreferencesUpdate().setStringList('followed_tags', tags);
+    }
+
     super.didChangeDependencies();
   }
 
@@ -57,7 +83,7 @@ class _TagScreenState extends State<TagScreen> {
                   pinned: true,
                   backgroundColor: Theme.of(context).backgroundColor,
                   actions: [
-                    PreferencesUpdate().containsInList('followed_tags', tag)
+                    isFollowing
                         ? PopupMenuButton(
                             padding: EdgeInsets.zero,
                             color: Theme.of(context).canvasColor,
@@ -74,30 +100,31 @@ class _TagScreenState extends State<TagScreen> {
                                 setState(() {
                                   PreferencesUpdate().removeFromList(
                                     'followed_tags',
-                                    tag,
+                                    tagMap,
                                   );
                                 });
-                                Hasura.unfollowTag(tag);
+                                Hasura.unfollowTag(tagMap['tag_id']);
+                                setState(() {
+                                  isFollowing = false;
+                                });
                               }
                             },
                           )
                         : IconButton(
                             onPressed: () async {
-                              // TODO
-
-                              followedTagsRef.doc(currentUser.id).set({
-                                tag: DateTime.now(),
-                              }, SetOptions(merge: true));
-
                               setState(() {
                                 PreferencesUpdate().addToList(
                                   'followed_tags',
-                                  tag,
+                                  tagMap,
                                 );
                               });
-                              Hasura.followTag(tag);
+                              Hasura.followTag(tagMap['tag_id']);
+                              setState(() {
+                                isFollowing = true;
+                              });
                             },
-                            icon: Icon(Icons.add, size: 34, color: Colors.blue),
+                            icon:
+                                Icon(Icons.add, size: 34, color: Colors.white),
                           )
                   ],
                   flexibleSpace: FlexibleSpaceBar(

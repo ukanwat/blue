@@ -213,31 +213,34 @@ class Hasura {
 
   static getFollowedTags() async {
     int userId = await getUserId();
-
     String _doc = """query{
-  users_by_pk(user_id:$userId){
-    followed_tags{
+  user_followed_tags(where:{user_id:{_eq:$userId}}){
+    tag{
+      tag
       label
+      tag_id
+      image_url
     }
   }
-}""";
+}
+""";
     var data = await hasuraConnect.query(_doc);
-    return data['data']['users_by_pk']['followed_tags'];
+    return data['data']['user_followed_tags'];
   }
 
-  static followTag(String tag) async {
+  static followTag(int tagId) async {
     int userId = await getUserId();
     await hasuraConnect.mutation("""mutation{
-  insert_user_followed_tags_one(object:{tag:"$tag",user_id:$userId}){
+  insert_user_followed_tags_one(object:{tag_id:$tagId,user_id:$userId}){
     __typename
   }
 }""");
   }
 
-  static unfollowTag(String tag) async {
+  static unfollowTag(int tagId) async {
     int userId = await getUserId();
     await hasuraConnect.mutation("""mutation{
-  delete_user_followed_tags_by_pk(tag:"$tag", user_id:$userId){
+  delete_user_followed_tags_by_pk(tag_id:$tagId, user_id:$userId){
     __typename
   }
 }""");
@@ -512,6 +515,18 @@ class Hasura {
 }""");
   }
 
+  static getTag(String tag) async {
+    dynamic doc = await hasuraConnect.query("""query{
+  tags(where:{tag:{_eq:"$tag"}}){
+    tag_id
+    tag
+    image_url
+    label
+  }
+}""");
+    return doc['data']['tags'][0];
+  }
+
   static findTags(String tag) async {
     var tagsData = await hasuraConnect.query("""query{
   tags(where: {tag: {_ilike: "%$tag%"}},order_by:{post_count:desc},limit:20) {
@@ -553,7 +568,7 @@ class Hasura {
     }
     String string = """mutation{
  delete_upvotes_by_pk(
-    post_id:"$postId",
+    post_id:$postId,
     user_id:$userId
   ){
    __typename

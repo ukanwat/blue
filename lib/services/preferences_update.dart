@@ -55,8 +55,17 @@ class PreferencesUpdate {
     if (_list == null) {
       _list = [];
     }
-    _list.addAll(value);
-    Boxes.preferenceBox.put(key, _list);
+
+    List list = _list + value;
+
+    Boxes.preferenceBox.put(key, list);
+  }
+
+  setStringList(
+    String key,
+    List<dynamic> value,
+  ) {
+    Boxes.preferenceBox.put(key, value);
   }
 
   removeFromList(

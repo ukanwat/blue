@@ -68,6 +68,30 @@ class _TabsScreenState extends State<TabsScreen> {
       }
       PreferencesUpdate().updateStringList('muted_messages', list);
     }
+
+    List tags = PreferencesUpdate().getStringList('followed_tags');
+
+    print(tags);
+    bool b = tags == null;
+    if (!b) {
+      b = tags.length == 0;
+    } else {
+      tags = [];
+    }
+    if (b) {
+      dynamic tagsData = await Hasura.getFollowedTags();
+      print(tags);
+      print(tagsData);
+      tagsData.forEach((tag) {
+        tags.add({
+          'tag': tag['tag']['tag'],
+          'label': tag['tag']['label'],
+          'tag_id': tag['tag']['tag_id'],
+          'image_url': tag['tag']['image_id'],
+        });
+      });
+      PreferencesUpdate().setStringList('followed_tags', tags);
+    }
   }
 
   @override

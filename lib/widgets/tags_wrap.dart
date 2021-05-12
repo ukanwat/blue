@@ -20,61 +20,50 @@ class TagsWrap extends StatefulWidget {
 }
 
 class _TagsWrapState extends State<TagsWrap> {
-  List<String> tags = [];
-  List<Widget> tagChips = [];
-  bool wrapped = true;
+  List<dynamic> tags = [];
 
   List<Widget> tagListTiles = [];
   bool tagLoading = true;
   @override
   void didChangeDependencies() {
     getFollowedTags();
-    wrapped = PreferencesUpdate().getBool('isWrapped');
-    if (wrapped == null) {
-      wrapped = true;
-    PreferencesUpdate().updateBool('isWrapped', true);
-    }
+
     super.didChangeDependencies();
   }
 
- 
   getFollowedTags() async {
-    tags =  PreferencesUpdate().getStringList('followed_tags');
-    if(tags.length == 0 || tags == null) {
-     dynamic tagsData =  await Hasura.getFollowedTags();
-     print(tagsData);
-     tagsData.forEach((tag) { 
-       tags.add(tag['label']);
-     });
-  
-       
+    tags = PreferencesUpdate().getStringList('followed_tags');
+
+    print(tags);
+    bool b = tags == null;
+    if (!b) {
+      b = tags.length == 0;
+    } else {
+      tags = [];
+    }
+    if (b) {
+      dynamic tagsData = await Hasura.getFollowedTags();
+      print(tags);
+      print(tagsData);
+      tagsData.forEach((tag) {
+        tags.add({
+          'tag': tag['tag']['tag'],
+          'label': tag['tag']['label'],
+          'tag_id': tag['tag']['tag_id'],
+          'image_url': tag['tag']['image_id'],
+        });
+      });
+      PreferencesUpdate().setStringList('followed_tags', tags);
     }
 
     setState(() {
       tagLoading = false;
 
       for (int i = 0; i < tags.length; i++) {
-        tagChips.add(InkWell(
-          onTap: () async {
-            Navigator.of(context).pushNamed(TagScreen.routeName,
-                arguments: tags[i]);
-          },
-          child: Chip(
-            padding: EdgeInsets.all(12),
-            label: Text(
-              tags[i],
-              style: TextStyle(
-                  color: Theme.of(context).iconTheme.color, fontSize: 18),
-            ),
-            backgroundColor: Theme.of(context).cardColor,
-          ),
-        ));
-
         tagListTiles.add(InkWell(
           onTap: () async {
-        Navigator.of(context).pushNamed(TagScreen.routeName,
-                arguments: tags[i]);
-            tagsInfoUpdate(tags, i);
+            Navigator.of(context)
+                .pushNamed(TagScreen.routeName, arguments: tags[i]['tag']);
           },
           child: Container(
             alignment: Alignment.center,
@@ -82,7 +71,7 @@ class _TagsWrapState extends State<TagsWrap> {
             margin: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
             padding: EdgeInsets.all(12),
             child: Text(
-              tags[i],
+              tags[i]['tag'],
               style: TextStyle(
                   color: Theme.of(context).iconTheme.color, fontSize: 18),
             ),
@@ -94,86 +83,30 @@ class _TagsWrapState extends State<TagsWrap> {
         ));
       }
     });
-  PreferencesUpdate().updateStringList('followed_tags', tags);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Row(
+    return Material(
+      child: Container(
+        height: MediaQuery.of(context).size.height,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-              child: Text('Tags you Follow',
-                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 17)),
-            ),
-            Expanded(
-              child: Container(),
-            ),
-            IconButton(
-                icon: Icon(
-                    wrapped
-                        ? FluentIcons.grid_kanban_20_regular
-                        : FluentIcons.row_triple_24_regular,
-                    size: 28,
-                    color: Theme.of(context).iconTheme.color),
-                onPressed: () {
-                  setState(() {
-                    wrapped = !wrapped;
-              PreferencesUpdate().updateBool('tagsWrapped', wrapped);
-                  });
-                }),
-            IconButton(
-                icon: Icon(Icons.keyboard_arrow_down,
-                    size: 28, color: Theme.of(context).iconTheme.color),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                })
+            tagLoading
+                ? circularProgress()
+                : tagListTiles.length == 0
+                    ? Container()
+                    : Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: tagListTiles,
+                        ),
+                      ),
           ],
         ),
-        Expanded(
-            child: tagLoading
-                ? circularProgress()
-                : Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                    child: SingleChildScrollView(
-                      child: !wrapped
-                          ? Column(
-                              children: tagListTiles,
-                            )
-                          : Wrap(
-                              spacing: 10,
-                              runSpacing: 12,
-                              children: wrapped ? tagChips : tagListTiles,
-                            ),
-                    ),
-                  )),
-      ],
+      ),
     );
   }
-tagsInfoUpdate(List sortedPriorityList,int i){
- String tagOpenInfo = PreferencesUpdate().getString('tags_open_info');
-            if (tagOpenInfo == null) {
-         PreferencesUpdate().updateString('tags_open_info', json.encode({}));
-              tagOpenInfo = json.encode({});
-            }
-            DateTime nowTime = DateTime.now();
-            String todayTime = DateTime.parse(
-                "${nowTime.year}-${nowTime.month}-${nowTime.day}").toString();
-            Map tagOpenMap = json.decode(tagOpenInfo);
-            if (tagOpenMap.containsKey(todayTime)) {
-              if (tagOpenMap[todayTime].containsKey(sortedPriorityList[i]))
-                tagOpenMap[todayTime][sortedPriorityList[i]] =
-                    tagOpenMap[todayTime][sortedPriorityList[i]] + 1;
-              else
-                tagOpenMap[todayTime][sortedPriorityList[i]] = 1;
-            } else {
-              tagOpenMap[todayTime] = {
-                sortedPriorityList[i]: 1
-              };
-            }
-            print(tagOpenMap);
-           PreferencesUpdate().updateString('tags_open_info', json.encode(tagOpenMap));
-}
 }

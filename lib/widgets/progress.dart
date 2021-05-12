@@ -1,6 +1,7 @@
 // Flutter imports:
 import 'package:ars_progress_dialog/ars_progress_dialog.dart';
 import 'package:flash/flash.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -55,7 +56,8 @@ ArsProgressDialog progressOverlay({BuildContext context}) {
       animationDuration: Duration(milliseconds: 500));
 }
 
-snackbar(String text, BuildContext context, {Duration duration, Color color}) {
+snackbar(String text, BuildContext context,
+    {Duration duration, Color color, Function seeMore}) {
   showFlash(
       context: context,
       duration: Duration(seconds: 3),
@@ -66,6 +68,18 @@ snackbar(String text, BuildContext context, {Duration duration, Color color}) {
           position: FlashPosition.bottom,
           style: FlashStyle.grounded,
           child: FlashBar(
+            primaryAction: seeMore == null
+                ? Container()
+                : GestureDetector(
+                    onTap: seeMore,
+                    child: Container(
+                      padding: EdgeInsets.only(left: 10),
+                      child: Text(
+                        'See more',
+                        style: TextStyle(color: Colors.blue),
+                      ),
+                    ),
+                  ),
             message: Text(text,
                 style: TextStyle(color: Theme.of(context).iconTheme.color)),
           ),

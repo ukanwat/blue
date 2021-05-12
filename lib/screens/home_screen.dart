@@ -1,6 +1,7 @@
 // Flutter imports:
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
+import 'package:blue/widgets/bottom_sheet.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -13,6 +14,7 @@ import 'package:blue/widgets/paginated_posts.dart';
 import 'package:blue/widgets/tags_wrap.dart';
 import '../widgets/header.dart';
 import './home.dart';
+import '../widgets/banner_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -28,22 +30,36 @@ class _HomeScreenState extends State<HomeScreen>
   bool topicLoading = true;
 
   showTagsSheet() {
-    //  bottomBar(_scaffoldKey,'sssss',);
-    showModalBottomSheet(
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      builder: (context) => ClipRRect(
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(10), topRight: Radius.circular(10)),
+    showSheet(
+      context,
+      TagsWrap(),
+      Material(
         child: Container(
-            height: 300,
-            width: MediaQuery.of(context).size.width,
-            decoration: new BoxDecoration(
-              color: Theme.of(context).canvasColor,
-            ),
-            child: TagsWrap()),
+          height: 54,
+          width: MediaQuery.of(context).size.width,
+          child: Row(
+            children: <Widget>[
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                child: Text('Tags You Follow',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    )),
+              ),
+              Expanded(
+                child: Container(),
+              ),
+              IconButton(
+                  icon: Icon(Icons.keyboard_arrow_down,
+                      size: 28, color: Theme.of(context).iconTheme.color),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  })
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 // Flutter imports:
+import 'package:blue/widgets/banner_dialog.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -272,8 +273,8 @@ class _PostScreenState extends State<PostScreen> {
 
   Future<String> uploadImage(File file) async {
     //Upload Profile Photo
-    String _url =
-        await FileStorage.upload('posts/$postId', 'image_$imageId', file);
+    String _url = await FileStorage.upload('$postId', 'image_$imageId', file,
+        bucket: 'user-posts');
     return _url;
   }
 
@@ -282,7 +283,8 @@ class _PostScreenState extends State<PostScreen> {
     for (int i = 0; i < files.length; i++) {
       String _imageId = Uuid().v4();
       String _url = await FileStorage.upload(
-          'posts/$postId', 'carousel_$_imageId', files[i]);
+          '$postId', 'carousel_$_imageId', files[i],
+          bucket: 'user-posts');
       downloadUrls.add("\"$_url\"");
     }
     return downloadUrls;
@@ -291,7 +293,8 @@ class _PostScreenState extends State<PostScreen> {
   Future<String> uploadVideo(dynamic mediaInfo) async {
     String _videoId = Uuid().v4();
     String _url = await FileStorage.upload(
-        'posts/$postId', 'video_$_videoId', mediaInfo.file);
+        '$postId', 'video_$_videoId', mediaInfo.file,
+        bucket: 'user-posts');
     return _url;
   }
 
@@ -403,7 +406,7 @@ class _PostScreenState extends State<PostScreen> {
     } else if (_thumbContent == ThumbContent.image) {
       thumbImg = contentsData[thumbIndex]['content'];
     } else if (_thumbContent == ThumbContent.link) {
-      thumbImg = contentsData[thumbIndex]['content'][0];
+      thumbImg = null;
     } else if (_thumbContent == ThumbContent.text) {
       thumbImg = null;
     } else if (_thumbContent == ThumbContent.video) {
@@ -1181,7 +1184,16 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   showLimits(BuildContext context) {
-    snackbar("You've reached the limit.", context);
+    snackbar("You've reached the limit.", context, seeMore: () {
+      showDialog(
+          context: context,
+          builder: (context) {
+            return BannerDialog(
+                'Post Limits',
+                'Post is limited to 500 characters, 10 images, 5 links and 1 Video.',
+                true);
+          });
+    });
   }
 
   postItemsDialog(Map functions, BuildContext context) {
