@@ -74,6 +74,7 @@ class Post extends StatefulWidget {
   final int shares;
   final int commentCount;
   final bool upvoted;
+  final String thumbUrl;
   // final PostInteractions postInteractions;
 
   Post(
@@ -97,7 +98,8 @@ class Post extends StatefulWidget {
       this.saves,
       this.shares,
       this.commentCount,
-      this.upvoted});
+      this.upvoted,
+      this.thumbUrl});
 
   factory Post.fromDocument(
     Map doc, {
@@ -132,6 +134,7 @@ class Post extends StatefulWidget {
       title: doc['title'],
       topicName: null,
       topicId: null,
+      thumbUrl: doc['thumbnail'],
       contents: data,
       contentsInfo: doc['contents'],
       upvotes: doc['upvote_count'],
@@ -162,6 +165,7 @@ class Post extends StatefulWidget {
       upvotes: this.upvotes,
       votes: this.votes,
       downvotes: this.downvotes,
+      thumbUrl: this.thumbUrl,
       tags: this.tags,
       commentCount: this.commentCount);
 }
@@ -193,6 +197,7 @@ class _PostState extends State<Post> {
   final int upvotes;
   final int downvotes;
   final int commentCount;
+  final String thumbUrl;
   _PostState(
       {this.postId,
       this.ownerId,
@@ -207,7 +212,8 @@ class _PostState extends State<Post> {
       this.tags,
       this.votes,
       this.downvotes,
-      this.commentCount});
+      this.commentCount,
+      this.thumbUrl});
   //
   Vote vote = Vote.none;
   bool isOwner = false;
@@ -221,7 +227,7 @@ class _PostState extends State<Post> {
   GlobalKey _contentsKey = GlobalKey();
   double contentsHeight;
   bool constraintContent = true;
-
+  String compactPostText;
   showOptions(BuildContext context) {
     overlayOptions = createOverlayOptions(context);
     Overlay.of(context).insert(overlayOptions);
@@ -694,7 +700,7 @@ class _PostState extends State<Post> {
                 ),
                 Padding(
                   padding:
-                      EdgeInsets.only(left: 10, top: 0, right: 5, bottom: 3),
+                      EdgeInsets.only(left: 12, top: 0, right: 5, bottom: 3),
                   child: Text(
                     widget.title,
                     textAlign: TextAlign.left,
@@ -706,21 +712,25 @@ class _PostState extends State<Post> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                Padding(
+                  padding:
+                      EdgeInsets.only(left: 12, top: 0, right: 5, bottom: 3),
+                  child: Text(
+                    compactPostText,
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).iconTheme.color.withOpacity(0.9),
+                      fontWeight: FontWeight.w400,
+                    ),
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
           ),
-          if (thumbnailType == null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    color: Colors.blue,
-                    height: MediaQuery.of(context).size.width * 0.20,
-                    width: MediaQuery.of(context).size.width * 0.20,
-                  )),
-            ),
-          if (thumbnailType == CompactPostThumbnailType.image)
+          if (thumbUrl != null)
             Container(
               margin: const EdgeInsets.all(8.0),
               height: MediaQuery.of(context).size.width * 0.20,
@@ -728,44 +738,15 @@ class _PostState extends State<Post> {
               child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
-                    child:
-                        cachedNetworkImage(context, compactPostThumbnailData),
+                    child: cachedNetworkImage(context, thumbUrl),
                     height: MediaQuery.of(context).size.width * 0.20,
                     width: MediaQuery.of(context).size.width * 0.20,
                   )),
-            ),
-          if (thumbnailType == CompactPostThumbnailType.video)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: compactPostThumbnailData == null
-                      ? Container(
-                          color: Colors.blue,
-                          height: MediaQuery.of(context).size.width * 0.20,
-                          width: MediaQuery.of(context).size.width * 0.20,
-                        )
-                      : Stack(
-                          alignment: Alignment.bottomLeft,
-                          children: <Widget>[
-                            Container(
-                              child: Image.file(
-                                File(compactPostThumbnailData),
-                                fit: BoxFit.cover,
-                              ),
-                              height: MediaQuery.of(context).size.width * 0.20,
-                              width: MediaQuery.of(context).size.width * 0.20,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(3.0),
-                              child: Icon(
-                                FlutterIcons.play_fou,
-                                size: 26,
-                                color: Colors.white,
-                              ),
-                            )
-                          ],
-                        )),
+            )
+          else
+            Container(
+              margin: const EdgeInsets.all(8.0),
+              height: MediaQuery.of(context).size.width * 0.20,
             )
         ],
       ),
@@ -779,7 +760,7 @@ class _PostState extends State<Post> {
               title: 'Delete Post',
               description: 'Are you sure you want to delete this Post?',
               leftButtonText: 'Cancel',
-              rightButtonText: 'delete',
+              rightButtonText: 'Delete',
               leftButtonFunction: () {
                 Navigator.pop(context);
               },
@@ -803,27 +784,6 @@ class _PostState extends State<Post> {
 
   unvote() async {
     //TODO
-  }
-
-  getVideoThumbnail(String url) async {
-    if (thumbnailType != CompactPostThumbnailType.video) {
-      setState(() {
-        thumbnailType = CompactPostThumbnailType.video;
-      });
-
-      var dir = await getTemporaryDirectory();
-
-      var _thumbnail = await VideoThumbnail.thumbnailFile(
-          video: url,
-          thumbnailPath: dir.path,
-          imageFormat: ImageFormat.WEBP,
-          maxHeight: 200,
-          quality: 75,
-          timeMs: 1000);
-      setState(() {
-        compactPostThumbnailData = _thumbnail;
-      });
-    }
   }
 
   Container tagBar() {
@@ -957,6 +917,11 @@ class _PostState extends State<Post> {
         ));
       } else if (contentsInfo[i]['type'] == 'text') {
         contentsViewList.add(textContentContainer(contents['$i']));
+        if (compactPostText == null) {
+          compactPostText = contents['$i'];
+          compactPostText = compactPostText.substring(
+              0, contents['$i'].length > 100 ? 100 : contents['$i'].length);
+        }
       } else if (contentsInfo[i]['type'] == 'link') {
         contentsViewList.add(linkContentContainer(contents['$i']));
       } else {
@@ -970,6 +935,10 @@ class _PostState extends State<Post> {
       });
     if (widget.upvoted == true) {
       vote = Vote.up;
+    } else if (widget.upvoted == false) {
+      vote = Vote.down;
+    } else {
+      vote = Vote.none;
     }
     super.didChangeDependencies();
   }

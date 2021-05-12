@@ -8,7 +8,7 @@ import '../services/auth_service.dart';
 import 'package:blue/widgets/header.dart';
 import 'verify_email_screen.dart';
 
-enum AuthFormType { signIn, signUp, googleSignIn,reset }
+enum AuthFormType { signIn, signUp, googleSignIn, reset }
 
 class SignInScreen extends StatefulWidget {
   static const signInRouteName = 'email-sign-in';
@@ -28,7 +28,7 @@ class _SignInScreenState extends State<SignInScreen> {
   _SignInScreenState({this.authFormType});
 
   final formKey = GlobalKey<FormState>();
-  String _email, _password, _name,_username, _warning;
+  String _email, _password, _name, _username, _warning;
   void switchFormState(String state) {
     formKey.currentState.reset();
     if (state == "signUp") {
@@ -58,7 +58,8 @@ class _SignInScreenState extends State<SignInScreen> {
       try {
         final auth = Provider.of(context).auth;
         if (authFormType == AuthFormType.signIn) {
-          String uid = await auth.signInWithEmailAndPassword(_email, _password);
+          String uid =
+              await auth.signInWithEmailAndPassword(_email, _password, context);
           print("Signed In with ID $uid");
           //   usersRef.document(user.id).setData({
           //   'id': user.id,
@@ -69,7 +70,7 @@ class _SignInScreenState extends State<SignInScreen> {
           //   'about': "",
           //   'timestamp': timestamp
           // });
-     //     Navigator.of(context).pushReplacementNamed('/home');         TODO:
+          //     Navigator.of(context).pushReplacementNamed('/home');         TODO:
         } else if (authFormType == AuthFormType.reset) {
           await auth.sendPasswordResetEmail(_email);
           print("Password reset email sent");
@@ -77,17 +78,12 @@ class _SignInScreenState extends State<SignInScreen> {
           setState(() {
             authFormType = AuthFormType.signIn;
           });
-        }else if(authFormType == AuthFormType.signUp){
-          
-         await auth.createUserWithEmailAndPassword(
-              _email, _password);
-      
-           
+        } else if (authFormType == AuthFormType.signUp) {
+          await auth.createUserWithEmailAndPassword(_email, _password);
 
           Navigator.of(context).pushReplacementNamed('/home');
-        }else{
-                  Navigator.of(context).pop(_username);
-                 
+        } else {
+          Navigator.of(context).pop(_username);
         }
       } catch (e) {
         print(e);
@@ -97,7 +93,8 @@ class _SignInScreenState extends State<SignInScreen> {
       }
     }
   }
-    Widget showAlert() {
+
+  Widget showAlert() {
     if (_warning != null) {
       return Container(
         color: Colors.amberAccent,
@@ -135,7 +132,6 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     final _width = MediaQuery.of(context).size.width;
@@ -149,7 +145,7 @@ class _SignInScreenState extends State<SignInScreen> {
         width: _width,
         child: Column(
           children: <Widget>[
-           showAlert(),
+            showAlert(),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 60),
               child: Form(
@@ -169,11 +165,11 @@ class _SignInScreenState extends State<SignInScreen> {
     String _headerText;
     if (authFormType == AuthFormType.signUp) {
       _headerText = "Create New Account";
-    }else if (authFormType == AuthFormType.reset) {
+    } else if (authFormType == AuthFormType.reset) {
       _headerText = "Reset Password";
-    }  else if (authFormType == AuthFormType.signIn){
+    } else if (authFormType == AuthFormType.signIn) {
       _headerText = "Sign In";
-    } else{
+    } else {
       _headerText = "Create Username";
     }
     return header(
@@ -188,7 +184,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   List<Widget> buildInputs() {
     List<Widget> textFields = [];
-     if (authFormType == AuthFormType.reset) {
+    if (authFormType == AuthFormType.reset) {
       textFields.add(
         TextFormField(
           validator: EmailValidator.validate,
@@ -200,14 +196,13 @@ class _SignInScreenState extends State<SignInScreen> {
       textFields.add(SizedBox(height: 20));
       return textFields;
     }
-        if (authFormType == AuthFormType.googleSignIn) {
+    if (authFormType == AuthFormType.googleSignIn) {
       textFields.add(
         TextFormField(
           validator: UsernameValidator.validate,
           style: TextStyle(fontSize: 22.0),
           decoration: buildSignUpInputDecoration("Username"),
           onSaved: (value) => _username = value,
-
         ),
       );
       textFields.add(SizedBox(height: 20));
@@ -279,12 +274,12 @@ class _SignInScreenState extends State<SignInScreen> {
       _switchButtonText = "Return to Sign In";
       _newFormState = "signIn";
       _submitButtonText = "Submit";
-    } else if(authFormType == AuthFormType.signUp){
+    } else if (authFormType == AuthFormType.signUp) {
       _switchButtonText = "Have an Account? Sign In";
       _newFormState = "signIn";
       _submitButtonText = "Sign Up";
-    }else{
-          _switchButtonText = '';
+    } else {
+      _switchButtonText = '';
       _newFormState = "googleSignIn";
       _submitButtonText = "Submit";
     }
@@ -312,8 +307,8 @@ class _SignInScreenState extends State<SignInScreen> {
       ),
       showForgotPassword(_showForgotPassword),
       Visibility(
-        visible: _switchButtonText != '' ,
-              child: FlatButton(
+        visible: _switchButtonText != '',
+        child: FlatButton(
           child: Text(_switchButtonText,
               style: TextStyle(
                   color: Theme.of(context).iconTheme.color.withOpacity(0.6))),
@@ -324,13 +319,14 @@ class _SignInScreenState extends State<SignInScreen> {
       )
     ];
   }
-   Widget showForgotPassword(bool visible) {
+
+  Widget showForgotPassword(bool visible) {
     return Visibility(
       child: FlatButton(
         child: Text(
           "Forgot Password?",
-        style: TextStyle(
-                color: Theme.of(context).iconTheme.color.withOpacity(0.6)),
+          style: TextStyle(
+              color: Theme.of(context).iconTheme.color.withOpacity(0.6)),
         ),
         onPressed: () {
           setState(() {

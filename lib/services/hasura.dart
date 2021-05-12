@@ -281,7 +281,7 @@ class Hasura {
   }
 
   static insertPost(List contents, String title,
-      {List<String> tags, String topicName}) async {
+      {List<String> tags, String topicName, String thumbUrl}) async {
     if (jwtToken == null) return;
     String uid = AuthService().getCurrentUID();
     var userId = await getUserId(uid: uid);
@@ -293,20 +293,21 @@ class Hasura {
             '{tag: {data: {tag: "$t"}, on_conflict: {constraint: tags_tag_key, update_columns: [tag]}}}';
       });
     }
+    String thumb = thumbUrl != null ? 'thumbnail: "$thumbUrl",' : '';
     String topic = "";
     if (topicName != null) {
       topic = ' category:"$topicName",';
     }
     String _doc = tags == null
         ? """mutation insertData  {
-  insert_posts_one(object: {contents: $contents, owner_id: $userId, title: "$title", uid: "$uid",$topic }
+  insert_posts_one(object: {contents: $contents, owner_id: $userId, title: "$title", uid: "$uid",$topic $thumb}
         ) {
     post_id
   }
 }
 """
         : """mutation{
-  insert_posts_one(object: {contents: $contents, owner_id: $userId, title: "$title", uid: "$uid",$topic post_tags: {data: [$tagsString]}}) {
+  insert_posts_one(object: {contents: $contents, owner_id: $userId, title: "$title", uid: "$uid",$topic post_tags: {data: [$tagsString]}, $thumb}) {
     post_id
   }
 }
@@ -418,6 +419,7 @@ class Hasura {
     autoplay_videos
     dark_mode
     theme
+    thumbnail
     searches_last_cleared
     set_private
     following_posts_last_seen
@@ -443,6 +445,7 @@ class Hasura {
     owner_id
     post_id
     title
+    thumbnail
     upvoted_by_user
     comment_count
     user{
@@ -524,49 +527,37 @@ class Hasura {
     return tags;
   }
 
-  static String updateStats(Stat type, int id, bool inc) {
-    //TODO : where
-    return """update_posts(
-   where: {post_id: {_eq: $id}},                 
-    _inc: {${type.toString().substring(5)}: ${inc ? 1 : -1}}
-  ){
-    affected_rows
-  }""";
-  }
-
   static insertPostVote(int postId, bool up) async {
     var userId = await getUserId();
-    String string = """mutation{
-  ${updateStats(up ? Stat.upvote_count : Stat.downvote_count, postId, true)}
-}
-""";
-    print(string);
-    await hasuraConnect.mutation(string);
-    print("""mutation{
-  insert_upvotes_one(object:{post_id:$postId,user_id:$userId}){
-   __typename
-  }
-}""");
     await hasuraConnect.mutation("""mutation{
-  insert_upvotes_one(object:{post_id:$postId,user_id:$userId}){
+  insert_upvotes_one(object:{post_id:$postId,user_id:$userId,up: $up}){
    __typename
   }
 }""");
   }
 
-  static deletePostVote(int postId, bool up) async {
+  static updatePostVote(int postId, bool up) async {
+    var userId = await getUserId();
+
+    await hasuraConnect.mutation("""mutation{
+  update_upvotes_by_pk(pk_columns:{post_id:$postId,user_id:$userId},_set:{up:$up}){
+   __typename
+  }
+}""");
+  }
+
+  static deletePostVote(int postId) async {
     var userId = Boxes.currentUserBox.get('user_id');
     if (userId == null) {
       userId = await getUserId();
     }
     String string = """mutation{
- delete_${up ? "up" : "down"}votes_by_pk(
+ delete_upvotes_by_pk(
     post_id:"$postId",
     user_id:$userId
   ){
    __typename
   }
-  ${updateStats(up ? Stat.upvote_count : Stat.downvote_count, postId, false)}
 }
 """;
     print(string);
@@ -840,10 +831,58 @@ class Hasura {
 """);
   }
 
+  static blockedUsers({bool idOnly}) async {
+    int id = await getUserId();
+
+    String doc = idOnly == true
+        ? 'blocked_user_id'
+        : """blocked_user{
+    user_id
+    username
+    name
+    avatar_url
+
+  
+  }""";
+    dynamic data = await hasuraConnect.query("""
+query{
+  user_blocks(where:{user_id:{_eq:$id}}){
+    
+  $doc
+  }
+  
+}""");
+
+    return data['data']['user_blocks'];
+  }
+
+  static mutedUsers({bool idOnly}) async {
+    int id = await getUserId();
+    String doc = idOnly == true
+        ? 'muted_user_id'
+        : """muted_user{
+    user_id
+    username
+    name
+    avatar_url
+
+  
+  }""";
+    dynamic data = await hasuraConnect.query("""
+query{
+  user_mutes(where:{user_id:{_eq:$id}}){
+  $doc
+  }
+  
+}""");
+
+    return data['data']['user_mutes'];
+  }
+
   static blockUser(int peerId) async {
     int id = await getUserId();
 
-    hasuraConnect.mutation("""mutation{
+    hasuraConnect.query("""mutation{
   insert_user_blocks_one(object:{user_id:$id,blocked_user_id:$peerId}){user_id
   }
 }""");

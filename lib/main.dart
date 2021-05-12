@@ -101,9 +101,8 @@ void main() async {
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.black.withOpacity(0),
       systemNavigationBarDividerColor: Colors.grey[900],
-      systemNavigationBarColor: dark == true ? Colors.black : Colors.white,
-      systemNavigationBarIconBrightness:
-          dark == true ? Brightness.light : Brightness.dark));
+      systemNavigationBarColor: Colors.black,
+      systemNavigationBarIconBrightness: Brightness.light));
   runApp(MyApp());
 }
 

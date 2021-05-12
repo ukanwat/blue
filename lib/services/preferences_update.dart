@@ -30,27 +30,37 @@ class PreferencesUpdate {
   }
 
   bool containsInList(
-    String key,
+    var key,
     dynamic value,
   ) {
-    var _list = Boxes.preferenceBox.get(
+    List _list = Boxes.preferenceBox.get(
       key,
     );
     if (_list == null) {
       _list = [];
     }
+
+    print(key);
+    print(_list.runtimeType);
     return _list.contains(value);
   }
 
   updateStringList(
     String key,
-    List<String> value,
+    List<dynamic> value,
   ) {
-    Boxes.preferenceBox.put(key, value);
+    List _list = Boxes.preferenceBox.get(
+      key,
+    );
+    if (_list == null) {
+      _list = [];
+    }
+    _list.addAll(value);
+    Boxes.preferenceBox.put(key, _list);
   }
 
   removeFromList(
-    String key,
+    var key,
     dynamic value,
   ) async {
     List _list = Boxes.preferenceBox.get(key);
@@ -63,18 +73,31 @@ class PreferencesUpdate {
   }
 
   addToList(
-    String key,
+    var key,
     dynamic value,
   ) {
     List<dynamic> _list = Boxes.preferenceBox.get(key);
+
     if (_list == null) {
-      _list = [];
+      _list = <dynamic>[];
     }
     if (!_list.contains(value)) {
       _list.add(value);
     }
 
     Boxes.preferenceBox.put(key, _list);
+  }
+
+  isListEmpty(String key) {
+    List<dynamic> _list = Boxes.preferenceBox.get(key);
+    if (_list == null) {
+      _list = [];
+    }
+    if (_list.length == 0) {
+      return true;
+    }
+    Boxes.preferenceBox.put(key, _list);
+    return false;
   }
 
   String getString(
@@ -93,10 +116,10 @@ class PreferencesUpdate {
     return Boxes.preferenceBox.get(key);
   }
 
-  List<String> getStringList(
+  List<dynamic> getStringList(
     String key,
   ) {
-    List<String> _list = Boxes.preferenceBox.get(key);
+    List<dynamic> _list = Boxes.preferenceBox.get(key);
     if (_list == null) {
       return [];
     }

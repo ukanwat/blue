@@ -8,20 +8,24 @@ import 'hasura.dart';
 class PostFunctions {
   handleUpvoteButton(int postId, Vote vote) async {
     print('vote:$vote');
-    if (vote == Vote.none) {
-      await Hasura.insertPostVote(postId, true);
+    if (vote == Vote.up) {
+      await Hasura.deletePostVote(postId);
+    } else if (vote == Vote.down) {
+      await Hasura.updatePostVote(postId, true);
     } else {
-      await Hasura.deletePostVote(postId, true);
+      await Hasura.insertPostVote(postId, true);
     }
 
     return;
   }
 
   handleDownvoteButton(int postId, Vote vote) async {
-    if (vote == Vote.none) {
-      await Hasura.insertPostVote(postId, false);
+    if (vote == Vote.down) {
+      await Hasura.deletePostVote(postId);
+    } else if (vote == Vote.up) {
+      await Hasura.updatePostVote(postId, false);
     } else {
-      await Hasura.deletePostVote(postId, false);
+      await Hasura.insertPostVote(postId, false);
     }
 
     return;

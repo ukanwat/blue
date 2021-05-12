@@ -19,7 +19,7 @@ import 'package:flutter/material.dart';
 // Package imports:
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+// import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hasura_connect/hasura_connect.dart';
@@ -73,11 +73,17 @@ class AuthService {
 
   // Email & Password Sign In
   Future<String> signInWithEmailAndPassword(
-      String email, String password) async {
-    return (await firebaseAuth.signInWithEmailAndPassword(
-            email: email, password: password))
-        .user
-        .uid;
+      String email, String password, BuildContext context) async {
+    String uid;
+    try {
+      uid = (await firebaseAuth.signInWithEmailAndPassword(
+              email: email, password: password))
+          .user
+          .uid;
+    } catch (e) {
+      snackbar(e.message, context);
+    }
+    return uid;
   }
 
   // Sign Out
@@ -105,20 +111,32 @@ class AuthService {
             handleCodeInApp: true));
   }
 
-  Future changePassword(String newPassword, String password) async {
+  Future changePassword(
+      String newPassword, String password, BuildContext context) async {
     auth.User firebaseUser = firebaseAuth.currentUser;
-
+    print('$newPassword dwwf $password');
+    bool error = false;
     String _accountType = PreferencesUpdate().getString('accountType');
     if (firebaseUser != null && _accountType != 'google') {
       final auth.AuthCredential credential = auth.EmailAuthProvider.credential(
           email: currentUser.email, password: password);
-      firebaseUser.reauthenticateWithCredential(credential);
-      firebaseUser.updatePassword(newPassword);
+      await firebaseUser.reauthenticateWithCredential(credential);
+      try {
+        firebaseUser.updatePassword(newPassword);
+      } catch (e) {
+        error = true;
+        snackbar(e.message, context, color: Colors.red);
+      }
       firebaseUser.reload();
+    }
+    if (!error) {
+      snackbar('Congratulations! Password change successful', context);
     }
   }
 
-  Future changeEmail(String email, String password) async {
+  Future changeEmail(
+      String email, String password, BuildContext context) async {
+    bool error = false;
     var firebaseUser = firebaseAuth.currentUser;
     String _accountType = PreferencesUpdate().getString('accountType');
     if (firebaseUser != null && _accountType != 'google') {
@@ -129,16 +147,19 @@ class AuthService {
         firebaseUser.reauthenticateWithCredential(credential);
         firebaseUser.updateEmail(email);
         firebaseUser.reload();
-        usersRef
-            .doc(currentUser.id)
-            .set({'email': email}, SetOptions(merge: true));
+
         var currentUserMap = Boxes.currentUserBox.toMap();
         currentUserMap['email'] = email;
         Boxes.currentUserBox.putAll(currentUserMap);
         getCurrentUser();
       } catch (e) {
+        error = true;
         print(e);
       }
+    }
+    if (!error) {
+      snackbar('Congratulations! Your Email has been chnaged', context);
+      Navigator.pop(context);
     }
   }
 
@@ -161,13 +182,13 @@ class AuthService {
   }
 
   signInWithFacebook(BuildContext context) async {
-    final LoginResult result = await FacebookAuth.instance.login();
-    // Create a credential from the access token
-    final auth.OAuthCredential credential =
-        auth.FacebookAuthProvider.credential(result.accessToken.token);
-    // Once signed in, return the UserCredential
-    _user = (await auth.FirebaseAuth.instance.signInWithCredential(credential))
-        .user;
+    // final LoginResult result = await FacebookAuth.instance.login();
+    // // Create a credential from the access token
+    // final auth.OAuthCredential credential =
+    //     auth.FacebookAuthProvider.credential(result.accessToken.token);
+    // // Once signed in, return the UserCredential
+    // _user = (await auth.FirebaseAuth.instance.signInWithCredential(credential))
+    //     .user;
     bool hasuraUserExists = await Hasura.userExists(_user.uid);
     return hasuraUserExists;
   }
@@ -256,7 +277,13 @@ class AuthService {
     print('Email: ${data.name}, Password: ${data.password}');
     userSignedIn = false;
     progressOverlay(context: context).show();
-    await AuthService().signInWithEmailAndPassword(data.name, data.password);
+
+    String a = await AuthService()
+        .signInWithEmailAndPassword(data.name, data.password, context);
+    if (a == null) {
+      progressOverlay(context: context).dismiss();
+      return null;
+    }
     var _user;
     while (_user == null) {
       _user = AuthService.firebaseAuth.currentUser;

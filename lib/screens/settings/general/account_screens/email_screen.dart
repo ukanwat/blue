@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 // Project imports:
 import 'package:blue/providers/provider_widget.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 
 class EmailScreen extends StatefulWidget {
   static const routeName = 'email';
@@ -13,8 +14,9 @@ class EmailScreen extends StatefulWidget {
 }
 
 class _EmailScreenState extends State<EmailScreen> {
- TextEditingController newEmailController;
-
+  TextEditingController newEmailController = TextEditingController();
+  TextEditingController currentPasswordController = TextEditingController();
+  bool currentPasswordObscure = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,10 +24,10 @@ class _EmailScreenState extends State<EmailScreen> {
           preferredSize: Size.fromHeight(50),
           child: AppBar(
             backgroundColor: Theme.of(context).canvasColor,
-            elevation: 0,centerTitle: true,
+            elevation: 0,
+            centerTitle: true,
             title: Text(
               'Change Email',
-              
             ),
             automaticallyImplyLeading: false,
             leading: CupertinoNavigationBarBackButton(
@@ -34,17 +36,19 @@ class _EmailScreenState extends State<EmailScreen> {
                 Navigator.pop(context);
               },
             ),
-            actions: <Widget>[FlatButton(onPressed: (){
-             var auth =  Provider.of(context).auth;
-             auth.changeEmail(newEmailController.text, 'password');              //TODO and errors
-              }, child: Text(
-                'Done',
-                style: TextStyle(
-                  color: Colors.blue,
-                  fontSize: 18
-                ),
-              ))
-              
+            actions: <Widget>[
+              FlatButton(
+                  onPressed: () {
+                    var auth = Provider.of(context).auth;
+                    auth.changeEmail(
+                        newEmailController.text,
+                        currentPasswordController.text,
+                        context); //TODO and errors
+                  },
+                  child: Text(
+                    'Done',
+                    style: TextStyle(color: Colors.blue, fontSize: 18),
+                  ))
             ],
           )),
       body: Container(
@@ -56,49 +60,101 @@ class _EmailScreenState extends State<EmailScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.all(10),
+                  child: TextField(
+                    controller: currentPasswordController,
+                    decoration: InputDecoration(
+                      suffixIcon: currentPasswordObscure
+                          ? IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  currentPasswordObscure = false;
+                                });
+                              },
+                              icon: Icon(
+                                FlutterIcons.visibility_off_mdi,
+                                color: Theme.of(context)
+                                    .iconTheme
+                                    .color
+                                    .withOpacity(0.8),
+                              ),
+                            )
+                          : IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  currentPasswordObscure = true;
+                                });
+                              },
+                              icon: Icon(FlutterIcons.visibility_mdi,
+                                  color: Theme.of(context)
+                                      .iconTheme
+                                      .color
+                                      .withOpacity(0.8))),
+                      hintText: 'Current Password',
+                      contentPadding: EdgeInsets.symmetric(horizontal: 5),
+                      border: OutlineInputBorder(),
+                      fillColor: Theme.of(context).cardColor,
+                      filled: true,
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).cardColor,
+                          width: 1,
+                        ),
+                      ),
+                      hintStyle: TextStyle(
+                        color:
+                            Theme.of(context).iconTheme.color.withOpacity(0.8),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                            color: Theme.of(context).cardColor, width: 1),
+                      ),
+                    ),
+                    keyboardType: TextInputType.visiblePassword,
+                    maxLines: 1,
+                    obscureText: currentPasswordObscure,
+                  ),
+                ),
                 Container(
                   padding: EdgeInsets.all(10),
                   alignment: Alignment.center,
                   child: TextFormField(
-                      validator: (value) {
-                        if(value.isEmpty)
-                        return "Email can't be empty";
-                        return null;
-                      },
-                      controller: newEmailController,
-                      decoration: InputDecoration(
-                      
-                     
-                        hintText: 'New Email',
-                        fillColor: Theme.of(context).cardColor,
-                        hintStyle: TextStyle(
-                            color: Theme.of(context)
-                                .iconTheme
-                                .color
-                                .withOpacity(0.8)),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 5),
-                        border: OutlineInputBorder(),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: Theme.of(context).cardColor,
-                            width: 1,
-                          ),
-                        ),
-                        filled: true,
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                              color: Theme.of(context).cardColor, width: 1),
+                    validator: (value) {
+                      if (value.isEmpty) return "Email can't be empty";
+                      return null;
+                    },
+                    controller: newEmailController,
+                    decoration: InputDecoration(
+                      hintText: 'New Email',
+                      fillColor: Theme.of(context).cardColor,
+                      hintStyle: TextStyle(
+                          color: Theme.of(context)
+                              .iconTheme
+                              .color
+                              .withOpacity(0.8)),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 5),
+                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).cardColor,
+                          width: 1,
                         ),
                       ),
-                      keyboardType: TextInputType.visiblePassword,
-                      maxLines: 1,
-                    
+                      filled: true,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                            color: Theme.of(context).cardColor, width: 1),
+                      ),
                     ),
-                             
+                    keyboardType: TextInputType.visiblePassword,
+                    maxLines: 1,
+                  ),
                 ),
-               
               ],
             ),
           ),

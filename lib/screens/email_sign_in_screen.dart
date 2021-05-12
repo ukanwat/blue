@@ -39,7 +39,10 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   }
 
   Future<String> loginUser(LoginData data) async {
-    await AuthService().loginUser(data, context);
+    var a = await AuthService().loginUser(data, context);
+    if (a == null) {
+      return 'Something went Wrong!';
+    }
     return null;
   }
 
@@ -72,7 +75,10 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
 
           AuthService().signOut(context);
 
-          await AuthService().loginUser(signupData, context);
+          var a = await AuthService().loginUser(signupData, context);
+          if (a == null) {
+            return;
+          }
         }
 
         // if (error) {

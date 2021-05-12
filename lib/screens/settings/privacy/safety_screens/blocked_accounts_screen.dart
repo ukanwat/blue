@@ -1,4 +1,7 @@
 // Flutter imports:
+import 'package:blue/services/boxes.dart';
+import 'package:blue/services/hasura.dart';
+import 'package:blue/services/preferences_update.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -20,7 +23,7 @@ class BlockedAccountsScreen extends StatefulWidget {
 class _BlockedAccountsScreenState extends State<BlockedAccountsScreen> {
   bool loading = true;
   List blockedAccounts;
-  List<User> blockedUsers = [];
+  List<dynamic> blockedUsers = [];
   @override
   void initState() {
     getBlockedAccounts();
@@ -28,41 +31,13 @@ class _BlockedAccountsScreenState extends State<BlockedAccountsScreen> {
   }
 
   getBlockedAccounts() async {
-    DocumentSnapshot _doc;
-    try {
-      _doc = await userReportsRef
-          .doc(currentUser.id)
-          .get(GetOptions(source: Source.cache));
-    } catch (e) {}
-    if (_doc == null) {
-      _doc = await userReportsRef.doc(currentUser.id).get();
-    } 
-    else if (!_doc.exists) {
-      _doc = await userReportsRef.doc(currentUser.id).get();
-    }
-    if(_doc == null){
-      setState(() {
-        loading = false;
-      });
-      return;
-    }else if(_doc.data()['blocked'] == null){
-  setState(() {
-        loading = false;
-      });
-      return;
-    }
-    blockedAccounts = _doc.data()['blocked'];
-    List<Future> accountFutures = [];
-    List accountsDocSnapshots;
-    blockedAccounts.forEach((account) {
-       if(account != null)
-      accountFutures.add(usersRef.doc(account).get());
-    });
-    accountsDocSnapshots = await Future.wait(accountFutures);
+    dynamic accounts = await Hasura.blockedUsers();
     setState(() {
       loading = false;
       blockedUsers = blockedUsers +
-          accountsDocSnapshots.map((doc) => User.fromDocument(doc.data())).toList();
+          accounts
+              .map((doc) => User.fromDocument(doc['blocked_user']))
+              .toList();
     });
   }
 
@@ -75,7 +50,7 @@ class _BlockedAccountsScreenState extends State<BlockedAccountsScreen> {
           ? circularProgress()
           : ListView.builder(
               itemBuilder: (_, i) {
-                return UserTile(blockedUsers[i],Tile.block);
+                return UserTile(blockedUsers[i], Tile.block);
               },
               itemCount: blockedUsers.length,
             ),

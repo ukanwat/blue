@@ -38,14 +38,27 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
     String timeStr = PreferencesUpdate().getString('mute_push_time');
 
     setState(() {
-      if (DateTime.parse(timeStr).isAfter(DateTime.now())) {
-        likes = false;
-        comments = false;
-        commentReplies = false;
-        newFollowers = false;
-        directRequests = false;
-        features = false;
-        reminders = false;
+      if (timeStr != null) {
+        if (DateTime.parse(timeStr).isAfter(DateTime.now())) {
+          likes = false;
+          comments = false;
+          commentReplies = false;
+          newFollowers = false;
+          directRequests = false;
+          features = false;
+          reminders = false;
+        } else {
+          reminders = PreferencesUpdate().getBool('push_features', def: true);
+          features = PreferencesUpdate().getBool('push_reminders', def: true);
+          directRequests =
+              PreferencesUpdate().getBool('push_direct_requests', def: true);
+          newFollowers =
+              PreferencesUpdate().getBool('push_new_followers', def: true);
+          commentReplies =
+              PreferencesUpdate().getBool('push_reminders', def: true);
+          comments = PreferencesUpdate().getBool('push_comments', def: true);
+          likes = PreferencesUpdate().getBool('push_likes', def: true);
+        }
       } else {
         reminders = PreferencesUpdate().getBool('push_features', def: true);
         features = PreferencesUpdate().getBool('push_reminders', def: true);

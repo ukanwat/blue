@@ -49,8 +49,30 @@ class _TabsScreenState extends State<TabsScreen> {
     await DynamicLinksService.initDynamicLinks(context);
   }
 
+  setLists() async {
+    if (PreferencesUpdate().isListEmpty('blocked_accounts')) {
+      List accounts = await Hasura.blockedUsers(idOnly: true);
+      print(accounts);
+      List<dynamic> list = accounts.map((d) => d['blocked_user_id']).toList();
+      if (list == null) {
+        list = [];
+      }
+      PreferencesUpdate().updateStringList('blocked_accounts', list);
+    }
+    if (PreferencesUpdate().isListEmpty('muted_messages')) {
+      List accounts = await Hasura.mutedUsers(idOnly: true);
+
+      List<dynamic> list = accounts.map((d) => d['muted_user_id']).toList();
+      if (list == null) {
+        list = [];
+      }
+      PreferencesUpdate().updateStringList('muted_messages', list);
+    }
+  }
+
   @override
   void initState() {
+    PreferencesUpdate()..removeFromList('blocked_accounts', ['100']);
     PushNotificationsManager().initMessage();
     if (Boxes.followingBox.isEmpty) {
       PreferencesUpdate().setFollowings();
@@ -58,7 +80,7 @@ class _TabsScreenState extends State<TabsScreen> {
     if (Boxes.saveBox.isEmpty) {
       PreferencesUpdate().setSaves();
     }
-
+    setLists();
     super.initState();
   }
 

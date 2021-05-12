@@ -24,7 +24,7 @@ class DeactivateAccountScreen extends StatelessWidget {
                 title: "Come Back Anytime!",
                 description:
                     "People will not be able to see your Profile after account deactivation but they will still see private messages sent by you.\nTo use Stark again , just login with your email. ",
-                leftButtonText: "Deactivate account",
+                leftButtonText: "Deactivate\naccount",
                 rightButtonText: "Cancel",
               ),
             );

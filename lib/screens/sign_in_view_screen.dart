@@ -45,7 +45,7 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
     await _auth.signInContinue(context, exists, result);
   }
 
-  facebookSignIn() async {
+  facebookSignIn(BuildContext context) async {
     final _auth = Provider.of(context).auth;
     bool exists = await _auth.signInWithFacebook(context);
     var result;
@@ -180,9 +180,23 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
           // ),
           Container(
             height: 45,
-            child: GoogleAuthButton(
+            child: FacebookAuthButton(
                 onPressed: () {
                   googleSignIn(context);
+                },
+                darkMode: true,
+                style: AuthButtonStyle(
+                  iconType: AuthIconType.secondary,
+                )),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Container(
+            height: 45,
+            child: GoogleAuthButton(
+                onPressed: () {
+                  facebookSignIn(context);
                 },
                 darkMode: true,
                 style: AuthButtonStyle(

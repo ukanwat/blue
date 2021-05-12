@@ -98,6 +98,8 @@ class _ProfileScreenState extends State<ProfileScreen>
         });
       }
     });
+
+    print(widget.profileId);
     super.didChangeDependencies();
   }
 
@@ -607,6 +609,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   Widget build(BuildContext context) {
     super.build(context);
     // screenHeight = MediaQuery.of(context).size.height;
+
     if (_controller == null) {
       _controller = ScrollController();
     }
@@ -761,7 +764,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                   value: 'Report'),
                                               PopupMenuItem(
                                                   child: Text(
-                                                      '${PreferencesUpdate().containsInList('blocked_accounts', _profileUser.userId) ? "Unblock" : "Block"} $profileName'),
+                                                      '${PreferencesUpdate().containsInList('blocked_accounts', widget.profileId) ? "Unblock" : "Block"} $profileName'),
                                                   value: PreferencesUpdate()
                                                           .containsInList(
                                                               'blocked_accounts',
@@ -787,7 +790,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                             ),
                                             onSelected: (selectedValue) async {
                                               Map peer = {
-                                                'peerId': _profileUser.userId,
+                                                'peerId': widget.profileId,
                                                 'peerUsername':
                                                     _profileUser.username,
                                                 'peerImageUrl':

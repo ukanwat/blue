@@ -45,6 +45,8 @@ import '../services/boxes.dart';
 int textLength = 0;
 enum ContentInsertOptions { Device, Camera, Carousel }
 
+enum ThumbContent { video, image, carousel, link, text, none }
+
 class PostScreen extends StatefulWidget {
   static const routeName = '/post';
   @override
@@ -258,7 +260,7 @@ class _PostScreenState extends State<PostScreen> {
     });
   }
 
-  Future<File> compressImage(File file) async {
+  Future<File> compressImage(File file, {bool thumb}) async {
     imageId = Uuid().v4();
     final tempDir = await getTemporaryDirectory();
     final path = tempDir.path;
@@ -313,9 +315,12 @@ class _PostScreenState extends State<PostScreen> {
       tags = null;
     }
     await Hasura.insertPost(customContents, title,
-        tags: tags, topicName: topicName);
+        tags: tags, topicName: topicName, thumbUrl: thumbUrl);
   }
 
+  String thumbUrl;
+  ThumbContent _thumbContent = ThumbContent.none;
+  int thumbIndex;
   handleSubmit(String topicName, List<String> tags) async {
     setState(() {
       isUploading = true;
@@ -324,20 +329,37 @@ class _PostScreenState extends State<PostScreen> {
     for (int i = 0; i < contentsData.length; i++) {
       if (contentsData[i]['info']['type'] == 'null') {
       } else if (contentsData[i]['info']['type'] == 'link') {
+        if (_thumbContent.index > 3) {
+          thumbIndex = i;
+          _thumbContent = ThumbContent.link;
+        }
         firestoreContents['$x'] = contentsData[i]['content'].text;
         firestoreContentsInfo['$x'] = contentsData[i]['info'];
         x++;
       } else if (contentsData[i]['info']['type'] == 'text') {
+        if (_thumbContent.index > 4) {
+          thumbIndex = i;
+          _thumbContent = ThumbContent.text;
+        }
         firestoreContents['$x'] = contentsData[i]['content'].text;
         firestoreContentsInfo['$x'] = contentsData[i]['info'];
         x++;
       } else if (contentsData[i]['info']['type'] == 'image') {
+        if (_thumbContent.index > 1) {
+          thumbIndex = i;
+          _thumbContent = ThumbContent.image;
+        }
         File imageFile = await compressImage(contentsData[i]['content']);
         String mediaUrl = await uploadImage(imageFile);
         firestoreContents['$x'] = mediaUrl;
         firestoreContentsInfo['$x'] = contentsData[i]['info'];
         x++;
       } else if (contentsData[i]['info']['type'] == 'video') {
+        if (_thumbContent.index > 0) {
+          thumbIndex = i;
+          _thumbContent = ThumbContent.video;
+        }
+
         MediaInfo mediaInfo = await VideoCompress.compressVideo(
           contentsData[i]['content'].path,
           quality: VideoQuality.LowQuality,
@@ -362,6 +384,10 @@ class _PostScreenState extends State<PostScreen> {
         firestoreContentsInfo['$x'] = contentsData[i]['info'];
         x++;
       } else if (contentsData[i]['info']['type'] == 'carousel') {
+        if (_thumbContent.index > 2) {
+          thumbIndex = i;
+          _thumbContent = ThumbContent.carousel;
+        }
         List<String> mediaUrl =
             await uploadCarousel(contentsData[i]['content']);
         firestoreContents['$x'] = mediaUrl;
@@ -369,6 +395,34 @@ class _PostScreenState extends State<PostScreen> {
         x++;
       }
     }
+
+    File thumbImg;
+    print('tindex: $thumbIndex ');
+    if (_thumbContent == ThumbContent.carousel) {
+      thumbImg = contentsData[thumbIndex]['content'][0];
+    } else if (_thumbContent == ThumbContent.image) {
+      thumbImg = contentsData[thumbIndex]['content'];
+    } else if (_thumbContent == ThumbContent.link) {
+      thumbImg = contentsData[thumbIndex]['content'][0];
+    } else if (_thumbContent == ThumbContent.text) {
+      thumbImg = null;
+    } else if (_thumbContent == ThumbContent.video) {
+      thumbImg = await VideoCompress.getFileThumbnail(
+          contentsData[thumbIndex]['content'].path);
+    }
+
+    if (thumbImg != null) {
+      String id = Uuid().v4();
+      final tempDir = await getTemporaryDirectory();
+      final path = tempDir.path;
+      Im.Image imageFile = Im.decodeImage(thumbImg.readAsBytesSync());
+      imageFile = Im.copyResize(imageFile, width: 270, height: 270);
+      final compressedImageFile = File('$path/img_$id.jpg')
+        ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
+
+      thumbUrl = await uploadImage(compressedImageFile);
+    }
+
     print("doc:$topicName");
     await uploadPost(
         contents: firestoreContents,

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:ui';
 
 // Flutter imports:
+import 'package:blue/widgets/progress.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -268,7 +269,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             isHTML: false,
                           );
 
-                          await FlutterEmailSender.send(email);
+                          try {
+                            await FlutterEmailSender.send(email);
+                          } catch (e) {
+                            snackbar(e.message, context, color: Colors.red);
+                          }
                         }, FluentIcons.chat_help_24_regular,
                             removeBorder: true),
                       ],
