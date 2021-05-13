@@ -545,7 +545,7 @@ class Hasura {
   static insertPostVote(int postId, bool up) async {
     var userId = await getUserId();
     await hasuraConnect.mutation("""mutation{
-  insert_upvotes_one(object:{post_id:$postId,user_id:$userId,up: $up}){
+  insert_post_actions_one(object:{post_id:$postId,user_id:$userId,up: $up}){
    __typename
   }
 }""");
@@ -555,7 +555,7 @@ class Hasura {
     var userId = await getUserId();
 
     await hasuraConnect.mutation("""mutation{
-  update_upvotes_by_pk(pk_columns:{post_id:$postId,user_id:$userId},_set:{up:$up}){
+  update_post_actions_by_pk(pk_columns:{post_id:$postId,user_id:$userId},_set:{up:$up}){
    __typename
   }
 }""");
@@ -567,7 +567,7 @@ class Hasura {
       userId = await getUserId();
     }
     String string = """mutation{
- delete_upvotes_by_pk(
+ delete_post_actions_by_pk(
     post_id:$postId,
     user_id:$userId
   ){

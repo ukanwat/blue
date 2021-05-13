@@ -20,7 +20,7 @@ class PushNotificationsScreen extends StatefulWidget {
 }
 
 class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
-  bool likes = true;
+  bool upvotes = true;
   bool comments = true;
   bool commentReplies = true;
   bool newFollowers = true;
@@ -40,7 +40,7 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
     setState(() {
       if (timeStr != null) {
         if (DateTime.parse(timeStr).isAfter(DateTime.now())) {
-          likes = false;
+          upvotes = false;
           comments = false;
           commentReplies = false;
           newFollowers = false;
@@ -57,7 +57,7 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
           commentReplies =
               PreferencesUpdate().getBool('push_reminders', def: true);
           comments = PreferencesUpdate().getBool('push_comments', def: true);
-          likes = PreferencesUpdate().getBool('push_likes', def: true);
+          upvotes = PreferencesUpdate().getBool('push_upvotes', def: true);
         }
       } else {
         reminders = PreferencesUpdate().getBool('push_features', def: true);
@@ -69,7 +69,7 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
         commentReplies =
             PreferencesUpdate().getBool('push_reminders', def: true);
         comments = PreferencesUpdate().getBool('push_comments', def: true);
-        likes = PreferencesUpdate().getBool('push_likes', def: true);
+        upvotes = PreferencesUpdate().getBool('push_upvotes', def: true);
       }
       loading = false;
     });
@@ -77,7 +77,7 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
 
   disable() {
     setState(() {
-      likes = false;
+      upvotes = false;
       comments = false;
       commentReplies = false;
       newFollowers = false;
@@ -91,7 +91,7 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
     String name,
     bool value,
   ) {
-    PreferencesUpdate().updateBool(name, value);
+    PreferencesUpdate().updateBool(name, value, upload: true);
   }
 
   @override
@@ -298,15 +298,15 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
                   )),
                 ),
                 settingsSwitchListTile(
-                  'Likes',
-                  likes,
+                  'Post info',
+                  upvotes,
                   (newValue) {
                     saveNotifPref(
-                      'push_likes',
+                      'push_upvotes',
                       newValue,
                     );
                     setState(() {
-                      likes = newValue;
+                      upvotes = newValue;
                     });
                   },
                 ),
