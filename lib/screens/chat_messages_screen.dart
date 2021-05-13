@@ -233,7 +233,16 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
           color: Colors.white,
           size: 26,
         ),
-        onPressed: sendFunction,
+        onPressed: () async {
+          if (data.isEmpty) {
+            setState(() {
+              dataEmpty = false;
+            });
+            await Hasura.insertConversation(widget.peerUser.userId);
+          }
+
+          sendFunction();
+        },
       ),
     );
   }
@@ -427,6 +436,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     });
   }
 
+  bool dataEmpty;
   chatMessages() {
     DateTime firstTime;
     DateTime lastTimestamp = DateTime.fromMicrosecondsSinceEpoch(0);
@@ -436,7 +446,10 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     }
     List<Widget> messageItems = [];
     int length = data.length;
-    if (data.isEmpty) {
+    if (dataEmpty == null) {
+      dataEmpty = data.isEmpty;
+    }
+    if (dataEmpty) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
@@ -579,9 +592,9 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                     child: Subscription(
                   options: SubscriptionOptions(document: gql("""subscription{
  messages(where:{_and:[{conv_id:{_eq:${widget.convId}}},{created_at:{_gt:"$firstTime"}}]},){
-  created_at
-   data
-    msg_id
+     created_at
+     data
+     msg_id
      sender_id
      type
      deleted_by_sender
