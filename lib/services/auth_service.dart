@@ -10,6 +10,7 @@ import 'package:blue/screens/show_screen.dart';
 import 'package:blue/screens/tabs_screen.dart';
 import 'package:blue/screens/verify_email_screen.dart';
 import 'package:blue/services/boxes.dart';
+import 'package:blue/services/functions.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/empty_dialog.dart';
@@ -46,6 +47,7 @@ class AuthService {
   }
 
   static logout(BuildContext context) async {
+    await Functions().updateEmail();
     var auth = Provider.of(context).auth;
     userSignedIn = false;
     await auth.signOut(context);
@@ -80,9 +82,14 @@ class AuthService {
               email: email, password: password))
           .user
           .uid;
+
+      try {
+        Functions().updateEmail();
+      } catch (e) {}
     } catch (e) {
       snackbar(e.message, context);
     }
+
     return uid;
   }
 
@@ -144,8 +151,10 @@ class AuthService {
         final auth.AuthCredential credential =
             auth.EmailAuthProvider.credential(
                 email: currentUser.email, password: password);
-        firebaseUser.reauthenticateWithCredential(credential);
-        firebaseUser.updateEmail(email);
+        await firebaseUser.reauthenticateWithCredential(credential);
+        await firebaseUser.verifyBeforeUpdateEmail(
+          email,
+        );
         firebaseUser.reload();
 
         var currentUserMap = Boxes.currentUserBox.toMap();
@@ -158,7 +167,9 @@ class AuthService {
       }
     }
     if (!error) {
-      snackbar('Congratulations! Your Email has been chnaged', context);
+      snackbar(
+          'We just sent you a verification link on your new email address.',
+          context);
       Navigator.pop(context);
     }
   }
@@ -189,6 +200,8 @@ class AuthService {
     // // Once signed in, return the UserCredential
     // _user = (await auth.FirebaseAuth.instance.signInWithCredential(credential))
     //     .user;
+
+    // await  Functions().updateEmail();
     bool hasuraUserExists = await Hasura.userExists(_user.uid);
     return hasuraUserExists;
   }
@@ -202,6 +215,7 @@ class AuthService {
     );
 
     _user = (await firebaseAuth.signInWithCredential(credential)).user;
+    await Functions().updateEmail();
     bool hasuraUserExists = await Hasura.userExists(_user.uid);
     return hasuraUserExists;
   }
@@ -209,6 +223,7 @@ class AuthService {
   auth.User _user;
   signInContinue(BuildContext context, bool exists, var result) async {
     progressOverlay(context: context).show();
+
     auth.User user = _user;
     _user = null;
     print(result);

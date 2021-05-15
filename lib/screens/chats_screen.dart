@@ -7,6 +7,7 @@ import 'package:blue/services/graphql.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/empty_dialog.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -69,7 +70,7 @@ class _ChatsScreenState extends State<ChatsScreen>
       print(doc);
       User user = User.fromDocument({
         'avatar_url': doc['avatar_url'],
-        'id': doc['user_id'],
+        'user_id': doc['user_id'],
         'username': doc['username'],
         'name': doc['name']
       });
@@ -83,7 +84,7 @@ class _ChatsScreenState extends State<ChatsScreen>
             );
           },
           onClosed: null,
-          tappable: false,
+          tappable: true,
           closedShape: const RoundedRectangleBorder(),
           closedColor: Theme.of(context).backgroundColor,
           closedBuilder: (BuildContext _, VoidCallback openContainer) {
@@ -122,88 +123,144 @@ class _ChatsScreenState extends State<ChatsScreen>
   InkWell chatUserListTile(User user, VoidCallback openContainer, int i) {
     return InkWell(
       onTap: openContainer,
-      child: ListTile(
-        onLongPress: () {
-          showDialog(
-              context: context,
-              builder: (ctx) {
-                return EmptyDialog(Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        setState(() {
-                          print(i);
-                          chatUsers.removeAt(i - 1);
-                        });
-                        // Hasura.hideConversation(user.userId);
-                      },
-                      child: Container(
-                        height: 15,
-                        child: Text('Remove from View'),
-                      ),
-                    ),
-                  ],
-                ));
-              });
-        },
-        tileColor: Theme.of(context).backgroundColor,
-        leading: CircleAvatar(
-          backgroundImage: CachedNetworkImageProvider(user.avatarUrl ??
-              "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
-        ),
-        title: Text(
-          user.name,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
+      child: Dismissible(
+        key: UniqueKey(),
+        direction: DismissDirection.horizontal,
+        secondaryBackground: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text(
+                'Archive chat',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 10),
+                padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                decoration:
+                    BoxDecoration(shape: BoxShape.circle, color: Colors.red),
+                child: Icon(
+                  FluentIcons.archive_24_filled,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
         ),
-        subtitle: Row(
-          children: <Widget>[
-            Expanded(
-              child: Container(
-                child: directMap.containsKey(user.id)
-                    ? (directMap[user.id]['message'] == '${MessageType.gif}'
-                        ? Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Icon(
-                                FlutterIcons.play_box_outline_mco,
-                                size: 16,
-                                color: Colors.grey,
-                              ),
-                              Text(' GIF')
-                            ],
-                          )
-                        : (directMap[user.id]['message'] ==
-                                '${MessageType.image}'
-                            ? Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Icon(
-                                    FlutterIcons.image_fea,
-                                    size: 15,
-                                    color: Colors.grey,
-                                  ),
-                                  Text(' Image')
-                                ],
-                              )
-                            : Text(
-                                directMap[user.id]['message'],
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              )))
-                    : Text(
-                        user.username,
-                        maxLines: 1,
-                      ),
+        background: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 10),
+                padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                decoration:
+                    BoxDecoration(shape: BoxShape.circle, color: Colors.red),
+                child: Icon(
+                  FluentIcons.archive_24_filled,
+                  color: Colors.white,
+                ),
               ),
+              Text(
+                'Archive chat',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              )
+            ],
+          ),
+        ),
+        onDismissed: (DismissDirection d) {
+          if (d == DismissDirection.horizontal) {
+            Navigator.of(context).pop();
+            setState(() {
+              print(i);
+              chatUsers.removeAt(i - 1);
+            });
+            Hasura.hideConversation(user.userId);
+          }
+        },
+        child: ListTile(
+          // onLongPress: () {
+          //   showDialog(
+          //       context: context,
+          //       builder: (ctx) {
+          //         return EmptyDialog(Column(
+          //           mainAxisSize: MainAxisSize.min,
+          //           children: [
+          //             InkWell(
+          //               onTap: () {
+          //                 Navigator.of(context).pop();
+          //                 setState(() {
+          //                   print(i);
+          //                   chatUsers.removeAt(i - 1);
+          //                 });
+          //                 // Hasura.hideConversation(user.userId);
+          //               },
+          //               child: Container(
+          //                 height: 15,
+          //                 child: Text('Remove from View'),
+          //               ),
+          //             ),
+          //           ],
+          //         ));
+          //       });
+          // },
+          tileColor: Theme.of(context).backgroundColor,
+          leading: CircleAvatar(
+            backgroundImage: CachedNetworkImageProvider(user.avatarUrl ??
+                "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+          ),
+          title: Text(
+            user.name,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
             ),
-            Text(directMap.containsKey(user.id)
-                ? '${timeago.format(DateTime.parse(directMap[user.id]['time']))}'
-                : ''),
-          ],
+          ),
+          subtitle: Row(
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  child: directMap.containsKey(user.id)
+                      ? (directMap[user.id]['message'] == '${MessageType.gif}'
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Icon(
+                                  FlutterIcons.play_box_outline_mco,
+                                  size: 16,
+                                  color: Colors.grey,
+                                ),
+                                Text(' GIF')
+                              ],
+                            )
+                          : (directMap[user.id]['message'] ==
+                                  '${MessageType.image}'
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    Icon(
+                                      FlutterIcons.image_fea,
+                                      size: 15,
+                                      color: Colors.grey,
+                                    ),
+                                    Text(' Image')
+                                  ],
+                                )
+                              : Text(
+                                  directMap[user.id]['message'],
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                )))
+                      : Text(
+                          user.username,
+                          maxLines: 1,
+                        ),
+                ),
+              ),
+              Text(directMap.containsKey(user.id)
+                  ? '${timeago.format(DateTime.parse(directMap[user.id]['time']))}'
+                  : ''),
+            ],
+          ),
         ),
       ),
     );

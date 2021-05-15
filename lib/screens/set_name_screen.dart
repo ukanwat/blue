@@ -138,10 +138,14 @@ class _SetNameScreenState extends State<SetNameScreen> {
                                           color: Colors.white,
                                           fontSize: 18)),
                                   onPressed: () async {
-                                    if (nameController.text == "") {
-                                      snackbar('display name is empty', context,
-                                          color: Colors.red);
-                                      return;
+                                    if ((data['provider'] != 'google') &&
+                                        (data['provider'] != 'facebook')) {
+                                      if (nameController.text == "") {
+                                        snackbar(
+                                            'display name is empty', context,
+                                            color: Colors.red);
+                                        return;
+                                      }
                                     }
                                     if (usernameController.text == "") {
                                       snackbar('username is empty', context,

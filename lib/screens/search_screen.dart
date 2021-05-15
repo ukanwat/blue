@@ -178,6 +178,11 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  onSearch(String term) {
+    searchController.text = term;
+    handleSearch(term);
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -187,7 +192,7 @@ class _SearchScreenState extends State<SearchScreen> {
         backgroundColor: Theme.of(context).backgroundColor,
         appBar: buildSearchField(context),
         body: !searching
-            ? RecentSearches()
+            ? RecentSearches(onSearch)
             : TabBarView(
                 children: <Widget>[
                   SearchResultsScreen(SearchResultsType.posts,
@@ -204,6 +209,9 @@ class _SearchScreenState extends State<SearchScreen> {
 }
 
 class RecentSearches extends StatefulWidget {
+  final ValueChanged<String> callback;
+
+  RecentSearches(this.callback);
   @override
   _RecentSearchesState createState() => _RecentSearchesState();
 }
@@ -219,6 +227,7 @@ class _RecentSearchesState extends State<RecentSearches> {
 
   init() async {
     _recentSearches = await Hasura.getSearches(10);
+    print(_recentSearches);
     setState(() {
       loading = false;
     });
@@ -227,13 +236,14 @@ class _RecentSearchesState extends State<RecentSearches> {
   bool showClearAll = true;
   @override
   Widget build(BuildContext context) {
-    if (_recentSearches.length == null) {
+    if (_recentSearches == null) {
+      showClearAll = false;
+    } else if (_recentSearches.length == 0) {
       showClearAll = false;
     } else {
-      if (_recentSearches.length == 0) {
-        showClearAll = false;
-      }
+      showClearAll = true;
     }
+
     return loading
         ? Center(child: circularProgress())
         : !showClearAll
@@ -282,10 +292,14 @@ class _RecentSearchesState extends State<RecentSearches> {
                     );
                   }
                   return ListTile(
+                    leading: Icon(FluentIcons.search_16_regular),
                     key: UniqueKey(),
                     title: Text(
                       _recentSearches[index - 1]['text'],
                     ),
+                    onTap: () {
+                      widget.callback(_recentSearches[index - 1]['text']);
+                    },
                     trailing: IconButton(
                       icon: Icon(
                         Icons.clear,

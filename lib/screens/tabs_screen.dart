@@ -6,6 +6,7 @@ import 'dart:ui';
 import 'package:blue/screens/settings/general/drafts_screen.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
+import 'package:blue/services/functions.dart';
 import 'package:blue/services/global_network/displaytype.dart';
 import 'package:blue/services/global_network/global_network.dart';
 import 'package:blue/services/hasura.dart';
@@ -96,6 +97,7 @@ class _TabsScreenState extends State<TabsScreen> {
 
   @override
   void initState() {
+    Functions().updateEmail();
     PreferencesUpdate()..removeFromList('blocked_accounts', ['100']);
     PushNotificationsManager().initMessage();
     if (Boxes.followingBox.isEmpty) {
@@ -112,11 +114,13 @@ class _TabsScreenState extends State<TabsScreen> {
   void didChangeDependencies() {
     if (Hasura.jwtToken == null) {
       AuthService.firebaseAuth.authStateChanges().first.then((user) {
-        user.getIdToken(true).then((token) {
-          setState(() {
-            Hasura.jwtToken = token;
+        try {
+          user.getIdToken(true).then((token) {
+            setState(() {
+              Hasura.jwtToken = token;
+            });
           });
-        });
+        } catch (e) {}
       });
     }
 

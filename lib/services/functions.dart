@@ -1,4 +1,5 @@
 // Package imports:
+import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/url_bottom_sheet.dart';
@@ -39,6 +40,7 @@ class Functions {
 
   muteUser(Map peer) async {
     print(peer);
+
     print(PreferencesUpdate().getStringList('muted_messages'));
     PreferencesUpdate().addToList('muted_messages', peer['peerId']);
     Hasura.muteUser(peer['peerId']);
@@ -56,6 +58,16 @@ class Functions {
 
   launchURL(String url, BuildContext context) async {
     showUrlBottomSheet(context, url);
+  }
+
+  updateEmail() async {
+    String email =
+        await Hasura.getUserEmail(AuthService.firebaseAuth.currentUser.uid);
+    if (email == null) {
+      //TODO
+    } else if (AuthService.firebaseAuth.currentUser.email != email) {
+      Hasura.updateUser(email: AuthService.firebaseAuth.currentUser.email);
+    }
   }
 
   static String abbreviateNumber(int value, {bool hideZero}) {

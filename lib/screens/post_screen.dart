@@ -174,8 +174,15 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   addVideoContent(File _video) {
+    VideoPlayerController _vidController =
+        new VideoPlayerController.file(_video);
+
+    if (_vidController.value.duration.compareTo(Duration(minutes: 3)) > 0) {
+      snackbar('video cannot be longer than 3 minutes', context);
+      return;
+    }
     fileIndex++;
-    _videoPlayerController = VideoPlayerController.file(_video)
+    _videoPlayerController = _vidController
       ..initialize().then((_) {
         flickManager = FlickManager(
           videoPlayerController: _videoPlayerController,
@@ -310,7 +317,7 @@ class _PostScreenState extends State<PostScreen> {
       Map<String, Map> contentsInfo,
       String topicName,
       String topicId,
-      List<String> tags}) async {
+      Map<int, String> tags}) async {
     List customContents = [];
     contents.forEach((key, value) {
       customContents.add(contentsInfo[key]);
@@ -320,7 +327,7 @@ class _PostScreenState extends State<PostScreen> {
               : """\"$value\""""; //TODO
     });
     print(customContents);
-    if (tags == []) {
+    if (tags == {}) {
       tags = null;
     }
     await Hasura.insertPost(customContents, title,
@@ -330,7 +337,7 @@ class _PostScreenState extends State<PostScreen> {
   String thumbUrl;
   ThumbContent _thumbContent = ThumbContent.none;
   int thumbIndex;
-  handleSubmit(String topicName, List<String> tags) async {
+  handleSubmit(String topicName, Map<int, String> tags) async {
     setState(() {
       isUploading = true;
     });

@@ -178,20 +178,7 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
           //     ),
           //   ),
           // ),
-          Container(
-            height: 45,
-            child: FacebookAuthButton(
-                onPressed: () {
-                  googleSignIn(context);
-                },
-                darkMode: true,
-                style: AuthButtonStyle(
-                  iconType: AuthIconType.secondary,
-                )),
-          ),
-          SizedBox(
-            height: 20,
-          ),
+          // 
           Container(
             height: 45,
             child: GoogleAuthButton(

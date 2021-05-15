@@ -29,7 +29,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
   bool topicSelected = false;
   bool postSubmitting = false;
   List<Widget> tagChips = [];
-  List<String> tags = [];
+  Map<int, String> tags = {};
   List topics;
   @override
   void initState() {
@@ -38,11 +38,28 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
   }
 
   addTag() async {
-    Navigator.of(context).pushNamed(SearchTagScreen.routeName).then((value) {
-      if (value != null && !tags.contains(value))
+    Navigator.of(context).pushNamed(SearchTagScreen.routeName).then((obj) {
+      Map doc = obj;
+      if (doc == null) {
+        return;
+      }
+      int key = doc.keys.first;
+      String value = doc.values.first;
+      print(doc);
+      if (value != null && !tags.containsKey(key))
         setState(() {
-          tags.add(value);
+          tags[key] = value;
           tagChips.add(Chip(
+            deleteIcon: Icon(
+              FluentIcons.delete_24_regular,
+              size: 16,
+            ),
+            onDeleted: () {
+              tags.remove(key);
+              setState(() {
+                tagChips.removeAt(tagChips.length - 1);
+              });
+            },
             label: Text(
               value,
               style: TextStyle(

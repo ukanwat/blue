@@ -20,10 +20,10 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
   String searchTerm = '';
   List tagResults = [];
   bool loading = false;
-  InkWell tagTile(String tag) {
+  InkWell tagTile(String tag, int id) {
     return InkWell(
       onTap: () {
-        Navigator.pop(context, tag);
+        Navigator.pop(context, {id: tag});
       },
       child: Padding(
           padding: EdgeInsets.symmetric(vertical: 5), child: Text('#$tag')),
@@ -53,17 +53,19 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
               style: TextStyle(
                 fontSize: 18,
               ),
-              onChanged: (value) async {//TODO fix
+              onChanged: (value) async {
+                //TODO fix
                 String _searchTerm;
                 setState(() {
                   searchTerm = value;
                   loading = true;
-                     _searchTerm = searchTerm;
+                  _searchTerm = searchTerm;
                 });
-                print('search tag: $value');
+
                 await Future.delayed(Duration(
                   seconds: 2,
                 ));
+
                 if (_searchTerm != searchTerm) {
                   return;
                 }
@@ -71,15 +73,20 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
                   tagResults = [];
                 } else {
                   print('search tag: $value');
-                  Future future = Hasura.findTags(_searchTerm);
+                  Future future =
+                      Hasura.findTags(_searchTerm.toLowerCase().trim());
                   future.then((value) {
-                    tagResults = value;
+                    setState(() {
+                      tagResults = value;
+                    });
+                    loading = false;
+                    print(value);
                   });
                 }
-                setState(() {
-                  print('d');
-                  loading = false;
-                });
+                // setState(() {
+                //   print('d');
+                //   loading = false;
+                // });
               },
               controller: tagSearchController,
               decoration: InputDecoration(
@@ -120,11 +127,14 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
               Material(
                   child: InkWell(
                 onTap: () async {
-                  await Hasura.createTag(searchTerm);
-                  Navigator.of(context).pop(searchTerm);
+                  if (loading == true) {
+                    return;
+                  }
+                  int id = await Hasura.createTag(tagSearchController.text);
+                  Navigator.of(context).pop({id: searchTerm});
                 },
                 child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 5,horizontal: 20),
+                  padding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -158,30 +168,27 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
               ),
             if (searchTerm != '' && !loading)
               Material(
-                              child: ListView.builder(
+                child: ListView.builder(
                   shrinkWrap: true,
                   itemBuilder: (context, i) {
                     return InkWell(
-                      onTap: (){
-Navigator.of(context).pop(tagResults[i]['tag']);
+                      onTap: () {
+                        Navigator.of(context).pop(
+                            {tagResults[i]['tag_id']: tagResults[i]['tag']});
                       },
-                                          child: Padding(
+                      child: Padding(
                           padding: EdgeInsets.all(8),
                           child: Column(
                             children: [
                               Text(
                                 tagResults[i]['tag'],
                                 style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w600
-                                ),
+                                    fontSize: 22, fontWeight: FontWeight.w600),
                               ),
                               Text(
                                 '${tagResults[i]['postCount']} Posts',
                                 style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400
-                                ),
+                                    fontSize: 14, fontWeight: FontWeight.w400),
                               ),
                             ],
                           )),

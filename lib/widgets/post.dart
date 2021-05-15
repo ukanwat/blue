@@ -8,6 +8,7 @@ import 'dart:math' as math;
 import 'package:blue/services/dynamic_links.dart';
 import 'package:blue/services/post_functions.dart';
 import 'package:blue/widgets/show_dialog.dart';
+import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -121,7 +122,7 @@ class Post extends StatefulWidget {
     var tagDataList = doc['post_tags'];
     if (tagDataList != null) {
       tagDataList.forEach((element) {
-        _tags.add(element['tag']['tag']);
+        _tags.add(element['tg']['tag']);
       });
     }
     print(doc['upvoted_by_user']);
@@ -296,6 +297,7 @@ class _PostState extends State<Post> {
                                 overlayOptions?.remove();
                                 notInterested = true;
                               });
+                              Boxes.notInterestedBox.put(postId, null);
                             },
                           ),
                           if (ownerId != currentUser.userId)
@@ -765,19 +767,11 @@ class _PostState extends State<Post> {
                 Navigator.pop(context);
               },
               rightButtonFunction: () async {
-                if (widget.ownerId != Boxes.currentUserBox.get('user_id'))
-                  return;
-                // delete post itself
-
-                // delete uploaded image for thep ost
-                // storageRef.child("post_$postId.jpg").delete();  // TODO: delete stored media
-                // then delete all activity feed notifications
                 Hasura.deletePost(postId);
                 Navigator.of(context).pop();
                 setState(() {
                   deleted = true;
                 });
-                // then delete all comments
               },
             ));
   }
@@ -893,28 +887,31 @@ class _PostState extends State<Post> {
         compactPostThumbnailData = contentsInfo[i]['thumbUrl'];
         print(contents['$i']);
         thumbnailType = CompactPostThumbnailType.video;
-
+        var flickManager = FlickManager(
+          videoPlayerController: VideoPlayerController.network(contents['$i']),
+        );
         contentsViewList.add(Container(
-          height: MediaQuery.of(context).size.width /
-              contentsInfo[i]['aspectRatio'],
-          child: KiddVideoPlayer(
-            fromUrl: true,
-            videoUrl: contents['$i'],
-            layoutConfigs: KiddLayoutConfigs(
-              backgroundColor: Colors.black,
-              backgroundSliderColor: Colors.grey.withOpacity(0.5),
-              iconsColor: Colors.white,
-              inLoop: false,
-              loaderColor: Theme.of(context).accentColor,
-              pauseIcon: Icons.pause_circle_outline,
-              playIcon: Icons.play_circle_outline,
-              showFullScreenButton: true,
-              showVideoControl: true,
-              showVolumeControl: false,
-              sliderColor: Colors.white,
-            ),
-          ),
-        ));
+            height: MediaQuery.of(context).size.width /
+                contentsInfo[i]['aspectRatio'],
+            child: Container(child: VideoDisplay(flickManager, false))
+            // KiddVideoPlayer(
+            //   fromUrl: true,
+            //   videoUrl: contents['$i'],
+            //   layoutConfigs: KiddLayoutConfigs(
+            //     backgroundColor: Colors.black,
+            //     backgroundSliderColor: Colors.grey.withOpacity(0.5),
+            //     iconsColor: Colors.white,
+            //     inLoop: false,
+            //     loaderColor: Theme.of(context).accentColor,
+            //     pauseIcon: Icons.pause_circle_outline,
+            //     playIcon: Icons.play_circle_outline,
+            //     showFullScreenButton: true,
+            //     showVideoControl: true,
+            //     showVolumeControl: false,
+            //     sliderColor: Colors.white,
+            //   ),
+            // ),
+            ));
       } else if (contentsInfo[i]['type'] == 'text') {
         contentsViewList.add(textContentContainer(contents['$i']));
         if (compactPostText == null) {
@@ -963,8 +960,8 @@ class _PostState extends State<Post> {
           dotVerticalPadding: 0,
           dotSize: 6,
           dotIncreaseSize: 1.2,
-          dotIncreasedColor: Colors.blue.withOpacity(0.7),
-          dotColor: Colors.white,
+          dotIncreasedColor: Colors.white,
+          dotColor: Colors.grey.withOpacity(0.5),
           showIndicator: true,
           dotPosition: DotPosition.bottomCenter,
           dotSpacing: 15,
@@ -1373,7 +1370,7 @@ class _PostState extends State<Post> {
   @override
   void dispose() {
     _controller?.dispose();
-    // flickManager?.dispose();
+
     super.dispose();
   }
 
@@ -1402,6 +1399,7 @@ class _PostState extends State<Post> {
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
     print(contentsInfo);
+    deleted = Boxes.notInterestedBox.containsKey(postId);
     return deleted
         ? Container()
         : notInterested //can do some other stuff
@@ -1422,6 +1420,7 @@ class _PostState extends State<Post> {
                         setState(() {
                           notInterested = false;
                         });
+                        Boxes.notInterestedBox.delete(postId);
                       },
                       child: Text(
                         'Undo',

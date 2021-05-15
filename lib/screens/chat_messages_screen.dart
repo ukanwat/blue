@@ -60,6 +60,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   TextEditingController messageController = TextEditingController();
   DateTime lastMessageTime;
   bool loading = true;
+  int convId;
   @override
   void dispose() {
     sendingStateMap['id'] = {};
@@ -69,7 +70,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   }
 
   sendMessage() async {
-    if (messageController.text != '') {
+    if (true) {
       DateTime dateTime = DateTime.now();
       String textMessage = messageController.text;
       setState(() {
@@ -78,9 +79,9 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         sendingStateMap['count'] = sendingStateMap['count'] + 1;
         messageController.clear();
       });
-
+      print('convId : $convId');
       await Hasura.insertMessage(
-          widget.peerUser.id, widget.convId, 'text', textMessage);
+          widget.peerUser.userId, convId, 'text', textMessage);
 
       sendingStateMap['id'][dateTime.toString()] = true;
       bool valid = true;
@@ -114,7 +115,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     try {
       DateTime dateTime = DateTime.now();
 
-      Navigator.of(context)
+      await Navigator.of(context)
           .pushNamed(GIFsScreen.routeName)
           .catchError((e) {})
           .then((value) async {
@@ -124,8 +125,8 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
             sendingStateMap['state'] = 'Sending';
             sendingStateMap['count'] = sendingStateMap['count'] + 1;
           });
-          Hasura.insertMessage(
-                  widget.peerUser.id, widget.convId, 'gif', value.toString())
+          await Hasura.insertMessage(
+                  widget.peerUser.userId, convId, 'gif', value.toString())
               .then((_) {
             sendingStateMap['id'][dateTime.toString()] = true;
             bool valid = true;
@@ -154,8 +155,34 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
           });
         }
       });
+      return true;
     } catch (e) {
       print(e); //TODO
+    }
+  }
+
+  _send(Function fn) async {
+    if (data.isEmpty) {
+      convId = await Hasura.insertConversation(widget.peerUser.userId);
+      setState(() {
+        focusNode = new FocusNode();
+        first = false;
+        data = [];
+        sendingStateMap = {'count': 0, 'id': {}, 'state': ''};
+
+        lastMessageTime = null;
+        loading = true;
+      });
+    }
+    bool t = await fn();
+    if (t != true) {
+      return;
+    }
+    if (data.isEmpty) {
+      addMessages();
+      setState(() {
+        dataEmpty = false;
+      });
     }
   }
 
@@ -178,11 +205,12 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
       if (pickedFile != null) {
         image = File(pickedFile.path);
         print('file opened');
-        String downloadUrl =
-            await FileStorage.uploadImage('chat-messages', image);
+        String downloadUrl = await FileStorage.uploadImage(
+            convId.toString(), image,
+            bucket: 'chat-messages');
 
         await Hasura.insertMessage(
-            widget.peerUser.id, widget.convId, 'image', downloadUrl);
+            widget.peerUser.userId, convId, 'image', downloadUrl);
         sendingStateMap['id'][dateTime.toString()] = true;
         bool valid = true;
         sendingStateMap['id'].forEach((k, v) {
@@ -207,14 +235,21 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
           });
         });
       }
+      return true;
     } catch (e) {
       print(e);
     }
   }
 
+  getConvId() async {
+    convId = await Hasura.getConvId(widget.peerUser.userId);
+  }
+
   GraphQLClient _client;
   @override
   void initState() {
+    convId = widget.convId;
+
     addMessages();
     // WidgetsBinding.instance.addPostFrameCallback((_) {
     //   _client = GraphQLProvider.of(context).value;
@@ -235,13 +270,24 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         ),
         onPressed: () async {
           if (data.isEmpty) {
+            convId = await Hasura.insertConversation(widget.peerUser.userId);
+            setState(() {
+              focusNode = new FocusNode();
+              first = false;
+              data = [];
+              sendingStateMap = {'count': 0, 'id': {}, 'state': ''};
+
+              lastMessageTime = null;
+              loading = true;
+            });
+          }
+          await sendFunction();
+          if (data.isEmpty) {
+            addMessages();
             setState(() {
               dataEmpty = false;
             });
-            await Hasura.insertConversation(widget.peerUser.userId);
           }
-
-          sendFunction();
         },
       ),
     );
@@ -262,7 +308,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
               onPressed: () {
                 Navigator.of(context)
                     .pushNamed(ChatInfoScreen.routeName, arguments: {
-                  'peerId': widget.peerUser.id,
+                  'peerId': widget.peerUser.userId,
                   'peerUsername': widget.peerUser.username,
                   'peerImageUrl': widget.peerUser.avatarUrl ??
                       "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744",
@@ -273,7 +319,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
             children: <Widget>[
               GestureDetector(
                 onTap: () {
-                  GoTo().profileScreen(context, widget.peerUser.id);
+                  GoTo().profileScreen(context, widget.peerUser.userId);
                 },
                 child: Padding(
                   padding: const EdgeInsets.only(
@@ -345,7 +391,9 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                                               : Colors.white.withOpacity(0.8),
                                         ),
                                       )),
-                                  onTap: sendMedia),
+                                  onTap: () {
+                                    _send(sendMedia);
+                                  }),
                             ),
                             GestureDetector(
                                 child: Container(
@@ -371,7 +419,9 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                                                 : Colors.white.withOpacity(0.8),
                                       ),
                                     )),
-                                onTap: sendGIF),
+                                onTap: () {
+                                  _send(sendGIF);
+                                }),
                             Expanded(
                               child: Container(
                                 padding: EdgeInsets.only(bottom: 2),
@@ -425,6 +475,9 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   }
 
   addMessages() async {
+    if (convId == null) {
+      await getConvId();
+    }
     usersRef.snapshots();
     List messages = await Hasura.getMessages(widget.convId);
     if (messages.length == 0) {

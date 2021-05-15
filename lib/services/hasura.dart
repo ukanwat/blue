@@ -32,7 +32,7 @@ class Hasura {
       username
     }
     post_tags{
-      tag{tag}
+      tg{tag}
     }
        upvote_count
         downvote_count
@@ -211,6 +211,22 @@ class Hasura {
     );
   }
 
+  static getUserEmail(String uid) async {
+    String _doc = """query{
+  users(where:{uid:{_eq:"$uid"}}){
+    email
+  }
+}
+""";
+    dynamic data = await hasuraConnect.query(
+      _doc,
+    );
+    if (data['data']['users'].length == 0) {
+      return null;
+    }
+    return data['data']['users'][0]['email'];
+  }
+
   static getFollowedTags() async {
     int userId = await getUserId();
     String _doc = """query{
@@ -256,11 +272,16 @@ class Hasura {
       id2 = peerId;
       id1 = userId;
     }
-    await hasuraConnect.mutation("""mutation{
-  insert_conversations_one(object:{user1_id:$id1,user2_id:$id2, user${id1 == userId ? '1' : '2'}_removed: true,on_conflict:{constraint:conversations_pkey,update_columns:[user${id1 == userId ? '1' : '2'}_removed]}}){
+    // user${id1 == userId ? '1' : '2'}_removed: true},on_conflict:{constraint:conversations_pkey,update_columns:[user${id1 == userId ? '1' : '2'}_removed]
+    String doc = """mutation{
+  insert_conversations_one(object:{user1_id:$id1,user2_id:$id2, }){
     conv_id
   }
-}""");
+}""";
+    print(doc);
+
+    dynamic data = await hasuraConnect.mutation(doc);
+    return data['data']["insert_conversations_one"]['conv_id'];
   }
 
   static hideConversation(
@@ -284,16 +305,16 @@ class Hasura {
   }
 
   static insertPost(List contents, String title,
-      {List<String> tags, String topicName, String thumbUrl}) async {
+      {Map<int, String> tags, String topicName, String thumbUrl}) async {
     if (jwtToken == null) return;
     String uid = AuthService().getCurrentUID();
     var userId = await getUserId(uid: uid);
     print(contents);
     String tagsString = '';
     if (tags != null) {
-      tags.forEach((t) {
-        tagsString = tagsString +
-            '{tag: {data: {tag: "$t"}, on_conflict: {constraint: tags_tag_key, update_columns: [tag]}}}';
+      tags.forEach((key, value) {
+        tagsString =
+            tagsString + '{tag: "${value.trim().toLowerCase()}", tag_id:$key},';
       });
     }
     String thumb = thumbUrl != null ? 'thumbnail: "$thumbUrl",' : '';
@@ -456,7 +477,7 @@ class Hasura {
       username
     }
     post_tags{
-      tag{tag}
+      tg{tag}
     }
       upvote_count
       share_count
@@ -492,7 +513,7 @@ class Hasura {
       username
     }
     post_tags{
-      tag{tag}
+      tg{tag}
     }
       upvote_count
       share_count
@@ -508,11 +529,13 @@ class Hasura {
 
   static createTag(String _tag) async {
     print(_tag);
-    await hasuraConnect.mutation("""mutation{
-  insert_tags_one(object:{tag: "$_tag"}){
-  __typename
+    dynamic doc = await hasuraConnect.mutation("""mutation{
+  insert_tags_one(object:{label: "$_tag"}){
+  tag_id
   }
 }""");
+
+    return doc['data']['insert_tags_one']['tag_id'];
   }
 
   static getTag(String tag) async {
@@ -531,13 +554,18 @@ class Hasura {
     var tagsData = await hasuraConnect.query("""query{
   tags(where: {tag: {_ilike: "%$tag%"}},order_by:{post_count:desc},limit:20) {
    tag
+   tag_id
    post_count
   }
 }""");
     dynamic tagsMap = tagsData['data']['tags'];
     List tags = [];
     tagsMap.forEach((element) {
-      tags.add({"tag": element['tag'], 'postCount': element['post_count']});
+      tags.add({
+        "tag": element['tag'],
+        'postCount': element['post_count'],
+        'tag_id': element['tag_id']
+      });
     });
     return tags;
   }
@@ -640,7 +668,7 @@ class Hasura {
       username
     }
     post_tags{
-      tag{tag}
+      tg{tag}
     }
        upvote_count
       share_count
@@ -707,14 +735,16 @@ class Hasura {
     if (type != 'text' && type != 'image' && type != 'gif') {
       return;
     }
-
+    print('dd');
     var userId = Boxes.currentUserBox.get('user_id');
     if (userId == null) {
       userId = await getUserId();
     }
-    await hasuraConnect.mutation("""mutation{
-  insert_messages_one(object:{data:"$data",sender_id:$userId,conv_id:$convId,type:"$type"}){created_at}
-}""");
+    String doc = """mutation{
+  insert_messages_one(object:{data:"$data",sender_id:$userId,conv_id:$convId,type:"$type",sender_name: "${Boxes.currentUserBox.get("name")}" }){created_at}
+}""";
+    print(doc);
+    await hasuraConnect.mutation(doc);
   }
 
   static getConversations() async {
@@ -732,7 +762,7 @@ class Hasura {
       avatar_url
     }
     user2{
-       user_id
+      user_id
       name
       username
       avatar_url
@@ -741,6 +771,28 @@ class Hasura {
 }
 """);
     return data['data']['conversations'];
+  }
+
+  static getConvId(int peerId) async {
+    int userId = await getUserId();
+    int user1, user2;
+    if (userId > peerId) {
+      user1 = userId;
+      user2 = peerId;
+    } else {
+      user2 = userId;
+      user1 = peerId;
+    }
+
+    dynamic doc = await hasuraConnect.query("""query{
+  conversations(where:{_and:[{user1_id:{_eq:$user1}},{user2_id:{_eq:$user2}}]}){
+    conv_id
+  }
+}""");
+    if (doc['data']['conversations'].length == 0) {
+      return null;
+    }
+    return doc['data']['conversations'][0]['conv_id'];
   }
 
   static getMessages(int convId) async {
@@ -1142,7 +1194,7 @@ __typename
       username
     }
     post_tags{
-      tag{tag}
+      tg{tag}
     }
        downvote_count
        upvote_count
@@ -1185,7 +1237,7 @@ __typename
       username
     }
     post_tags{
-      tag{tag}
+      tg{tag}
     }
        downvote_count
       upvote_count
@@ -1224,6 +1276,11 @@ __typename
 
   static insertFollow(int peerId) async {
     int userId = await getUserId();
+    print("""mutation{
+  insert_follows_one(object:{follower_id:$userId,following_id:$peerId}){
+    __typename
+  }
+}""");
     await hasuraConnect.mutation("""mutation{
   insert_follows_one(object:{follower_id:$userId,following_id:$peerId}){
     __typename
@@ -1260,7 +1317,7 @@ __typename
       username
     }
     post_tags{
-      tag{tag}
+      tg{tag}
     }
       upvote_count
       share_count
