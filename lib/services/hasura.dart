@@ -1297,11 +1297,14 @@ __typename
 }""");
   }
 
-  static getFollowingPosts(int limit, int offset) async {
+  static getFollowingPosts(
+    int offset,
+    int limit,
+  ) async {
     int userId = await getUserId();
     String params = 'limit:$limit,offset:$offset';
 
-    dynamic doc = hasuraConnect.query("""query{
+    dynamic doc = await hasuraConnect.query("""query{
   following_feed($params,where:{user_id:{_eq:$userId}}){
      post{
        contents
@@ -1327,6 +1330,8 @@ __typename
     }
   }
 }""");
+    print('following_posts');
+    print(doc);
     return doc['data']['following_feed'];
   }
 

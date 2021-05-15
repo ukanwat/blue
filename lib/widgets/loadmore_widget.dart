@@ -393,6 +393,7 @@ class DefaultLoadMoreDelegate extends LoadMoreDelegate {
               width: _loadmoreIndicatorSize,
               height: _loadmoreIndicatorSize,
               child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
                 backgroundColor: Colors.grey.withOpacity(0.6),
               ),
             ),

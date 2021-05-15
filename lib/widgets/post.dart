@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 // Flutter imports:
+import 'package:blue/constants/strings.dart';
 import 'package:blue/services/dynamic_links.dart';
 import 'package:blue/services/post_functions.dart';
 import 'package:blue/widgets/show_dialog.dart';
@@ -130,10 +131,10 @@ class Post extends StatefulWidget {
       upvoted: doc['upvoted_by_user'],
       postId: doc['post_id'],
       ownerId: doc['owner_id'],
-      username: doc['user']['username'],
-      photoUrl: doc['user']['avatar_url'],
-      title: doc['title'],
-      topicName: null,
+      username: doc['user']['username'] ?? '',
+      photoUrl: doc['user']['avatar_url'] ?? Strings.emptyAvatarUrl,
+      title: doc['title'] ?? '',
+      topicName: 'f',
       topicId: null,
       thumbUrl: doc['thumbnail'],
       contents: data,
@@ -143,7 +144,7 @@ class Post extends StatefulWidget {
       votes: 0,
       tags: _tags,
       time: doc['created_at'], //TODO
-      isCompact: isCompact ?? false,
+      isCompact: isCompact == true,
       commentsShown: commentsShown,
       commentCount: doc['comment_count'],
       comments: doc['comments'],
@@ -297,7 +298,10 @@ class _PostState extends State<Post> {
                                 overlayOptions?.remove();
                                 notInterested = true;
                               });
-                              Boxes.notInterestedBox.put(postId, null);
+                              Future.delayed(Duration(seconds: 5))
+                                  .then((value) {
+                                Boxes.notInterestedBox.put(postId, null);
+                              });
                             },
                           ),
                           if (ownerId != currentUser.userId)
@@ -718,7 +722,7 @@ class _PostState extends State<Post> {
                   padding:
                       EdgeInsets.only(left: 12, top: 0, right: 5, bottom: 3),
                   child: Text(
-                    compactPostText,
+                    compactPostText ?? '',
                     textAlign: TextAlign.left,
                     style: TextStyle(
                       fontSize: 14,
@@ -1400,9 +1404,9 @@ class _PostState extends State<Post> {
     screenWidth = MediaQuery.of(context).size.width;
     print(contentsInfo);
     deleted = Boxes.notInterestedBox.containsKey(postId);
-    return deleted
+    return deleted == true
         ? Container()
-        : notInterested //can do some other stuff
+        : notInterested == true //can do some other stuff
             ? Container(
                 decoration: BoxDecoration(
                     color: Theme.of(context).backgroundColor,
@@ -1420,7 +1424,9 @@ class _PostState extends State<Post> {
                         setState(() {
                           notInterested = false;
                         });
-                        Boxes.notInterestedBox.delete(postId);
+                        try {
+                          Boxes.notInterestedBox.delete(postId);
+                        } catch (e) {}
                       },
                       child: Text(
                         'Undo',

@@ -12,6 +12,7 @@ import 'package:blue/services/global_network/global_network.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/services/push_notifications.dart';
+import 'package:blue/widgets/progress.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -143,7 +144,9 @@ class _TabsScreenState extends State<TabsScreen> {
     return Scaffold(
       key: scaffoldKey,
       body: Hasura.jwtToken == null
-          ? Container()
+          ? Center(
+              child: circularProgress(),
+            )
           : PageView(
               physics: NeverScrollableScrollPhysics(),
               controller: _pageController,

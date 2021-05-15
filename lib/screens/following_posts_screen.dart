@@ -34,29 +34,37 @@ class _FollowingPostsScreenState extends State<FollowingPostsScreen>
     super.initState();
   }
 
-  addPosts() async {
-    print('adding posts');
-    if (loaded == true) return;
+  int _lastDoc;
 
+  addPosts() async {
+    if (lastDoc == _lastDoc) {
+      return;
+    }
+    _lastDoc = lastDoc;
+    if (loaded == true) return;
     dynamic _p;
 
     _p = await Hasura.getFollowingPosts(lastDoc, length);
+    lastDoc = lastDoc + _p.length;
 
     _posts = _posts +
         _p
             .map((doc) => Post.fromDocument(
-                  doc,
+                  doc['post'],
                 ))
             .toList();
+
     if (this.mounted) setState(() {});
     if (_p.length == 0) {
       if (this.mounted)
         setState(() {
           empty = true;
+          loaded = true;
         });
       return;
     }
-    lastDoc = _posts.length;
+    print('loaded: $loaded, plength: ${_p.length}, ');
+
     if (_p.length < length) {
       if (this.mounted)
         setState(() {
@@ -70,7 +78,7 @@ class _FollowingPostsScreenState extends State<FollowingPostsScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return empty
+    return (empty)
         ? emptyState(context, "Nothing Here!", 'none')
         : Container(
             color: Theme.of(context).backgroundColor,
