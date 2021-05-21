@@ -73,12 +73,13 @@ class DynamicLinksService {
       var doc = await Hasura.getPost(int.parse(postId));
       print(doc);
       if (postId != null) {
-        Navigator.of(context).pushNamed(CommentsScreen.routeName,
-            arguments: Post.fromDocument(
-              doc,
-              commentsShown: true,
-              isCompact: false,
-            ));
+        Navigator.of(context).pushNamed(CommentsScreen.routeName, arguments: {
+          'post': Post.fromDocument(
+            doc,
+            commentsShown: true,
+            isCompact: false,
+          )
+        });
       }
     } else if (deepLink.pathSegments.contains('verify')) {
       // var email = deepLink.queryParameters['email'];   TODO

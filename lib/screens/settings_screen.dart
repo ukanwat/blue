@@ -31,6 +31,7 @@ import 'package:blue/screens/settings/privacy/activity_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screen.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:package_info/package_info.dart';
 
 class SettingsScreen extends StatefulWidget {
   static const routeName = 'settings';
@@ -71,12 +72,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   @override
+  void initState() {
+    getInfo();
+    super.initState();
+  }
+
+  getInfo() async {
+    packageInfo = await PackageInfo.fromPlatform();
+  }
+
+  PackageInfo packageInfo;
+  @override
   Widget build(BuildContext context) {
     bool dark = Theme.of(context).iconTheme.color == Colors.white;
     return Scaffold(
       backgroundColor: dark
           ? Theme.of(context).backgroundColor
-          : Theme.of(context).canvasColor,
+          : Color.fromRGBO(245, 245, 245, 1),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -85,13 +97,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Container(
                   color: dark
                       ? Theme.of(context).backgroundColor
-                      : Theme.of(context).canvasColor,
+                      : Color.fromRGBO(245, 245, 245, 1),
                   width: MediaQuery.of(context).size.width,
                   child: Row(
                     children: [
                       IconButton(
                         icon: Icon(
-                          FluentIcons.chevron_left_24_filled,
+                          FluentIcons.chevron_left_16_filled,
                           color: Theme.of(context).primaryColor,
                           size: 30,
                         ),
@@ -333,7 +345,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     : Theme.of(context).canvasColor,
                 height: 40,
                 child: Center(
-                  child: Text('v1.0'),
+                  child: Text(
+                    'v${packageInfo == null ? ' ' : packageInfo.version}',
+                    style: TextStyle(fontSize: 14),
+                  ),
                 ),
               )
             ],

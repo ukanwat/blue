@@ -77,6 +77,8 @@ class Post extends StatefulWidget {
   final int commentCount;
   final bool upvoted;
   final String thumbUrl;
+  final bool notInterested;
+  final bool postActionExists;
   // final PostInteractions postInteractions;
 
   Post(
@@ -101,7 +103,9 @@ class Post extends StatefulWidget {
       this.shares,
       this.commentCount,
       this.upvoted,
-      this.thumbUrl});
+      this.notInterested,
+      this.thumbUrl,
+      this.postActionExists});
 
   factory Post.fromDocument(
     Map doc, {
@@ -126,15 +130,22 @@ class Post extends StatefulWidget {
         _tags.add(element['tg']['tag']);
       });
     }
-    print(doc['upvoted_by_user']);
+    print(doc);
+    if (doc['actions_by_user'] == null) {
+      doc['actions_by_user'] = {};
+    } else {
+      doc['actions_by_user'] = doc['actions_by_user'][0];
+    }
+
+    print(doc['actions_by_user']);
     return Post(
-      upvoted: doc['upvoted_by_user'],
+      upvoted: doc['actions_by_user']['up'],
       postId: doc['post_id'],
       ownerId: doc['owner_id'],
       username: doc['user']['username'] ?? '',
       photoUrl: doc['user']['avatar_url'] ?? Strings.emptyAvatarUrl,
       title: doc['title'] ?? '',
-      topicName: 'f',
+      topicName: null,
       topicId: null,
       thumbUrl: doc['thumbnail'],
       contents: data,
@@ -150,6 +161,7 @@ class Post extends StatefulWidget {
       comments: doc['comments'],
       saves: doc['save_count'],
       shares: doc['share_count'],
+      postActionExists: doc['actions_by_user']['time'] != null,
     );
   }
 
@@ -298,9 +310,15 @@ class _PostState extends State<Post> {
                                 overlayOptions?.remove();
                                 notInterested = true;
                               });
-                              Future.delayed(Duration(seconds: 5))
+                              Future.delayed(Duration(seconds: 3))
                                   .then((value) {
-                                Boxes.notInterestedBox.put(postId, null);
+                                if (widget.postActionExists) {
+                                  Hasura.updatePostAction(
+                                      postId, 'not_interested:true');
+                                } else {
+                                  Hasura.insertPostAction(
+                                      postId, 'not_interested:true');
+                                }
                               });
                             },
                           ),
@@ -315,7 +333,7 @@ class _PostState extends State<Post> {
                                 setState(() {
                                   vote = Vote.down;
                                 });
-                            }),
+                            }, widget.postActionExists),
                           if (isFollowing)
                             ListTile(
                               dense: true,
@@ -934,13 +952,7 @@ class _PostState extends State<Post> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (this.mounted) getContentSize();
       });
-    if (widget.upvoted == true) {
-      vote = Vote.up;
-    } else if (widget.upvoted == false) {
-      vote = Vote.down;
-    } else {
-      vote = Vote.none;
-    }
+
     super.didChangeDependencies();
   }
 
@@ -1241,6 +1253,10 @@ class _PostState extends State<Post> {
                         commentCount: this.commentCount,
                         time: widget.time,
                         votes: widget.votes,
+                        notInterested: widget.notInterested,
+                        postActionExists: widget.postActionExists,
+                        thumbUrl: widget.thumbUrl,
+                        upvoted: widget.upvoted,
                       ),
                     );
                   }),
@@ -1299,7 +1315,14 @@ class _PostState extends State<Post> {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () {
-                      PostFunctions().handleUpvoteButton(postId, vote);
+                      if (isOwner) {
+                        return;
+                      }
+                      if (vote == null) {
+                        return;
+                      }
+                      PostFunctions().handleUpvoteButton(
+                          postId, vote, widget.postActionExists);
                       if (vote == Vote.up) {
                         setState(() {
                           vote = Vote.none;
@@ -1354,7 +1377,9 @@ class _PostState extends State<Post> {
                                   ? FluentIcons.keyboard_shift_24_filled
                                   : FluentIcons.keyboard_shift_24_regular,
                               size: 24.0,
-                              color: Colors.blue),
+                              color: isOwner
+                                  ? Colors.blue.withOpacity(0.7)
+                                  : Colors.blue),
                         ],
                       ),
                     ),
@@ -1387,8 +1412,19 @@ class _PostState extends State<Post> {
     if (Boxes.followingBox.containsKey(ownerId)) {
       isFollowing = true;
     }
+    voteSet();
 
     super.initState();
+  }
+
+  voteSet() {
+    if (widget.upvoted == true) {
+      vote = Vote.up;
+    } else if (widget.upvoted == false) {
+      vote = Vote.down;
+    } else {
+      vote = Vote.none;
+    }
   }
 
   getContentSize() {
@@ -1403,7 +1439,7 @@ class _PostState extends State<Post> {
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
     print(contentsInfo);
-    deleted = Boxes.notInterestedBox.containsKey(postId);
+    deleted = widget.notInterested == true;
     return deleted == true
         ? Container()
         : notInterested == true //can do some other stuff
@@ -1468,6 +1504,10 @@ class _PostState extends State<Post> {
                                   commentCount: this.commentCount,
                                   time: widget.time,
                                   votes: widget.votes,
+                                  notInterested: widget.notInterested,
+                                  postActionExists: widget.postActionExists,
+                                  thumbUrl: widget.thumbUrl,
+                                  upvoted: widget.upvoted,
                                 ),
                               );
                               // Navigator.of(context).pushNamed(
@@ -1525,7 +1565,8 @@ showComments(
   BuildContext context, {
   Post post,
 }) {
-  Navigator.pushNamed(context, CommentsScreen.routeName, arguments: post);
+  Navigator.pushNamed(context, CommentsScreen.routeName,
+      arguments: {'post': post});
 }
 
 // class VideoContentContainer extends StatefulWidget {
@@ -1619,7 +1660,8 @@ class DownvoteTile extends StatefulWidget {
   final Vote vote;
   final int postId;
   final Function callback;
-  DownvoteTile(this.vote, this.postId, this.callback);
+  final bool postActionExists;
+  DownvoteTile(this.vote, this.postId, this.callback, this.postActionExists);
   @override
   DownvoteTileState createState() => DownvoteTileState();
 }
@@ -1652,7 +1694,8 @@ class DownvoteTileState extends State<DownvoteTile> {
       title: Text('Downvote'),
       onTap: () {
         print('postid : ${widget.postId}');
-        PostFunctions().handleDownvoteButton(widget.postId, vote);
+        PostFunctions()
+            .handleDownvoteButton(widget.postId, vote, widget.postActionExists);
         if (vote == Vote.down) {
           setState(() {
             vote = Vote.none;

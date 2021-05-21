@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/constants/app_colors.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/foundation.dart';
 import 'package:blue/services/boxes.dart';
@@ -28,7 +29,7 @@ class ThemeNotifier extends ChangeNotifier {
         statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
         statusBarBrightness: Brightness.light,
         statusBarColor: Colors.transparent,
-        systemNavigationBarColor: Colors.black,
+        systemNavigationBarColor: AppColors.navBar,
         systemNavigationBarDividerColor: Colors.grey[900],
         systemNavigationBarIconBrightness: Brightness.light));
     _saveToPrefs();

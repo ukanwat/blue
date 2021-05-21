@@ -442,9 +442,13 @@ class _CommentState extends State<Comment> {
 
                       margin: EdgeInsets.only(left: 14, top: 3),
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 5),
-                        child: Column(children: replyWidgets),
-                      ),
+                          padding: const EdgeInsets.only(top: 5),
+                          child: Column(children: [
+                            if (notifier.userCommentReplies != null)
+                              ...notifier.userCommentReplies[widget.id] ??
+                                  [Container()],
+                            ...replyWidgets
+                          ])),
                       // decoration: BoxDecoration(
                       //   border: Border(
                       //       left: BorderSide(

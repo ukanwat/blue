@@ -10,7 +10,7 @@ import 'package:nuts_activity_indicator/nuts_activity_indicator.dart';
 circularProgress() {
   return Container(
     alignment: Alignment.center,
-    padding: EdgeInsets.only(top: 20, bottom: 20, left: 20, right: 20),
+    padding: EdgeInsets.only(top: 5, bottom: 5, left: 5, right: 5),
     child: CircularProgressIndicator(
       strokeWidth: 2,
       valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1ee682)),

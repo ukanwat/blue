@@ -503,6 +503,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.0.1"
+  flutter_gradients:
+    dependency: "direct main"
+    description:
+      name: flutter_gradients
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0+3"
   flutter_icons:
     dependency: "direct main"
     description:
@@ -919,6 +926,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.9.7"
+  mk_drop_down_menu:
+    dependency: "direct main"
+    description:
+      name: mk_drop_down_menu
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.1.0"
   multi_image_picker:
     dependency: "direct main"
     description:

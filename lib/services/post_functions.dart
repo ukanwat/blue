@@ -6,28 +6,36 @@ import '../services/boxes.dart';
 import 'hasura.dart';
 
 class PostFunctions {
-  handleUpvoteButton(int postId, Vote vote) async {
-    print('vote:$vote');
-    if (vote == Vote.up) {
-      await Hasura.deletePostVote(postId);
-    } else if (vote == Vote.down) {
-      await Hasura.updatePostVote(postId, true);
+  handleUpvoteButton(int postId, Vote vote, bool actionExists) async {
+    print('up: $vote');
+    if (!actionExists) {
+      Hasura.insertPostAction(postId, 'up:${_boolVote(vote, true)}');
     } else {
-      await Hasura.insertPostVote(postId, true);
+      Hasura.updatePostAction(postId, 'up:${_boolVote(vote, true)}');
     }
-
     return;
   }
 
-  handleDownvoteButton(int postId, Vote vote) async {
-    if (vote == Vote.down) {
-      await Hasura.deletePostVote(postId);
-    } else if (vote == Vote.up) {
-      await Hasura.updatePostVote(postId, false);
-    } else {
-      await Hasura.insertPostVote(postId, false);
+  _boolVote(Vote v, bool up) {
+    if (v == Vote.none) {
+      if (up) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if (v == Vote.up) {
+      return up ? null : false;
+    } else if (v == Vote.down) {
+      return up ? true : null;
     }
+  }
 
-    return;
+  handleDownvoteButton(int postId, Vote vote, bool actionExists) async {
+    print(_boolVote(vote, false));
+    if (!actionExists) {
+      Hasura.insertPostAction(postId, 'up:${_boolVote(vote, false)}');
+    } else {
+      Hasura.updatePostAction(postId, 'up:${_boolVote(vote, false)}');
+    }
   }
 }

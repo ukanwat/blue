@@ -1171,8 +1171,7 @@ class _PostScreenState extends State<PostScreen> {
                     Container(
                       padding: EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Theme.of(context).cardColor),
+                          shape: BoxShape.circle, color: Colors.transparent),
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Icon(
@@ -1181,6 +1180,13 @@ class _PostScreenState extends State<PostScreen> {
                           color: Theme.of(context).iconTheme.color,
                         ),
                       ),
+                    ),
+                    Text(
+                      'Add Something',
+                      style: TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20),
                     ),
                     SizedBox(
                       height: 10,

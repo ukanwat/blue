@@ -330,7 +330,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         elevation: 1,
         title: Text(
           "Edit Profile",
-          style: TextStyle(),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: <Widget>[
           IconButton(

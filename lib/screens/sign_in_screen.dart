@@ -58,8 +58,11 @@ class _SignInScreenState extends State<SignInScreen> {
       try {
         final auth = Provider.of(context).auth;
         if (authFormType == AuthFormType.signIn) {
-          String uid =
+          var uid =
               await auth.signInWithEmailAndPassword(_email, _password, context);
+          if (uid = null) {
+            return;
+          }
           print("Signed In with ID $uid");
           //   usersRef.document(user.id).setData({
           //   'id': user.id,
@@ -79,7 +82,7 @@ class _SignInScreenState extends State<SignInScreen> {
             authFormType = AuthFormType.signIn;
           });
         } else if (authFormType == AuthFormType.signUp) {
-          await auth.createUserWithEmailAndPassword(_email, _password);
+          await auth.createUserWithEmailAndPassword(_email, _password, context);
 
           Navigator.of(context).pushReplacementNamed('/home');
         } else {

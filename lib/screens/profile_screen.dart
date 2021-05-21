@@ -2,6 +2,7 @@
 import 'dart:ui';
 
 // Flutter imports:
+import 'package:blue/constants/strings.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/user_report_dialog.dart';
@@ -17,6 +18,7 @@ import 'package:provider/provider.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:mk_drop_down_menu/mk_drop_down_menu.dart';
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/screens/about_screen.dart';
@@ -103,10 +105,11 @@ class _ProfileScreenState extends State<ProfileScreen>
     super.didChangeDependencies();
   }
 
+  bool justFollowed = false;
   @override
   void initState() {
     super.initState();
-
+    isFollowing = Boxes.followingBox.containsKey(widget.profileId);
     // _controller.addListener(onScroll);
   }
 
@@ -145,6 +148,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       if (_snapshot.length == 0) {
         setState(() {
           empty = true;
+          loaded = true;
         });
         return;
       }
@@ -217,20 +221,20 @@ class _ProfileScreenState extends State<ProfileScreen>
   buildButton({String text, Function function, IconData icon}) {
     return Container(
       margin: EdgeInsets.only(top: 0, left: 5, right: 5, bottom: 0),
-      height: 40,
-      width: 140,
+      height: 28,
+      width: 124,
       child: FlatButton(
         padding: EdgeInsets.all(0),
         onPressed: function,
         child: Container(
-          height: 33,
+          height: 28,
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Icon(
                 icon,
-                size: 17,
+                size: 14,
                 color: Colors.white,
               ),
               SizedBox(
@@ -238,8 +242,10 @@ class _ProfileScreenState extends State<ProfileScreen>
               ),
               Text(
                 text,
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -284,6 +290,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           function: () {
             Functions().handleFollowUser(_profileUser.userId);
             setState(() {
+              justFollowed = true;
               isFollowing = true;
             });
           },
@@ -352,6 +359,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           return Container(
             color: Theme.of(context).backgroundColor,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Container(
                   color: Theme.of(context).backgroundColor,
@@ -369,158 +377,157 @@ class _ProfileScreenState extends State<ProfileScreen>
                   height: 150,
                   width: double.infinity,
                 ),
-                ExpansionTile(
-                  backgroundColor: Theme.of(context).backgroundColor,
-                  tilePadding:
-                      EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-                  expandedAlignment: Alignment.topLeft,
-                  expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                  childrenPadding:
-                      EdgeInsets.only(left: 0, bottom: 10, top: 0, right: 0),
-                  title: Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: Text(
-                      '${user.username}',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 18,
-                          color: Theme.of(context).iconTheme.color),
-                    ),
-                  ),
-                  leading: Stack(
-                    overflow: Overflow.visible,
-                    children: <Widget>[
-                      Container(
-                        height: 60,
-                        width: 120,
+                ListTile(
+                    title: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Stack(
+                        overflow: Overflow.visible,
+                        children: [
+                          Container(
+                            child: Row(
+                              children: [
+                                Column(
+                                  children: [
+                                    Text(
+                                        '${Functions.abbreviateNumber(user.followingCount)}',
+                                        style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w700)),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text('Following',
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            color: Theme.of(context)
+                                                .iconTheme
+                                                .color
+                                                .withOpacity(0.6),
+                                            fontWeight: FontWeight.w800)),
+                                  ],
+                                ),
+                                SizedBox(
+                                  width: 20,
+                                ),
+                                Column(
+                                  children: [
+                                    Text(
+                                        '${Functions.abbreviateNumber(justFollowed ? user.followerCount + 1 : user.followerCount)}',
+                                        style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w700)),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text('Followers',
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            color: Theme.of(context)
+                                                .iconTheme
+                                                .color
+                                                .withOpacity(0.6),
+                                            fontWeight: FontWeight.w800)),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 60,
+                            child: Text(
+                              '${user.username}',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 26,
+                                  color: user.headerUrl != null &&
+                                          user.headerUrl != ''
+                                      ? Colors.white
+                                      : Theme.of(context).iconTheme.color),
+                            ),
+                          ),
+                        ],
                       ),
-                      Positioned(
-                        bottom: 0,
-                        child: Container(
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Theme.of(context).backgroundColor),
-                          padding: EdgeInsets.all(3),
-                          child: CircleAvatar(
-                            radius: 57.0,
-                            backgroundColor: Theme.of(context).backgroundColor,
-                            backgroundImage: CachedNetworkImageProvider(user
-                                    .avatarUrl ??
-                                "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                    ),
+                    trailing: Stack(
+                      overflow: Overflow.visible,
+                      children: <Widget>[
+                        Container(
+                          height: 40,
+                          width: 130,
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          child: Container(
+                            decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Theme.of(context).backgroundColor),
+                            padding: EdgeInsets.all(3),
+                            child: CircleAvatar(
+                              radius: 60.0,
+                              backgroundColor:
+                                  Theme.of(context).backgroundColor,
+                              backgroundImage: CachedNetworkImageProvider(user
+                                      .avatarUrl ??
+                                  "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  subtitle: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
-                    child: Text(
-                      '${Functions.abbreviateNumber(0)} Followers',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context)
-                              .iconTheme
-                              .color
-                              .withOpacity(0.6)),
-                    ),
-                  ),
-                  children: <Widget>[
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Padding(
-                        padding: const EdgeInsets.only(left: 22),
-                        child: Row(
-                          children: [
-                            Column(
-                              children: [
-                                Text('${Functions.abbreviateNumber(0)}',
-                                    style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w600)),
-                                SizedBox(
-                                  width: 5,
-                                ),
-                                Text('Following',
-                                    style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w400)),
-                              ],
-                            ),
-                            SizedBox(
-                              width: 20,
-                            ),
-                            Column(
-                              children: [
-                                Text('${Functions.abbreviateNumber(0)}',
-                                    style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w600)),
-                                SizedBox(
-                                  width: 5,
-                                ),
-                                Text('Total Upvotes',
-                                    style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w400)),
-                              ],
-                            ),
-                          ],
+                      ],
+                    )),
+
+                if (user.about != null && user.about != '')
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20),
+                    child: Text(user.about ?? '',
+                        style: TextStyle(
+                          fontSize: 16,
                         )),
-                    SizedBox(
-                      height: 10,
+                  ),
+                if (user.about != null && user.about != '')
+                  SizedBox(
+                    height: 10,
+                  ),
+                if (user.website != null && user.website != '')
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 20,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20),
-                      child: Text(user.about ?? '',
-                          style: TextStyle(
-                            fontSize: 16,
-                          )),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    if (user.website != null && user.website != '')
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          left: 20,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Container(
-                                padding: EdgeInsets.all(3),
-                                decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Theme.of(context).cardColor),
-                                child: Icon(
-                                  FluentIcons.link_square_24_regular,
-                                  size: 18,
-                                )),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Expanded(
-                              child: Linkify(
-                                text: user.website,
-                                linkStyle: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.none,
-                                ),
-                                onOpen: (link) {
-                                  launchWebsite(user.website);
-                                },
-                                overflow: TextOverflow.ellipsis,
+                    child: GestureDetector(
+                      onTap: () {
+                        Functions().launchURL(user.website, context);
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Container(
+                              padding: EdgeInsets.all(3),
+                              decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Theme.of(context).cardColor),
+                              child: Icon(
+                                FluentIcons.link_square_24_regular,
+                                size: 18,
+                              )),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Expanded(
+                            child: Linkify(
+                              text: user.website,
+                              linkStyle: TextStyle(
+                                fontSize: 18,
+                                color: Colors.blue,
+                                decoration: TextDecoration.none,
                               ),
+                              onOpen: (link) {},
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                  ],
-                ),
+                    ),
+                  ),
+                // ],
               ],
             ),
           );
@@ -571,36 +578,40 @@ class _ProfileScreenState extends State<ProfileScreen>
     if (await canLaunch(url)) {
       await launch(
         url,
-        forceWebView: true,
-        enableJavaScript: true,
       );
     } else {
       throw 'Could not launch $url';
     }
   }
 
+  MKDropDownMenuController mKController = MKDropDownMenuController();
   sortTab(Sort value) {
-    return Expanded(
-        child: Material(
-            child: InkWell(
-                onTap: () {
-                  setState(() {
-                    sort = value;
-                    posts = [];
-                    lastDoc = 0;
-                    addPosts(value, changing: true);
-                  });
-                },
-                child: Center(
-                    child: Text(
-                  value.toString().substring(5),
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    color: sort == value
-                        ? Colors.blue
-                        : Theme.of(context).iconTheme.color,
-                  ),
-                )))));
+    return Container(
+        height: 40,
+        color: Theme.of(context).canvasColor,
+        child: Center(
+          child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  sort = value;
+                  posts = [];
+                  lastDoc = 0;
+                  addPosts(value, changing: true);
+                  mKController.hideMenu();
+                });
+              },
+              child: Center(
+                  child: Text(
+                value.toString().substring(5),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: sort == value
+                      ? Colors.blue
+                      : Theme.of(context).iconTheme.color,
+                ),
+              ))),
+        ));
   }
 
   bool get wantKeepAlive => true;
@@ -805,6 +816,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                       .handleUnfollowUser(
                                                           _profileUser.userId);
                                                   setState(() {
+                                                    justFollowed = false;
                                                     isFollowing = false;
                                                   });
                                                   break;
@@ -870,26 +882,209 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     Theme.of(context).backgroundColor,
                                     stuckAmount),
                                 padding: EdgeInsets.symmetric(horizontal: 10.0),
-                                child: Center(
-                                  child: buildProfileButton(),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    MKDropDownMenu(
+                                      controller: mKController,
+                                      menuBuilder: () {
+                                        return Container(
+                                          child: Material(
+                                            child: Column(
+                                              children: [
+                                                sortTab(Sort.Recent),
+                                                Divider(
+                                                  indent: 10,
+                                                  endIndent: 10,
+                                                  thickness: 1,
+                                                  height: 1,
+                                                  color: Colors.grey
+                                                      .withOpacity(0.4),
+                                                ),
+                                                sortTab(Sort.Best),
+                                                Divider(
+                                                  indent: 10,
+                                                  endIndent: 10,
+                                                  thickness: 1,
+                                                  height: 1,
+                                                  color: Colors.grey
+                                                      .withOpacity(0.4),
+                                                ),
+                                                sortTab(Sort.Oldest),
+                                              ],
+                                            ),
+                                          ),
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                        );
+                                      },
+                                      menuMargin: 10,
+                                      headerBuilder: (b) {
+                                        if (true) {
+                                          return Padding(
+                                            padding:
+                                                const EdgeInsets.only(left: 8),
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  b
+                                                      ? FluentIcons
+                                                          .chevron_up_12_filled
+                                                      : FluentIcons
+                                                          .chevron_down_12_filled,
+                                                  size: 16,
+                                                ),
+                                                Text(
+                                                  sort.toString().substring(5),
+                                                  style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w800),
+                                                )
+                                              ],
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                    Expanded(child: Container()),
+                                    buildProfileButton()
+                                  ],
                                 ));
-                            if (stuckAmount > 0.0)
+                            if (stuckAmount > 0.0 && _profileUser != null)
                               button = Container(
-                                  height: 50.0,
-                                  color: Theme.of(context).backgroundColor,
+                                  height: 64.0,
                                   padding:
                                       EdgeInsets.symmetric(horizontal: 15.0),
                                   child: Center(
                                     child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
+                                        Center(
+                                          child: CircleAvatar(
+                                            maxRadius: 24,
+                                            backgroundImage:
+                                                CachedNetworkImageProvider(
+                                                    _profileUser?.avatarUrl ??
+                                                        Strings.emptyAvatarUrl),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 20,
+                                        ),
                                         Expanded(
-                                            child: Text(
-                                          profileName,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 19),
-                                        )),
-                                        buildProfileButton()
+                                          child: Column(
+                                            children: [
+                                              Container(
+                                                child: Row(
+                                                  children: [
+                                                    Expanded(
+                                                        child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 8),
+                                                      child: Text(
+                                                        profileName,
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 19),
+                                                      ),
+                                                    )),
+                                                  ],
+                                                ),
+                                              ),
+                                              Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Expanded(
+                                                    child: MKDropDownMenu(
+                                                      controller: mKController,
+                                                      menuBuilder: () {
+                                                        return Container(
+                                                          child: Material(
+                                                            child: Column(
+                                                              children: [
+                                                                sortTab(Sort
+                                                                    .Recent),
+                                                                Divider(
+                                                                  indent: 10,
+                                                                  endIndent: 10,
+                                                                  thickness: 1,
+                                                                  height: 1,
+                                                                  color: Colors
+                                                                      .grey
+                                                                      .withOpacity(
+                                                                          0.4),
+                                                                ),
+                                                                sortTab(
+                                                                    Sort.Best),
+                                                                Divider(
+                                                                  indent: 10,
+                                                                  endIndent: 10,
+                                                                  thickness: 1,
+                                                                  height: 1,
+                                                                  color: Colors
+                                                                      .grey
+                                                                      .withOpacity(
+                                                                          0.4),
+                                                                ),
+                                                                sortTab(Sort
+                                                                    .Oldest),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          width: MediaQuery.of(
+                                                                  context)
+                                                              .size
+                                                              .width,
+                                                        );
+                                                      },
+                                                      menuMargin: 10,
+                                                      headerBuilder: (b) {
+                                                        if (true) {
+                                                          return Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                        .only(
+                                                                    left: 0),
+                                                            child: Row(
+                                                              children: [
+                                                                Icon(
+                                                                  b
+                                                                      ? FluentIcons
+                                                                          .chevron_up_12_filled
+                                                                      : FluentIcons
+                                                                          .chevron_down_12_filled,
+                                                                  size: 16,
+                                                                ),
+                                                                Text(
+                                                                  sort
+                                                                      .toString()
+                                                                      .substring(
+                                                                          5),
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          16,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w800),
+                                                                )
+                                                              ],
+                                                            ),
+                                                          );
+                                                        }
+                                                      },
+                                                    ),
+                                                  ),
+                                                  buildProfileButton()
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ));
@@ -899,33 +1094,35 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 child: button);
                           },
                           content: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                    width: 1,
-                                    color: Theme.of(context).cardColor),
-                                color: Theme.of(context).backgroundColor,
-                              ),
-                              height: 36,
-                              margin: EdgeInsets.only(
-                                  left: 10, right: 10, bottom: 6, top: 4),
-                              child: Row(
-                                children: [
-                                  sortTab(Sort.Recent),
-                                  Container(
-                                    width: 2,
-                                    height: 32,
-                                    color: Theme.of(context).cardColor,
-                                  ),
-                                  sortTab(Sort.Best),
-                                  Container(
-                                    width: 2,
-                                    height: 32,
-                                    color: Theme.of(context).cardColor,
-                                  ),
-                                  sortTab(Sort.Oldest),
-                                ],
-                              ))),
+                              // decoration: BoxDecoration(
+                              //   borderRadius: BorderRadius.circular(10),
+                              //   border: Border.all(
+                              //       width: 1,
+                              //       color: Theme.of(context).cardColor),
+                              //   color: Theme.of(context).backgroundColor,
+                              // ),
+                              // height: 36,
+                              // margin: EdgeInsets.only(
+                              //     left: 10, right: 10, bottom: 6, top: 4),
+                              child: Container()
+                              // Row(
+                              //   children: [
+                              //     sortTab(Sort.Recent),
+                              //     Container(
+                              //       width: 2,
+                              //       height: 32,
+                              //       color: Theme.of(context).cardColor,
+                              //     ),
+                              //     sortTab(Sort.Best),
+                              //     Container(
+                              //       width: 2,
+                              //       height: 32,
+                              //       color: Theme.of(context).cardColor,
+                              //     ),
+                              //     sortTab(Sort.Oldest),
+                              //   ],
+                              // )
+                              )),
                     ),
                   Divider(
                     height: 1,
@@ -938,14 +1135,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                     itemCount: posts.length + 1,
                     itemBuilder: (context, i) {
                       if (i == posts.length) {
-                        return empty
-                            ? Container(
-                                height: 400,
-                                child: emptyState(
-                                    context, 'Nothing Here!', 'none'))
-                            : loaded
-                                ? Container()
-                                : circularProgress();
+                        return !loaded
+                            ? circularProgress()
+                            : empty
+                                ? Container(
+                                    height: 400,
+                                    child: emptyState(
+                                        context, 'Nothing Here!', 'none'))
+                                : Container();
                       }
                       return posts[i];
                     },

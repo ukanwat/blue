@@ -13,12 +13,12 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       message.data['title'],
       message.data['body'],
       NotificationDetails(
-        android: AndroidNotificationDetails(
-          channel.id,
-          channel.name,
-          channel.description,
-        ),
-      ));
+          android: AndroidNotificationDetails(
+            channel.id,
+            channel.name,
+            channel.description,
+          ),
+          iOS: IOSNotificationDetails()));
 }
 
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
@@ -49,10 +49,10 @@ class PushNotificationsManager {
       AndroidNotification android = message.notification?.android;
       if (notification != null && android != null) {
         flutterLocalNotificationsPlugin.show(
-            notification.hashCode,
-            notification.title,
-            notification.body,
-            NotificationDetails(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          NotificationDetails(
               android: AndroidNotificationDetails(
                 channel.id,
                 channel.name,
@@ -61,7 +61,8 @@ class PushNotificationsManager {
                 //      one that already exists in example app.
                 icon: 'launch_background',
               ),
-            ));
+              iOS: IOSNotificationDetails()),
+        );
       }
     });
     flutterLocalNotificationsPlugin.initialize(initializationSettings);
@@ -107,15 +108,13 @@ class PushNotificationsManager {
   }
 
   Future<void> getToken() async {
-    var token = PreferencesUpdate().getString('token');
-    print('dev token : $token');
-    if (token == null) {
-      _firebaseMessaging.getToken().then((deviceToken) {
-        PreferencesUpdate().updateString('token', deviceToken, upload: false);
-        Hasura.updateUser(token: deviceToken);
-      });
-    } else {
-      Hasura.updateUser(token: token);
-    }
+    await _firebaseMessaging.getToken().then((deviceToken) {
+      var token = PreferencesUpdate().getString('token');
+      print('dev token');
+      print(token);
+
+      Hasura.updateUser(token: deviceToken);
+      print(deviceToken);
+    });
   }
 }

@@ -1,4 +1,6 @@
 // Flutter imports:
+import 'package:blue/widgets/loadmore_widget.dart';
+import 'package:blue/widgets/paginated_posts.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -13,6 +15,7 @@ import './home.dart';
 import '../services/hasura.dart';
 
 class ActivityFeedScreen extends StatefulWidget {
+  ActivityFeedScreen(Key key) : super(key: key);
   @override
   _ActivityFeedScreenState createState() => _ActivityFeedScreenState();
 }
@@ -20,36 +23,41 @@ class ActivityFeedScreen extends StatefulWidget {
 class _ActivityFeedScreenState extends State<ActivityFeedScreen>
     with AutomaticKeepAliveClientMixin<ActivityFeedScreen> {
   List<ActivityFeedItem> data = [];
-   DateTime time =DateTime.utc(2019);
-  bool loading = true;
-
+  DateTime time = DateTime.utc(2019);
+  bool empty = false;
+  int offset = 0;
+  int limit = 100;
+  bool loaded = false;
   getFeed() async {
-    List feedData =await Hasura.getActivityFeed();
-  data =feedData.map((doc) => ActivityFeedItem.fromDocument({
-    "username": doc['data']['username'],
-        "userId": doc['data']['user_id'],
-        "displayName": doc['data']['name'],
-        "type": doc['action'],
-        "title": doc['data']['title'],
-        "postId": doc['data']['post_id'],
-        "userProfileImg": doc['data']['image_url'],
-        "commentData": doc['data']['text'],
-        "timestamp": doc['created_at'],
-  
-  })).toList();
-  setState(() {
-    loading = false;
-  });
+    List feedData = await Hasura.getNotifications(offset: offset, limit: limit);
+    print(feedData);
+    offset = offset + feedData.length;
+    setState(() {
+      feedData.forEach((doc) {
+        if (doc['activity'] != null) {
+          data.add(ActivityFeedItem.fromDocument(doc));
+        }
+      });
+    });
+    if (feedData.length == 0) {
+      setState(() {
+        loaded = true;
+      });
+    }
+    if (feedData.length == 0 && offset == 0) {
+      setState(() {
+        empty = true;
+      });
+    }
+
+    return true;
   }
-   refreshFeed()async{
-         
-   }
-  
- 
+
+  refreshFeed() async {}
 
   bool get wantKeepAlive => true;
 
-@override
+  @override
   void initState() {
     getFeed();
     super.initState();
@@ -58,25 +66,26 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    if (loading == true) {
-      return circularProgress();
-    }
-    if (data.length == 0) {
+
+    if (empty == true) {
       return emptyState(context, 'No notifications yet', 'No messages',
           subtitle:
               'Stay tuned! Notifications about your activity will show up here');
     }
     return RefreshIndicator(
-      onRefresh: ()async {
-       await refreshFeed();
-      },
-
-          child: ListView.builder(
-            itemBuilder: (context,i){
-return data[i];
+        onRefresh: () async {
+          await refreshFeed();
+        },
+        child: LoadMore(
+            onLoadMore: () async {
+              return (await getFeed());
             },
-            itemCount: data.length,
-      ),
-    );
+            isFinish: loaded,
+            child: ListView.builder(
+              itemBuilder: (context, i) {
+                return data[i];
+              },
+              itemCount: data.length,
+            )));
   }
 }

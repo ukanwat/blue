@@ -53,7 +53,7 @@ class Hasura {
   static getUserId({String uid}) async {
     uid = FirebaseAuth.instance.currentUser.uid;
     if (uid == null) {
-      Boxes.openCurrentUserBox();
+      await Boxes.openCurrentUserBox();
 
       if (Boxes.currentUserBox.get('user_id') != null) {
         return Boxes.currentUserBox.get('user_id');
@@ -61,7 +61,6 @@ class Hasura {
     }
     print(uid);
 
-    if (jwtToken == null) return;
     String _doc = """query{
   users(where:{uid:{_eq:"$uid"}}){
     user_id
@@ -73,6 +72,7 @@ class Hasura {
     await Boxes.openCurrentUserBox();
     Boxes.currentUserBox.put('user_id',
         map['data']['users'][0]['user_id']); // check if there are no results
+
     return map['data']['users'][0]['user_id'];
   }
 
@@ -102,6 +102,11 @@ class Hasura {
       avatar_url
       username
     }
+     actions_by_user{
+      not_interested
+      up
+      time
+    }
     post_tags{
       tag{tag}
     }
@@ -124,6 +129,7 @@ class Hasura {
       String headerUrl,
       String photoUrl,
       String avatarUrl,
+      bool deleteToken,
       String token}) async {
     print('updating user');
     int userId = Boxes.currentUserBox.get('user_id');
@@ -134,8 +140,13 @@ class Hasura {
     print('updating user data');
     print(jwtToken);
     String aboutModified;
-    if (jwtToken == null) {
-      return;
+    int i = 0;
+    while (jwtToken == null) {
+      i++;
+      await Future.delayed(Duration(seconds: 1));
+      if (i == 60) {
+        return;
+      }
     }
     if (about != null) {
       aboutModified = about.replaceAll("\n", "\\n");
@@ -169,6 +180,10 @@ class Hasura {
     }
     if (token != null) {
       fields = fields + 'token: "$token",';
+    }
+
+    if (deleteToken == true) {
+      fields = fields + 'token: null,';
     }
     print(fields);
     String _doc =
@@ -204,6 +219,8 @@ class Hasura {
     user_id
     username
     website
+    follower_count
+    following_count
   }
 }""";
     return hasuraConnect.query(
@@ -470,7 +487,11 @@ class Hasura {
     post_id
     title
     thumbnail
-    upvoted_by_user
+    actions_by_user{
+      not_interested
+      up
+      time
+    }
     comment_count
     user{
       avatar_url
@@ -506,7 +527,11 @@ class Hasura {
     owner_id
     post_id
     title
-    upvoted_by_user
+    actions_by_user{
+      not_interested
+      up
+      time
+    }
     comment_count
     user{
       avatar_url
@@ -570,41 +595,26 @@ class Hasura {
     return tags;
   }
 
-  static insertPostVote(int postId, bool up) async {
+  static insertPostAction(int postId, String param) async {
     var userId = await getUserId();
-    await hasuraConnect.mutation("""mutation{
-  insert_post_actions_one(object:{post_id:$postId,user_id:$userId,up: $up}){
+    String doc = """mutation{
+  insert_post_actions_one(object:{post_id:$postId,user_id:$userId,$param}){
    __typename
   }
-}""");
+}""";
+    print(doc);
+    await hasuraConnect.mutation(doc);
   }
 
-  static updatePostVote(int postId, bool up) async {
+  static updatePostAction(int postId, String param) async {
     var userId = await getUserId();
-
-    await hasuraConnect.mutation("""mutation{
-  update_post_actions_by_pk(pk_columns:{post_id:$postId,user_id:$userId},_set:{up:$up}){
+    String doc = """mutation{
+  update_post_actions_by_pk(pk_columns:{post_id:$postId,user_id:$userId},_set:{$param}){
    __typename
   }
-}""");
-  }
-
-  static deletePostVote(int postId) async {
-    var userId = Boxes.currentUserBox.get('user_id');
-    if (userId == null) {
-      userId = await getUserId();
-    }
-    String string = """mutation{
- delete_post_actions_by_pk(
-    post_id:$postId,
-    user_id:$userId
-  ){
-   __typename
-  }
-}
-""";
-    print(string);
-    await hasuraConnect.mutation(string);
+}""";
+    print(doc);
+    await hasuraConnect.mutation(doc);
   }
 
   static getSearches(int limit) async {
@@ -663,6 +673,11 @@ class Hasura {
     owner_id
     post_id
     title
+     actions_by_user{
+      not_interested
+      up
+      time
+    }
     user{
       avatar_url
       username
@@ -854,26 +869,23 @@ class Hasura {
 }""");
   }
 
-  static getActivityFeed({DateTime lastTime}) async {
+  static getNotifications({int offset, int limit}) async {
     int userId = await getUserId();
-    String where = '{user_id:{_eq:$userId}}';
-    if (lastTime != null) {
-      where = "{_and:[{user_id:{_eq:$userId}},{created_at:{_gt:$lastTime}}]}";
-    }
-    print("""query{
-  activity_feed(where:$where,order_by:{created_at:desc}){
-    created_at
-    data
-  }
-}""");
+
     var data = await hasuraConnect.query("""query{
-  activity_feed(where:$where,order_by:{created_at:desc}){
+  notifications(where:{user_id:{_eq:$userId}},limit:$limit,offset:$offset){
     created_at
-    data
+    user_id
+    notify
+    seen
+    source_id
+    activity
+    action
   }
+  
 }
 """);
-    return data['data']['activity_feed'];
+    return data['data']['notifications'];
   }
 
   static muteUser(int peerId) async {
@@ -1008,9 +1020,9 @@ __typename
 
   static insertComment(dynamic postId, String comment, int ownerId) async {
     int userId = await getUserId();
-    String token = await getToken(ownerId);
-    dynamic data = await hasuraConnect.mutation("""mutation{
-  insert_comments_one(object:{data:"$comment",post_id:$postId,user_id:$userId, payload:{token:"$token"}}){
+    print(userId);
+    String doc = """mutation{
+  insert_comments_one(object:{data:"$comment",post_id:$postId,user_id:$userId,}){
     comment_id
     created_at
     data
@@ -1041,7 +1053,9 @@ __typename
     }
   }
 }
-""");
+""";
+    print(doc);
+    dynamic data = await hasuraConnect.mutation(doc);
     String doc1 =
         """mutation{update_posts_by_pk(pk_columns:{post_id:$postId,},_inc:{comment_count:1}){
     __typename
@@ -1145,6 +1159,141 @@ __typename
     return comments['data']['comments'];
   }
 
+  static getCommentWithPost(int id) async {
+    print('comment Id : $id');
+
+    dynamic comment = await hasuraConnect.query("""query{
+  comments(where:{comment_id:{_eq:$id}}){
+        comment_id
+    created_at
+    data
+    user_id
+    post_id
+    reply_count
+    user_vote
+     user{
+      avatar_url
+      username
+    }
+    upvotes
+    downvotes
+
+    comment_replies{
+      user{
+        avatar_url
+        username
+      }
+      user_vote
+      comment_id
+      created_at
+      reply_id
+      user_id
+      upvotes
+      downvotes
+      data
+    }
+    post{
+        contents
+    created_at
+    owner_id
+    post_id
+    title
+    user{
+      avatar_url
+      username
+    }
+    post_tags{
+      tg{tag}
+    }
+     actions_by_user{
+      not_interested
+      up
+      time
+    }
+       upvote_count
+      share_count
+      comment_count
+      save_count
+         downvote_count
+    }
+   
+  }
+  
+  
+  
+}
+""");
+    print(comment['data']['comments'][0]);
+    return comment['data']['comments'][0];
+  }
+
+  static getReplyCommentWithPost(int replyId) async {
+    dynamic doc = await hasuraConnect.query("""query{
+ comment_replies_by_pk(reply_id:$replyId){
+    reply_id
+    comment{  comment_id
+    created_at
+    data
+    user_id
+    post_id
+    reply_count
+    user_vote
+     user{
+      avatar_url
+      username
+    }
+    upvotes
+    downvotes
+     actions_by_user{
+      not_interested
+      up
+      time
+    }
+    comment_replies{
+      user{
+        avatar_url
+        username
+      }
+      user_vote
+      comment_id
+      created_at
+      reply_id
+      user_id
+      upvotes
+      downvotes
+      data
+    }
+    post{
+          contents
+    created_at
+    owner_id
+    post_id
+    title
+    user{
+      avatar_url
+      username
+    }
+    post_tags{
+      tg{tag}
+    }
+       upvote_count
+      share_count
+      comment_count
+      save_count
+         downvote_count
+    }}
+    
+   
+  }
+  
+  
+  
+}
+""");
+
+    return doc['data']['comment_replies_by_pk']['comment'];
+  }
+
   static updateSavedPost(String name, int postId) async {
     int userId = await getUserId();
     await hasuraConnect.mutation("""mutation{
@@ -1193,6 +1342,11 @@ __typename
       avatar_url
       username
     }
+     actions_by_user{
+      not_interested
+      up
+      time
+    }
     post_tags{
       tg{tag}
     }
@@ -1238,6 +1392,11 @@ __typename
     }
     post_tags{
       tg{tag}
+    }
+     actions_by_user{
+      not_interested
+      up
+      time
     }
        downvote_count
       upvote_count
@@ -1313,7 +1472,11 @@ __typename
     post_id
     title
     thumbnail
-    upvoted_by_user
+    actions_by_user{
+      not_interested
+      up
+      time
+    }
     comment_count
     user{
       avatar_url

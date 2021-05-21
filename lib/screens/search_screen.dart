@@ -56,7 +56,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   PreferredSize buildSearchField(context) {
     return PreferredSize(
-      preferredSize: Size.fromHeight(searching ? 95.0 : 50),
+      preferredSize: Size.fromHeight(searching ? 90.0 : 50),
       child: AppBar(
         titleSpacing: 0,
         automaticallyImplyLeading: false,
@@ -67,37 +67,32 @@ class _SearchScreenState extends State<SearchScreen> {
               )
             : TabBar(
                 indicatorColor: Colors.deepOrange,
-                indicatorPadding:
-                    EdgeInsets.symmetric(vertical: 4, horizontal: 20),
                 indicatorWeight: 2.0,
                 tabs: [
                   Container(
-                    height: 45,
+                    height: 40,
                     child: Center(
                         child: Text(
                       'Top',
-                      style: TextStyle(
-                        fontSize: 17,
-                      ),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                     )),
                   ),
                   Container(
-                      height: 45,
+                      height: 40,
                       child: Center(
                           child: Text(
                         'People',
                         style: TextStyle(
-                          fontSize: 17,
-                        ),
+                            fontSize: 18, fontWeight: FontWeight.w700),
                       ))),
                   Container(
-                      height: 45,
+                      height: 40,
                       child: Center(
                         child: Text(
                           'Tags',
                           style: TextStyle(
-                            fontSize: 17,
-                          ),
+                              fontSize: 18, fontWeight: FontWeight.w700),
                         ),
                       ))
                 ],
@@ -112,9 +107,9 @@ class _SearchScreenState extends State<SearchScreen> {
           child: IconButton(
               iconSize: 18,
               icon: Icon(
-                Icons.arrow_back_ios,
+                FluentIcons.chevron_left_24_filled,
                 color: Colors.blue,
-                size: 18,
+                size: 22,
               ),
               onPressed: () {
                 Navigator.pop(context);
@@ -226,7 +221,7 @@ class _RecentSearchesState extends State<RecentSearches> {
   }
 
   init() async {
-    _recentSearches = await Hasura.getSearches(10);
+    _recentSearches = await Hasura.getSearches(5);
     print(_recentSearches);
     setState(() {
       loading = false;
@@ -254,14 +249,20 @@ class _RecentSearchesState extends State<RecentSearches> {
                 itemBuilder: (BuildContext context, int index) {
                   if (index == 0) {
                     return Container(
-                      padding: EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                          border: Border(
+                              bottom: BorderSide(
+                                  width: 1,
+                                  color: Colors.grey.withOpacity(0.3)))),
+                      padding: EdgeInsets.only(
+                          left: 15, right: 15, top: 25, bottom: 5),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             'Recent Searches',
                             style: TextStyle(
-                                fontWeight: FontWeight.w600, fontSize: 20),
+                                fontWeight: FontWeight.w800, fontSize: 20),
                           ),
                           Material(
                             borderRadius: BorderRadius.circular(8),
@@ -282,8 +283,8 @@ class _RecentSearchesState extends State<RecentSearches> {
                                     'Clear All',
                                     style: TextStyle(
                                         color: Colors.blue,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700),
                                   )),
                             ),
                           )
@@ -291,31 +292,44 @@ class _RecentSearchesState extends State<RecentSearches> {
                       ),
                     );
                   }
-                  return ListTile(
-                    leading: Icon(FluentIcons.search_16_regular),
-                    key: UniqueKey(),
-                    title: Text(
-                      _recentSearches[index - 1]['text'],
-                    ),
-                    onTap: () {
-                      widget.callback(_recentSearches[index - 1]['text']);
-                    },
-                    trailing: IconButton(
-                      icon: Icon(
-                        Icons.clear,
-                        color: Theme.of(context).iconTheme.color,
+                  return Column(children: [
+                    ListTile(
+                      dense: true,
+                      leading: Icon(FluentIcons.search_16_filled),
+                      key: UniqueKey(),
+                      title: Text(
+                        _recentSearches[index - 1]['text'],
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 18,
+                            color: Colors.blue),
                       ),
-                      onPressed: () async {
-                        setState(() {
-                          Hasura.deleteSearch(
-                              _recentSearches[index - 1]['search_id']);
-                          setState(() {
-                            _recentSearches.removeAt(index - 1);
-                          });
-                        });
+                      onTap: () {
+                        widget.callback(_recentSearches[index - 1]['text']);
                       },
+                      trailing: IconButton(
+                        icon: Icon(
+                          Icons.clear,
+                          size: 20,
+                          color: Theme.of(context).iconTheme.color,
+                        ),
+                        onPressed: () async {
+                          setState(() {
+                            Hasura.deleteSearch(
+                                _recentSearches[index - 1]['search_id']);
+                            setState(() {
+                              _recentSearches.removeAt(index - 1);
+                            });
+                          });
+                        },
+                      ),
                     ),
-                  );
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      indent: 40,
+                    )
+                  ]);
                 });
   }
 }

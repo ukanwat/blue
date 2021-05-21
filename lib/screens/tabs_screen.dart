@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:blue/constants/app_colors.dart';
 import 'package:blue/screens/settings/general/drafts_screen.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
@@ -164,7 +165,7 @@ class _TabsScreenState extends State<TabsScreen> {
       bottomNavigationBar: Theme(
         data: Theme.of(context).copyWith(
           // sets the background color of the `BottomNavigationBar`
-          canvasColor: Colors.grey[900],
+          canvasColor: AppColors.navBar,
           // sets the active color of the `BottomNavigationBar` if `Brightness` is light
           primaryColor: Theme.of(context).primaryColor.withOpacity(0.8),
         ),
@@ -266,13 +267,14 @@ class _TabsScreenState extends State<TabsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Text(
-                        'Select Option',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 16),
-                      ),
+                    Center(
+                      child: Container(
+                          margin: EdgeInsets.symmetric(vertical: 5),
+                          height: 5,
+                          width: 32,
+                          decoration: BoxDecoration(
+                              color: Theme.of(context).cardColor,
+                              borderRadius: BorderRadius.circular(10))),
                     ),
                     Container(
                       margin: EdgeInsets.symmetric(vertical: 8),

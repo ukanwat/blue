@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:io';
 
 // Flutter imports:
+import 'package:blue/constants/app_colors.dart';
 import 'package:blue/models/hive_data_model.dart';
 import 'package:blue/providers/verify_email.dart';
 import 'package:blue/screens/email_sign_in_screen.dart';
@@ -101,7 +102,7 @@ void main() async {
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.black.withOpacity(0),
       systemNavigationBarDividerColor: Colors.grey[900],
-      systemNavigationBarColor: Colors.black,
+      systemNavigationBarColor: AppColors.navBar,
       systemNavigationBarIconBrightness: Brightness.light));
   runApp(MyApp());
 }

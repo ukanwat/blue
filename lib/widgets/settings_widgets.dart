@@ -41,19 +41,25 @@ Container settingsSectionTitle(
     width: double.infinity,
     color: Theme.of(context).iconTheme.color == Colors.white
         ? Theme.of(context).backgroundColor
-        : Theme.of(context).canvasColor,
+        : Color.fromRGBO(245, 245, 245, 1),
     padding: EdgeInsets.only(top: 24, bottom: 10, left: 14),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        icon,
+        // icon,
         SizedBox(width: 5),
         Text(
           title,
           style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: Theme.of(context).iconTheme.color.withOpacity(0.7)),
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        SizedBox(width: 5),
+        Icon(
+          icon.icon,
+          size: 18,
+          color: Colors.blue,
         ),
       ],
     ),

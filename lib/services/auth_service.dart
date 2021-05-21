@@ -47,6 +47,7 @@ class AuthService {
   }
 
   static logout(BuildContext context) async {
+    Hasura.updateUser(deleteToken: true);
     await Functions().updateEmail();
     var auth = Provider.of(context).auth;
     userSignedIn = false;
@@ -56,13 +57,17 @@ class AuthService {
 
   // Email & Password Sign Up
   Future<String> createUserWithEmailAndPassword(
-    String email,
-    String password,
-  ) async {
-    final _currentUser = await firebaseAuth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+      String email, String password, BuildContext context) async {
+    var _currentUser;
+    try {
+      _currentUser = await firebaseAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    } catch (e) {
+      snackbar(e.message, context, color: Colors.red);
+      return null;
+    }
     var _user = _currentUser.user;
     try {
       await _currentUser.user.sendEmailVerification();

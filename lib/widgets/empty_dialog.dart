@@ -10,7 +10,8 @@ import 'package:blue/screens/home.dart';
 class EmptyDialog extends StatefulWidget {
   final Widget child;
   final bool noHorizontalPadding;
-  EmptyDialog(this.child, {this.noHorizontalPadding});
+  final Color color;
+  EmptyDialog(this.child, {this.noHorizontalPadding, this.color});
 
   @override
   _EmptyDialogState createState() => _EmptyDialogState();
@@ -30,7 +31,9 @@ class _EmptyDialogState extends State<EmptyDialog> {
               vertical: 20,
               horizontal: widget.noHorizontalPadding == true ? 0 : 15),
           decoration: new BoxDecoration(
-            color: Theme.of(context).canvasColor,
+            color: widget.color == null
+                ? Theme.of(context).canvasColor
+                : widget.color,
             shape: BoxShape.rectangle,
             borderRadius: BorderRadius.circular(15),
             boxShadow: [

@@ -19,7 +19,9 @@ class CommunicationTabbarScreen extends StatefulWidget {
 }
 
 class _CommunicationTabbarScreenState extends State<CommunicationTabbarScreen>
-    with SingleTickerProviderStateMixin ,AutomaticKeepAliveClientMixin<CommunicationTabbarScreen> {
+    with
+        SingleTickerProviderStateMixin,
+        AutomaticKeepAliveClientMixin<CommunicationTabbarScreen> {
   TextEditingController searchController = TextEditingController();
   String title = 'Activity';
   clearSearch() {
@@ -28,24 +30,26 @@ class _CommunicationTabbarScreenState extends State<CommunicationTabbarScreen>
   }
 
   TabController _tabController;
-
+  Widget screen1;
+  Widget screen2;
   @override
   void initState() {
     super.initState();
+    screen1 = ActivityFeedScreen(UniqueKey());
+    screen2 = ChatsScreen(UniqueKey());
     _tabController = new TabController(vsync: this, length: 2);
-  _tabController.addListener(() { 
-    setState(() {
-
-  switch(_tabController.index) {
-    case 0:
-    title = 'Notifications';
-    break;
-    case 1:
-    title = 'Direct';
-    break;
-  }
-  });
-  });
+    _tabController.addListener(() {
+      setState(() {
+        switch (_tabController.index) {
+          case 0:
+            title = 'Notifications';
+            break;
+          case 1:
+            title = 'Direct';
+            break;
+        }
+      });
+    });
   }
 
   @override
@@ -66,7 +70,8 @@ class _CommunicationTabbarScreenState extends State<CommunicationTabbarScreen>
       ],
     );
   }
-bool get wantKeepAlive => true;
+
+  bool get wantKeepAlive => true;
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -79,7 +84,23 @@ bool get wantKeepAlive => true;
         appBar: PreferredSize(
           preferredSize:
               Size.fromHeight(54 + buildTabbar().preferredSize.height),
-          child: AppBar(automaticallyImplyLeading: false,
+          child: AppBar(
+            actions: [
+              IconButton(
+                icon: Icon(
+                  FluentIcons.arrow_clockwise_24_filled,
+                ),
+                onPressed: () {
+                  setState(() {
+                    if ('Notifications' == title) {
+                      screen1 = ActivityFeedScreen(UniqueKey());
+                    } else
+                      screen2 = ChatsScreen(UniqueKey());
+                  });
+                },
+              )
+            ],
+            automaticallyImplyLeading: false,
             backgroundColor: Theme.of(context).canvasColor,
             elevation: 0.3,
             title: Row(
@@ -90,15 +111,18 @@ bool get wantKeepAlive => true;
                   child: CircleAvatar(
                     minRadius: 22,
                     maxRadius: 22,
-                    backgroundImage: CachedNetworkImageProvider(Boxes.currentUserBox.get('avatar_url')??"https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                    backgroundImage: CachedNetworkImageProvider(Boxes
+                            .currentUserBox
+                            .get('avatar_url') ??
+                        "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
                   ),
                 ),
                 Text(
-               title ,// title,
+                  title, // title,
                   style: TextStyle(
-                      fontSize: 24,
-                      fontFamily: 'Techna Sans Regular',
-                     ),
+                    fontSize: 24,
+                    fontFamily: 'Techna Sans Regular',
+                  ),
                 ),
               ],
             ),
@@ -107,7 +131,6 @@ bool get wantKeepAlive => true;
               preferredSize: new Size(double.infinity, 36),
               child: TabBar(
                 controller: _tabController,
-                
                 indicatorWeight: 3,
                 indicatorSize: TabBarIndicatorSize.tab,
                 labelStyle:
@@ -116,10 +139,16 @@ bool get wantKeepAlive => true;
                 indicatorColor: Theme.of(context).iconTheme.color,
                 tabs: <Widget>[
                   Tab(
-                    icon: Icon(FluentIcons.mail_inbox_24_filled,size: 26,),
+                    icon: Icon(
+                      FluentIcons.mail_inbox_24_filled,
+                      size: 26,
+                    ),
                   ),
                   Tab(
-                    icon: Icon(FluentIcons.chat_24_filled,size: 26,),
+                    icon: Icon(
+                      FluentIcons.chat_24_filled,
+                      size: 26,
+                    ),
                   ),
                 ],
               ),
@@ -127,15 +156,14 @@ bool get wantKeepAlive => true;
           ),
         ),
         body: TabBarView(
-          controller:_tabController ,
-          physics: BouncingScrollPhysics(), children: <Widget>[
-          Container(
-            color: Theme.of(context).backgroundColor,
-            child: ActivityFeedScreen()),
-          Container(
-            color: Theme.of(context).backgroundColor,
-            child: ChatsScreen()),
-        ]),
+            controller: _tabController,
+            physics: BouncingScrollPhysics(),
+            children: <Widget>[
+              Container(
+                  color: Theme.of(context).backgroundColor, child: screen1),
+              Container(
+                  color: Theme.of(context).backgroundColor, child: screen2),
+            ]),
       ),
     );
   }

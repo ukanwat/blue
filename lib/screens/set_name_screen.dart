@@ -27,7 +27,7 @@ class _SetNameScreenState extends State<SetNameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: Color.fromRGBO(240, 240, 240, 1),
         body: Container(
           padding: EdgeInsets.symmetric(horizontal: 10),
           width: double.infinity,
@@ -35,20 +35,13 @@ class _SetNameScreenState extends State<SetNameScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Image.asset('assets/images/stark-bnb-icon-wa.png'),
+              SizedBox(height: 120, child: Image.asset('assets/logo.png')),
               SizedBox(height: 20),
-              Text(
-                'Stark',
-                style: TextStyle(
-                    color: Theme.of(context).accentColor,
-                    fontSize: 50,
-                    fontFamily: 'Techna Sans Regular'),
-              ),
               FittedBox(
                 child: Card(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20)),
-                    color: Theme.of(context).cardColor,
+                    color: Colors.white,
                     elevation: 10,
                     margin: EdgeInsets.all(30),
                     child: Form(
@@ -67,11 +60,48 @@ class _SetNameScreenState extends State<SetNameScreen> {
                               children: <Widget>[
                                 if ((data['provider'] != 'google') &&
                                     (data['provider'] != 'facebook'))
-                                  TextFormField(
-                                    controller: nameController,
-                                    style: TextStyle(color: Colors.white),
+                                  Container(
+                                    height: 45,
+                                    child: TextFormField(
+                                      textAlignVertical:
+                                          TextAlignVertical(y: 0.8),
+                                      controller: nameController,
+                                      style: TextStyle(color: Colors.black),
+                                      decoration: InputDecoration(
+                                          fillColor: Colors.grey.shade200,
+                                          isDense: true,
+                                          filled: true,
+                                          border: OutlineInputBorder(
+                                            borderSide: BorderSide.none,
+                                            borderRadius:
+                                                BorderRadius.circular(30.0),
+                                          ),
+                                          hintStyle:
+                                              TextStyle(color: Colors.grey),
+                                          hintText: "Choose a Display Name",
+                                          prefixIcon: Icon(
+                                            FluentIcons.star_12_filled,
+                                            size: 28,
+                                            color: Colors.grey,
+                                          )),
+                                    ),
+                                  ),
+                                if ((data['provider'] != 'google') &&
+                                    (data['provider'] != 'facebook'))
+                                  SizedBox(height: 20),
+                                Container(
+                                  height: 45,
+                                  child: TextFormField(
+                                    textAlignVertical:
+                                        TextAlignVertical(y: 0.8),
+                                    controller: usernameController,
+                                    inputFormatters: [
+                                      new FilteringTextInputFormatter.allow(
+                                          RegExp("[a-z0-9.]")),
+                                    ],
+                                    style: TextStyle(color: Colors.black),
                                     decoration: InputDecoration(
-                                        fillColor: Colors.grey.shade700,
+                                        fillColor: Colors.grey.shade200,
                                         isDense: true,
                                         filled: true,
                                         border: OutlineInputBorder(
@@ -79,38 +109,15 @@ class _SetNameScreenState extends State<SetNameScreen> {
                                           borderRadius:
                                               BorderRadius.circular(30.0),
                                         ),
-                                        hintText: "Choose a Display Name",
+                                        hintStyle:
+                                            TextStyle(color: Colors.grey),
+                                        hintText: "Choose a username",
                                         prefixIcon: Icon(
-                                          FluentIcons.star_12_filled,
+                                          FluentIcons.person_12_filled,
                                           size: 28,
                                           color: Colors.grey,
                                         )),
                                   ),
-                                if ((data['provider'] != 'google') &&
-                                    (data['provider'] != 'facebook'))
-                                  SizedBox(height: 20),
-                                TextFormField(
-                                  controller: usernameController,
-                                  inputFormatters: [
-                                    new FilteringTextInputFormatter.allow(
-                                        RegExp("[a-z0-9.]")),
-                                  ],
-                                  style: TextStyle(color: Colors.white),
-                                  decoration: InputDecoration(
-                                      fillColor: Colors.grey.shade700,
-                                      isDense: true,
-                                      filled: true,
-                                      border: OutlineInputBorder(
-                                        borderSide: BorderSide.none,
-                                        borderRadius:
-                                            BorderRadius.circular(30.0),
-                                      ),
-                                      hintText: "Choose a username",
-                                      prefixIcon: Icon(
-                                        FluentIcons.person_12_filled,
-                                        size: 28,
-                                        color: Colors.grey,
-                                      )),
                                 ),
                                 SizedBox(height: 10),
                               ],
@@ -124,13 +131,13 @@ class _SetNameScreenState extends State<SetNameScreen> {
                                 TextButton(
                                   style: TextButton.styleFrom(
                                     padding: EdgeInsets.symmetric(
-                                        horizontal: 14, vertical: 6),
-                                    elevation: 3,
+                                        horizontal: 20, vertical: 8),
+                                    elevation: 2,
                                     backgroundColor:
                                         Theme.of(context).accentColor,
                                     shape: const RoundedRectangleBorder(
                                         borderRadius: BorderRadius.all(
-                                            Radius.circular(50))),
+                                            Radius.circular(30))),
                                   ),
                                   child: Text('Done',
                                       style: TextStyle(

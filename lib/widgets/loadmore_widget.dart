@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:blue/widgets/progress.dart';
 import 'package:flutter/material.dart';
 
 /// return true is refresh success
@@ -389,14 +390,7 @@ class DefaultLoadMoreDelegate extends LoadMoreDelegate {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            SizedBox(
-              width: _loadmoreIndicatorSize,
-              height: _loadmoreIndicatorSize,
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
-                backgroundColor: Colors.grey.withOpacity(0.6),
-              ),
-            ),
+            SizedBox(width: 40, height: 40, child: circularProgress()),
           ],
         ),
       );

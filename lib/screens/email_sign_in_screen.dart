@@ -31,8 +31,11 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   Future<String> signupUser(LoginData data) async {
     print('Email: ${data.name}, Password: ${data.password}');
 
-    await AuthService()
-        .createUserWithEmailAndPassword(data.name, data.password);
+    var uid = await AuthService()
+        .createUserWithEmailAndPassword(data.name, data.password, context);
+    if (uid == null) {
+      return 'error';
+    }
     signupData = data;
 
     return null;
@@ -63,75 +66,125 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FlutterLogin(
-      key: UniqueKey(),
-      title: 'Stark',
-      logo: 'assets/images/stark-bnb-icon-wa.png',
-      onLogin: loginUser,
-      onSignup: signupUser,
-      onSubmitAnimationCompleted: () async {
-        if (signupData != null) {
-          userSignedIn = false;
+    return Scaffold(
+      backgroundColor: Color.fromRGBO(240, 240, 240, 1),
+      body: Column(
+        children: [
+          Expanded(
+            child: FlutterLogin(
+              key: UniqueKey(),
+              title: '',
+              logo: 'assets/logo.png',
+              onLogin: loginUser,
+              onSignup: signupUser,
+              onSubmitAnimationCompleted: () async {
+                if (signupData != null) {
+                  userSignedIn = false;
 
-          AuthService().signOut(context);
+                  AuthService().signOut(context);
 
-          var a = await AuthService().loginUser(signupData, context);
-          if (a == null) {
-            return;
-          }
-        }
+                  var a = await AuthService().loginUser(signupData, context);
+                  if (a == null) {
+                    return;
+                  }
+                }
 
-        // if (error) {
-        //   return;
-        // } //TODO
-        // if (!hasuraUserExists) {
-        //   Navigator.pushNamed(context, SetNameScreen.routeName,
-        //       arguments: {'provider': 'email', 'email': email});
-        // } else {
-        //   userSignedIn = true;
-        // }
-      },
-      messages: LoginMessages(),
-      onRecoverPassword: _recoverPassword,
-      theme: LoginTheme(
-          titleStyle: TextStyle(
-              fontFamily: 'Techna Sans Regular',
-              color: Theme.of(context).accentColor,
-              fontSize: 30),
-          primaryColor: Colors.black,
-          accentColor: Colors.white,
-          inputTheme: InputDecorationTheme(
-              fillColor: Colors.grey[800],
-              focusColor: Colors.grey,
-              labelStyle: TextStyle(color: Colors.white),
-              filled: true,
-              border: InputBorder.none,
-              focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.transparent),
-                  borderRadius: BorderRadius.circular(50)),
-              disabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.transparent),
-                  borderRadius: BorderRadius.circular(50)),
-              enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.transparent),
-                  borderRadius: BorderRadius.circular(50))),
-          buttonStyle: TextStyle(
-            color: Colors.white,
-            decorationStyle: TextDecorationStyle.solid,
+                // if (error) {
+                //   return;
+                // } //TODO
+                // if (!hasuraUserExists) {
+                //   Navigator.pushNamed(context, SetNameScreen.routeName,
+                //       arguments: {'provider': 'email', 'email': email});
+                // } else {
+                //   userSignedIn = true;
+                // }
+              },
+              messages: LoginMessages(),
+              onRecoverPassword: _recoverPassword,
+              theme: LoginTheme(
+                  titleStyle: TextStyle(
+                      fontFamily: 'Techna Sans Regular',
+                      color: Theme.of(context).accentColor,
+                      fontSize: 30),
+                  primaryColor: Color.fromRGBO(240, 240, 240, 1),
+                  accentColor: Colors.grey,
+                  inputTheme: InputDecorationTheme(
+                      fillColor: Colors.grey[300],
+                      prefixStyle: TextStyle(
+                          color: Colors.grey,
+                          decorationColor: Colors.grey,
+                          backgroundColor: Colors.grey),
+                      suffixStyle: TextStyle(
+                          color: Colors.grey, decorationColor: Colors.grey),
+                      focusColor: Colors.grey,
+                      hoverColor: Colors.grey,
+                      labelStyle: TextStyle(
+                          color: Colors.grey, fontWeight: FontWeight.w500),
+                      filled: true,
+                      border: InputBorder.none,
+                      errorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.transparent),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.transparent),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      disabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.transparent),
+                          borderRadius: BorderRadius.circular(50)),
+                      enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.transparent),
+                          borderRadius: BorderRadius.circular(50))),
+                  buttonStyle: TextStyle(
+                      color: Colors.white,
+                      decorationStyle: TextDecorationStyle.solid,
+                      decorationColor: Colors.grey,
+                      fontStyle: FontStyle.normal,
+                      backgroundColor: Colors.grey.withOpacity(0.5)),
+                  buttonTheme: LoginButtonTheme(
+                    backgroundColor: Theme.of(context).accentColor,
+                    highlightColor: Theme.of(context).accentColor,
+                  ),
+                  textFieldStyle: TextStyle(color: Colors.black),
+                  bodyStyle: TextStyle(
+                    decorationColor: Colors.grey,
+                    color: Colors.black,
+                    fontStyle: FontStyle.normal,
+                  ),
+                  cardTheme: CardTheme(
+                    color: Colors.white,
+                  )),
+            ),
           ),
-          buttonTheme: LoginButtonTheme(
-            backgroundColor: Theme.of(context).accentColor,
-            highlightColor: Theme.of(context).accentColor,
+          Padding(
+            padding: const EdgeInsets.only(bottom: 30),
+            child: Center(
+                child: GestureDetector(
+              onTap: () {
+                Navigator.pop(context);
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    FluentIcons.chevron_left_24_filled,
+                    color: Colors.blue,
+                  ),
+                  Text(
+                    'Back',
+                    style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.blue,
+                        fontWeight: FontWeight.w500),
+                  )
+                ],
+              ),
+            )),
           ),
-          textFieldStyle: TextStyle(color: Colors.white),
-          bodyStyle: TextStyle(
-            decorationColor: Colors.white,
-            color: Colors.white,
-            fontStyle: FontStyle.normal,
-          ),
-          cardTheme: CardTheme(
-            color: Theme.of(context).cardColor,
-          )),
+        ],
+      ),
     );
   }
 }

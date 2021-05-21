@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -26,6 +27,9 @@ class DeactivateAccountScreen extends StatelessWidget {
                     "People will not be able to see your Profile after account deactivation but they will still see private messages sent by you. Your profile data will be deleted forever after 30 unless you sign in again.",
                 leftButtonText: "Deactivate",
                 rightButtonText: "Cancel",
+                leftButtonFunction: () {
+                  AuthService.logout(context);
+                },
               ),
             );
           }, FluentIcons.delete_24_filled, isRed: true),

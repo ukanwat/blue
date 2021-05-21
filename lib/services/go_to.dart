@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/services/hasura.dart';
 import 'package:flutter/material.dart';
 
 // Project imports:
@@ -8,8 +9,8 @@ import 'package:blue/screens/post_view_screen.dart';
 import 'package:blue/screens/profile_screen.dart';
 import 'package:blue/widgets/post.dart';
 
-class GoTo{
-   profileScreen(BuildContext context,int profileId) {
+class GoTo {
+  profileScreen(BuildContext context, int profileId) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -19,10 +20,13 @@ class GoTo{
       ),
     );
   }
-  showPost(BuildContext context,String postId,) async{
-    var doc =  await postsRef.doc(postId).get();
-    //TODO if fails show error
-  Post post = Post.fromDocument(doc.data(),isCompact: false,commentsShown: true,);
-Navigator.pushNamed(context, CommentsScreen.routeName, arguments: post);
-}
+
+  showPost(
+    BuildContext context,
+    int postId,
+  ) async {
+    dynamic doc = await Hasura.getPost(postId);
+    Navigator.pushNamed(context, CommentsScreen.routeName,
+        arguments: {'post': Post.fromDocument(doc)});
+  }
 }

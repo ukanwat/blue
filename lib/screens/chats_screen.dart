@@ -29,6 +29,7 @@ import './home.dart';
 import '../services/boxes.dart';
 
 class ChatsScreen extends StatefulWidget {
+  ChatsScreen(Key key) : super(key: key);
   @override
   _ChatsScreenState createState() => _ChatsScreenState();
 }

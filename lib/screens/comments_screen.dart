@@ -1,5 +1,6 @@
 // Flutter imports:
 import 'package:blue/services/functions.dart';
+import 'package:blue/widgets/comment_reply.dart';
 import 'package:blue/widgets/loadmore_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -35,20 +36,30 @@ class _CommentsScreenState extends State<CommentsScreen> {
   TextEditingController commentsController = TextEditingController();
   bool showReplies = true;
   Post data;
-  Widget commentsWidget = circularProgress();
 
-  addComments(Post data) {
-    Hasura.insertComment(data.postId, commentsController.text, data.ownerId);
-    commentsController.clear();
+  Widget commentsWidget = circularProgress();
+  List<Comment> commentDocs = [];
+  addComments(Post data) async {
+    dynamic doc = await Hasura.insertComment(
+        data.postId, commentsController.text, data.ownerId);
+    setState(() {
+      commentDocs
+          .add(Comment.fromDocument(doc, data.postId, doc['comment_id']));
+      comments = Comments(data, comments.key, commentDocs);
+
+      commentsController.clear();
+    });
   }
 
   addReply(
       Post data, int commentId, int ownerId, String createdAt, int commenterId,
-      {String referName}) {
+      {String referName}) async {
+    dynamic value;
     if (referName != null) {
-      Hasura.insertCommentReply(data.postId, commentId, commentsController.text,
-          createdAt, commenterId);
+      value = await Hasura.insertCommentReply(data.postId, commentId,
+          commentsController.text, createdAt, commenterId);
     } else {
+      return;
       // commentsRef
       //     .doc(data.postId)
       //     .collection('userComments')
@@ -72,6 +83,25 @@ class _CommentsScreenState extends State<CommentsScreen> {
 
     CommentNotifier().changeCommentType({'type': 'comment'});
     commentsController.clear();
+    print('commentId');
+    print(commentId);
+    CommentNotifier().addCommentReply(
+        commentId,
+        CommentReply(
+          id: value['reply_id'],
+          avatarUrl: value['user']['avatar_url'],
+          comment: value['data'],
+          commentId: commentId,
+          username: value['user']['username'],
+          downvotes: value['downvotes'],
+          postId: data.postId,
+          upvotes: value['upvotes'],
+          userId: value['user_id'],
+          timestamp: DateTime.parse(
+            value['created_at'],
+          ),
+          vote: value['user_vote'],
+        ));
   }
 
   @override
@@ -89,14 +119,21 @@ class _CommentsScreenState extends State<CommentsScreen> {
 
   @override
   void didChangeDependencies() {
-    data = ModalRoute.of(context).settings.arguments as Post;
-    comments = Comments(data, UniqueKey());
+    Map _map = ModalRoute.of(context).settings.arguments as Map;
+    data = _map['post'];
+    if (_map['comment'] != null) {
+      commentDocs.add(_map['comment']);
+    }
+    comments = Comments(data, UniqueKey(), commentDocs);
+
     super.didChangeDependencies();
   }
 
   Widget comments;
   @override
   Widget build(BuildContext context) {
+    print(commentDocs.length);
+    print('lengthhhh');
     return ChangeNotifierProvider(
       create: (_) => CommentNotifier(),
       child: Scaffold(
@@ -105,7 +142,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
             children: <Widget>[
               RefreshIndicator(
                   onRefresh: () async {
-                    comments = Comments(data, UniqueKey());
+                    comments = Comments(data, UniqueKey(), commentDocs);
                   },
                   child: comments),
               Column(
@@ -340,19 +377,21 @@ class _CommentsScreenState extends State<CommentsScreen> {
 
 class Comments extends StatefulWidget {
   final Post post;
-  Comments(this.post, Key key) : super(key: key);
+  final List<Comment> docs;
+  Comments(this.post, Key key, this.docs) : super(key: key);
   @override
   _CommentsState createState() => _CommentsState();
 }
 
 class _CommentsState extends State<Comments> {
-  List<Widget> comments = [];
+  List<Widget> comments;
   int count = 0;
   int length = 5;
   bool loaded = false;
   CommentSort sort = CommentSort.best;
   @override
   void initState() {
+    comments = widget.docs;
     super.initState();
   }
 

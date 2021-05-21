@@ -39,46 +39,8 @@ const notification_options = {
     priority: "high",
     timeToLive: 60 * 60 * 24,
   };
-export const messageNotification = functions.https.onRequest(async (req, resp) => {
-    const messageData = req.body.event.data.new;
-    const message = {
-        notification: {
-           title: 'Someone just commented on your Post',
-           body: messageData.data,
-               },
-        };
-    const options =  notification_options;
-      admin.messaging().sendToDevice(messageData.payload.token, message, options)
-      .then( ()=>{
 
-       resp.status(200).send("Notification sent successfully")
-       
-      })
-      .catch( error => {
-          console.log(error);
-      });
-  
-  });
 
-  export const commentReplyNotification = functions.https.onRequest((req, resp) => {
-    console.log(req.body.event.data.new);
-    const options =  notification_options;
-    const messageData = req.body.event.data.new;
-    const message = {
-        notification: {
-           title: 'Someone just Messaged you',
-           body: messageData.data,
-
-               },
-        };
-      admin.messaging().sendToDevice(messageData.payload.token, message, options)
-      .then( ()=>{
-       resp.status(200).send("Notification sent successfully")
-      })
-      .catch( error => {
-          console.log(error);
-      });
-  });
 
   export const notification = functions.https.onRequest((req, resp) => {
     console.log(req.body.event.data.new);
@@ -86,12 +48,14 @@ export const messageNotification = functions.https.onRequest(async (req, resp) =
     const messageData = req.body.event.data.new;
     const message = {
         notification: {
-           title: 'Someone just commented on yout post',
-           body: messageData.data,
+           title: messageData.data.title,
+           body: messageData.data.body,
                },
+    
         };
-      admin.messaging().sendToDevice(messageData.payload.token, message, options)
-      .then( ()=>{
+      admin.messaging().sendToDevice(messageData.token, message, options)
+      .
+      then( ()=>{
 
        resp.status(200).send("Notification sent successfully")
        
@@ -101,23 +65,3 @@ export const messageNotification = functions.https.onRequest(async (req, resp) =
       });
   });
 
-  export const commentNotification = functions.https.onRequest((req, resp) => {
-    console.log(req.body.event.data.new);
-    const options =  notification_options;
-    const messageData = req.body.event.data.new;
-    const message = {
-        notification: {
-           title: 'Someone just commented on yout post',
-           body: messageData.data,
-               },
-        };
-      admin.messaging().sendToDevice(messageData.payload.token, message, options)
-      .then( ()=>{
-
-       resp.status(200).send("Notification sent successfully")
-       
-      })
-      .catch( error => {
-          console.log(error);
-      });
-  });
