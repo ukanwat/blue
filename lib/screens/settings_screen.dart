@@ -79,6 +79,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   getInfo() async {
     packageInfo = await PackageInfo.fromPlatform();
+    setState(() {});
   }
 
   PackageInfo packageInfo;

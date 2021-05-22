@@ -5,6 +5,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 String messagToken;
+
+bool userSigningUp = false;
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('Handling a background message ${message.messageId}');
   print(message.data);
@@ -39,6 +41,9 @@ class PushNotificationsManager {
       PushNotificationsManager._();
 
   initMessage() {
+    if (userSigningUp) {
+      return;
+    }
     var initialzationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     var initialzationSettingsiOS = IOSInitializationSettings();

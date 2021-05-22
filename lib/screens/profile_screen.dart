@@ -3,6 +3,7 @@ import 'dart:ui';
 
 // Flutter imports:
 import 'package:blue/constants/strings.dart';
+import 'package:blue/screens/follows_screen.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/user_report_dialog.dart';
@@ -221,13 +222,13 @@ class _ProfileScreenState extends State<ProfileScreen>
   buildButton({String text, Function function, IconData icon}) {
     return Container(
       margin: EdgeInsets.only(top: 0, left: 5, right: 5, bottom: 0),
-      height: 28,
+      height: 30,
       width: 124,
       child: FlatButton(
         padding: EdgeInsets.all(0),
         onPressed: function,
         child: Container(
-          height: 28,
+          height: 30,
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -386,48 +387,70 @@ class _ProfileScreenState extends State<ProfileScreen>
                           Container(
                             child: Row(
                               children: [
-                                Column(
-                                  children: [
-                                    Text(
-                                        '${Functions.abbreviateNumber(user.followingCount)}',
-                                        style: TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.w700)),
-                                    SizedBox(
-                                      width: 5,
-                                    ),
-                                    Text('Following',
-                                        style: TextStyle(
-                                            fontSize: 13,
-                                            color: Theme.of(context)
-                                                .iconTheme
-                                                .color
-                                                .withOpacity(0.6),
-                                            fontWeight: FontWeight.w800)),
-                                  ],
-                                ),
+                                GestureDetector(
+                                    onTap: () {
+                                      Navigator.pushNamed(
+                                          context, FollowsScreen.routeName,
+                                          arguments: {
+                                            'f': true,
+                                            'i': widget.profileId
+                                          });
+                                    },
+                                    child: Container(
+                                        child: Column(
+                                      children: [
+                                        Text(
+                                            '${Functions.abbreviateNumber(user.followingCount)}',
+                                            style: TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.w700)),
+                                        SizedBox(
+                                          width: 5,
+                                        ),
+                                        Text('Following',
+                                            style: TextStyle(
+                                                fontSize: 13,
+                                                color: Theme.of(context)
+                                                    .iconTheme
+                                                    .color
+                                                    .withOpacity(0.6),
+                                                fontWeight: FontWeight.w800)),
+                                      ],
+                                    ))),
                                 SizedBox(
                                   width: 20,
                                 ),
-                                Column(
-                                  children: [
-                                    Text(
-                                        '${Functions.abbreviateNumber(justFollowed ? user.followerCount + 1 : user.followerCount)}',
-                                        style: TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.w700)),
-                                    SizedBox(
-                                      width: 5,
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                        context, FollowsScreen.routeName,
+                                        arguments: {
+                                          'f': false,
+                                          'i': widget.profileId
+                                        });
+                                  },
+                                  child: Container(
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                            '${Functions.abbreviateNumber(justFollowed ? user.followerCount + 1 : user.followerCount)}',
+                                            style: TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.w700)),
+                                        SizedBox(
+                                          width: 5,
+                                        ),
+                                        Text('Followers',
+                                            style: TextStyle(
+                                                fontSize: 13,
+                                                color: Theme.of(context)
+                                                    .iconTheme
+                                                    .color
+                                                    .withOpacity(0.6),
+                                                fontWeight: FontWeight.w800)),
+                                      ],
                                     ),
-                                    Text('Followers',
-                                        style: TextStyle(
-                                            fontSize: 13,
-                                            color: Theme.of(context)
-                                                .iconTheme
-                                                .color
-                                                .withOpacity(0.6),
-                                            fontWeight: FontWeight.w800)),
-                                  ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -918,7 +941,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               MediaQuery.of(context).size.width,
                                         );
                                       },
-                                      menuMargin: 10,
+                                      menuMargin: 8,
                                       headerBuilder: (b) {
                                         if (true) {
                                           return Padding(
@@ -953,7 +976,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 ));
                             if (stuckAmount > 0.0 && _profileUser != null)
                               button = Container(
-                                  height: 64.0,
+                                  height: 68.0,
                                   padding:
                                       EdgeInsets.symmetric(horizontal: 15.0),
                                   child: Center(

@@ -28,6 +28,7 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
   bool features = true;
   bool reminders = true;
   bool loading = true;
+
   @override
   void initState() {
     getPushNotificationPreferences();

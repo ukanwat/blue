@@ -19,6 +19,7 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
   TextEditingController tagSearchController = TextEditingController();
   String searchTerm = '';
   List tagResults = [];
+  List tagStrings = [];
   bool loading = false;
   InkWell tagTile(String tag, int id) {
     return InkWell(
@@ -47,7 +48,7 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
             child: TextFormField(
               keyboardType: TextInputType.name,
               inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9]")),
+                FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9 ]")),
               ],
               textAlignVertical: TextAlignVertical.bottom,
               style: TextStyle(
@@ -73,14 +74,23 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
                   tagResults = [];
                 } else {
                   print('search tag: $value');
-                  Future future =
-                      Hasura.findTags(_searchTerm.toLowerCase().trim());
+                  Future future = Hasura.findTags(_searchTerm
+                      .toLowerCase()
+                      .replaceAll(new RegExp(r"\s+"), ""));
                   future.then((value) {
                     setState(() {
                       tagResults = value;
+                      tagStrings = [];
+                      tagResults.forEach((element) {
+                        tagStrings.add(element['tag']);
+                      });
                     });
                     loading = false;
                     print(value);
+                    print(tagStrings);
+                    print(tagStrings.contains(tagSearchController.text
+                        .replaceAll(new RegExp(r"\s+"), "")
+                        .toLowerCase()));
                   });
                 }
                 // setState(() {
@@ -123,7 +133,9 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            if (searchTerm != '' && tagResults.length == 0)
+            if (searchTerm != '' &&
+                (!tagStrings
+                    .contains(tagSearchController.text.trim().toLowerCase())))
               Material(
                   child: InkWell(
                 onTap: () async {

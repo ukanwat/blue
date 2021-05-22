@@ -24,25 +24,28 @@ class _ExploreScreenState extends State<ExploreScreen>
         AutomaticKeepAliveClientMixin<ExploreScreen>,
         TickerProviderStateMixin {
   List<Post> posts = [];
+
+  Widget tabView;
   List<Tab> topicTabs = [
     Tab(
         child: Text('Everything',
             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)))
   ];
-  List<Widget> topicViews = [CategoryPostsScreen('All')];
   bool loading = true;
   TabController tabController;
   List<String> t = [
     'Humor',
     'Art & Design',
-    'Technology',
+    'Tech & Science',
     'News',
     'Entertainment',
     'Lifestyle'
   ];
+  int index;
   @override
   void initState() {
     getTopics();
+    tabView = CategoryPostsScreen('All', UniqueKey());
     super.initState();
   }
 
@@ -60,7 +63,6 @@ class _ExploreScreenState extends State<ExploreScreen>
       topicTabs.add(Tab(
           child: Text(topic,
               style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16))));
-      topicViews.add(CategoryPostsScreen(topic));
     });
     setState(() {
       tabController = new TabController(length: t.length + 1, vsync: this);
@@ -77,7 +79,7 @@ class _ExploreScreenState extends State<ExploreScreen>
         appBar: AppBar(
           centerTitle: true,
           backgroundColor: Theme.of(context).backgroundColor,
-          elevation: 1.2,
+          elevation: 0,
           title: Text(
             'Explore',
             style: TextStyle(
@@ -94,6 +96,11 @@ class _ExploreScreenState extends State<ExploreScreen>
                     margin:
                         EdgeInsets.only(left: 8, right: 8, bottom: 6, top: 4),
                     child: TabBar(
+                      onTap: (i) {
+                        setState(() {
+                          index = i - 1;
+                        });
+                      },
                       indicatorWeight: 2.5,
                       indicatorPadding:
                           EdgeInsets.symmetric(vertical: 1, horizontal: 15),
@@ -114,11 +121,7 @@ class _ExploreScreenState extends State<ExploreScreen>
               },
               color: Theme.of(context).iconTheme.color),
         ),
-        body: loading
-            ? circularProgress()
-            : TabBarView(
-                children: topicViews,
-                controller: tabController,
-              ));
+        body: CategoryPostsScreen(
+            index == null || index == -1 ? 'All' : t[index], UniqueKey()));
   }
 }

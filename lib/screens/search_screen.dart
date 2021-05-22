@@ -326,6 +326,7 @@ class _RecentSearchesState extends State<RecentSearches> {
                     ),
                     Divider(
                       height: 1,
+                      color: Colors.grey.withOpacity(0.3),
                       thickness: 1,
                       indent: 40,
                     )

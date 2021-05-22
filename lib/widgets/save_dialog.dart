@@ -9,8 +9,9 @@ import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
 import '../services/boxes.dart';
 import '../services/hasura.dart';
+
 class SaveDialog extends StatefulWidget {
- final  Post post;
+  final Post post;
   SaveDialog(this.post);
 
   @override
@@ -19,55 +20,60 @@ class SaveDialog extends StatefulWidget {
 
 class _SaveDialogState extends State<SaveDialog> {
   bool shareWithComment = true;
-TextEditingController commentController = TextEditingController();
-bool isLoading = true;
-List<InkWell> collectionList = [];
-savePost(String collectionName)async{
-await Hasura.updateSavedPost(collectionName, widget.post.postId);
-                             Boxes.saveBox.put(widget.post.postId,collectionName );
+  TextEditingController commentController = TextEditingController();
+  bool isLoading = true;
+  List<InkWell> collectionList = [];
+  savePost(String collectionName) async {
+    await Hasura.updateSavedPost(collectionName, widget.post.postId);
+    Boxes.saveBox.put(widget.post.postId, collectionName);
+  }
 
-}  
-@override
+  @override
   void initState() {
-   getCollections();
+    getCollections();
     super.initState();
   }
-  getCollections()async{
-  dynamic snapshot =await Hasura.getCollections();
+
+  getCollections() async {
+    dynamic snapshot = await Hasura.getCollections();
     setState(() {
+      if (snapshot != null) {
+        snapshot.forEach((value) {
+          collectionList.add(InkWell(
+            onTap: () async {
+              await savePost(value['collection']);
+              Navigator.pop(
+                  context); // TODO dont pop if user pops using tap or back button
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  color: Theme.of(context).cardColor),
+              height: 40,
+              width: double.infinity,
+              margin: EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Text(
+                    value['collection'],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ));
+        });
+      }
 
-    if(snapshot != null) {snapshot.forEach((value) { 
-         collectionList.add( InkWell(
-onTap: ()async {
-  await savePost(value['collection']);
-  Navigator.pop(context);                // TODO dont pop if user pops using tap or back button
-},
-                    child: Container(
-decoration: BoxDecoration(
-  borderRadius: BorderRadius.circular(5),
-  color: Theme.of(context).cardColor
-),
-height: 40,width: double.infinity,
-margin: EdgeInsets.symmetric(horizontal: 5,vertical: 2),
-             child:Center(
-               child: Padding(
-                 padding: const EdgeInsets.only(left: 8),
-                 child: Text(value['collection'],maxLines: 1,
-overflow: TextOverflow.ellipsis,
-                   style: TextStyle(
-                     fontSize: 20,
-                   ),
-                   ),
-               ),
-             ),
-           ),
-         ));
-     });}
-   
-     isLoading = false;
+      isLoading = false;
     });
-
   }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -95,55 +101,76 @@ overflow: TextOverflow.ellipsis,
           children: <Widget>[
             Text(
               "Save to Collection",
-              style: TextStyle(color: Theme.of(context).iconTheme.color.withOpacity(0.8),
+              style: TextStyle(
+                color: Theme.of(context).iconTheme.color.withOpacity(0.8),
                 fontSize: 16.0,
                 fontWeight: FontWeight.w500,
               ),
             ),
-               SizedBox(height: 10.0),
-            Container(width: double.infinity,alignment: Alignment.center,
+            SizedBox(height: 10.0),
+            Container(
+              width: double.infinity,
+              alignment: Alignment.center,
               child: ClipRRect(
                 clipBehavior: Clip.antiAliasWithSaveLayer,
-                   child: Text(widget.post.title,
-                   style: TextStyle(
-                     fontSize: 20,
-                     fontWeight: FontWeight.w500
-                   ),
-                   ),
+                child: Text(
+                  widget.post.title,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                ),
               ),
             ),
- SizedBox(height: 20.0),
-       isLoading?
-       circularProgress():
-           Container(constraints: BoxConstraints.loose(Size.fromHeight(300)),
-             height:  MediaQuery.of(context).size.height*0.4 > 44*collectionList.length.toDouble()?44*collectionList.length.toDouble(): MediaQuery.of(context).size.height*4.0,
-          child: ListView(
-            physics: BouncingScrollPhysics(),
-            children:
-              collectionList
-          ,
-          
-          ),
-           ),
             SizedBox(height: 20.0),
-            
-                FlatButton(
-                  color: Theme.of(context).cardColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop(); // To close the dialog
-                  },
-                  child: Text(
-                    'Cancel',
-
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Theme.of(context).iconTheme.color,
+            isLoading
+                ? circularProgress()
+                : Container(
+                    constraints: BoxConstraints.loose(Size.fromHeight(300)),
+                    height: MediaQuery.of(context).size.height * 0.4 >
+                            44 * collectionList.length.toDouble()
+                        ? 44 * collectionList.length.toDouble()
+                        : MediaQuery.of(context).size.height * 4.0,
+                    child: ListView(
+                      physics: BouncingScrollPhysics(),
+                      children: collectionList,
                     ),
                   ),
+            SizedBox(height: 20.0),
+            FlatButton(
+              minWidth: 200,
+              highlightColor: Colors.blue,
+              hoverColor: Colors.blue,
+              color: Theme.of(context).cardColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(); // To close the dialog
+              },
+              child: Text(
+                'Create Collection',
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.white,
                 ),
+              ),
+            ),
+            SizedBox(height: 15.0),
+            FlatButton(
+              minWidth: 200,
+              color: Theme.of(context).cardColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(); // To close the dialog
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Theme.of(context).iconTheme.color,
+                ),
+              ),
+            ),
           ],
         ),
       ),

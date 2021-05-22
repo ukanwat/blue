@@ -79,6 +79,7 @@ class Post extends StatefulWidget {
   final String thumbUrl;
   final bool notInterested;
   final bool postActionExists;
+  final Color color;
   // final PostInteractions postInteractions;
 
   Post(
@@ -105,13 +106,11 @@ class Post extends StatefulWidget {
       this.upvoted,
       this.notInterested,
       this.thumbUrl,
-      this.postActionExists});
+      this.postActionExists,
+      this.color});
 
-  factory Post.fromDocument(
-    Map doc, {
-    bool isCompact,
-    bool commentsShown,
-  }) {
+  factory Post.fromDocument(Map doc,
+      {bool isCompact, bool commentsShown, Color color}) {
     print('doc:');
     print(doc);
     if (isCompact == null) isCompact = false;
@@ -162,6 +161,7 @@ class Post extends StatefulWidget {
       saves: doc['save_count'],
       shares: doc['share_count'],
       postActionExists: doc['actions_by_user']['time'] != null,
+      color: color,
     );
   }
 
@@ -833,36 +833,6 @@ class _PostState extends State<Post> {
                     onTap: () async {
                       Navigator.of(context)
                           .pushNamed(TagScreen.routeName, arguments: tags[i]);
-                      String tagOpenInfo =
-                          PreferencesUpdate().getString('tags_open_info');
-                      if (tagOpenInfo == null) {
-                        PreferencesUpdate()
-                            .updateString('tags_open_info', json.encode({}));
-                        tagOpenInfo = json.encode({});
-                      }
-                      DateTime nowTime = DateTime.now();
-                      String _nowMonth = nowTime.month < 10
-                          ? '0${nowTime.month}'
-                          : '${nowTime.month}';
-                      String _nowDay = nowTime.day < 10
-                          ? '0${nowTime.day}'
-                          : '${nowTime.day}';
-                      String todayTime =
-                          DateTime.parse("${nowTime.year}-$_nowMonth-$_nowDay")
-                              .toString();
-                      Map tagOpenMap = json.decode(tagOpenInfo);
-                      if (tagOpenMap.containsKey(todayTime)) {
-                        if (tagOpenMap[todayTime].containsKey(tags[i]))
-                          tagOpenMap[todayTime][tags[i]] =
-                              tagOpenMap[todayTime][tags[i]] + 1;
-                        else
-                          tagOpenMap[todayTime][tags[i]] = 1;
-                      } else {
-                        tagOpenMap[todayTime] = {tags[i]: 1};
-                      }
-                      print(tagOpenMap);
-                      PreferencesUpdate().updateString(
-                          'tags_open_info', json.encode(tagOpenMap));
                     },
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: 8),
@@ -1477,7 +1447,9 @@ class _PostState extends State<Post> {
             : Column(
                 children: [
                   Material(
-                    color: Theme.of(context).backgroundColor,
+                    color: widget.color == null
+                        ? Theme.of(context).backgroundColor
+                        : widget.color,
                     child: InkWell(
                       onTap: widget.isCompact
                           ? () {

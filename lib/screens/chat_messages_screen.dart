@@ -81,7 +81,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
       });
       print('convId : $convId');
       await Hasura.insertMessage(
-          widget.peerUser.userId, convId, 'text', textMessage);
+          widget.peerUser.userId, convId, 'text', textMessage, context);
 
       sendingStateMap['id'][dateTime.toString()] = true;
       bool valid = true;
@@ -112,58 +112,59 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
 
   sendGIF() async {
     FocusScope.of(context).unfocus();
-    try {
-      DateTime dateTime = DateTime.now();
 
-      await Navigator.of(context)
-          .pushNamed(GIFsScreen.routeName)
-          .catchError((e) {})
-          .then((value) async {
-        if (value != null) {
-          setState(() {
-            sendingStateMap['id'][dateTime.toString()] = false;
-            sendingStateMap['state'] = 'Sending';
-            sendingStateMap['count'] = sendingStateMap['count'] + 1;
-          });
-          await Hasura.insertMessage(
-                  widget.peerUser.userId, convId, 'gif', value.toString())
-              .then((_) {
-            sendingStateMap['id'][dateTime.toString()] = true;
-            bool valid = true;
-            sendingStateMap['id'].forEach((k, v) {
-              if (v == false) valid = false;
-            });
-            Future.delayed(const Duration(milliseconds: 5000), () {
-              setState(() {
-                print('assfsz gif');
-                if (valid) {
-                  print(sendingStateMap['count']);
-                  sendingStateMap['state'] =
-                      sendingStateMap['count'] > 1 ? 'All Sent' : 'Sent';
-                }
-              });
-            });
-            Future.delayed(const Duration(milliseconds: 5000), () {
-              setState(() {
-                if (valid) {
-                  sendingStateMap['id'] = {};
-                  sendingStateMap['state'] = '';
-                  sendingStateMap['count'] = 0;
-                }
-              });
-            });
-          });
-        }
-      });
-      return true;
-    } catch (e) {
-      print(e); //TODO
+    DateTime dateTime = DateTime.now();
+
+    var value = await Navigator.of(context).pushNamed(GIFsScreen.routeName);
+
+    if (value == null) {
+      return null;
     }
+    if (value != null) {
+      setState(() {
+        sendingStateMap['id'][dateTime.toString()] = false;
+        sendingStateMap['state'] = 'Sending';
+        sendingStateMap['count'] = sendingStateMap['count'] + 1;
+      });
+      await Hasura.insertMessage(
+              widget.peerUser.userId, convId, 'gif', value.toString(), context)
+          .then((_) {
+        sendingStateMap['id'][dateTime.toString()] = true;
+        bool valid = true;
+        sendingStateMap['id'].forEach((k, v) {
+          if (v == false) valid = false;
+        });
+        Future.delayed(const Duration(milliseconds: 5000), () {
+          setState(() {
+            print('assfsz gif');
+            if (valid) {
+              print(sendingStateMap['count']);
+              sendingStateMap['state'] =
+                  sendingStateMap['count'] > 1 ? 'All Sent' : 'Sent';
+            }
+          });
+        });
+        Future.delayed(const Duration(milliseconds: 5000), () {
+          setState(() {
+            if (valid) {
+              sendingStateMap['id'] = {};
+              sendingStateMap['state'] = '';
+              sendingStateMap['count'] = 0;
+            }
+          });
+        });
+      });
+    }
+
+    return true;
   }
 
   _send(Function fn) async {
     if (data.isEmpty) {
-      convId = await Hasura.insertConversation(widget.peerUser.userId);
+      if (convId == null) {
+        convId = await Hasura.insertConversation(widget.peerUser.userId);
+      }
+
       setState(() {
         focusNode = new FocusNode();
         first = false;
@@ -176,6 +177,10 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     }
     bool t = await fn();
     if (t != true) {
+      setState(() {
+        loading = false;
+      });
+
       return;
     }
     if (data.isEmpty) {
@@ -197,6 +202,9 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         maxHeight: 720,
         maxWidth: 720,
       );
+      if (pickedFile == null) {
+        return null;
+      }
       setState(() {
         sendingStateMap['id'][dateTime.toString()] = false;
         sendingStateMap['state'] = 'Sending';
@@ -210,7 +218,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
             bucket: 'chat-messages');
 
         await Hasura.insertMessage(
-            widget.peerUser.userId, convId, 'image', downloadUrl);
+            widget.peerUser.userId, convId, 'image', downloadUrl, context);
         sendingStateMap['id'][dateTime.toString()] = true;
         bool valid = true;
         sendingStateMap['id'].forEach((k, v) {
@@ -270,7 +278,8 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         ),
         onPressed: () async {
           if (data.isEmpty) {
-            convId = await Hasura.insertConversation(widget.peerUser.userId);
+            if (convId == null)
+              convId = await Hasura.insertConversation(widget.peerUser.userId);
             setState(() {
               focusNode = new FocusNode();
               first = false;
@@ -479,7 +488,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
       await getConvId();
     }
     usersRef.snapshots();
-    List messages = await Hasura.getMessages(widget.convId);
+    List messages = await Hasura.getMessages(convId);
     if (messages.length == 0) {
       first = true;
     }
@@ -550,7 +559,9 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Text(
-                  sendingStateMap['state'],
+                  sendingStateMap['state'] == 'Sending'
+                      ? '  ...'
+                      : sendingStateMap['state'],
                   style: TextStyle(
                       fontSize: 14,
                       color: Theme.of(context).iconTheme.color.withOpacity(0.8),
@@ -636,6 +647,10 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         padding: EdgeInsets.only(top: 0, left: 0, right: 0, bottom: 70),
         itemBuilder: (_, i) {
           if (i == 0) {
+            if (messageItems == []) {
+              messageItems = [Container()];
+            }
+
             return messageItems[0];
           }
           if (i == 1) {

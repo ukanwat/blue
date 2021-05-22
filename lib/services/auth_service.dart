@@ -1,11 +1,13 @@
 // Dart imports:
 import 'dart:convert';
-
+import 'push_notifications.dart';
 // Flutter imports:
 import 'package:argon_buttons_flutter/argon_buttons_flutter.dart';
 import 'package:blue/models/user.dart';
 import 'package:blue/providers/verify_email.dart';
 import 'package:blue/screens/set_name_screen.dart';
+import 'package:blue/screens/settings/notification/push_notifications_screen.dart';
+import 'package:blue/screens/settings/notification/push_notifications_screen.dart';
 import 'package:blue/screens/show_screen.dart';
 import 'package:blue/screens/tabs_screen.dart';
 import 'package:blue/screens/verify_email_screen.dart';
@@ -237,6 +239,8 @@ class AuthService {
       print(user.uid);
       info = await listenCreateUser(user.uid, context);
 
+      userSigningUp = true;
+
       await createHasuraUser(
           user.uid, info['user_id'], user.email, user.displayName, result);
       Hasura.insertPreferences(
@@ -318,6 +322,7 @@ class AuthService {
     bool hasuraUserExists = await Hasura.userExists(_user.uid);
     print('hasura user exists: $hasuraUserExists ');
     if (!hasuraUserExists) {
+      userSigningUp = true;
       Map info = await AuthService().listenCreateUser(_user.uid, context);
       progressOverlay(context: context).dismiss();
       dynamic result = await navigatorKey.currentState

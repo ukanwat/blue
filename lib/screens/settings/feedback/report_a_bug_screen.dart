@@ -4,6 +4,7 @@ import 'dart:ui';
 
 // Flutter imports:
 import 'package:blue/services/hasura.dart';
+import 'package:blue/widgets/progress.dart';
 import 'package:flutter/material.dart' hide Feedback;
 import 'package:flutter/services.dart';
 
@@ -133,6 +134,7 @@ class _ReportABugScreenState extends State<ReportABugScreen> {
               _deviceData['bug'] = bugController.text;
               Hasura.insertFeedback(Feedback.bug, _deviceData);
               Navigator.of(context).pop();
+              snackbar('Thanks for submitting the Bug.', context);
             },
             child: Container(
               width: double.infinity,

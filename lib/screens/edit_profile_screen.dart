@@ -451,44 +451,51 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     ],
                                   )),
                             Positioned(
-                              top: 80,
-                              left: MediaQuery.of(context).size.width / 2 - 60,
-                              child: Container(
-                                height: 120,
-                                width: 120,
-                                child: Center(
-                                  child: Stack(
-                                    children: <Widget>[
-                                      CircleAvatar(
-                                        radius: 60.0,
-                                        backgroundImage: croppedImage != null
-                                            ? FileImage(croppedImage)
-                                            : CachedNetworkImageProvider(
-                                                user.avatarUrl ??
-                                                    "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744",
-                                              ),
-                                      ),
-                                      InkWell(
-                                        onTap: updateProfilePicture,
-                                        child: Container(
-                                          alignment: Alignment.center,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Color.fromRGBO(0, 0, 0, 0.1),
+                                top: 80,
+                                left:
+                                    MediaQuery.of(context).size.width / 2 - 60,
+                                child: GestureDetector(
+                                    behavior: HitTestBehavior.translucent,
+                                    onTap: updateProfilePicture,
+                                    child: Container(
+                                      height: 120,
+                                      width: 120,
+                                      child: Center(
+                                          child: Stack(
+                                        alignment: Alignment.topCenter,
+                                        children: <Widget>[
+                                          CircleAvatar(
+                                            radius: 60.0,
+                                            backgroundImage: croppedImage !=
+                                                    null
+                                                ? FileImage(croppedImage)
+                                                : CachedNetworkImageProvider(
+                                                    user.avatarUrl ??
+                                                        "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744",
+                                                  ),
                                           ),
-                                          height: 120,
-                                          width: 120,
-                                          child: Icon(
-                                            FluentIcons.camera_add_24_filled,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.only(top: 10),
+                                            child: Column(
+                                              children: [
+                                                Icon(
+                                                  FluentIcons
+                                                      .camera_add_24_regular,
+                                                  color: Colors.white,
+                                                ),
+                                                Text(
+                                                  'Tap to Change',
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                )
+                                              ],
+                                            ),
+                                          )
+                                        ],
+                                      )),
+                                    ))),
                           ],
                         ),
                       ),

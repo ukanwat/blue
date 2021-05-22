@@ -3,6 +3,8 @@ import 'package:blue/screens/home.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/preferences_update.dart';
+import 'package:blue/widgets/progress.dart';
+import 'package:flutter/material.dart';
 import 'package:hasura_connect/hasura_connect.dart';
 import 'package:hive_cache_interceptor/hive_cache_interceptor.dart';
 import './token_interceptor.dart';
@@ -515,13 +517,44 @@ class Hasura {
   static getTagPosts(int limit, int offset, String orderby,
       {String tag}) async {
     print(jwtToken);
-    String param = 'limit:$limit,offset:$offset';
-    param = param + ',where:{tag:{_eq:"$tag"}}';
+    String param = 'limit:$limit,offset:$offset,order_by:$orderby';
+    if (tag != null) {
+      param = param + ',where:{post_tags:{tag:{_eq:"$tag"}}}';
+    }
 
     var data = await hasuraConnect.query("""query{
-  tags($param){
-    tag_posts{
-      post{
+ 
+      posts($param){
+         contents
+    created_at
+    owner_id
+    post_id
+    title
+    actions_by_user{
+      not_interested
+      up
+      time
+    }
+    comment_count
+    user{
+      avatar_url
+      username
+    }
+    thumbnail
+    post_tags{
+      tg{tag}
+    }
+      upvote_count
+      share_count
+      comment_count
+      save_count
+         downvote_count
+      }
+   
+}""");
+    print("""query{
+ 
+      posts($param){
          contents
     created_at
     owner_id
@@ -546,10 +579,9 @@ class Hasura {
       save_count
          downvote_count
       }
-    }
-  }
+   
 }""");
-    return data['data']['tags'][0]['tag_posts'];
+    return data['data']['posts'];
   }
 
   static createTag(String _tag) async {
@@ -746,7 +778,8 @@ class Hasura {
     return data['data']['users'];
   }
 
-  static insertMessage(int peerId, int convId, String type, String data) async {
+  static insertMessage(int peerId, int convId, String type, String data,
+      BuildContext context) async {
     if (type != 'text' && type != 'image' && type != 'gif') {
       return;
     }
@@ -759,16 +792,17 @@ class Hasura {
   insert_messages_one(object:{data:"$data",sender_id:$userId,conv_id:$convId,type:"$type",sender_name: "${Boxes.currentUserBox.get("name")}" }){created_at}
 }""";
     print(doc);
+
     await hasuraConnect.mutation(doc);
   }
 
-  static getConversations() async {
+  static getConversations(bool archived) async {
     var userId = Boxes.currentUserBox.get('user_id');
     if (userId == null) {
       userId = await getUserId();
     }
     var data = await hasuraConnect.query("""query{
-  conversations(where: {_or: [{user1_id: {_eq: $userId}}, {user2_id: {_eq: $userId}}]}) {
+  conversations(where: {_or: [{_and:[{user1_id: {_eq: $userId}},{user1_removed:{_eq:$archived}}]}, {_and:[{user2_id: {_eq: $userId}},{user2_removed:{_eq:$archived}}]}]}) {
     conv_id
     user1{
       user_id
@@ -811,6 +845,20 @@ class Hasura {
   }
 
   static getMessages(int convId) async {
+    if (convId == null) {
+      convId = 0;
+    }
+    print("""query{
+  messages(where:{conv_id:{_eq:$convId}}){
+    created_at
+    data
+    msg_id
+    sender_id
+    type
+    deleted_by_sender
+  }
+}
+""");
     var data = await hasuraConnect.query("""query{
   messages(where:{conv_id:{_eq:$convId}}){
     created_at
@@ -1629,5 +1677,51 @@ update_columns: [upvote]
     __typename
   }
 }""");
+  }
+
+  static getPopularTags() async {
+    dynamic doc = await hasuraConnect.query("""query{
+  tags(order_by:{popularity:desc},limit:10){
+    tag_id
+    tag
+    image_url
+    label
+  }
+}""");
+    return doc['data']['tags'];
+  }
+
+  static getFollowsUsers(bool following, int profileId) async {
+    String text;
+    String text1;
+    if (following) {
+      text = 'following';
+      text1 = 'follower';
+    } else {
+      text = 'follower';
+      text1 = 'following';
+    }
+    dynamic data = await hasuraConnect.query("""query{
+  follows(where:{${text1}_id:{_eq:$profileId}}){
+    $text{
+     avatar_url
+    about
+    email
+    header_url
+    joined
+    name
+    photo_url
+    uid
+    user_id
+    username
+    website
+    follower_count
+    following_count
+    }
+  }
+  
+}""");
+
+    return data['data']['follows'];
   }
 }

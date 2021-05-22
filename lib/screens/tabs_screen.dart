@@ -128,9 +128,10 @@ class _TabsScreenState extends State<TabsScreen> {
 
     Timer.periodic(Duration(minutes: 29), (Timer t) {
       AuthService.firebaseAuth.authStateChanges().first.then((user) {
-        user.getIdToken(true).then((token) {
-          Hasura.jwtToken = token;
-        });
+        if (user != null)
+          user.getIdToken(true).then((token) {
+            Hasura.jwtToken = token;
+          });
       });
     });
     _pageController = PageController(initialPage: 0);

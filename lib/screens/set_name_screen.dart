@@ -159,6 +159,13 @@ class _SetNameScreenState extends State<SetNameScreen> {
                                           color: Colors.red);
                                       return;
                                     }
+                                    if (usernameController.text.length < 5) {
+                                      snackbar(
+                                          'username should be atleast 5 characters long',
+                                          context,
+                                          color: Colors.red);
+                                      return;
+                                    }
                                     progressOverlay(context: context).show();
                                     bool notExists = await Hasura.checkUsername(
                                         usernameController.text);

@@ -61,7 +61,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
               });
             },
             label: Text(
-              value,
+              value.toLowerCase().replaceAll(new RegExp(r"\s+"), ""),
               style: TextStyle(
                   color: Theme.of(context).iconTheme.color.withOpacity(0.8)),
             ),
@@ -74,7 +74,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
     topics = [
       'Humor',
       'Art & Design',
-      'Technology',
+      'Tech & Science',
       'News',
       'Entertainment',
       'Lifestyle',

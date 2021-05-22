@@ -1,6 +1,7 @@
 // Flutter imports:
 import 'package:blue/constants/strings.dart';
 import 'package:blue/main.dart';
+import 'package:blue/services/boxes.dart';
 import 'package:blue/services/functions.dart';
 import 'package:blue/services/go_to.dart';
 import 'package:flutter/material.dart';
@@ -12,10 +13,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:blue/models/user.dart';
 import 'package:blue/screens/profile_screen.dart';
 
-enum Tile {
-  block,
-  mute,
-}
+enum Tile { block, mute, follow }
 
 class UserTile extends StatefulWidget {
   final User user;
@@ -30,6 +28,7 @@ class _UserTileState extends State<UserTile> {
   bool undo = false;
   String groupChatId;
   Map peer = {};
+  bool follow = false;
   @override
   void initState() {
     print(widget.user.toString());
@@ -40,6 +39,13 @@ class _UserTileState extends State<UserTile> {
       'peerImageUrl': widget.user.avatarUrl,
       'peerName': widget.user.name,
     };
+
+    if (widget.type == Tile.follow) {
+      follow = Boxes.followingBox.containsKey(widget.user.userId);
+    }
+    if (widget.user.userId == currentUser.userId) {
+      follow = true;
+    }
 
     super.initState();
   }
@@ -63,6 +69,8 @@ class _UserTileState extends State<UserTile> {
           } else {
             Functions().muteUser(peer);
           }
+        } else if (widget.type == Tile.follow) {
+          GoTo().profileScreen(context, widget.user.id);
         }
       },
       leading: Container(
@@ -88,10 +96,27 @@ class _UserTileState extends State<UserTile> {
         widget.user.username,
         style: TextStyle(),
       ),
-      trailing: Text(
-        '${undo ? '' : 'Un'}${widget.type.toString().substring(5)}',
-        style: TextStyle(color: Colors.blue, fontSize: 20),
-      ),
+      trailing: (widget.type == Tile.follow)
+          ? follow
+              ? Container(
+                  width: 10,
+                )
+              : TextButton(
+                  child: Text(
+                    'Follow',
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                  onPressed: () {
+                    Functions().handleFollowUser(widget.user.userId);
+                    setState(() {
+                      follow = true;
+                    });
+                  },
+                )
+          : Text(
+              '${undo ? '' : 'Un'}${widget.type.toString().substring(5)}',
+              style: TextStyle(color: Colors.blue, fontSize: 20),
+            ),
     );
   }
 }

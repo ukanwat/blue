@@ -67,8 +67,10 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Color.fromRGBO(240, 240, 240, 1),
-      body: Column(
+      body: Stack(
+        alignment: Alignment.bottomCenter,
         children: [
           Expanded(
             child: FlutterLogin(
@@ -158,7 +160,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(bottom: 30),
+            padding: const EdgeInsets.only(bottom: 0, top: 500),
             child: Center(
                 child: GestureDetector(
               onTap: () {

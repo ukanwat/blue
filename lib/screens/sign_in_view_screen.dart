@@ -8,6 +8,7 @@ import 'package:blue/screens/post_screen.dart';
 import 'package:blue/screens/set_name_screen.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
+import 'package:blue/services/functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 // Project imports:
@@ -169,6 +170,49 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
                         style: AuthButtonStyle(
                           iconType: AuthIconType.secondary,
                         )),
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  Text('By Creating an account, you agree to Stark',
+                      style: TextStyle(color: Colors.white, fontSize: 11)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          Functions().launchURL(
+                              'https://www.stark.social/terms', context);
+                        },
+                        child: Text('Terms of Service',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              decoration: TextDecoration.underline,
+                            )),
+                      ),
+                      SizedBox(
+                        width: 4,
+                      ),
+                      Text('and',
+                          style: TextStyle(color: Colors.white, fontSize: 11)),
+                      SizedBox(
+                        width: 4,
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Functions().launchURL(
+                              'https://www.stark.social/privacy-policy',
+                              context);
+                        },
+                        child: Text('Privacy Policy',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              decoration: TextDecoration.underline,
+                            )),
+                      ),
+                    ],
                   ),
                   SizedBox(
                     height: 50,

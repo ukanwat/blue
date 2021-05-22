@@ -57,7 +57,7 @@ class _ChatsScreenState extends State<ChatsScreen>
   }
 
   getUserTiles() async {
-    dynamic data = await Hasura.getConversations();
+    dynamic data = await Hasura.getConversations(false);
     int i = 0;
     data.forEach((doc) {
       int convId = doc['conv_id'];

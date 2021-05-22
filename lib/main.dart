@@ -9,6 +9,7 @@ import 'package:blue/models/hive_data_model.dart';
 import 'package:blue/providers/verify_email.dart';
 import 'package:blue/screens/email_sign_in_screen.dart';
 import 'package:blue/screens/empty_text_screen.dart';
+import 'package:blue/screens/follows_screen.dart';
 import 'package:blue/screens/show_screen.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/global_network/connectivity_status.dart';
@@ -382,6 +383,7 @@ class MyAppState extends State<MyApp> {
                           PackageLicensesScreen(),
                       EmailSignInScreen.routeName: (ctx) => EmailSignInScreen(),
                       ShowScreen.routeName: (ctx) => ShowScreen(),
+                      FollowsScreen.routeName: (ctx) => FollowsScreen(),
                     }),
               ));
         },

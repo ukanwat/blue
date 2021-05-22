@@ -57,9 +57,6 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
           widget.orderBy ?? "{created_at:desc}",
           tag: widget.tag,
         );
-        for (int i = 0; i < _p.length; i++) {
-          _p[i] = _p[i]['post'];
-        }
       } else {
         _p = await Hasura.getPosts(
             widget.length, 0, widget.orderBy ?? "{created_at:desc}",
@@ -148,6 +145,7 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
                 return true;
               },
               child: ListView.builder(
+                padding: EdgeInsets.only(bottom: 50),
                 physics: widget.tag == null
                     ? AlwaysScrollableScrollPhysics()
                     : NeverScrollableScrollPhysics(),
