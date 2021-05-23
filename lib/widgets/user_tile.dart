@@ -70,7 +70,7 @@ class _UserTileState extends State<UserTile> {
             Functions().muteUser(peer);
           }
         } else if (widget.type == Tile.follow) {
-          GoTo().profileScreen(context, widget.user.id);
+          GoTo().profileScreen(context, widget.user.userId);
         }
       },
       leading: Container(

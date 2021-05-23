@@ -118,14 +118,18 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                 if (selectedTopicTile != null) {
                   setState(() {
                     showDialog(
-                        barrierDismissible: true,
+                        barrierDismissible: false,
                         // useRootNavigator: false,
                         context: context,
                         builder: (BuildContext context) => WillPopScope(
                               onWillPop: () async {
-                                return true;
+                                return false;
                               },
                               child: Dialog(
+                                insetPadding: EdgeInsets.symmetric(
+                                    horizontal:
+                                        MediaQuery.of(context).size.width / 2 -
+                                            64),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(15),
                                 ),
@@ -133,7 +137,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                                 backgroundColor: Colors.transparent,
                                 child: Container(
                                   padding: EdgeInsets.symmetric(
-                                      vertical: 25, horizontal: 15),
+                                      vertical: 18, horizontal: 12),
                                   decoration: new BoxDecoration(
                                     color: Theme.of(context).canvasColor,
                                     shape: BoxShape.rectangle,
@@ -151,10 +155,10 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                                     children: <Widget>[
                                       Padding(
                                         padding:
-                                            const EdgeInsets.only(bottom: 30),
+                                            const EdgeInsets.only(bottom: 16),
                                         child: Icon(
-                                          FlutterIcons.cloud_upload_sli,
-                                          size: 80,
+                                          FluentIcons.arrow_circle_up_24_filled,
+                                          size: 40,
                                         ),
                                       ),
                                       Container(
@@ -172,8 +176,13 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                                           backgroundColor: Colors.transparent,
                                         ),
                                       ),
-                                      SizedBox(height: 15),
-                                      Text('Submitting'),
+                                      SizedBox(height: 10),
+                                      Text(
+                                        'Submitting',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 13),
+                                      ),
                                     ],
                                   ),
                                 ),

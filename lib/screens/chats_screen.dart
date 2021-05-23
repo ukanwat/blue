@@ -29,7 +29,8 @@ import './home.dart';
 import '../services/boxes.dart';
 
 class ChatsScreen extends StatefulWidget {
-  ChatsScreen(Key key) : super(key: key);
+  final bool archived;
+  ChatsScreen(this.archived, Key key) : super(key: key);
   @override
   _ChatsScreenState createState() => _ChatsScreenState();
 }
@@ -57,7 +58,7 @@ class _ChatsScreenState extends State<ChatsScreen>
   }
 
   getUserTiles() async {
-    dynamic data = await Hasura.getConversations(false);
+    dynamic data = await Hasura.getConversations(widget.archived);
     int i = 0;
     data.forEach((doc) {
       int convId = doc['conv_id'];
@@ -94,7 +95,7 @@ class _ChatsScreenState extends State<ChatsScreen>
       chatUsers.add(userChat);
       i++;
     });
-    if (chatUsers == null) //TODO check
+    if (chatUsers == null || chatUsers == []) //TODO check
       setState(() {
         loading = false;
         empty = true;
@@ -112,12 +113,30 @@ class _ChatsScreenState extends State<ChatsScreen>
     return loading
         ? circularProgress()
         : empty
-            ? emptyState(context, 'No new Messages', 'Message Sent',
+            ? emptyState(context, 'No Chats Here!', 'Message Sent',
                 subtitle: 'Any new messages will appear here')
             : ListView.builder(
-                itemCount: chatUsers.length,
+                itemCount:
+                    widget.archived ? chatUsers.length + 1 : chatUsers.length,
                 itemBuilder: (context, i) {
-                  return chatUsers[i];
+                  if (i == 0 && widget.archived) {
+                    return Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 10),
+                        child: Text(
+                          'Archived Chats',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).iconTheme.color),
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border(
+                              bottom: BorderSide(
+                                  width: 1,
+                                  color: Colors.grey.withOpacity(0.3))),
+                        ));
+                  }
+                  return chatUsers[widget.archived ? i - 1 : i];
                 });
   }
 
@@ -132,14 +151,15 @@ class _ChatsScreenState extends State<ChatsScreen>
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Text(
-                'Archive chat',
+                widget.archived ? 'Unarchive chat' : 'Archive chat',
                 style: TextStyle(fontWeight: FontWeight.w500),
               ),
               Container(
                 margin: EdgeInsets.symmetric(horizontal: 10),
                 padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                decoration:
-                    BoxDecoration(shape: BoxShape.circle, color: Colors.red),
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: widget.archived ? Colors.greenAccent : Colors.red),
                 child: Icon(
                   FluentIcons.archive_24_filled,
                   color: Colors.white,
@@ -155,29 +175,27 @@ class _ChatsScreenState extends State<ChatsScreen>
               Container(
                 margin: EdgeInsets.symmetric(horizontal: 10),
                 padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                decoration:
-                    BoxDecoration(shape: BoxShape.circle, color: Colors.red),
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: widget.archived ? Colors.greenAccent : Colors.red),
                 child: Icon(
                   FluentIcons.archive_24_filled,
                   color: Colors.white,
                 ),
               ),
               Text(
-                'Archive chat',
+                widget.archived ? 'Unarchive chat' : 'Archive chat',
                 style: TextStyle(fontWeight: FontWeight.w500),
               )
             ],
           ),
         ),
         onDismissed: (DismissDirection d) {
-          if (d == DismissDirection.horizontal) {
-            Navigator.of(context).pop();
-            setState(() {
-              print(i);
-              chatUsers.removeAt(i - 1);
-            });
-            Hasura.hideConversation(user.userId);
-          }
+          setState(() {
+            print(i);
+            chatUsers.removeAt(i - 1);
+          });
+          Hasura.hideConversation(user.userId, widget.archived);
         },
         child: ListTile(
           // onLongPress: () {

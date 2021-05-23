@@ -171,10 +171,11 @@ class _TabsScreenState extends State<TabsScreen> {
           primaryColor: Theme.of(context).primaryColor.withOpacity(0.8),
         ),
         child: SizedBox(
-          height: Platform.isIOS ? 82 : 54,
+          height: Platform.isIOS ? 78 : 50,
           child: BottomNavigationBar(
             iconSize: 24,
             elevation: 10,
+            selectedFontSize: 0,
             type: BottomNavigationBarType.fixed,
             showSelectedLabels: false,
             showUnselectedLabels: false,

@@ -1409,7 +1409,7 @@ class _PostState extends State<Post> {
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
     print(contentsInfo);
-    deleted = widget.notInterested == true;
+    deleted = widget.notInterested == true || deleted;
     return deleted == true
         ? Container()
         : notInterested == true //can do some other stuff

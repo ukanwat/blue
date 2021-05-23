@@ -1,16 +1,19 @@
 // Flutter imports:
+import 'dart:typed_data';
+
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
+import 'package:blue/widgets/progress.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:full_screen_image/full_screen_image.dart';
-import 'package:gallery_saver/gallery_saver.dart';
-
 // Project imports:
 import 'package:blue/main.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 
 class Message extends StatelessWidget {
   final int id;
@@ -72,8 +75,16 @@ class Message extends StatelessWidget {
                                     child: InkWell(
                                       onTap: () async {
                                         Navigator.pop(context);
-                                        await GallerySaver.saveImage(message,
-                                            albumName: 'Stark');
+                                        var response = await Dio().get(message,
+                                            options: Options(
+                                                responseType:
+                                                    ResponseType.bytes));
+
+                                        await ImageGallerySaver.saveImage(
+                                            Uint8List.fromList(response.data),
+                                            quality: 100,
+                                            name: "Stark");
+                                        snackbar('image saved', context);
                                       },
                                       child: Container(
                                           padding: EdgeInsets.symmetric(

@@ -347,7 +347,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         future: future,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return circularProgress();
+            return Container(height: 200, child: circularProgress());
           }
           print(snapshot.data['data']['users_by_pk']);
           User user = User.fromDocument(snapshot.data['data']['users_by_pk']);
@@ -1159,7 +1159,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     itemBuilder: (context, i) {
                       if (i == posts.length) {
                         return !loaded
-                            ? circularProgress()
+                            ? Container(child: circularProgress())
                             : empty
                                 ? Container(
                                     height: 400,

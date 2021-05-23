@@ -36,7 +36,10 @@ class _CommunicationTabbarScreenState extends State<CommunicationTabbarScreen>
   void initState() {
     super.initState();
     screen1 = ActivityFeedScreen(UniqueKey());
-    screen2 = ChatsScreen(UniqueKey());
+    screen2 = ChatsScreen(
+      archivedChats,
+      UniqueKey(),
+    );
     _tabController = new TabController(vsync: this, length: 2);
     _tabController.addListener(() {
       setState(() {
@@ -71,6 +74,7 @@ class _CommunicationTabbarScreenState extends State<CommunicationTabbarScreen>
     );
   }
 
+  bool archivedChats = false;
   bool get wantKeepAlive => true;
   @override
   Widget build(BuildContext context) {
@@ -86,6 +90,23 @@ class _CommunicationTabbarScreenState extends State<CommunicationTabbarScreen>
               Size.fromHeight(54 + buildTabbar().preferredSize.height),
           child: AppBar(
             actions: [
+              if (title == 'Direct')
+                IconButton(
+                  icon: Icon(
+                    archivedChats
+                        ? FluentIcons.archive_24_filled
+                        : FluentIcons.archive_24_regular,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      archivedChats = !archivedChats;
+                      screen2 = ChatsScreen(
+                        archivedChats,
+                        UniqueKey(),
+                      );
+                    });
+                  },
+                ),
               IconButton(
                 icon: Icon(
                   FluentIcons.arrow_clockwise_24_filled,
@@ -95,9 +116,15 @@ class _CommunicationTabbarScreenState extends State<CommunicationTabbarScreen>
                     if ('Notifications' == title) {
                       screen1 = ActivityFeedScreen(UniqueKey());
                     } else
-                      screen2 = ChatsScreen(UniqueKey());
+                      screen2 = ChatsScreen(
+                        archivedChats,
+                        UniqueKey(),
+                      );
                   });
                 },
+              ),
+              SizedBox(
+                width: 10,
               )
             ],
             automaticallyImplyLeading: false,

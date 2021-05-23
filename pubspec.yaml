@@ -78,7 +78,6 @@ dependencies:
   kidd_video_player: ^0.0.12
   flutter_login: ^1.0.14
   argon_buttons_flutter: ^1.0.6
-  gallery_saver: ^2.0.3
   graphql_flutter: ^4.0.1
   simple_animations: ^3.1.1
   flutter_offline: 
@@ -89,6 +88,8 @@ dependencies:
   flutter_gradients: ^1.0.0+3
   shimmer: ^2.0.0
   webview_flutter_plus: 
+  dio: ^3.0.10
+  image_gallery_saver: ^1.6.9
   # flutter_facebook_auth: ^3.3.2
   # google_mobile_ads: ^0.12.1+1
   # firebase_analytics: 

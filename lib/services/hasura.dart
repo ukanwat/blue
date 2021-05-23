@@ -303,9 +303,7 @@ class Hasura {
     return data['data']["insert_conversations_one"]['conv_id'];
   }
 
-  static hideConversation(
-    int peerId,
-  ) async {
+  static hideConversation(int peerId, bool archived) async {
     int userId = await getUserId();
     int id1, id2;
     if (peerId > userId) {
@@ -315,8 +313,13 @@ class Hasura {
       id2 = peerId;
       id1 = userId;
     }
+    print("""mutation {
+  update_conversations_by_pk(pk_columns: {user1_id: $id1, user2_id: $id2}, _set: {user${id1 == userId ? '1' : '2'}_removed: ${archived ? false : true}}) {
+    __typename
+  }
+}""");
     await hasuraConnect.mutation("""mutation {
-  update_conversations_by_pk(pk_columns: {user1_id: $id1, user2_id: $id2}, _set: {user${id1 == userId ? '1' : '2'}_removed: true}) {
+  update_conversations_by_pk(pk_columns: {user1_id: $id1, user2_id: $id2}, _set: {user${id1 == userId ? '1' : '2'}_removed: ${archived ? false : true}}) {
     __typename
   }
 }
