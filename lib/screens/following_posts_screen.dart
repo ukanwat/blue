@@ -79,7 +79,11 @@ class _FollowingPostsScreenState extends State<FollowingPostsScreen>
   Widget build(BuildContext context) {
     super.build(context);
     return (empty)
-        ? emptyState(context, "Nothing Here!", 'none')
+        ? Container(
+            color: Theme.of(context).backgroundColor,
+            child: emptyState(context, "Empty!", 'Earth and Moon',
+                subtitle: "Posts from people you follow will appear here"),
+          )
         : Container(
             color: Theme.of(context).backgroundColor,
             child: LoadMore(
@@ -89,8 +93,11 @@ class _FollowingPostsScreenState extends State<FollowingPostsScreen>
                 return true;
               },
               child: ListView.builder(
-                itemCount: _posts.length,
+                itemCount: _posts.length + 1,
                 itemBuilder: (context, i) {
+                  if (i == _posts.length) {
+                    return Container(height: 100, child: circularProgress());
+                  }
                   return _posts.elementAt(i);
                 },
               ),

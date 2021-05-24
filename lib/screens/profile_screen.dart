@@ -40,11 +40,11 @@ enum Sort { Recent, Oldest, Best }
 
 class ProfileScreen extends StatefulWidget {
   final int profileId;
+  final bool tabPage;
 //  final PostInteractions postInteractions;
-  ProfileScreen({
-    this.profileId,
-    // this.postInteractions
-  });
+  ProfileScreen({this.profileId, this.tabPage
+      // this.postInteractions
+      });
   // :super(key: UniqueKey());
 
   @override
@@ -662,8 +662,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     Material(
                       color: Colors.grey[300],
                       child: StickyHeaderBuilder(
-                        overlapHeaders: true,
-                        // controller: _controller,
+                        overlapHeaders: true, // controller: _controller,
                         builder: (BuildContext context, double stuckAmount) {
                           stuckAmount = 1.0 - stuckAmount.clamp(0.0, 1.0);
                           return Container(
@@ -685,8 +684,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   Padding(
                                     padding: EdgeInsets.only(right: 36),
                                   ),
-                                widget.profileId !=
-                                        Boxes.currentUserBox.get('user_id')
+                                widget.tabPage != true
                                     ? headerButton(
                                         Icon(
                                           FluentIcons.arrow_left_24_regular,

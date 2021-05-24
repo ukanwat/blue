@@ -67,7 +67,7 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen>
   Widget build(BuildContext context) {
     super.build(context);
 
-    if (empty == true) {
+    if (loaded && data.length == 0) {
       return emptyState(context, 'No notifications yet', 'No messages',
           subtitle:
               'Stay tuned! Notifications about your activity will show up here');

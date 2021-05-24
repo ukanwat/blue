@@ -2,10 +2,8 @@
 import 'dart:async';
 
 // Flutter imports:
+import 'package:blue/widgets/url_bottom_sheet.dart';
 import 'package:flutter/material.dart';
-
-// Package imports:
-import 'package:webview_flutter/webview_flutter.dart';
 
 // Project imports:
 import 'package:blue/widgets/settings_widgets.dart';
@@ -17,16 +15,16 @@ class PrivacyPolicyScreen extends StatefulWidget {
 }
 
 class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
-  Completer<WebViewController> _controller = Completer<WebViewController>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: settingsHeader(context, 'Privacy Policy'),
-      body: WebView(
-        initialUrl: 'https://www.stark.social/privacy-policy',
-          onWebViewCreated: (WebViewController webViewController) {
-          _controller.complete(webViewController);
-        },
+      body: Container(
+        height: MediaQuery.of(context).size.height -
+            MediaQuery.of(context).padding.vertical,
+        child: CustomWebView(
+          'https://www.stark.social/privacy-policy',
+        ),
       ),
     );
   }

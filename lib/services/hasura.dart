@@ -900,26 +900,6 @@ class Hasura {
     // });
   }
 
-  static updateCommentVote(bool up, int postId, String time) async {
-    await hasuraConnect.mutation("""mutation{
-  update_comments_by_pk(pk_columns:{post_id:$postId,created_at:"$time"},
-  _inc:{upvotes:${up ? 1 : -1}}
-  ){
-    upvotes
-  }
-}""");
-  }
-
-  static updateCommentReplieyVote(bool up, int replyId, String time) async {
-    await hasuraConnect.mutation("""mutation{
-  update_comment_replies_by_pk(pk_columns:{reply_id:$replyId},
-  _inc:{upvotes:${up ? 1 : -1}}
-  ){
-    upvotes
-  }
-}""");
-  }
-
   static getNotifications({int offset, int limit}) async {
     int userId = await getUserId();
 
@@ -1107,13 +1087,7 @@ __typename
 """;
     print(doc);
     dynamic data = await hasuraConnect.mutation(doc);
-    String doc1 =
-        """mutation{update_posts_by_pk(pk_columns:{post_id:$postId,},_inc:{comment_count:1}){
-    __typename
-  }
-  }""";
-    print(doc1);
-    await hasuraConnect.mutation(doc1);
+
     return data['data']['insert_comments_one'];
   }
 
@@ -1139,14 +1113,8 @@ __typename
 }
 
   """;
-    String doc1 =
-        """mutation{update_comments_by_pk(pk_columns:{post_id:$postId,created_at:"$createdAt",},_inc:{reply_count:1}){
-    __typename
-  }
-  }""";
-    print(doc1);
+
     var data = await hasuraConnect.mutation(doc);
-    await hasuraConnect.mutation(doc1);
     return data['data']['insert_comment_replies_one'];
   }
 
@@ -1207,6 +1175,7 @@ __typename
   }
   
 }""");
+    print(comments);
     return comments['data']['comments'];
   }
 
@@ -1623,19 +1592,13 @@ __typename
     await hasuraConnect.mutation("""mutation{
   delete_${cr}_votes_by_pk(${r}_id: $id,user_id:$userId){__typename}
 }""");
-    String pk =
-        !reply ? 'created_at:"$time",post_id:$postId' : 'reply_id:$replyId';
-    await hasuraConnect.mutation("""mutation{
-  update_comments_by_pk(pk_columns:{$pk},_inc:{upvotes:${upinc == null ? 0 : upinc ? 1 : -1},downvotes:${downinc == null ? 0 : downinc ? 1 : -1},},){
-    __typename
-    
-  }
-}""");
   }
 
   static insertCommentVote(
-      bool reply, int id, bool vote, bool upinc, bool downinc,
-      {String time, int postId, int replyId}) async {
+    bool reply,
+    int id,
+    bool vote,
+  ) async {
     dynamic userId = await getUserId();
     String cr = reply ? "comment_reply" : "comment";
     String crs = reply ? "comment_replies" : "comments";
@@ -1643,25 +1606,31 @@ __typename
 
     await hasuraConnect.mutation("""
     mutation{
-  insert_${cr}_votes_one(object:{user_id:$userId,${r}_id:$id, upvote: $vote, },on_conflict: {
-constraint: ${cr}_${reply ? '' : 'up'}votes_pkey,
-update_columns: [upvote]
-}){
+  insert_${cr}_votes_one(object:{user_id:$userId,${r}_id:$id, upvote: $vote, },){
     __typename
   }
 }
     """);
-
-    String pk =
-        !reply ? 'created_at:"$time",post_id:$postId' : 'reply_id:$replyId';
-    String doc = """mutation{
-  update_${crs}_by_pk(pk_columns:{$pk},_inc:{upvotes:${upinc == null ? 0 : upinc ? 1 : -1},downvotes:${downinc == null ? 0 : downinc ? 1 : -1}},){
-    __typename
-    
   }
-}""";
-    print(doc);
-    await hasuraConnect.mutation(doc);
+
+  static updateCommentVote(
+    bool reply,
+    int id,
+    bool vote,
+  ) async {
+    dynamic userId = await getUserId();
+    String cr = reply ? "comment_reply" : "comment";
+    String crs = reply ? "comment_replies" : "comments";
+    String r = reply ? "reply" : "comment";
+
+    await hasuraConnect.mutation("""
+    mutation{
+  update_${cr}_votes_by_pk(pk_columns:{${r}_id:$id,user_id:$userId},_set:{upvote:$vote}){
+   __typename
+  }
+}
+  
+    """);
   }
 
   static messageDeleteForMe(int msgId, bool bySender) async {

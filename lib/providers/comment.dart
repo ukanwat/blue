@@ -3,49 +3,36 @@ import 'package:blue/widgets/comment.dart';
 import 'package:blue/widgets/comment_reply.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get_state_manager/get_state_manager.dart';
 
-class CommentNotifier extends ChangeNotifier {
-  Map<String, dynamic> _commentState;
-
-  Map<String, dynamic> get commentState {
-    return _commentState;
-  }
+class CommentGet extends GetxController {
+  Map<String, dynamic> commentState = {'type': 'comment'};
 
   FocusNode focusNode = new FocusNode();
 
-  CommentNotifier() {
-    _commentState = {'type': 'comment'};
-    notifyListeners();
-  }
+  Map<int, List<CommentReply>> userCommentReplies = {};
 
-  Map<int, List<CommentReply>> _userCommentReplies;
-
-  Map<int, List<CommentReply>> get userCommentReplies {
-    print(_userCommentReplies);
-    return _userCommentReplies;
-  }
-
-  addCommentReply(int commentId, CommentReply reply) {
-    if (_userCommentReplies == null) {
-      _userCommentReplies = {};
-      _userCommentReplies[commentId] = [];
-    }
-    if (_userCommentReplies[commentId] == null) {
-      _userCommentReplies[commentId] = [];
+  addCommentReply(
+    int commentId,
+    CommentReply reply,
+  ) {
+    if (userCommentReplies[commentId] == null) {
+      userCommentReplies[commentId] = [];
     }
 
-    _userCommentReplies[commentId].add(reply);
-    print('reply key:');
-    print(_userCommentReplies[commentId].length);
-    notifyListeners();
+    userCommentReplies[commentId] = userCommentReplies[commentId] + [reply];
+
+    print(userCommentReplies);
+    update([commentId]);
   }
 
   changeCommentType(var value, {bool focus}) {
-    _commentState = value;
-    notifyListeners();
+    commentState = value;
     if (focus == true) {
       focusNode.requestFocus();
       SystemChannels.textInput.invokeMethod('TextInput.show');
     }
+
+    update(['input']);
   }
 }

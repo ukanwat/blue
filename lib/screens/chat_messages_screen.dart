@@ -355,7 +355,12 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
           child: Stack(
             alignment: Alignment.bottomCenter,
             children: [
-              Container(child: chatMessages()),
+              GestureDetector(
+                onTap: () {
+                  FocusScope.of(context).requestFocus(new FocusNode());
+                },
+                child: Container(child: chatMessages()),
+              ),
               Container(
                 margin: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 child: ClipRRect(

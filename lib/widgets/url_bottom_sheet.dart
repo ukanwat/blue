@@ -11,6 +11,10 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
 void showUrlBottomSheet(BuildContext context, String url) async {
+  url = url.toLowerCase().replaceAll(new RegExp(r"\s+"), "");
+  if (!url.startsWith('https://') && !url.startsWith('http://')) {
+    url = 'https://' + url;
+  }
   final result = await showSlidingBottomSheet(context, builder: (context) {
     return SlidingSheetDialog(
         elevation: 8,
@@ -75,6 +79,10 @@ class _CustomWebViewState extends State<CustomWebView> {
       await Future.delayed(Duration(seconds: 1));
       if (_controller != null) {
         var h = await _controller.getHeight();
+        if (h > 1000)
+          setState(() {
+            _height = h + 100;
+          });
 
         // print(h);
       }
@@ -96,10 +104,21 @@ class _CustomWebViewState extends State<CustomWebView> {
           this._controller = controller;
           controller.loadUrl(widget.url);
         },
+        // onProgress: (url) {
+        //   _controller.getHeight().then((double height) {
+        //     t = true;
+        //     print(height);
+        //     if (height > 1000)
+        //       setState(() {
+        //         _height = height + 400;
+        //       });
+        //   });
+        // },
         onPageFinished: (url) {
           _controller.getHeight().then((double height) {
             t = true;
             print(height);
+
             setState(() {
               _height = height;
             });

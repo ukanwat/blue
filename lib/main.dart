@@ -27,6 +27,7 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_login/flutter_login.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:hive/hive.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:path_provider/path_provider.dart';
@@ -162,7 +163,7 @@ class MyAppState extends State<MyApp> {
               child: StreamProvider<ConnectivityStatus>(
                 create: (BuildContext context) =>
                     ConnectivityService().connectionStatusController.stream,
-                child: MaterialApp(
+                child: GetMaterialApp(
                     debugShowCheckedModeBanner: false,
                     title: 'Stark',
                     theme: notifier.darkTheme == true
@@ -362,8 +363,6 @@ class MyAppState extends State<MyApp> {
                       TagScreen.routeName: (ctx) => TagScreen(),
                       CollectionPostsScreen.routeName: (ctx) =>
                           CollectionPostsScreen(),
-                      ExplorePostsScreen.routeName: (ctx) =>
-                          ExplorePostsScreen(),
                       EmailScreen.routeName: (ctx) => EmailScreen(),
                       PasswordScreen.routeName: (ctx) => PasswordScreen(),
                       DeactivateAccountScreen.routeName: (ctx) =>

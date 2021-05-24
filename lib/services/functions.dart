@@ -70,10 +70,14 @@ class Functions {
     }
   }
 
-  static String abbreviateNumber(int value, {bool hideZero}) {
-    if (hideZero == true) {
+  static String abbreviateNumber(int value, {bool hideLess}) {
+    if (hideLess == true) {
       if (value == 0 || value == null) {
         return ' ';
+      } else if (value != null) {
+        if (value < 0) {
+          return ' ';
+        }
       }
     }
     if (value > 999 && value < 99999) {

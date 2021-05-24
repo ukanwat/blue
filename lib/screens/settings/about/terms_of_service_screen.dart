@@ -2,6 +2,7 @@
 import 'dart:async';
 
 // Flutter imports:
+import 'package:blue/widgets/url_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -17,18 +18,14 @@ class TermsOfServiceScreen extends StatefulWidget {
 }
 
 class _TermsOfServiceScreenState extends State<TermsOfServiceScreen> {
-  Completer<WebViewController> _controller = Completer<WebViewController>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: settingsHeader(context, 'Terms Of Use'),
-      body: WebView(
-        initialUrl: 'https://www.stark.social/terms',
-          onWebViewCreated: (WebViewController webViewController) {
-          _controller.complete(webViewController);
-          
-        },
-      ),
+      body: Container(
+          height: MediaQuery.of(context).size.height -
+              MediaQuery.of(context).padding.vertical,
+          child: CustomWebView('https://www.stark.social/terms')),
     );
   }
 }

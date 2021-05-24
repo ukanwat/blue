@@ -1131,7 +1131,7 @@ class _PostState extends State<Post> {
                           Padding(
                             padding: const EdgeInsets.only(right: 0, left: 0),
                             child: Text(
-                              '${Functions.abbreviateNumber(widget.saves, hideZero: true)}',
+                              '${Functions.abbreviateNumber(widget.saves, hideLess: true)}',
                               style: TextStyle(
                                   fontWeight: FontWeight.w500, fontSize: 19),
                             ),
@@ -1167,7 +1167,7 @@ class _PostState extends State<Post> {
                           Padding(
                             padding: const EdgeInsets.only(right: 0, left: 0),
                             child: Text(
-                              '${Functions.abbreviateNumber(widget.saves, hideZero: true)}',
+                              '${Functions.abbreviateNumber(widget.saves, hideLess: true)}',
                               style: TextStyle(
                                   fontWeight: FontWeight.w500, fontSize: 19),
                             ),
@@ -1188,7 +1188,7 @@ class _PostState extends State<Post> {
                       Share.share(_link, subject: 'Sharing this Post');
                     }),
                     Text(
-                      '${Functions.abbreviateNumber(widget.shares, hideZero: true)}',
+                      '${Functions.abbreviateNumber(widget.shares, hideLess: true)}',
                       style:
                           TextStyle(fontWeight: FontWeight.w500, fontSize: 19),
                     ),
@@ -1200,42 +1200,41 @@ class _PostState extends State<Post> {
                   width: 40,
                   child: footerButton(FluentIcons.comment_24_regular,
                       Theme.of(context).accentColor, () {
-                    showComments(
-                      context,
-                      post: Post(
-                        commentsShown: true,
-                        contents: this.widget.contents,
-                        contentsInfo: this.widget.contentsInfo,
-                        isCompact: false,
-                        ownerId: this.widget.ownerId,
-                        photoUrl: this.widget.photoUrl,
-                        postId: this.widget.postId,
-                        tags: this.widget.tags,
-                        title: this.widget.title,
-                        topicId: this.widget.topicId,
-                        topicName: this.widget.topicName,
-                        upvotes: this.widget.upvotes,
-                        username: this.widget.username,
-                        comments: this.widget.comments,
-                        downvotes: this.widget.downvotes,
-                        saves: this.widget.saves,
-                        shares: this.widget.shares,
-                        commentCount: this.commentCount,
-                        time: widget.time,
-                        votes: widget.votes,
-                        notInterested: widget.notInterested,
-                        postActionExists: widget.postActionExists,
-                        thumbUrl: widget.thumbUrl,
-                        upvoted: widget.upvoted,
-                      ),
-                    );
+                    showComments(context,
+                        post: Post(
+                          commentsShown: true,
+                          contents: this.widget.contents,
+                          contentsInfo: this.widget.contentsInfo,
+                          isCompact: false,
+                          ownerId: this.widget.ownerId,
+                          photoUrl: this.widget.photoUrl,
+                          postId: this.widget.postId,
+                          tags: this.widget.tags,
+                          title: this.widget.title,
+                          topicId: this.widget.topicId,
+                          topicName: this.widget.topicName,
+                          upvotes: this.widget.upvotes,
+                          username: this.widget.username,
+                          comments: this.widget.comments,
+                          downvotes: this.widget.downvotes,
+                          saves: this.widget.saves,
+                          shares: this.widget.shares,
+                          commentCount: this.commentCount,
+                          time: widget.time,
+                          votes: widget.votes,
+                          notInterested: widget.notInterested,
+                          postActionExists: widget.postActionExists,
+                          thumbUrl: widget.thumbUrl,
+                          upvoted: widget.upvoted,
+                        ),
+                        index: 1);
                   }),
                 ),
               if (!(widget.commentsShown || widget.isCompact))
                 Container(
                   width: 20,
                   child: Text(
-                    '${Functions.abbreviateNumber(widget.comments, hideZero: true)}',
+                    '${Functions.abbreviateNumber(widget.comments, hideLess: true)}',
                     style: TextStyle(fontWeight: FontWeight.w500, fontSize: 19),
                   ),
                 ),
@@ -1334,10 +1333,10 @@ class _PostState extends State<Post> {
                             padding: const EdgeInsets.only(right: 3, left: 6),
                             child: Text(
                               increment == null
-                                  ? '${Functions.abbreviateNumber(upvotes, hideZero: true)}'
+                                  ? '${Functions.abbreviateNumber(upvotes, hideLess: true)}'
                                   : increment
-                                      ? '${Functions.abbreviateNumber(upvotes + 1, hideZero: true)}'
-                                      : '${Functions.abbreviateNumber(upvotes - 1, hideZero: true)}',
+                                      ? '${Functions.abbreviateNumber(upvotes + 1, hideLess: true)}'
+                                      : '${Functions.abbreviateNumber(upvotes - 1, hideLess: true)}',
                               style: TextStyle(
                                   fontWeight: FontWeight.w500, fontSize: 19),
                             ),
@@ -1533,12 +1532,9 @@ class _PostState extends State<Post> {
   }
 }
 
-showComments(
-  BuildContext context, {
-  Post post,
-}) {
+showComments(BuildContext context, {Post post, int index}) {
   Navigator.pushNamed(context, CommentsScreen.routeName,
-      arguments: {'post': post});
+      arguments: {'post': post, 'index': index ?? 0});
 }
 
 // class VideoContentContainer extends StatefulWidget {

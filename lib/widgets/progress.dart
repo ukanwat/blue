@@ -3,6 +3,7 @@ import 'package:ars_progress_dialog/ars_progress_dialog.dart';
 import 'package:flash/flash.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 // Package imports:
 import 'package:nuts_activity_indicator/nuts_activity_indicator.dart';
@@ -59,12 +60,12 @@ ArsProgressDialog progressOverlay({BuildContext context}) {
 snackbar(String text, BuildContext context,
     {Duration duration, Color color, Function seeMore}) {
   showFlash(
-      context: context,
+      context: Get.context,
       duration: Duration(seconds: 3),
       builder: (_, controller) {
         return Flash(
           controller: controller,
-          backgroundColor: color ?? Theme.of(context).cardColor,
+          backgroundColor: color ?? Theme.of(Get.context).cardColor,
           position: FlashPosition.bottom,
           style: FlashStyle.grounded,
           child: FlashBar(
@@ -81,7 +82,7 @@ snackbar(String text, BuildContext context,
                     ),
                   ),
             message: Text(text,
-                style: TextStyle(color: Theme.of(context).iconTheme.color)),
+                style: TextStyle(color: Theme.of(Get.context).iconTheme.color)),
           ),
         );
       });

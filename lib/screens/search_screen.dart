@@ -245,8 +245,15 @@ class _RecentSearchesState extends State<RecentSearches> {
             ? emptyState(context, 'No Searches Yet.', 'none')
             : ListView.builder(
                 shrinkWrap: true,
-                itemCount: _recentSearches.length + 1,
+                itemCount: _recentSearches.length + 2,
                 itemBuilder: (BuildContext context, int index) {
+                  if (_recentSearches.length + 1 == index) {
+                    return Divider(
+                      height: 1,
+                      color: Colors.grey.withOpacity(0.3),
+                      thickness: 1,
+                    );
+                  }
                   if (index == 0) {
                     return Container(
                       decoration: BoxDecoration(
@@ -295,13 +302,16 @@ class _RecentSearchesState extends State<RecentSearches> {
                   return Column(children: [
                     ListTile(
                       dense: true,
-                      leading: Icon(FluentIcons.search_16_filled),
+                      leading: Icon(
+                        FluentIcons.search_square_24_regular,
+                        size: 26,
+                      ),
                       key: UniqueKey(),
                       title: Text(
                         _recentSearches[index - 1]['text'],
                         style: TextStyle(
                             fontWeight: FontWeight.w700,
-                            fontSize: 18,
+                            fontSize: 22,
                             color: Colors.blue),
                       ),
                       onTap: () {
@@ -328,7 +338,7 @@ class _RecentSearchesState extends State<RecentSearches> {
                       height: 1,
                       color: Colors.grey.withOpacity(0.3),
                       thickness: 1,
-                      indent: 40,
+                      indent: 50,
                     )
                   ]);
                 });

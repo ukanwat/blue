@@ -123,8 +123,10 @@ class _TagScreenState extends State<TagScreen> {
                                 isFollowing = true;
                               });
                             },
-                            icon:
-                                Icon(Icons.add, size: 34, color: Colors.white),
+                            icon: Icon(
+                              Icons.add,
+                              size: 34,
+                            ),
                           )
                   ],
                   flexibleSpace: FlexibleSpaceBar(

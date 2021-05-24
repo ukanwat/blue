@@ -112,9 +112,10 @@ class _ChatsScreenState extends State<ChatsScreen>
     super.build(context);
     return loading
         ? circularProgress()
-        : empty
-            ? emptyState(context, 'No Chats Here!', 'Message Sent',
-                subtitle: 'Any new messages will appear here')
+        : chatUsers.length == 0
+            ? emptyState(context, 'Empty!', 'Message Sent',
+                subtitle:
+                    '${widget.archived ? 'Archived' : 'New'} Chats will appear here')
             : ListView.builder(
                 itemCount:
                     widget.archived ? chatUsers.length + 1 : chatUsers.length,

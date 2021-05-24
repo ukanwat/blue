@@ -160,6 +160,7 @@ class _TabsScreenState extends State<TabsScreen> {
                 CommunicationTabbarScreen(),
                 ProfileScreen(
                   profileId: Boxes.currentUserBox.get('user_id'),
+                  tabPage: true,
                 ),
               ],
             ),

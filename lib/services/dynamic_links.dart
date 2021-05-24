@@ -24,12 +24,12 @@ class DynamicLinksService {
       iosParameters: IosParameters(
         bundleId: packageInfo.packageName,
         minimumVersion: packageInfo.version,
-        appStoreId: '123456789', //TODO:imp
+        appStoreId: '962194608', //TODO:imp
       ),
       googleAnalyticsParameters: GoogleAnalyticsParameters(
-        campaign: 'example-promo',
+        campaign: 'share',
         medium: 'social',
-        source: 'orkut',
+        source: 'stark',
       ),
       socialMetaTagParameters: SocialMetaTagParameters(
           title: 'Stark',
