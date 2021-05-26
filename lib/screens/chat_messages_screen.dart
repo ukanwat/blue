@@ -196,8 +196,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     try {
       DateTime dateTime = DateTime.now();
       File image;
-      var picker = ImagePicker();
-      var pickedFile = await picker.getImage(
+      var pickedFile = await ImagePicker.pickImage(
         source: ImageSource.gallery,
         maxHeight: 720,
         maxWidth: 720,

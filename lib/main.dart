@@ -1,38 +1,9 @@
 // Dart imports:
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
 // Flutter imports:
 import 'package:blue/constants/app_colors.dart';
 import 'package:blue/models/hive_data_model.dart';
-import 'package:blue/providers/verify_email.dart';
-import 'package:blue/screens/email_sign_in_screen.dart';
-import 'package:blue/screens/empty_text_screen.dart';
-import 'package:blue/screens/follows_screen.dart';
-import 'package:blue/screens/show_screen.dart';
-import 'package:blue/services/boxes.dart';
-import 'package:blue/services/global_network/connectivity_status.dart';
-import 'package:blue/services/global_network/network_connection.dart';
-import 'package:blue/services/hasura.dart';
-import 'package:blue/services/push_notifications.dart';
-import 'package:blue/widgets/progress.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-
-// Package imports:
-import 'package:firebase_auth/firebase_auth.dart' as auth;
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_login/flutter_login.dart';
-import 'package:get/get_navigation/src/root/get_material_app.dart';
-import 'package:hive/hive.dart';
-import 'package:page_transition/page_transition.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
-
 // Project imports:
 import 'package:blue/providers/provider_widget.dart' as PW;
 import 'package:blue/providers/theme.dart';
@@ -42,11 +13,10 @@ import 'package:blue/screens/all_topics_screen.dart';
 import 'package:blue/screens/chat_info_screen.dart';
 import 'package:blue/screens/chat_messages_screen.dart';
 import 'package:blue/screens/collection_posts_screen.dart';
-import 'package:blue/screens/explore_posts_screen.dart';
+import 'package:blue/screens/email_sign_in_screen.dart';
+import 'package:blue/screens/follows_screen.dart';
 import 'package:blue/screens/gifs_screen.dart';
-import 'package:blue/screens/home.dart';
 import 'package:blue/screens/license_screen.dart';
-import './screens/set_name_screen.dart';
 import 'package:blue/screens/package_licenses_screen.dart';
 import 'package:blue/screens/profile_image_crop_screen.dart';
 import 'package:blue/screens/search_tag_screen.dart';
@@ -68,22 +38,41 @@ import 'package:blue/screens/settings/privacy/activity_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screens/blocked_accounts_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screens/muted_accounts_screen.dart';
-import 'package:blue/screens/sign_in_screen.dart';
+import 'package:blue/screens/show_screen.dart';
 import 'package:blue/screens/sign_in_view_screen.dart';
 import 'package:blue/screens/tabs_screen.dart';
 import 'package:blue/screens/tag_screen.dart';
 import 'package:blue/services/auth_service.dart';
+import 'package:blue/services/boxes.dart';
+import 'package:blue/services/global_network/connectivity_status.dart';
+import 'package:blue/services/global_network/network_connection.dart';
+import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
+import 'package:blue/services/push_notifications.dart';
+import 'package:blue/widgets/progress.dart';
+// Package imports:
+import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
+import 'package:hive/hive.dart';
+import 'package:page_transition/page_transition.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
+
 import './screens/comments_screen.dart';
 import './screens/edit_profile_screen.dart';
 import './screens/post_screen.dart';
 import './screens/search_screen.dart';
+import './screens/set_name_screen.dart';
 import './screens/settings_screen.dart';
+import './screens/verify_email_screen.dart';
+import './services/push_notifications.dart';
 import 'models/user.dart';
 import 'screens/settings/general/account_screens/email_screen.dart';
-import './screens/verify_email_screen.dart';
-import './widgets/email_verify_dialog.dart';
-import './services/push_notifications.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -91,6 +80,7 @@ void main() async {
     DeviceOrientation.portraitUp,
   ]);
   await Firebase.initializeApp();
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
   await PushNotificationsManager().initNotif();
   var dir = await getApplicationDocumentsDirectory();
   Hive.init(dir.path);
@@ -152,6 +142,11 @@ class MyApp extends StatefulWidget {
 }
 
 class MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(

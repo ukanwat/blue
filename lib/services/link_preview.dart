@@ -49,13 +49,14 @@ class LinkPreview extends StatefulWidget {
 class _LinkPreviewState extends State<LinkPreview> {
   String _url;
   InfoBase _info;
-   bool _failedToLoadImage = false;
+  bool _failedToLoadImage = false;
   @override
   void initState() {
     _init();
     super.initState();
   }
-    static String _getUriWithPrefix(uri) {
+
+  static String _getUriWithPrefix(uri) {
     if (uri == null || uri == "") {
       return uri;
     }
@@ -66,59 +67,76 @@ class _LinkPreviewState extends State<LinkPreview> {
     }
     return prefixUri.toString();
   }
-    void _validateImageUri(uri) async {
-   await precacheImage(NetworkImage(uri), context, onError: (e, stackTrace) {
-     setState(() {
-         _failedToLoadImage = true;
-     });
-      
-     
+
+  void _validateImageUri(uri) async {
+    await precacheImage(NetworkImage(uri), context, onError: (e, stackTrace) {
+      setState(() {
+        _failedToLoadImage = true;
+      });
     });
   }
+
   Future<void> _init() async {
     _url = widget.url.toLowerCase().trim();
-    if (!(_url.startsWith('http://',)||_url.startsWith('https://',))) {
-       _url = 'https://$_url';
+    if (!(_url.startsWith(
+          'http://',
+        ) ||
+        _url.startsWith(
+          'https://',
+        ))) {
+      _url = 'https://$_url';
     }
 
-      _info = await WebAnalyzer.getInfo(
-        _url,
-        cache: widget.cache,
-        multimedia: widget.showMultimedia,
-      );
-         if (mounted) setState(() {});
-         if(_info.runtimeType == WebInfo)
+    _info = await WebAnalyzer.getInfo(
+      _url,
+      cache: widget.cache,
+      multimedia: widget.showMultimedia,
+    );
+    if (mounted) setState(() {});
+    if (_info.runtimeType == WebInfo)
       _validateImageUri((_info as WebInfo).icon);
-    
   }
 
   @override
   Widget build(BuildContext context) {
-   
     if (widget.builder != null) {
       return widget.builder(_info);
     }
-    if ( _info is YoutubeInfo) {
+    if (_info is YoutubeInfo) {
       print((_info as YoutubeInfo).url);
-      return  Container(
-        height: (MediaQuery.of(context).size.width-20)*(9/16),
+      return Container(
+        height: (MediaQuery.of(context).size.width - 20) * (9 / 16),
         child: Stack(
           children: <Widget>[
-             CachedNetworkImage(
-          imageUrl: (_info as  YoutubeInfo).url,
-          fit: BoxFit.contain,
-        ),Container(width: double.infinity,
-          child: Column(
-            children: <Widget>[
-                if( (_info as  YoutubeInfo).title != '')SizedBox(height: 10,),
-              Expanded(child: Icon(FlutterIcons.youtube_mco,size: 60,color:Colors.white)),
-              if( (_info as  YoutubeInfo).title != '')
-              Container(padding: EdgeInsets.symmetric(horizontal: 7,vertical: 7),
-                width: double.infinity,
-                color: Colors.black.withOpacity(0.3),child: Center(child: Text( (_info as  YoutubeInfo).title,maxLines: 2,overflow: TextOverflow.ellipsis,style: TextStyle(color:Colors.white))),)
-            ],
-          ),
-        )
+            CachedNetworkImage(
+              imageUrl: (_info as YoutubeInfo).url,
+              fit: BoxFit.contain,
+            ),
+            Container(
+              width: double.infinity,
+              child: Column(
+                children: <Widget>[
+                  if ((_info as YoutubeInfo).title != '')
+                    SizedBox(
+                      height: 10,
+                    ),
+                  Expanded(
+                      child: Icon(FlutterIcons.youtube_mco,
+                          size: 60, color: Colors.white)),
+                  if ((_info as YoutubeInfo).title != '')
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 7, vertical: 7),
+                      width: double.infinity,
+                      color: Colors.black.withOpacity(0.3),
+                      child: Center(
+                          child: Text((_info as YoutubeInfo).title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(color: Colors.white))),
+                    )
+                ],
+              ),
+            )
           ],
         ),
       );
@@ -127,8 +145,7 @@ class _LinkPreviewState extends State<LinkPreview> {
       return const SizedBox();
     }
     if (_info is ImageInfo) {
-      return
-       CachedNetworkImage(
+      return CachedNetworkImage(
         imageUrl: (_info as ImageInfo).url,
         fit: BoxFit.contain,
       );
@@ -142,66 +159,79 @@ class _LinkPreviewState extends State<LinkPreview> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[  if (WebAnalyzer.isNotEmpty(info.icon))
-                Container(
-                  padding: EdgeInsets.all(5),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                                    child: CachedNetworkImage(
-                      imageUrl:_failedToLoadImage == false
-              ? info.icon
-              : _getUriWithPrefix(info.icon), 
-                      fit: BoxFit.cover,
-                      height: 76,
-                      width: 76,
-                    ),
-                  ),
-                )
-              else
-                Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Icon(FluentIcons.link_square_24_filled, size: 45, color: iconColor),
-                ),
-                 Expanded(
-                                    child: Column(mainAxisSize: MainAxisSize.min,mainAxisAlignment: MainAxisAlignment.center,crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-            
-          Row(mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-            
-              const SizedBox(width: 6),
-              Expanded(
-                child:
-                Text(
-                    WebAnalyzer.isNotEmpty(info.title)?
-              info.title:widget.url,maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: widget.titleStyle,
+        children: <Widget>[
+          if (WebAnalyzer.isNotEmpty(info.icon))
+            Container(
+              padding: EdgeInsets.all(5),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: CachedNetworkImage(
+                  imageUrl: _failedToLoadImage == false
+                      ? info.icon
+                      : _getUriWithPrefix(info.icon),
+                  fit: BoxFit.cover,
+                  height: 76,
+                  width: 76,
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(5.0),
-                child: Icon(FluentIcons.window_new_24_filled,size: 22,color: Theme.of(context).iconTheme.color.withOpacity(0.9),),
-              )
-            ],
-          ),
-          if (hasDescription)
+            )
+          else
             Padding(
-              padding: const EdgeInsets.only(left: 6,bottom: 6,right: 6,top: 0),
-              child: Text(
-                info.description,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: widget.bodyStyle,
-              ),
-            ),]),
-                 )
+              padding: const EdgeInsets.all(4.0),
+              child: Icon(FluentIcons.link_square_24_filled,
+                  size: 45, color: iconColor),
+            ),
+          Expanded(
+            child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          WebAnalyzer.isNotEmpty(info.title)
+                              ? info.title
+                              : widget.url,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: widget.titleStyle,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Icon(
+                          FluentIcons.window_new_24_filled,
+                          size: 22,
+                          color: Theme.of(context)
+                              .iconTheme
+                              .color
+                              .withOpacity(0.9),
+                        ),
+                      )
+                    ],
+                  ),
+                  if (hasDescription)
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          left: 6, bottom: 6, right: 6, top: 0),
+                      child: Text(
+                        info.description,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: widget.bodyStyle,
+                      ),
+                    ),
+                ]),
+          )
         ],
       ),
     );
   }
 }
-
 
 abstract class InfoBase {
   DateTime _timeout;
@@ -228,11 +258,12 @@ class VideoInfo extends InfoBase {
   final String url;
   VideoInfo({this.url});
 }
+
 /// YoutubeInfo Information
 class YoutubeInfo extends InfoBase {
   final String url;
-    final String title;
-  YoutubeInfo({this.url,this.title});
+  final String title;
+  YoutubeInfo({this.url, this.title});
 }
 
 /// Web analyzer
@@ -240,6 +271,7 @@ class WebAnalyzer {
   static final Map<String, InfoBase> _map = {};
   static final RegExp _bodyReg = RegExp(r"<body[^>]*>([\s\S]*)<\/body>");
   static final RegExp _scriptReg = RegExp(r"<script[^>]*>([\s\S]*)<\/script>");
+
   /// Is it an empty string
   static bool isNotEmpty(String str) {
     return str != null && str.isNotEmpty;
@@ -259,7 +291,7 @@ class WebAnalyzer {
       }
     }
     try {
-      final response = await http.get(url);
+      final response = await http.get(Uri.parse(url));
       if (multimedia) {
         final String contentType = response.headers["content-type"];
         if (contentType != null) {
@@ -270,7 +302,7 @@ class WebAnalyzer {
           }
         }
       }
-               
+
       info ??= _getWebInfo(response, url, multimedia);
 
       if (cache != null && info != null) {
@@ -287,43 +319,45 @@ class WebAnalyzer {
   static InfoBase _getWebInfo(
       http.Response response, String url, bool multimedia) {
     if (response.statusCode == 200) {
-  print("asadasdasdawsdasdasda");
-      var urlPattern = r"((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$";
-     bool isYoutubeVideo  = RegExp(urlPattern,).hasMatch(url);
-      String  mediaBody;
+      print("asadasdasdawsdasdasda");
+      var urlPattern =
+          r"((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$";
+      bool isYoutubeVideo = RegExp(
+        urlPattern,
+      ).hasMatch(url);
+      String mediaBody;
       try {
         mediaBody = const Utf8Decoder().convert(response.bodyBytes);
-              // Improved performance
-       mediaBody =  mediaBody.replaceFirst(_bodyReg, "<body></body>");
-       mediaBody =  mediaBody.replaceAll(_scriptReg, "");
-      final mediaDocument = parser.parse( mediaBody);
-           if(isYoutubeVideo){
-            return YoutubeInfo(url: _analyzeIcon(mediaDocument, url),title:  _analyzeTitle(mediaDocument));
-      }
-      // get image or video
-      if (multimedia) {
-        final gif = _analyzeGif(mediaDocument, url);
-        if (gif != null) return gif;
+        // Improved performance
+        mediaBody = mediaBody.replaceFirst(_bodyReg, "<body></body>");
+        mediaBody = mediaBody.replaceAll(_scriptReg, "");
+        final mediaDocument = parser.parse(mediaBody);
+        if (isYoutubeVideo) {
+          return YoutubeInfo(
+              url: _analyzeIcon(mediaDocument, url),
+              title: _analyzeTitle(mediaDocument));
+        }
+        // get image or video
+        if (multimedia) {
+          final gif = _analyzeGif(mediaDocument, url);
+          if (gif != null) return gif;
 
-        final video = _analyzeVideo(mediaDocument, url);
-        if (video != null) return video;
-
-      }
-         final info = WebInfo(
-        title: _analyzeTitle(mediaDocument),
-        icon: _analyzeIcon(mediaDocument, url),
-        description: _analyzeDescription(mediaDocument),
-      );
-      return info;
-      
+          final video = _analyzeVideo(mediaDocument, url);
+          if (video != null) return video;
+        }
+        final info = WebInfo(
+          title: _analyzeTitle(mediaDocument),
+          icon: _analyzeIcon(mediaDocument, url),
+          description: _analyzeDescription(mediaDocument),
+        );
+        return info;
       } catch (e) {
         print("//axaxaxxaxaxax");
-  
       }
 
- var requiredAttributes = ['title', 'image'];
-    var data = {};
-           var document = parser.parse(response.body);
+      var requiredAttributes = ['title', 'image'];
+      var data = {};
+      var document = parser.parse(response.body);
       var openGraphMetaTags = _getOgPropertyData(document);
 
       openGraphMetaTags.forEach((element) {
@@ -340,17 +374,13 @@ class WebAnalyzer {
       });
       _scrapeDataToEmptyValue(data, document, url);
       return WebInfo(
-      description: data['description'],
-      icon: data['image'],
-      title: data['title']
-    );
+          description: data['description'],
+          icon: data['image'],
+          title: data['title']);
     }
-  return null;
+    return null;
   }
-  
 
-
- 
   ///////////////////////////////////
   static void _scrapeDataToEmptyValue(Map data, Document document, String url) {
     if (!data.containsKey("title") ||
@@ -401,7 +431,7 @@ class WebAnalyzer {
   static String _scrapeImage(Document document, String url) {
     var images = document.body.getElementsByTagName("img");
     var imageSrc = "";
-     print('$imageSrc ppppppppppppppppppppppppppppppppppppppp');
+    print('$imageSrc ppppppppppppppppppppppppppppppppppppppp');
     if (images.length > 0) {
       imageSrc = images[0].attributes["src"];
 
@@ -503,7 +533,6 @@ class WebAnalyzer {
     return uri.host;
   }
 
-  
   static String _analyzeIcon(Document document, String url) {
     final meta = document.head.getElementsByTagName("link");
     String icon = "";

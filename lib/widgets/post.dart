@@ -38,7 +38,6 @@ import 'package:blue/services/video_controls.dart';
 import 'package:blue/widgets/report_dialog.dart';
 import 'package:blue/widgets/repost_dialog.dart';
 import 'package:blue/widgets/save_dialog.dart';
-import 'package:yoyo_player/yoyo_player.dart';
 import '../screens/comments_screen.dart';
 import '../screens/home.dart';
 import '../services/functions.dart';

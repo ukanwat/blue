@@ -28,6 +28,7 @@
 .packages
 .pub-cache/
 .pub/
+/ios/build/
 /build/
 /android/key.properties
 

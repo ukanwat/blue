@@ -13,7 +13,7 @@ class Config {
     config: SocketClientConfig(
       autoReconnect: true,
       inactivityTimeout: Duration(seconds: 30),
-      initPayload: () async {
+      initialPayload: () async {
         return {
           'headers': {'Authorization': 'Bearer ${Hasura.jwtToken}'},
         };

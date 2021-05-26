@@ -7,8 +7,8 @@ import 'package:http/http.dart' as http;
 // when subscribing to`HasuraConnect.subscription`, a websocket connection is created on the first subscription
 // call. The websocket connection is created only once with the initial subscription and the provided TokenInterceptor
 // or headers. When the token expires during an active subscription, HasuraConnect doesn't stop the subscription, or try
-// to reconnect with the latest token in in the TokenInterceptor nor does it throw an error. It'll keep calling `onRequest` 
-// method indefinitely for some reason as it was observed in the TokenInterceptor. 
+// to reconnect with the latest token in in the TokenInterceptor nor does it throw an error. It'll keep calling `onRequest`
+// method indefinitely for some reason as it was observed in the TokenInterceptor.
 
 // solution:
 // When all active subscription are closed (ie Snapshot.close()), HasuraConnect will terminate the websocket connection
@@ -20,35 +20,34 @@ import 'package:http/http.dart' as http;
 // - when the auth stream sends an event, all source snapshots are closed (hence HasuraConnect closes websocket connection)
 // - recreate all source snapshots and update each subscription (SnapshotX) with a new source snapshot
 // - when recreating the new snapshots, hasura will use the latest Token available in the TokenInterceptor
-//   and recreate a new websocket connection.  
-// 
+//   and recreate a new websocket connection.
+//
 // this way the user stream/subscription stays alive and all this process happens in the background as shown in the code below.
-
 
 /// usage:
 /// ```dart
-/// // import this file 
+/// // import this file
 /// import '../hasura_connect_ex.dart';
 ///
 /// final hasuraClient = HasuraConnectX(
 ///   url,
 ///   // use your own TokenInterceptor per hasura_connect docs
 ///   interceptors: [TokenInterceptor(tokenProvider: tokenProvider)],
-///   // you can pass firebase stream onAuthStateChanged here, or any stream that trigers when token is updated. 
+///   // you can pass firebase stream onAuthStateChanged here, or any stream that trigers when token is updated.
 ///   onAuthStateChanged: tokenProvider(),
 /// );
-/// 
-/// 
-/// final snapshot = await hasuraClient.subscriptionX(docSubscription); // this will return SnapshotX 
-/// 
+///
+///
+/// final snapshot = await hasuraClient.subscriptionX(docSubscription); // this will return SnapshotX
+///
 /// // you can use it the same way as hasuraClient.subscription:
 /// // map and listen
 /// snapshot.map((event) {....} )listen((event) { ... });
-/// 
+///
 /// // change variables
 /// snapshot.changeVariables(variables);
-/// 
-/// // close snapshot 
+///
+/// // close snapshot
 /// snapshot.close();
 /// ```
 // an extended HasuraConnect that updates subscription based on an auth stream.
@@ -60,13 +59,13 @@ class HasuraConnectX extends HasuraConnect {
     int reconnectionAttemp,
     List<Interceptor> interceptors,
     Map<String, String> headers,
-    http.Client httpClient,
+    http.Client Function() httpClient,
   }) : super(
           url,
           reconnectionAttemp: reconnectionAttemp,
           interceptors: interceptors,
           headers: headers,
-          httpClient: httpClient,
+          httpClientFactory: httpClient,
         ) {
     // skip the first event since it'll not indicate an actual change in the Auth State
     authStateSubscription = onAuthStateChanged.skip(1).listen((event) {
@@ -86,8 +85,10 @@ class HasuraConnectX extends HasuraConnect {
   final Map<String, SnapshotX<Object>> currentSnapshots = {};
 
   // a wrapper around HasuraConnect subscription
-  Future<SnapshotX> subscriptionX(String document, {String key, Map<String, dynamic> variables}) async {
-    final snapshot = await super.subscription(document, key: key, variables: variables);
+  Future<SnapshotX> subscriptionX(String document,
+      {String key, Map<String, dynamic> variables}) async {
+    final snapshot =
+        await super.subscription(document, key: key, variables: variables);
     // if the key is not provided, use the one created by hasuraClient.subscription
     key ??= snapshot.query.key;
 
@@ -96,7 +97,7 @@ class HasuraConnectX extends HasuraConnect {
       onClose: () => currentSnapshots.remove(key),
       onMap: (newSnapshotX) => currentSnapshots[key] = newSnapshotX,
     );
-    
+
     return currentSnapshots[key];
   }
 
@@ -117,7 +118,8 @@ class HasuraConnectX extends HasuraConnect {
         intermediateSnapshot.document,
         key: intermediateSnapshot.key,
         variables: intermediateSnapshot.variables,
-      ).then((newSnapshot) => intermediateSnapshot.updateSourceSnapshot(newSnapshot));
+      ).then((newSnapshot) =>
+          intermediateSnapshot.updateSourceSnapshot(newSnapshot));
     }
   }
 
@@ -147,8 +149,8 @@ class SnapshotX<T> {
   Stream<T> rootStream;
 
   // used to update the snapshot with the same query.
-  final String key; 
-  final String document; 
+  final String key;
+  final String document;
   Map<String, dynamic> variables;
 
   SnapshotX({
@@ -161,7 +163,8 @@ class SnapshotX<T> {
         document = sourceSnapshot.query.document,
         variables = sourceSnapshot.query.variables {
     // TODO: should convert to a broadcast stream instead?
-    this.controller = controller ?? StreamController(onListen: _pipe, onCancel: _onCancel);
+    this.controller =
+        controller ?? StreamController(onListen: _pipe, onCancel: _onCancel);
     this.rootStream = rootStream ?? this.controller.stream;
   }
 
@@ -232,6 +235,7 @@ class SnapshotX<T> {
   // listen to the rootStream which has the latest mapping (don't listen to stream controller directly)
   StreamSubscription<T> listen(void Function(T event) onData,
       {Function onError, void Function() onDone, bool cancelOnError}) {
-    return rootStream.listen(onData, onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+    return rootStream.listen(onData,
+        onError: onError, onDone: onDone, cancelOnError: cancelOnError);
   }
 }

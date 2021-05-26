@@ -72,92 +72,90 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
       body: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          Expanded(
-            child: FlutterLogin(
-              key: UniqueKey(),
-              title: '',
-              logo: 'assets/logo.png',
-              onLogin: loginUser,
-              onSignup: signupUser,
-              onSubmitAnimationCompleted: () async {
-                if (signupData != null) {
-                  userSignedIn = false;
+          FlutterLogin(
+            key: UniqueKey(),
+            title: '',
+            logo: 'assets/logo.png',
+            onLogin: loginUser,
+            onSignup: signupUser,
+            onSubmitAnimationCompleted: () async {
+              if (signupData != null) {
+                userSignedIn = false;
 
-                  AuthService().signOut(context);
-
-                  var a = await AuthService().loginUser(signupData, context);
-                  if (a == null) {
-                    return;
-                  }
+                AuthService().signOut(context);
+                
+                var a = await AuthService().loginUser(signupData, context);
+                if (a == null) {
+                  return;
                 }
+              }
 
-                // if (error) {
-                //   return;
-                // } //TODO
-                // if (!hasuraUserExists) {
-                //   Navigator.pushNamed(context, SetNameScreen.routeName,
-                //       arguments: {'provider': 'email', 'email': email});
-                // } else {
-                //   userSignedIn = true;
-                // }
-              },
-              messages: LoginMessages(),
-              onRecoverPassword: _recoverPassword,
-              theme: LoginTheme(
-                  titleStyle: TextStyle(
-                      fontFamily: 'Techna Sans Regular',
-                      color: Theme.of(context).accentColor,
-                      fontSize: 30),
-                  primaryColor: Color.fromRGBO(240, 240, 240, 1),
-                  accentColor: Colors.grey,
-                  inputTheme: InputDecorationTheme(
-                      fillColor: Colors.grey[300],
-                      prefixStyle: TextStyle(
-                          color: Colors.grey,
-                          decorationColor: Colors.grey,
-                          backgroundColor: Colors.grey),
-                      suffixStyle: TextStyle(
-                          color: Colors.grey, decorationColor: Colors.grey),
-                      focusColor: Colors.grey,
-                      hoverColor: Colors.grey,
-                      labelStyle: TextStyle(
-                          color: Colors.grey, fontWeight: FontWeight.w500),
-                      filled: true,
-                      border: InputBorder.none,
-                      errorBorder: OutlineInputBorder(
+              // if (error) {
+              //   return;
+              // } //TODO
+              // if (!hasuraUserExists) {
+              //   Navigator.pushNamed(context, SetNameScreen.routeName,
+              //       arguments: {'provider': 'email', 'email': email});
+              // } else {
+              //   userSignedIn = true;
+              // }
+            },
+            messages: LoginMessages(),
+            onRecoverPassword: _recoverPassword,
+            theme: LoginTheme(
+                titleStyle: TextStyle(
+                    fontFamily: 'Techna Sans Regular',
+                    color: Theme.of(context).accentColor,
+                    fontSize: 30),
+                primaryColor: Color.fromRGBO(240, 240, 240, 1),
+                accentColor: Colors.grey,
+                inputTheme: InputDecorationTheme(
+                    fillColor: Colors.grey[300],
+                    prefixStyle: TextStyle(
+                        color: Colors.grey,
+                        decorationColor: Colors.grey,
+                        backgroundColor: Colors.grey),
+                    suffixStyle: TextStyle(
+                        color: Colors.grey, decorationColor: Colors.grey),
+                    focusColor: Colors.grey,
+                    hoverColor: Colors.grey,
+                    labelStyle: TextStyle(
+                        color: Colors.grey, fontWeight: FontWeight.w500),
+                    filled: true,
+                    border: InputBorder.none,
+                    errorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.transparent),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.transparent),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    disabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.transparent),
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(50)),
+                    enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.transparent),
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      disabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.transparent),
-                          borderRadius: BorderRadius.circular(50)),
-                      enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.transparent),
-                          borderRadius: BorderRadius.circular(50))),
-                  buttonStyle: TextStyle(
-                      color: Colors.white,
-                      decorationStyle: TextDecorationStyle.solid,
-                      decorationColor: Colors.grey,
-                      fontStyle: FontStyle.normal,
-                      backgroundColor: Colors.grey.withOpacity(0.5)),
-                  buttonTheme: LoginButtonTheme(
-                    backgroundColor: Theme.of(context).accentColor,
-                    highlightColor: Theme.of(context).accentColor,
-                  ),
-                  textFieldStyle: TextStyle(color: Colors.black),
-                  bodyStyle: TextStyle(
-                    decorationColor: Colors.grey,
-                    color: Colors.black,
-                    fontStyle: FontStyle.normal,
-                  ),
-                  cardTheme: CardTheme(
+                        borderRadius: BorderRadius.circular(50))),
+                buttonStyle: TextStyle(
                     color: Colors.white,
-                  )),
-            ),
+                    decorationStyle: TextDecorationStyle.solid,
+                    decorationColor: Colors.grey,
+                    fontStyle: FontStyle.normal,
+                    backgroundColor: Colors.grey.withOpacity(0.5)),
+                buttonTheme: LoginButtonTheme(
+                  backgroundColor: Theme.of(context).accentColor,
+                  highlightColor: Theme.of(context).accentColor,
+                ),
+                textFieldStyle: TextStyle(color: Colors.black),
+                bodyStyle: TextStyle(
+                  decorationColor: Colors.grey,
+                  color: Colors.black,
+                  fontStyle: FontStyle.normal,
+                ),
+                cardTheme: CardTheme(
+                  color: Colors.white,
+                )),
           ),
           Padding(
             padding: const EdgeInsets.only(bottom: 0, top: 500),

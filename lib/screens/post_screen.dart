@@ -111,8 +111,7 @@ class _PostScreenState extends State<PostScreen> {
 
   handleTakePhoto() async {
     File _cameraImage;
-    var picker = ImagePicker();
-    var pickedFile = await picker.getImage(
+    var pickedFile = await ImagePicker.pickImage(
         source: ImageSource.camera,
         maxHeight: 720,
         maxWidth: 720,
@@ -154,8 +153,7 @@ class _PostScreenState extends State<PostScreen> {
 
   handleChooseImageFromGallery() async {
     File _galleryImage;
-    var picker = ImagePicker();
-    var pickedFile = await picker.getImage(
+    var pickedFile = await ImagePicker.pickImage(
         source: ImageSource.gallery,
         maxHeight: 720,
         maxWidth: 720,
@@ -167,7 +165,7 @@ class _PostScreenState extends State<PostScreen> {
   handleTakeVideo() async {
     File _cameraVideo;
     var picker = ImagePicker();
-    var pickedFile = await picker.getVideo(
+    var pickedFile = await ImagePicker.pickVideo(
         source: ImageSource.camera, maxDuration: Duration(minutes: 2));
     _cameraVideo = File(pickedFile.path);
     addVideoContent(_cameraVideo);
@@ -204,8 +202,7 @@ class _PostScreenState extends State<PostScreen> {
 
   handleChooseVideoFromGallery() async {
     File _galleryVideo;
-    var picker = ImagePicker();
-    var pickedFile = await picker.getVideo(
+    var pickedFile = await ImagePicker.pickVideo(
         source: ImageSource.gallery, maxDuration: Duration(minutes: 2));
     _galleryVideo = File(pickedFile.path);
     addVideoContent(_galleryVideo);
@@ -587,7 +584,7 @@ class _PostScreenState extends State<PostScreen> {
       _url = 'https://$_url';
     }
     try {
-      response = await head(_url);
+      response = await head(Uri.parse(_url));
     } catch (error) {
       errorOccured = true;
     }

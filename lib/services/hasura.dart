@@ -6,7 +6,7 @@ import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:flutter/material.dart';
 import 'package:hasura_connect/hasura_connect.dart';
-import 'package:hive_cache_interceptor/hive_cache_interceptor.dart';
+// import 'package:hive_cache_interceptor/hive_cache_interceptor.dart';
 import './token_interceptor.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import './hasura_x.dart';
@@ -43,13 +43,15 @@ class Hasura {
       save_count
       """;
   static const String url = 'https://app.stark.social/v1/graphql';
-  static var cacheInterceptor = HiveCacheInterceptor("hasura");
+  // static var cacheInterceptor = HiveCacheInterceptor("hasura");
   static int postLimit = 8;
   static HasuraConnectX hasuraConnect = HasuraConnectX(url,
       headers: {
         'Authorization': 'Bearer $jwtToken',
       },
-      interceptors: [TokenInterceptor(FirebaseAuth.instance), cacheInterceptor],
+      interceptors: [
+        TokenInterceptor(FirebaseAuth.instance),
+      ],
       onAuthStateChanged: AuthService().onAuthStateChanged);
 
   static getUserId({String uid}) async {
