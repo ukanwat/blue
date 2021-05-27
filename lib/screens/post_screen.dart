@@ -58,7 +58,7 @@ class _PostScreenState extends State<PostScreen> {
   //limits
   int lvid = 1;
   int limg = 10;
-  int ltxt = 500;
+  int ltxt = 750;
   int llnk = 5;
   //count
   int cvid = 0;
@@ -172,9 +172,11 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   addVideoContent(File _video) {
+    print('dXXXXX');
     VideoPlayerController _vidController =
         new VideoPlayerController.file(_video);
-
+    print(_video.path);
+    print(_video.uri);
     if (_vidController.value.duration.compareTo(Duration(minutes: 3)) > 0) {
       snackbar('video cannot be longer than 3 minutes', context);
       return;
@@ -910,15 +912,32 @@ class _PostScreenState extends State<PostScreen> {
                 if (isDrafted || contentsData.length == 0) {
                   Navigator.pop(context);
                 } else {
+                  List<dynamic> _checkContentsData = contentsData;
+                  bool containsVideo = false;
+                  _checkContentsData.forEach((d) {
+                    if (d['info']['type'] == 'video') {
+                      containsVideo = true;
+                    }
+                  });
+
                   showDialog(
                     context: context,
                     builder: (BuildContext context) => ShowDialog(
                       title: "Save as Draft",
-                      description: "Do you want to save your work as Draft?",
+                      description: containsVideo
+                          ? "Drafts currently do not support video content. Do you want to save your work as Draft without the video?"
+                          : "Do you want to save your work as Draft?",
                       rightButtonText: "Save Draft",
                       leftButtonText: "Cancel",
                       rightButtonFunction: () async {
                         List<dynamic> _modifiedContentsData = contentsData;
+                        int _i = 0;
+                        _modifiedContentsData.forEach((d) {
+                          if (d['info']['type'] == 'video') {
+                            _modifiedContentsData.removeAt(_i);
+                          } else
+                            _i++;
+                        });
                         Directory appDocDir;
                         appDocDir = await getApplicationDocumentsDirectory();
                         await Directory(appDocDir.path + '/posts/$postId')
@@ -937,16 +956,16 @@ class _PostScreenState extends State<PostScreen> {
                                   .copy(_path);
                               _modifiedContentsData[i]['content'] = _path;
                               break;
-                            case 'video':
-                              print('its video draft content');
-                              final _fileName = Path.basename(
-                                  _modifiedContentsData[i]['content'].path);
-                              String _path =
-                                  appDocDir.path + '/posts/$postId/$_fileName';
-                              await _modifiedContentsData[i]['content']
-                                  .copy(_path);
-                              _modifiedContentsData[i]['content'] = _path;
-                              break;
+                            // case 'video':
+                            //   // print('its video draft content');
+                            //   // final _fileName = Path.basename(
+                            //   //     _modifiedContentsData[i]['content'].path);
+                            //   // String _path =
+                            //   //     appDocDir.path + '/posts/$postId/$_fileName';
+                            //   // await _modifiedContentsData[i]['content']
+                            //   //     .copy(_path);
+                            //   // _modifiedContentsData[i]['content'] = _path;
+                            //   break;
                             case 'carousel':
                               String _path = appDocDir.path + '/posts/$postId';
                               List _paths = [];
@@ -1173,17 +1192,77 @@ class _PostScreenState extends State<PostScreen> {
                         padding: const EdgeInsets.all(8.0),
                         child: Icon(
                           FluentIcons.collections_add_24_regular,
-                          size: 95,
+                          size: 65,
                           color: Theme.of(context).iconTheme.color,
                         ),
                       ),
                     ),
-                    Text(
-                      'Add Something',
-                      style: TextStyle(
-                          color: Colors.blue,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 100),
+                      child: Text(
+                        'Add Content from the Tab',
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Theme.of(context)
+                                .iconTheme
+                                .color
+                                .withOpacity(0.8),
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        showDialog(
+                            builder: (context) {
+                              return BannerDialog(
+                                  'Community Guidelines',
+                                  """Section 1: Illegal Content
+
+(A) Underage Sexual Content
+Posting underage sexual content will result in an immediate ban. To be on the safe side, this also applies to content that is "ambiguous". Don't do it.
+
+(B) Doxxing / Physical Threats
+You may not post any content or actions that threaten physical harm or otherwise incite violence.
+
+(C) Copyrighted Content
+We have neither the resources nor the inclination to determine if the contents of your post is properly licensed. We will only take proactive action to remove content that is obviously infringing on someone's copyright. Other than that, we will respond on a case-by-case basic to any complaints we receive from copyright holders under DMCA.
+
+Section 2: Explicit Content
+
+(A) Violence / Gore
+Please don't post overly graphic/violent/disturbing images or video.
+
+(B) NSFW Content
+Please don't post pornographic material. We don't have the resources to moderate it at the current time.
+
+Section 3: Spam
+
+(A) Phishing / Deception
+Impersonating someone, or otherwise attempting to materially defraud other users will result in a ban.
+
+(B) Disruptive Content
+Repeatedly posting the same content, posting something incomprehensible (like just mashing your keyboard), deliberately miscategorizing posts, or repeatedly posting advertisements or other low-effort content without any context or explanation is not allowed. The general principle is that "bad faith" posts will be removed so they don't distract from valuable content.
+
+""",
+                                  true);
+                            },
+                            context: context);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 3),
+                        child: Text(
+                          'Read Community Guidelines',
+                          style: TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 11),
+                        ),
+                      ),
                     ),
                     SizedBox(
                       height: 10,
@@ -1366,7 +1445,7 @@ class _TextDisplayWidgetState extends State<TextDisplayWidget> {
           maxLength: 500 + widget.textController.text.length - textLength,
           decoration: InputDecoration(
               counter: Container(),
-              hintText: 'Write Something...',
+              hintText: 'Something...',
               border: InputBorder.none),
           maxLines: null,
           onTap: () {

@@ -81,10 +81,10 @@ class _PostsSectionState extends State<PostsSection>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Container(
-        decoration: BoxDecoration(
-            color: Theme.of(context).canvasColor,
-            borderRadius: BorderRadius.circular(10)),
+    return Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        color: Theme.of(context).canvasColor,
+        elevation: 0.5,
         margin: EdgeInsets.symmetric(vertical: 25),
         child: Column(
           mainAxisSize: MainAxisSize.min,

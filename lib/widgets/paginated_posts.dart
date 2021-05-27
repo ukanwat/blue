@@ -1,6 +1,7 @@
 // Flutter imports:
 import 'package:blue/services/hasura.dart';
 import 'package:blue/widgets/loadmore_widget.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -9,6 +10,8 @@ import 'package:flutter/material.dart';
 //
 import 'package:blue/widgets/empty_state.dart';
 import 'package:blue/widgets/progress.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:widgets_visibility_provider/widgets_visibility_provider.dart';
 import 'post.dart';
 
 class PaginatedPosts extends StatefulWidget {
@@ -36,11 +39,14 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
   bool loaded = false;
   int lastDoc;
   bool empty = false;
-  // ScrollController _scrollController = ScrollController();
   double pos = 0;
+
+  ScrollController _scrollController = ScrollController();
+  double currOff = 0;
   @override
   void initState() {
     addPosts();
+
     super.initState();
   }
 
@@ -136,25 +142,104 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
     }
     return empty
         ? emptyState(context, "Can't find any posts ", 'none')
-        : Container(
-            color: Theme.of(context).backgroundColor,
-            child: LoadMore(
-              isFinish: loaded,
-              onLoadMore: () async {
-                await addPosts();
-                return true;
-              },
-              child: ListView.builder(
-                padding: EdgeInsets.only(bottom: 50),
-                physics: widget.tag == null
-                    ? AlwaysScrollableScrollPhysics()
-                    : NeverScrollableScrollPhysics(),
-                itemCount: _posts.length,
-                itemBuilder: (context, i) {
-                  return _posts.elementAt(i);
-                },
+        : Stack(
+            children: [
+              WidgetsVisibilityProvider(
+                condition: (PositionData positionData) =>
+                    positionData.endPosition >= 0 &&
+                    positionData.startPosition <= positionData.viewportSize,
+                // No need to wrap directly
+                child: Container(
+                  color: Theme.of(context).backgroundColor,
+                  child: LoadMore(
+                    isFinish: loaded,
+                    onLoadMore: () async {
+                      await addPosts();
+                      return true;
+                    },
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      padding: EdgeInsets.only(bottom: 50, top: 0),
+                      physics: widget.tag == null
+                          ? AlwaysScrollableScrollPhysics()
+                          : NeverScrollableScrollPhysics(),
+                      itemCount: _posts.length,
+                      itemBuilder: (context, i) {
+                        if (widget.isCompact != true) {
+                          return VisibleNotifierWidget(
+                            data: i,
+                            listener: (context, notification, positionData) {
+                              if (positionData != null) {
+                                if (positionData.endPosition > 0 &&
+                                    positionData.startPosition <= 0) {
+                                  currOff = positionData.endPosition;
+                                } else {}
+                              }
+                            },
+                            child: _posts.elementAt(i),
+                            condition: (
+                              previousNotification,
+                              previousPositionData,
+                              currentNotification,
+                              currentPositionData,
+                            ) {
+                              if (previousPositionData != currentPositionData)
+                                return true;
+                              if (previousPositionData != null &&
+                                  currentPositionData != null)
+                                return previousNotification !=
+                                    currentNotification;
+                              return false;
+                            },
+                          );
+                        }
+
+                        return _posts.elementAt(i);
+                      },
+                    ),
+                  ),
+                ),
               ),
-            ),
+              if (widget.isCompact != true)
+                Positioned(
+                    bottom: 6,
+                    left: 6,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: GestureDetector(
+                        onTap: () {
+                          double viewPort = MediaQuery.of(context).size.height -
+                              MediaQuery.of(context).padding.vertical;
+                          double initialOff = _scrollController.offset;
+                          _scrollController.animateTo(currOff + 5 + initialOff,
+                              duration: Duration(
+                                  milliseconds:
+                                      (300 * (currOff / viewPort).ceil()) < 100
+                                          ? 100
+                                          : (300 *
+                                              (currOff / viewPort).ceil())),
+                              curve: Curves.easeInOut);
+                        },
+                        child: Container(
+                          height: 24,
+                          width: 24,
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Theme.of(context)
+                                  .backgroundColor
+                                  .withOpacity(0.5)),
+                          child: Icon(
+                            FluentIcons.chevron_down_16_filled,
+                            color: Theme.of(context)
+                                .iconTheme
+                                .color
+                                .withOpacity(0.6),
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ))
+            ],
           );
   }
 }

@@ -35,12 +35,26 @@ class BannerDialog extends StatelessWidget {
         SizedBox(
           height: 12,
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(content),
+        Container(
+          constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.5 -
+                  MediaQuery.of(context).padding.vertical),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    content,
+                    style: TextStyle(fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
         SizedBox(
-          height: 20,
+          height: 10,
         ),
         if (showOk)
           FlatButton(

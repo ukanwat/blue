@@ -16,6 +16,7 @@ import 'package:blue/screens/home.dart';
 import 'package:blue/screens/tag/tag_popular_screen.dart';
 import 'package:blue/screens/tag/tag_recent_screen.dart';
 import 'package:blue/services/preferences_update.dart';
+import 'package:flutter_gradients/flutter_gradients.dart';
 
 class TagScreen extends StatefulWidget {
   static const routeName = 'tag';
@@ -149,10 +150,15 @@ class _TagScreenState extends State<TagScreen> {
                             ),
                           )),
                       background: Container(
-                          height: double.infinity,
-                          width: double.infinity,
-                          color: colors
-                              .elementAt(Random().nextInt(colors.length)))),
+                        height: double.infinity,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                            color: colors
+                                .elementAt(Random().nextInt(colors.length)),
+                            gradient: FlutterGradients.findByName(
+                                FlutterGradientNames.values[Random().nextInt(
+                                    FlutterGradientNames.values.length - 2)])),
+                      )),
                 ),
                 SliverPersistentHeader(
                   delegate: _SliverAppBarDelegate(
@@ -190,10 +196,14 @@ class _TagScreenState extends State<TagScreen> {
                 ),
               ];
             },
-            body: TabBarView(children: <Widget>[
-              TagPopularScreen(tag),
-              TagRecentScreen(tag)
-            ])),
+            body: Container(
+              padding: EdgeInsets.zero,
+              margin: EdgeInsets.zero,
+              child: TabBarView(children: <Widget>[
+                TagPopularScreen(tag),
+                TagRecentScreen(tag)
+              ]),
+            )),
       ),
     );
   }

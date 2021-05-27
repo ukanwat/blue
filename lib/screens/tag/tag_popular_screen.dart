@@ -18,16 +18,22 @@ class TagPopularScreen extends StatefulWidget {
 }
 
 class _TagPopularScreenState extends State<TagPopularScreen> {
-  Widget posts = Container();
+  Widget posts = Container(
+    height: 0,
+    margin: EdgeInsets.zero,
+    padding: EdgeInsets.zero,
+  );
 
   Future refreshPosts() async {
     setState(() {
-      posts = PaginatedPosts(
-        length: 6,
-        key: UniqueKey(),
-        neverScroll: true,
-        orderBy: "{score:desc}",
-        tag: widget.tag,
+      posts = Container(
+        child: PaginatedPosts(
+          length: 6,
+          key: UniqueKey(),
+          neverScroll: true,
+          orderBy: "{score:desc}",
+          tag: widget.tag,
+        ),
       );
     });
   }
@@ -47,6 +53,7 @@ class _TagPopularScreenState extends State<TagPopularScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(child: posts);
+    return Container(
+        padding: EdgeInsets.all(0), margin: EdgeInsets.all(0), child: posts);
   }
 }

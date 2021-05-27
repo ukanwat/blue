@@ -27,7 +27,7 @@ class _ProfileImageCropScreenState extends State<ProfileImageCropScreen> {
         appBar: header(context,
             leadingButton: IconButton(
               icon: Icon(Icons.clear),
-              onPressed: () => Navigator.of(context),
+              onPressed: () => Navigator.of(context).pop(),
             ),
             actionButton: FlatButton(
                 onPressed: () async {
@@ -62,7 +62,15 @@ class _ProfileImageCropScreenState extends State<ProfileImageCropScreen> {
               style: TextStyle(),
             )),
         body: Container(
-          child: Crop.file(_sample, key: cropKey),
+          height: MediaQuery.of(context).size.width,
+          child: Crop.file(
+            _file,
+            key: cropKey,
+            alwaysShowGrid: false,
+            aspectRatio: 1,
+            scale: 1,
+            maximumScale: 1,
+          ),
         ));
   }
 }

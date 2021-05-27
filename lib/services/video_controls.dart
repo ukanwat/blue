@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -7,78 +6,74 @@ import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class VideoDisplay extends StatefulWidget {
-   final FlickManager flickManager;
-   final bool autoplay;
-   VideoDisplay(this.flickManager,this.autoplay);
+  final FlickManager flickManager;
+  final bool autoplay;
+  VideoDisplay(this.flickManager, this.autoplay);
 
   @override
   _VideoDisplayState createState() => _VideoDisplayState();
 }
 
 class _VideoDisplayState extends State<VideoDisplay> {
-   @override
-   Widget build(BuildContext context) {
-     return  VisibilityDetector(
-      key: ObjectKey(widget.flickManager),
-      onVisibilityChanged: (visibility) {
-        if(widget.autoplay){
-        if (visibility.visibleFraction == 0 && this.mounted) {
-          widget.flickManager.flickControlManager.autoPause();
-        } else if (visibility.visibleFraction == 1) {
-          widget.flickManager.flickControlManager.autoResume();
-        }}
-      },
-      child: Container(
-        child: FlickVideoPlayer(
-         
-          flickManager: widget.flickManager,
-          wakelockEnabledFullscreen: true,
-          wakelockEnabled: true,
-             
-flickVideoWithControls: FlickVideoWithControls(
-
-            playerLoadingFallback: Positioned.fill(
-              child: Stack(
-                children: <Widget>[
-                  Positioned.fill(
-                    child:Container(
-                      color: Colors.black,
-                    ),
-                  ),
-                  Positioned(
-                    right: 10,
-                    top: 10,
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        backgroundColor: Colors.white,
-                        strokeWidth: 4,
+  @override
+  Widget build(BuildContext context) {
+    return VisibilityDetector(
+        key: ObjectKey(widget.flickManager),
+        onVisibilityChanged: (visibility) {
+          if (widget.autoplay) {
+            if (visibility.visibleFraction == 0 && this.mounted) {
+              widget.flickManager.flickControlManager.autoPause();
+            } else if (visibility.visibleFraction == 1) {
+              widget.flickManager.flickControlManager.autoResume();
+            }
+          }
+        },
+        child: Container(
+          child: FlickVideoPlayer(
+            flickManager: widget.flickManager,
+            wakelockEnabledFullscreen: true,
+            wakelockEnabled: true,
+            flickVideoWithControls: FlickVideoWithControls(
+              playerLoadingFallback: Positioned.fill(
+                child: Stack(
+                  children: <Widget>[
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.black,
                       ),
                     ),
-                  ),
-                ],
+                    Positioned(
+                      right: 10,
+                      top: 10,
+                      child: Container(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          backgroundColor: Colors.white,
+                          strokeWidth: 4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              controls: PortraitVideoControls(
+                pauseOnTap: true,
               ),
             ),
-            controls: PortraitVideoControls(pauseOnTap: true,
+            flickVideoWithControlsFullscreen: FlickVideoWithControls(
+              playerLoadingFallback: Center(child: Icon(Icons.warning)),
+              controls: LandscapeVideoControls(),
+              iconThemeData: IconThemeData(
+                size: 40,
+                color: Colors.white,
+              ),
+              textStyle: TextStyle(fontSize: 16, color: Colors.white),
             ),
           ),
-          flickVideoWithControlsFullscreen: FlickVideoWithControls(
-
-            playerLoadingFallback: Center(
-                child: Icon(Icons.warning)),
-            controls: LandscapeVideoControls(),
-            iconThemeData: IconThemeData(
-              size: 40,
-              color: Colors.white,
-            ),
-            textStyle: TextStyle(fontSize: 16, color: Colors.white),
-          ),
-     ),)
-      );
-   }
+        ));
+  }
 }
-
 
 class LandscapeVideoControls extends StatelessWidget {
   const LandscapeVideoControls(
@@ -107,22 +102,23 @@ class LandscapeVideoControls extends StatelessWidget {
           child: FlickAutoHideChild(
             child: Column(
               children: <Widget>[
-              
-                          
                 Expanded(
                   child: Container(),
                 ),
                 Container(
-                  decoration: BoxDecoration(   color: Color.fromRGBO(0, 0, 0, 0.4),borderRadius: BorderRadius.circular(16)),
+                  decoration: BoxDecoration(
+                      color: Color.fromRGBO(0, 0, 0, 0.4),
+                      borderRadius: BorderRadius.circular(16)),
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-               margin: EdgeInsets.symmetric(horizontal: 12,vertical: 8),
+                  margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
-                       FlickAutoHideChild(
-                              child: FlickFullScreenToggle(
-                                size: 28,padding: EdgeInsets.all(4),
-                              )),
+                      FlickAutoHideChild(
+                          child: FlickFullScreenToggle(
+                        size: 28,
+                        padding: EdgeInsets.all(4),
+                      )),
                       SizedBox(
                         width: 10,
                       ),
@@ -174,9 +170,9 @@ class LandscapeVideoControls extends StatelessWidget {
                                   ..shader = RadialGradient(
                                     colors: [
                                       Colors.white,
-                                    Colors.white,
+                                      Colors.white,
                                     ],
-                                    stops: [0.0,  0.5],
+                                    stops: [0.0, 0.5],
                                     radius: 0.4,
                                   ).createShader(
                                     Rect.fromCircle(
@@ -189,7 +185,7 @@ class LandscapeVideoControls extends StatelessWidget {
                           ),
                         ),
                       ),
-                       SizedBox(
+                      SizedBox(
                         width: 10,
                       ),
                       FlickTotalDuration(
@@ -209,12 +205,10 @@ class LandscapeVideoControls extends StatelessWidget {
             ),
           ),
         ),
-       
       ],
     );
   }
 }
-
 
 class PortraitVideoControls extends StatelessWidget {
   const PortraitVideoControls({
@@ -227,7 +221,7 @@ class PortraitVideoControls extends StatelessWidget {
   Widget build(BuildContext context) {
     FlickVideoManager flickVideoManager =
         Provider.of<FlickVideoManager>(context);
-   FlickControlManager controlManager =
+    FlickControlManager controlManager =
         Provider.of<FlickControlManager>(context);
     return Container(
       child: AnimatedSwitcher(
@@ -255,102 +249,115 @@ class PortraitVideoControls extends StatelessWidget {
           key: ObjectKey(
             flickVideoManager.videoPlayerController,
           ),
-            child: FlickVideoWithControls(
-              willVideoPlayerControllerChange: false,
-              playerLoadingFallback: Positioned.fill(
-                child: Container(),
-              ),
-              controls: Container(
-                color: Colors.transparent,
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                child: IconTheme(
-                  data: IconThemeData(color: Colors.white, size: 30),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: <Widget>[
-                 
-                      Expanded(
-                        child: pauseOnTap
-                            ? FlickTogglePlayAction(
-                                child: FlickSeekVideoAction(
-                                  child: Center(child: FlickVideoBuffer()),
-                                ),
-                              )
-                            : FlickToggleSoundAction(
-                                child: FlickSeekVideoAction(
-                                  child: Center(child: FlickVideoBuffer()),
-                                ),
-                              ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                             FlickAutoHideChild(
-                            autoHide: true,
-                            showIfVideoNotInitialized: false,
-                            child: Container(
-                               decoration: BoxDecoration(
-                                borderRadius:BorderRadius.only(topLeft: Radius.circular(8),bottomLeft: Radius.circular(8)),
-                                color: Colors.black45
-                              ),
-                              child: FlickFullScreenToggle(size: 24,padding: EdgeInsets.all(1.5),)),
-                          ),
-                          SizedBox(width: 0.8,),
-                               FlickAutoHideChild(
-            showIfVideoNotInitialized: false,
-            child: Align(
-              alignment: Alignment.topRight,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.black45,
-                  borderRadius: BorderRadius.only(topRight: Radius.circular(8),bottomRight: Radius.circular(8)),
-                ),
-                child: FlickLeftDuration(),
-              ),
+          child: FlickVideoWithControls(
+            willVideoPlayerControllerChange: false,
+            playerLoadingFallback: Positioned.fill(
+              child: Container(),
             ),
-
-          ),Expanded(child: Container(),),
-                          if(flickVideoManager.isVideoEnded)
-                           FlickAutoHideChild(
-                            autoHide: true,
-                            showIfVideoNotInitialized: false,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                color: Colors.black45
+            controls: Container(
+              color: Colors.transparent,
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: IconTheme(
+                data: IconThemeData(color: Colors.white, size: 30),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: <Widget>[
+                    Expanded(
+                      child: pauseOnTap
+                          ? FlickTogglePlayAction(
+                              child: FlickSeekVideoAction(
+                                child: Center(child: FlickVideoBuffer()),
                               ),
-                              child: GestureDetector(
-                                onTap: (){
-                                  controlManager.replay();
-                                },
-                                child: Icon(Icons.replay,color: Colors.white,size: 28,)))),
-                          
-                          if(!flickVideoManager.isVideoEnded)
+                            )
+                          : FlickToggleSoundAction(
+                              child: FlickSeekVideoAction(
+                                child: Center(child: FlickVideoBuffer()),
+                              ),
+                            ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        FlickAutoHideChild(
+                          autoHide: true,
+                          showIfVideoNotInitialized: false,
+                          child: Container(
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(8),
+                                      bottomLeft: Radius.circular(8)),
+                                  color: Colors.black45),
+                              child: FlickFullScreenToggle(
+                                size: 24,
+                                padding: EdgeInsets.all(1.5),
+                              )),
+                        ),
+                        SizedBox(
+                          width: 0.8,
+                        ),
+                        FlickAutoHideChild(
+                          showIfVideoNotInitialized: false,
+                          child: Align(
+                            alignment: Alignment.topRight,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.black45,
+                                borderRadius: BorderRadius.only(
+                                    topRight: Radius.circular(8),
+                                    bottomRight: Radius.circular(8)),
+                              ),
+                              child: FlickLeftDuration(),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(),
+                        ),
+                        if (flickVideoManager.isVideoEnded)
+                          FlickAutoHideChild(
+                              autoHide: true,
+                              showIfVideoNotInitialized: false,
+                              child: Container(
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      color: Colors.black45),
+                                  child: GestureDetector(
+                                      onTap: () {
+                                        controlManager.replay();
+                                      },
+                                      child: Icon(
+                                        Icons.replay,
+                                        color: Colors.white,
+                                        size: 28,
+                                      )))),
+                        if (!flickVideoManager.isVideoEnded)
                           FlickAutoHideChild(
                             autoHide: true,
                             showIfVideoNotInitialized: false,
                             child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                color: Colors.black45
-                              ),
-                              child: FlickSoundToggle(size: 24,padding: EdgeInsets.all(1.5),)),
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    color: Colors.black45),
+                                child: FlickSoundToggle(
+                                  size: 24,
+                                  padding: EdgeInsets.all(1.5),
+                                )),
                           ),
-                       
-                        ],
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
         ),
-      
+      ),
     );
   }
 }
+
 class LandscapePlayToggle extends StatelessWidget {
   const LandscapePlayToggle({Key key}) : super(key: key);
 
@@ -381,7 +388,9 @@ class LandscapePlayToggle extends StatelessWidget {
 
     Widget child = videoManager.isVideoEnded
         ? replayWidget
-        : videoManager.isPlaying ? pauseWidget : playWidget;
+        : videoManager.isPlaying
+            ? pauseWidget
+            : playWidget;
 
     return Material(
       color: Colors.transparent,

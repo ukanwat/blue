@@ -86,14 +86,26 @@ class _ExploreScreenState extends State<ExploreScreen>
               fontFamily: 'Techna Sans Regular',
             ),
           ),
-          bottom: loading
-              ? PreferredSize(
-                  child: Container(), preferredSize: Size.fromHeight(0))
-              : PreferredSize(
-                  preferredSize: Size.fromHeight(40),
-                  child: Container(
+          leading: IconButton(
+              icon: Icon(
+                FlutterIcons.search_oct,
+              ),
+              onPressed: () {
+                Navigator.of(context).pushNamed(SearchScreen.routeName);
+              },
+              color: Theme.of(context).iconTheme.color),
+        ),
+        body: Column(
+          children: [
+            loading
+                ? Container(
+                    height: 0,
+                    color: Theme.of(context).backgroundColor,
+                  )
+                : Container(
+                    color: Theme.of(context).backgroundColor,
                     height: 40,
-                    margin:
+                    padding:
                         EdgeInsets.only(left: 8, right: 8, bottom: 6, top: 4),
                     child: TabBar(
                       onTap: (i) {
@@ -111,17 +123,11 @@ class _ExploreScreenState extends State<ExploreScreen>
                       tabs: topicTabs,
                     ),
                   ),
-                ),
-          leading: IconButton(
-              icon: Icon(
-                FlutterIcons.search_oct,
-              ),
-              onPressed: () {
-                Navigator.of(context).pushNamed(SearchScreen.routeName);
-              },
-              color: Theme.of(context).iconTheme.color),
-        ),
-        body: CategoryPostsScreen(
-            index == null || index == -1 ? 'All' : t[index], UniqueKey()));
+            Expanded(
+              child: CategoryPostsScreen(
+                  index == null || index == -1 ? 'All' : t[index], UniqueKey()),
+            ),
+          ],
+        ));
   }
 }

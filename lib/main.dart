@@ -156,6 +156,7 @@ class MyAppState extends State<MyApp> {
           return PW.Provider(
               auth: AuthService(),
               child: StreamProvider<ConnectivityStatus>(
+                initialData: ConnectivityStatus.WiFi,
                 create: (BuildContext context) =>
                     ConnectivityService().connectionStatusController.stream,
                 child: GetMaterialApp(

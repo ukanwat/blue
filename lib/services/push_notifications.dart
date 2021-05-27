@@ -42,6 +42,7 @@ class PushNotificationsManager {
 
   initMessage() {
     if (userSigningUp) {
+      getToken();
       return;
     }
     var initialzationSettingsAndroid =
@@ -114,9 +115,7 @@ class PushNotificationsManager {
 
   Future<void> getToken() async {
     await _firebaseMessaging.getToken().then((deviceToken) {
-      var token = PreferencesUpdate().getString('token');
-      print('dev token');
-      print(token);
+      PreferencesUpdate().updateString('token', deviceToken);
 
       Hasura.updateUser(token: deviceToken);
       print(deviceToken);

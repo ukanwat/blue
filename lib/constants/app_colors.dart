@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gradients/flutter_gradients.dart';
 
 class AppColors {
   static const navBar = Color.fromRGBO(10, 10, 15, 1);
@@ -17,5 +18,10 @@ class AppColors {
   Random _random = new Random();
   Color get rndColor {
     return _clrList[_random.nextInt(_clrList.length)];
+  }
+
+  Gradient get rndGradient {
+    return FlutterGradients.findByName(FlutterGradientNames
+        .values[Random().nextInt(FlutterGradientNames.values.length - 2)]);
   }
 }

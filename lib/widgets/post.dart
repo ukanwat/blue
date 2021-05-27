@@ -20,8 +20,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:hive/hive.dart';
-import 'package:kidd_video_player/kidd_video_player.dart';
-import 'package:kidd_video_player/models/layout_configs.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share/share.dart';
 import 'package:video_player/video_player.dart';
@@ -239,7 +237,7 @@ class _PostState extends State<Post> {
   bool isFollowing = false;
   GlobalKey _contentsKey = GlobalKey();
   double contentsHeight;
-  bool constraintContent = true;
+  bool constraintContent = false;
   String compactPostText;
   showOptions(BuildContext context) {
     overlayOptions = createOverlayOptions(context);
@@ -527,7 +525,9 @@ class _PostState extends State<Post> {
                     children: [
                       Expanded(
                         child: Text(
-                            '${widget.username} · ${_date(DateTime.parse(widget.time).toLocal())}',
+                            '${widget.username}'
+                            // · ${_date(DateTime.parse(widget.time).toLocal())}'
+                            ,
                             maxLines: 1,
                             overflow: TextOverflow.fade,
                             softWrap: false,
@@ -1079,37 +1079,27 @@ class _PostState extends State<Post> {
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
               if (widget.isCompact)
+                SizedBox(
+                  width: 6,
+                ),
+              if (widget.isCompact)
                 tagBarVisible
-                    ? SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              tagBarVisible = false;
-                            });
-                          },
-                          child: Icon(
-                            FlutterIcons.ios_arrow_up_ion,
-                            size: 22,
-                          ),
-                        ),
-                      )
-                    : SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: GestureDetector(
-                          onTap: () async {
-                            setState(() {
-                              tagBarVisible = true;
-                            });
-                          },
-                          child: Icon(
-                            FlutterIcons.ios_arrow_down_ion,
-                            size: 22,
-                          ),
-                        ),
-                      ),
+                    ? footerButton(FlutterIcons.ios_arrow_up_ion,
+                        Theme.of(context).iconTheme.color, () {
+                        setState(() {
+                          tagBarVisible = false;
+                        });
+                      })
+                    : footerButton(FlutterIcons.ios_arrow_down_ion,
+                        Theme.of(context).iconTheme.color, () async {
+                        setState(() {
+                          tagBarVisible = true;
+                        });
+                      }),
+              if (widget.isCompact)
+                SizedBox(
+                  width: 14,
+                ),
               isSaved
                   ? Container(
                       width: 60,
@@ -1237,45 +1227,49 @@ class _PostState extends State<Post> {
                     style: TextStyle(fontWeight: FontWeight.w500, fontSize: 19),
                   ),
                 ),
-              if (!widget.isCompact)
-                Expanded(
-                    child: (contentsHeight != null) &&
-                            (contentsHeight ==
-                                    MediaQuery.of(context).size.height * 0.8 ||
-                                contentsHeight >
-                                    MediaQuery.of(context).size.height * 0.8)
-                        ? Center(
-                            child: SizedBox(
-                              height: 28,
-                              width: 30,
-                              child: GestureDetector(
-                                onTap: () {
-                                  if (!constraintContent) {
-                                    setState(() {
-                                      constraintContent = true;
-                                      getContentSize();
-                                    });
-                                  } else {
-                                    setState(() {
-                                      constraintContent = false;
-                                      getContentSize();
-                                    });
-                                  }
-                                },
-                                child: Padding(
-                                  padding: EdgeInsets.only(left: 0),
-                                  child: CustomPaint(
-                                    //                       <-- CustomPaint widget
-                                    size: Size(30, 30),
-                                    painter: ExpandIconPainter(
-                                        constraintContent ? false : true,
-                                        context),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                        : Container()),
+              // if (!widget.isCompact)
+              Expanded(
+                  child:
+                      //  (contentsHeight != null) &&
+                      //         (contentsHeight ==
+                      //                 MediaQuery.of(context).size.height * 0.8 ||
+                      //             contentsHeight >
+                      //                 MediaQuery.of(context).size.height * 0.8)
+                      //     ?
+                      // Center(
+                      //     child: SizedBox(
+                      //       height: 28,
+                      //       width: 30,
+                      //       child: GestureDetector(
+                      //         onTap: () {
+                      //           if (!constraintContent) {
+                      //             setState(() {
+                      //               constraintContent = true;
+                      //               getContentSize();
+                      //             });
+                      //           } else {
+                      //             setState(() {
+                      //               constraintContent = false;
+                      //               getContentSize();
+                      //             });
+                      //           }
+                      //         },
+                      //         child: Padding(
+                      //           padding: EdgeInsets.only(left: 0),
+                      //           child: CustomPaint(
+                      //             //                       <-- CustomPaint widget
+                      //             size: Size(30, 30),
+                      //             painter: ExpandIconPainter(
+                      //                 constraintContent ? false : true,
+                      //                 context),
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ),
+                      //   )
+
+                      // :
+                      Container()),
               Padding(
                 padding: const EdgeInsets.only(right: 5),
                 child: Material(

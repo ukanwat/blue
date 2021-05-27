@@ -70,14 +70,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   int followerCount = 0;
   int followingCount = 0;
   List<dynamic> posts = [];
-  bool headerLoading = true;
-  bool hasMorePosts = true; // flag for more products available or not
-  bool hasMoreReposts = true; // flag for more products available or not
   int documentLimit = 10; // documents to be fetched per request
-  List<dynamic> postDocSnapshots = [];
-  List<dynamic> repostDocSnapshots = [];
-  DocumentSnapshot lastPostDocument;
-  DocumentSnapshot lastRepostDocument;
+
   String sortBy = 'Recent';
   bool sortDropDown = false;
   ScrollController _controller = ScrollController();
@@ -85,6 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   bool loaded = false;
   int lastDoc = 0;
   bool empty = false;
+  bool _compact = false;
   var future;
   @override
   void didChangeDependencies() {
@@ -140,13 +135,13 @@ class _ProfileScreenState extends State<ProfileScreen>
         posts = _snapshot
             .map((doc) => Post.fromDocument(
                   doc,
-                  isCompact: false,
+                  isCompact: _compact,
                   commentsShown: false,
                 ))
             .toList();
       });
 
-      if (_snapshot.length == 0) {
+      if (_snapshot.length == 0 && lastDoc == 0) {
         setState(() {
           empty = true;
           loaded = true;
@@ -167,7 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       _snapshot.forEach((doc) {
         posts.add(Post.fromDocument(
           doc,
-          isCompact: false,
+          isCompact: _compact,
           commentsShown: false,
         ));
       });
@@ -362,21 +357,37 @@ class _ProfileScreenState extends State<ProfileScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Container(
-                  color: Theme.of(context).backgroundColor,
-                  child: user.headerUrl == null
-                      ? Container(
-                          height: 150,
-                          width: double.infinity,
-                          color: Theme.of(context).cardColor,
-                        )
-                      : CachedNetworkImage(
-                          imageUrl: user.headerUrl,
-                          fit: BoxFit.cover,
-                          height: 150,
-                        ),
-                  height: 150,
-                  width: double.infinity,
+                Stack(
+                  children: [
+                    Container(
+                      color: Theme.of(context).backgroundColor,
+                      child: user.headerUrl == null
+                          ? Container(
+                              height: 150,
+                              width: double.infinity,
+                              color: Theme.of(context).cardColor,
+                            )
+                          : CachedNetworkImage(
+                              imageUrl: user.headerUrl,
+                              fit: BoxFit.cover,
+                              height: 150,
+                            ),
+                      height: 150,
+                      width: double.infinity,
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment(0, 0.3),
+                              colors: [
+                            Colors.black54.withOpacity(0.2),
+                            Colors.transparent
+                          ])),
+                      height: 150,
+                      width: double.infinity,
+                    )
+                  ],
                 ),
                 ListTile(
                     title: Padding(
@@ -672,7 +683,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     begin: Alignment.topCenter,
                                     end: Alignment.bottomCenter,
                                     colors: [
-                                  Colors.black54.withOpacity(0.7),
+                                  Colors.black54.withOpacity(0.5),
                                   Colors.transparent
                                 ])),
                             padding: EdgeInsets.symmetric(horizontal: 10.0),
@@ -968,6 +979,184 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         }
                                       },
                                     ),
+                                    SizedBox(
+                                      width: 10,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _compact = false;
+                                              loaded = false;
+                                              lastDoc = 0;
+                                              empty = false;
+                                              posts = [];
+                                            });
+                                            addPosts(sort, changing: true);
+                                          },
+                                          child: Container(
+                                            height: 24,
+                                            width: 24,
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 4, vertical: 4),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              // color: Theme.of(context)
+                                              //     .iconTheme
+                                              //     .color
+                                              //     .withOpacity(
+                                              //         _compact ? 1 : 0.7)
+                                              children: [
+                                                Container(
+                                                  height: 6,
+                                                  decoration: BoxDecoration(
+                                                      color: Theme.of(context)
+                                                          .iconTheme
+                                                          .color
+                                                          .withOpacity(!_compact
+                                                              ? 1
+                                                              : 0.7),
+                                                      borderRadius:
+                                                          BorderRadius.only(
+                                                              topLeft: Radius
+                                                                  .circular(3),
+                                                              topRight: Radius
+                                                                  .circular(3),
+                                                              bottomLeft: Radius
+                                                                  .circular(1),
+                                                              bottomRight:
+                                                                  Radius.circular(
+                                                                      1))),
+                                                ),
+                                                Container(
+                                                  height: 6,
+                                                  decoration: BoxDecoration(
+                                                      color: Theme.of(context)
+                                                          .iconTheme
+                                                          .color
+                                                          .withOpacity(!_compact
+                                                              ? 1
+                                                              : 0.7),
+                                                      borderRadius:
+                                                          BorderRadius.only(
+                                                              topLeft: Radius
+                                                                  .circular(1),
+                                                              topRight: Radius
+                                                                  .circular(1),
+                                                              bottomLeft: Radius
+                                                                  .circular(3),
+                                                              bottomRight:
+                                                                  Radius.circular(
+                                                                      3))),
+                                                ),
+                                              ],
+                                            ),
+                                            decoration: BoxDecoration(
+                                                border: Border.all(
+                                                    width: 1,
+                                                    color: _compact
+                                                        ? Theme.of(context)
+                                                            .backgroundColor
+                                                        : Colors.grey
+                                                            .withOpacity(0.4)),
+                                                color: _compact
+                                                    ? Theme.of(context)
+                                                        .backgroundColor
+                                                    : Theme.of(context)
+                                                        .canvasColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(5)),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 3,
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _compact = true;
+                                              loaded = false;
+                                              lastDoc = 0;
+                                              empty = false;
+                                              posts = [];
+                                            });
+                                            addPosts(sort, changing: true);
+                                          },
+                                          child: Container(
+                                            height: 24,
+                                            width: 24,
+                                            padding: EdgeInsets.all(4),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Container(
+                                                  height: 3.4,
+                                                  decoration: BoxDecoration(
+                                                      color: Theme.of(context)
+                                                          .iconTheme
+                                                          .color
+                                                          .withOpacity(_compact
+                                                              ? 1
+                                                              : 0.7),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              1)),
+                                                ),
+                                                Container(
+                                                  height: 3.4,
+                                                  decoration: BoxDecoration(
+                                                      color: Theme.of(context)
+                                                          .iconTheme
+                                                          .color
+                                                          .withOpacity(_compact
+                                                              ? 1
+                                                              : 0.7),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              1)),
+                                                ),
+                                                Container(
+                                                  height: 3.4,
+                                                  decoration: BoxDecoration(
+                                                      color: Theme.of(context)
+                                                          .iconTheme
+                                                          .color
+                                                          .withOpacity(_compact
+                                                              ? 1
+                                                              : 0.7),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              1)),
+                                                ),
+                                              ],
+                                            ),
+                                            decoration: BoxDecoration(
+                                                border: Border.all(
+                                                    width: 1,
+                                                    color: !_compact
+                                                        ? Theme.of(context)
+                                                            .backgroundColor
+                                                        : Colors.grey
+                                                            .withOpacity(0.4)),
+                                                color: !_compact
+                                                    ? Theme.of(context)
+                                                        .backgroundColor
+                                                    : Theme.of(context)
+                                                        .canvasColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(5)),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                     Expanded(child: Container()),
                                     buildProfileButton()
                                   ],
@@ -976,13 +1165,23 @@ class _ProfileScreenState extends State<ProfileScreen>
                               button = Container(
                                   height: 68.0,
                                   padding:
-                                      EdgeInsets.symmetric(horizontal: 15.0),
+                                      EdgeInsets.symmetric(horizontal: 0.0),
                                   child: Center(
                                     child: Row(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Icon(
+                                            FluentIcons.chevron_left_24_filled,
+                                            size: 26,
+                                            color: Colors.blue,
+                                          ),
+                                        ),
                                         Center(
                                           child: CircleAvatar(
                                             maxRadius: 24,
