@@ -132,12 +132,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Material(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(5),
                   color: dark
                       ? Theme.of(context).canvasColor
                       : Theme.of(context).backgroundColor,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(5),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
@@ -167,12 +167,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Material(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(5),
                   color: dark
                       ? Theme.of(context).canvasColor
                       : Theme.of(context).backgroundColor,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(5),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
@@ -201,12 +201,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Material(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(5),
                   color: dark
                       ? Theme.of(context).canvasColor
                       : Theme.of(context).backgroundColor,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(5),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
@@ -237,12 +237,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Material(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(5),
                   color: dark
                       ? Theme.of(context).canvasColor
                       : Theme.of(context).backgroundColor,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(5),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
@@ -306,12 +306,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Material(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(5),
                   color: dark
                       ? Theme.of(context).canvasColor
                       : Theme.of(context).backgroundColor,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(5),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [

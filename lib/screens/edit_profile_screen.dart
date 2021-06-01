@@ -131,6 +131,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           fileName: "avatar_$avatarId.jpg");
       profilePictureUrl = imageDownloadUrl;
       avatarUrl = avatarDownloadUrl;
+
+      if (headerImage != null) {
+        String headerId = Uuid().v4();
+        headerUrl = await FileStorage.uploadImage(
+          'profile',
+          headerImage,
+          fileName: "header_$headerId.jpg",
+        );
+      }
       if (headerUrl == null) {
         await Hasura.updateUser(
             name: displayNameController.text,

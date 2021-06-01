@@ -18,8 +18,9 @@ class PrivacyPolicyScreen extends StatefulWidget {
 class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
   @override
   Widget build(BuildContext context) {
+    print('dd');
     return Scaffold(
-        appBar: settingsHeader(context, 'Terms Of Use'),
+        appBar: settingsHeader(context, 'Privacy Policy'),
         body: WebViewPlus(
           onWebViewCreated: (controller) {
             controller.loadUrl('https://www.stark.social/privacy-policy');

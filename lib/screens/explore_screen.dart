@@ -29,7 +29,11 @@ class _ExploreScreenState extends State<ExploreScreen>
   List<Tab> topicTabs = [
     Tab(
         child: Text('Everything',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)))
+            style: TextStyle(
+              fontFamily: 'Stark Sans',
+              fontWeight: FontWeight.w500,
+              fontSize: 16,
+            )))
   ];
   bool loading = true;
   TabController tabController;
@@ -62,7 +66,10 @@ class _ExploreScreenState extends State<ExploreScreen>
     t.forEach((topic) {
       topicTabs.add(Tab(
           child: Text(topic,
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16))));
+              style: TextStyle(
+                  fontFamily: 'Stark Sans',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16))));
     });
     setState(() {
       tabController = new TabController(length: t.length + 1, vsync: this);
@@ -115,17 +122,19 @@ class _ExploreScreenState extends State<ExploreScreen>
                       },
                       indicatorWeight: 2.5,
                       indicatorPadding:
-                          EdgeInsets.symmetric(vertical: 1, horizontal: 15),
+                          EdgeInsets.symmetric(vertical: 1, horizontal: 10),
                       isScrollable: true,
                       controller: tabController,
                       indicatorColor: Colors.deepOrange,
-                      labelPadding: EdgeInsets.symmetric(horizontal: 10),
+                      labelPadding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                       tabs: topicTabs,
                     ),
                   ),
             Expanded(
               child: CategoryPostsScreen(
-                  index == null || index == -1 ? 'All' : t[index], UniqueKey()),
+                  index == null || index == -1 ? 'All' : t[index],
+                  ValueKey(index == null || index == -1 ? 'All' : t[index])),
             ),
           ],
         ));

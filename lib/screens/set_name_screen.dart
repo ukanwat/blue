@@ -97,7 +97,7 @@ class _SetNameScreenState extends State<SetNameScreen> {
                                     controller: usernameController,
                                     inputFormatters: [
                                       new FilteringTextInputFormatter.allow(
-                                          RegExp("[a-z0-9.]")),
+                                          RegExp("[a-z0-9._]")),
                                     ],
                                     style: TextStyle(color: Colors.black),
                                     decoration: InputDecoration(

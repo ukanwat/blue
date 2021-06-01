@@ -4,6 +4,7 @@ import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/progress.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hasura_connect/hasura_connect.dart';
 // import 'package:hive_cache_interceptor/hive_cache_interceptor.dart';
@@ -187,7 +188,7 @@ class Hasura {
     }
 
     if (deleteToken == true) {
-      fields = fields + 'token: null,';
+      fields = fields + 'token: "null",';
     }
     print(fields);
     String _doc =
@@ -257,6 +258,8 @@ class Hasura {
       label
       tag_id
       image_url
+      post_count
+      follower_count
     }
   }
 }
@@ -329,10 +332,20 @@ class Hasura {
   }
 
   static insertPost(List contents, String title,
-      {Map<int, String> tags, String topicName, String thumbUrl}) async {
+      {Map<int, String> tags,
+      String topicName,
+      String thumbUrl,
+      String customUserId}) async {
     if (jwtToken == null) return;
-    String uid = AuthService().getCurrentUID();
-    var userId = await getUserId(uid: uid);
+    var userId = await getUserId();
+
+    if (!kReleaseMode) {
+      if (customUserId != null && customUserId != '') {
+        try {
+          userId = int.parse(customUserId);
+        } catch (e) {}
+      }
+    }
     print(contents);
     String tagsString = '';
     if (tags != null) {
@@ -348,14 +361,14 @@ class Hasura {
     }
     String _doc = tags == null
         ? """mutation insertData  {
-  insert_posts_one(object: {contents: $contents, owner_id: $userId, title: "$title", uid: "$uid",$topic $thumb}
+  insert_posts_one(object: {contents: $contents, owner_id: $userId, title: "$title", $topic $thumb}
         ) {
     post_id
   }
 }
 """
         : """mutation{
-  insert_posts_one(object: {contents: $contents, owner_id: $userId, title: "$title", uid: "$uid",$topic post_tags: {data: [$tagsString]}, $thumb}) {
+  insert_posts_one(object: {contents: $contents, owner_id: $userId, title: "$title", $topic post_tags: {data: [$tagsString]}, $thumb}) {
     post_id
   }
 }
@@ -607,6 +620,8 @@ class Hasura {
     tag
     image_url
     label
+    follower_count
+    post_count
   }
 }""");
     return doc['data']['tags'][0];
@@ -793,6 +808,10 @@ class Hasura {
     if (userId == null) {
       userId = await getUserId();
     }
+    if (data != null) {
+      data = data.replaceAll("\n", "\\n");
+    }
+    print(data);
     String doc = """mutation{
   insert_messages_one(object:{data:"$data",sender_id:$userId,conv_id:$convId,type:"$type",sender_name: "${Boxes.currentUserBox.get("name")}" }){created_at}
 }""";
@@ -849,12 +868,16 @@ class Hasura {
     return doc['data']['conversations'][0]['conv_id'];
   }
 
-  static getMessages(int convId) async {
-    if (convId == null) {
-      convId = 0;
-    }
-    print("""query{
-  messages(where:{conv_id:{_eq:$convId}}){
+  static getMessages(
+    int convId,
+  ) async {
+    int userId = await getUserId();
+    String doc = """query{
+  messages(where: {_and: [{conv_id: {_eq: $convId}}, 
+    {_or: [{sender_id: {_neq: $userId}}, 
+    {_or:[{deleted_by_sender:{_is_null:true}},{deleted_by_sender:{_eq:false}}]}]},
+    {_or: [{sender_id: {_eq: $userId}},
+    {_or:[{deleted_by_sender:{_is_null:true}},{deleted_by_sender:{_eq:false}}]}]}]}) {
     created_at
     data
     msg_id
@@ -863,18 +886,9 @@ class Hasura {
     deleted_by_sender
   }
 }
-""");
-    var data = await hasuraConnect.query("""query{
-  messages(where:{conv_id:{_eq:$convId}}){
-    created_at
-    data
-    msg_id
-    sender_id
-    type
-    deleted_by_sender
-  }
-}
-""");
+
+""";
+    var data = await hasuraConnect.query(doc);
     return data['data']['messages'];
   }
 
@@ -906,7 +920,7 @@ class Hasura {
     int userId = await getUserId();
 
     var data = await hasuraConnect.query("""query{
-  notifications(where:{user_id:{_eq:$userId}},limit:$limit,offset:$offset){
+  notifications(where:{_and:[{user_id:{_eq:$userId}}, {notify:{_eq:true}}]},limit:$limit,offset:$offset){
     created_at
     user_id
     notify
@@ -993,9 +1007,10 @@ query{
 
   static blockUser(int peerId) async {
     int id = await getUserId();
-
-    hasuraConnect.query("""mutation{
-  insert_user_blocks_one(object:{user_id:$id,blocked_user_id:$peerId}){user_id
+    hasuraConnect.mutation("""
+    mutation{
+  insert_user_blocks(objects:[{user_id:$id,blocked_user_id:$peerId}]){
+    affected_rows
   }
 }""");
   }

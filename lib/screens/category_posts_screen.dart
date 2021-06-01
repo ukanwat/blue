@@ -1,5 +1,6 @@
 // Flutter imports:
 import 'package:blue/services/hasura.dart';
+import 'package:blue/services/post_service.dart';
 import 'package:blue/widgets/loadmore_widget.dart';
 import 'package:blue/widgets/posts_section.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,8 @@ class CategoryPostsScreen extends StatefulWidget {
   _CategoryPostsScreenState createState() => _CategoryPostsScreenState();
 }
 
-class _CategoryPostsScreenState extends State<CategoryPostsScreen> {
+class _CategoryPostsScreenState extends State<CategoryPostsScreen>
+    with AutomaticKeepAliveClientMixin<CategoryPostsScreen> {
   List<Post> posts = [];
   bool loading = true;
   bool blank = false;
@@ -31,12 +33,7 @@ class _CategoryPostsScreenState extends State<CategoryPostsScreen> {
   Future refreshPosts() async {
     setState(() {
       if (widget.name == 'All')
-        compactPosts = PaginatedPosts(
-          length: 8,
-          isCompact: true,
-          key: UniqueKey(),
-          orderBy: '{score:desc}',
-        );
+        compactPosts = EverythingPostsScreen(UniqueKey());
       else
         compactPosts = PaginatedPosts(
           length: 8,
@@ -51,7 +48,7 @@ class _CategoryPostsScreenState extends State<CategoryPostsScreen> {
   @override
   void initState() {
     if (widget.name == 'All') {
-      compactPosts = EverythingPostsScreen();
+      compactPosts = EverythingPostsScreen(UniqueKey());
     } else
       compactPosts = PaginatedPosts(
         length: 8,
@@ -63,8 +60,10 @@ class _CategoryPostsScreenState extends State<CategoryPostsScreen> {
     super.initState();
   }
 
+  bool get wantKeepAlive => true;
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Container(
       color: Theme.of(context).backgroundColor,
       child: RefreshIndicator(
@@ -81,23 +80,46 @@ class _CategoryPostsScreenState extends State<CategoryPostsScreen> {
 }
 
 class EverythingPostsScreen extends StatefulWidget {
+  EverythingPostsScreen(Key key) : super(key: key);
   @override
   _EverythingPostsScreenState createState() => _EverythingPostsScreenState();
 }
 
-class _EverythingPostsScreenState extends State<EverythingPostsScreen> {
-  dynamic _items = [];
+class _EverythingPostsScreenState extends State<EverythingPostsScreen>
+    with AutomaticKeepAliveClientMixin<EverythingPostsScreen> {
+  List<Widget> _items = [];
   bool loaded = false;
   int offset = 0;
   bool empty = false;
   List popTags = [];
-  int length = 8;
+  int length = 50;
   bool loading = false;
-  // ScrollController _scrollController = ScrollController();
+
+  PostService pS;
+  Future fn(int offSet) async {
+    dynamic _snapshot = await Hasura.getPosts(
+      length,
+      offSet,
+      "{created_at:desc}",
+    );
+
+    return _snapshot;
+  }
+
+  load(bool loaded) {
+    setState(() {
+      loaded = true;
+    });
+  }
+
+  transform(dynamic doc) {
+    return doc;
+  }
+
   double pos = 0;
   @override
   void initState() {
-    addItems();
+    pS = PostService(fn, transform, true);
     getPopTags();
     super.initState();
   }
@@ -110,54 +132,42 @@ class _EverythingPostsScreenState extends State<EverythingPostsScreen> {
   }
 
   addItems() async {
-    if (loaded == true) return;
-    if (loading == true) return;
+    if (loading == true) {
+      return;
+    }
     loading = true;
-
-    var _snapshot;
-
-    _snapshot = await Hasura.getPosts(
-      length,
-      offset,
-      "{score:desc}",
-    );
-
-    _snapshot.forEach((doc) {
-      _items.add(Post.fromDocument(
-        doc,
-        isCompact: true,
-      ));
+    List<Post> _posts = await pS.getPosts(8);
+    setState(() {
+      _items = _items + _posts;
     });
-    if (popTags != null && popTags != [] && popTags.length != 0) {
+
+    if (popTags != null &&
+        popTags != [] &&
+        popTags.length != 0 &&
+        _items.length != 0) {
       print(popTags);
-      _items.add(PostsSection(popTags[0]['tag'], 'Top'));
+      _items.add(Container(child: PostsSection(popTags[0]['tag'], 'Top')));
       popTags.removeAt(0);
     }
 
-    if (_snapshot.length < length) {
-      setState(() {
-        loaded = true;
-      });
-      return;
-    }
-    offset = offset + _snapshot.length;
     loading = false;
   }
 
+  bool get wantKeepAlive => true;
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return empty
         ? emptyState(context, "Nothing Here!", 'none')
         : Container(
             color: Theme.of(context).backgroundColor,
             child: LoadMore(
-              isFinish: loaded,
+              isFinish: pS.getLoaded,
               onLoadMore: () async {
                 await addItems();
                 return true;
               },
               child: ListView.builder(
-                cacheExtent: 10,
                 padding: EdgeInsets.only(bottom: 50),
                 physics: AlwaysScrollableScrollPhysics(),
                 itemCount: _items.length,

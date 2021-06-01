@@ -8,6 +8,7 @@ import 'dart:ui';
 import 'package:blue/widgets/banner_dialog.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -113,10 +114,11 @@ class _PostScreenState extends State<PostScreen> {
     File _cameraImage;
     var pickedFile = await ImagePicker.pickImage(
         source: ImageSource.camera,
-        maxHeight: 720,
-        maxWidth: 720,
+        maxHeight: 576,
+        maxWidth: 576,
         imageQuality: 75);
     _cameraImage = File(pickedFile.path);
+
     addImageContent(_cameraImage);
   }
 
@@ -155,8 +157,8 @@ class _PostScreenState extends State<PostScreen> {
     File _galleryImage;
     var pickedFile = await ImagePicker.pickImage(
         source: ImageSource.gallery,
-        maxHeight: 720,
-        maxWidth: 720,
+        maxHeight: 576,
+        maxWidth: 576,
         imageQuality: 75);
     _galleryImage = File(pickedFile.path);
     addImageContent(_galleryImage);
@@ -164,15 +166,15 @@ class _PostScreenState extends State<PostScreen> {
 
   handleTakeVideo() async {
     File _cameraVideo;
-    var picker = ImagePicker();
     var pickedFile = await ImagePicker.pickVideo(
-        source: ImageSource.camera, maxDuration: Duration(minutes: 2));
+      source: ImageSource.camera,
+      maxDuration: Duration(minutes: 2),
+    );
     _cameraVideo = File(pickedFile.path);
     addVideoContent(_cameraVideo);
   }
 
   addVideoContent(File _video) {
-    print('dXXXXX');
     VideoPlayerController _vidController =
         new VideoPlayerController.file(_video);
     print(_video.path);
@@ -275,7 +277,7 @@ class _PostScreenState extends State<PostScreen> {
     final path = tempDir.path;
     final Im.Image imageFile = Im.decodeImage(file.readAsBytesSync());
     final compressedImageFile = File('$path/img_$imageId.jpg')
-      ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
+      ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 30));
     return compressedImageFile;
   }
 
@@ -330,8 +332,13 @@ class _PostScreenState extends State<PostScreen> {
       tags = null;
     }
     await Hasura.insertPost(customContents, title,
-        tags: tags, topicName: topicName, thumbUrl: thumbUrl);
+        tags: tags,
+        topicName: topicName,
+        thumbUrl: thumbUrl,
+        customUserId: customUserIdController.text);
   }
+
+  final TextEditingController customUserIdController = TextEditingController();
 
   String thumbUrl;
   ThumbContent _thumbContent = ThumbContent.none;
@@ -377,7 +384,7 @@ class _PostScreenState extends State<PostScreen> {
 
         MediaInfo mediaInfo = await VideoCompress.compressVideo(
           contentsData[i]['content'].path,
-          quality: VideoQuality.LowQuality,
+          quality: VideoQuality.MediumQuality,
           deleteOrigin: false, // It's false by default
           frameRate: 24,
           includeAudio: true,
@@ -432,7 +439,8 @@ class _PostScreenState extends State<PostScreen> {
       final tempDir = await getTemporaryDirectory();
       final path = tempDir.path;
       Im.Image imageFile = Im.decodeImage(thumbImg.readAsBytesSync());
-      imageFile = Im.copyResize(imageFile, width: 270, height: 270);
+      imageFile = Im.copyResizeCropSquare(imageFile, 270);
+      // copyResize(imageFile, width: 270, height: 270,);
       final compressedImageFile = File('$path/img_$id.jpg')
         ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
 
@@ -576,7 +584,7 @@ class _PostScreenState extends State<PostScreen> {
     });
     Response response;
     bool errorOccured = false;
-    _url = linkController.text.toLowerCase().trim();
+    _url = linkController.text.toLowerCase().replaceAll(new RegExp(r"\s+"), "");
     if (!(_url.startsWith(
           'http://',
         ) ||
@@ -585,6 +593,8 @@ class _PostScreenState extends State<PostScreen> {
         ))) {
       _url = 'https://$_url';
     }
+
+    print(_url);
     try {
       response = await head(Uri.parse(_url));
     } catch (error) {
@@ -1166,6 +1176,26 @@ class _PostScreenState extends State<PostScreen> {
                     ),
                   ),
                 ),
+                if (!kReleaseMode)
+                  Container(
+                    width: 50,
+                    child: TextField(
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                      maxLines: 1,
+                      minLines: 1,
+                      controller: customUserIdController,
+                      decoration: InputDecoration(
+                        hintText: "id",
+                        hintStyle: TextStyle(
+                            color: Theme.of(context)
+                                .iconTheme
+                                .color
+                                .withOpacity(0.8)),
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  )
               ],
             ),
             Divider(
@@ -1258,8 +1288,9 @@ Repeatedly posting the same content, posting something incomprehensible (like ju
                         child: Text(
                           'Read Community Guidelines',
                           style: TextStyle(
+                              fontFamily: 'Stark Sans',
                               color: Colors.blue,
-                              fontWeight: FontWeight.w400,
+                              fontWeight: FontWeight.w300,
                               fontSize: 11),
                         ),
                       ),
@@ -1426,6 +1457,7 @@ typedef TextLengthCallback = void Function();
 class TextDisplayWidget extends StatefulWidget {
   TextDisplayWidget(this.textController, this.textFocusNode, this.onTextSelect);
   final TextEditingController textController;
+
   final FocusNode textFocusNode;
   final TextLengthCallback onTextSelect;
   @override

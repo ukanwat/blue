@@ -11,7 +11,7 @@ description: A new Flutter project.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.8+9
+version: 1.0.11+12
 
 environment:
   sdk: ">=2.9.0 <3.0.0"
@@ -93,9 +93,12 @@ dependencies:
   image_crop: ^0.4.0
   scrollable_positioned_list: ^0.2.0-nullsafety.0
   widgets_visibility_provider: ^3.0.1
+  youtube_player_flutter: ^8.0.0
+  # firebase_app_check: ^0.0.1
   # flutter_facebook_auth: ^3.3.2
   # google_mobile_ads: ^0.12.1+1
   # firebase_analytics: 
+  connectivity_plus: ^1.0.1
   logger: ^1.0.0
   flutter_point_tab_bar: ^0.2.0
   # The following adds the Cupertino Icons font to your application.
@@ -205,6 +208,20 @@ flutter:
     - family: Lexend Deca
       fonts:
         - asset: assets/fonts/LexendDeca-Regular.ttf
+    - family: Stark Sans
+      fonts:
+        - asset: assets/fonts/sans/SansBlack.ttf
+          weight: 800
+        - asset: assets/fonts/sans/SansBold.ttf
+          weight: 600
+        - asset: assets/fonts/sans/SansLight.ttf
+          weight: 300
+        - asset: assets/fonts/sans/SansMedium.ttf
+          weight: 500
+        - asset: assets/fonts/sans/SansRegular.ttf
+          weight: 400
+        - asset: assets/fonts/sans/SansThin.ttf
+          weight: 200
   #   - family: Trajan Pro
   #     fonts:
   #       - asset: fonts/TrajanPro.ttf

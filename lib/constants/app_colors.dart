@@ -13,7 +13,13 @@ class AppColors {
     Color(0xFFD2103A),
     Color(0xFF027BCE),
     Color(0xFF8338ec),
-    Color(0xFF52b788)
+    Color(0xFF52b788),
+    Colors.amber,
+    Colors.amberAccent,
+    Colors.blue,
+    Colors.blueGrey,
+    Colors.cyan,
+    Colors.yellowAccent
   ];
   Random _random = new Random();
   Color get rndColor {

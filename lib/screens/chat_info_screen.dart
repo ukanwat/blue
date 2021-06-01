@@ -129,7 +129,7 @@ isMuted = data['muted'];
                       width: 1),
                 )),
               ),
-          settingsActionTile(context, 'Report', () {
+          settingsActionTile(context, 'Report', () { 
           showDialog(context: context,builder: (context) {
             return UserReportDialog(peer: peer,);
           },);

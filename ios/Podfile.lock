@@ -235,6 +235,9 @@ PODS:
   - connectivity (0.0.1):
     - Flutter
     - Reachability
+  - connectivity_plus (0.0.1):
+    - Flutter
+    - Reachability
   - device_info (0.0.1):
     - Flutter
   - FBSDKCoreKit (9.3.0):
@@ -386,6 +389,13 @@ PODS:
     - Flutter
   - flutter_email_sender (0.0.1):
     - Flutter
+  - flutter_inappwebview (0.0.1):
+    - Flutter
+    - flutter_inappwebview/Core (= 0.0.1)
+    - OrderedSet (~> 5.0)
+  - flutter_inappwebview/Core (0.0.1):
+    - Flutter
+    - OrderedSet (~> 5.0)
   - flutter_local_notifications (0.0.1):
     - Flutter
   - FMDB (2.7.5):
@@ -488,6 +498,7 @@ PODS:
     - nanopb/encode (= 2.30908.0)
   - nanopb/decode (2.30908.0)
   - nanopb/encode (2.30908.0)
+  - OrderedSet (5.0.0)
   - package_info (0.0.1):
     - Flutter
   - path_provider (0.0.1):
@@ -518,6 +529,7 @@ PODS:
 DEPENDENCIES:
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
   - connectivity (from `.symlinks/plugins/connectivity/ios`)
+  - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - device_info (from `.symlinks/plugins/device_info/ios`)
   - FBSDKLoginKit
   - Firebase/Analytics
@@ -532,6 +544,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_clipboard_manager (from `.symlinks/plugins/flutter_clipboard_manager/ios`)
   - flutter_email_sender (from `.symlinks/plugins/flutter_email_sender/ios`)
+  - flutter_inappwebview (from `.symlinks/plugins/flutter_inappwebview/ios`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - google_sign_in (from `.symlinks/plugins/google_sign_in/ios`)
   - image_crop (from `.symlinks/plugins/image_crop/ios`)
@@ -585,6 +598,7 @@ SPEC REPOS:
     - leveldb-library
     - libwebp
     - nanopb
+    - OrderedSet
     - PromisesObjC
     - Reachability
 
@@ -593,6 +607,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/cloud_firestore/ios"
   connectivity:
     :path: ".symlinks/plugins/connectivity/ios"
+  connectivity_plus:
+    :path: ".symlinks/plugins/connectivity_plus/ios"
   device_info:
     :path: ".symlinks/plugins/device_info/ios"
   firebase_auth:
@@ -615,6 +631,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_clipboard_manager/ios"
   flutter_email_sender:
     :path: ".symlinks/plugins/flutter_email_sender/ios"
+  flutter_inappwebview:
+    :path: ".symlinks/plugins/flutter_inappwebview/ios"
   flutter_local_notifications:
     :path: ".symlinks/plugins/flutter_local_notifications/ios"
   google_sign_in:
@@ -661,6 +679,7 @@ SPEC CHECKSUMS:
   BSImageView: a149459433a2687157d034c78e059d30ac7f2544
   cloud_firestore: 8ead368e38b40bb2a4c97458b7b99272399f2214
   connectivity: c4130b2985d4ef6fd26f9702e886bd5260681467
+  connectivity_plus: f5e5e0b894ec1187bfab9816d6c2f034da8d46da
   device_info: d7d233b645a32c40dfdc212de5cf646ca482f175
   FBSDKCoreKit: 0d1ae58388a458b8222f72025804cdc84eb5d0c3
   FBSDKLoginKit: aea68df6121c5e165ccae2fabfdc83c4644ee40f
@@ -686,6 +705,7 @@ SPEC CHECKSUMS:
   Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
   flutter_clipboard_manager: f73e0f01e441d23a8017d1782e642cf008dad380
   flutter_email_sender: f787522d0e82f50e5766c1213dbffff22fdcf009
+  flutter_inappwebview: bfd58618f49dc62f2676de690fc6dcda1d6c3721
   flutter_local_notifications: 0c0b1ae97e741e1521e4c1629a459d04b9aec743
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   google_sign_in: 6bd214b9c154f881422f5fe27b66aaa7bbd580cc
@@ -705,6 +725,7 @@ SPEC CHECKSUMS:
   libwebp: e90b9c01d99205d03b6bb8f2c8c415e5a4ef66f0
   multi_image_picker: 6dfd22d7e6441a1cb06f6876fe8cc5f32f7f6610
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
+  OrderedSet: aaeb196f7fef5a9edf55d89760da9176ad40b93c
   package_info: 873975fc26034f0b863a300ad47e7f1ac6c7ec62
   path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
   PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
@@ -719,6 +740,6 @@ SPEC CHECKSUMS:
   webview_flutter: 9f491a9b5a66f2573946a389b2677987b0ff8c0b
   wifi_info_flutter: 55d4c2469034f5b5c38063ccefa62f708a503a2b
 
-PODFILE CHECKSUM: ec64dae7c3941ecf8d3acae70f8d7a2182993788
+PODFILE CHECKSUM: 15e2634d77c7d83fd33e5b397189538fe6e95326
 
 COCOAPODS: 1.10.1

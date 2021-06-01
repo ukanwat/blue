@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -74,8 +75,11 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: Center(
                         child: Text(
                       'Top',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        fontFamily: "Stark Sans",
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18,
+                      ),
                     )),
                   ),
                   Container(
@@ -84,7 +88,10 @@ class _SearchScreenState extends State<SearchScreen> {
                           child: Text(
                         'People',
                         style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w700),
+                          fontSize: 18,
+                          fontFamily: "Stark Sans",
+                          fontWeight: FontWeight.w800,
+                        ),
                       ))),
                   Container(
                       height: 40,
@@ -92,29 +99,24 @@ class _SearchScreenState extends State<SearchScreen> {
                         child: Text(
                           'Tags',
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w700),
+                            fontSize: 18,
+                            fontFamily: "Stark Sans",
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ))
                 ],
               ),
-        leading: Container(
-          margin: EdgeInsets.all(6),
-          width: 15,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Theme.of(context).cardColor,
-          ),
-          child: IconButton(
-              iconSize: 18,
-              icon: Icon(
-                FluentIcons.chevron_left_24_filled,
-                color: Colors.blue,
-                size: 22,
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-              }),
-        ),
+        leading: GestureDetector(
+            child: Icon(
+              FluentIcons.chevron_left_16_filled,
+              color: Colors.blue,
+              size: 30,
+            ),
+            onTap: () {
+              Navigator.pop(context);
+            }),
+        leadingWidth: 30,
         elevation: 1,
         backgroundColor: Theme.of(context).canvasColor,
         title: Padding(
@@ -221,7 +223,7 @@ class _RecentSearchesState extends State<RecentSearches> {
   }
 
   init() async {
-    _recentSearches = await Hasura.getSearches(5);
+    _recentSearches = await Hasura.getSearches(8);
     print(_recentSearches);
     setState(() {
       loading = false;
@@ -248,11 +250,7 @@ class _RecentSearchesState extends State<RecentSearches> {
                 itemCount: _recentSearches.length + 2,
                 itemBuilder: (BuildContext context, int index) {
                   if (_recentSearches.length + 1 == index) {
-                    return Divider(
-                      height: 1,
-                      color: Colors.grey.withOpacity(0.3),
-                      thickness: 1,
-                    );
+                    return Container();
                   }
                   if (index == 0) {
                     return Container(
@@ -269,32 +267,53 @@ class _RecentSearchesState extends State<RecentSearches> {
                           Text(
                             'Recent Searches',
                             style: TextStyle(
-                                fontWeight: FontWeight.w800, fontSize: 20),
+                                fontFamily: 'Stark Sans',
+                                fontWeight: FontWeight.w800,
+                                fontSize: 22),
                           ),
-                          Material(
-                            borderRadius: BorderRadius.circular(8),
-                            child: InkWell(
-                              onTap: () {
-                                PreferencesUpdate().updateString(
-                                  'searches_last_cleared',
-                                  DateTime.now().toString(),
-                                  upload: true,
-                                ); //TODO  timezone problem
-                                setState(() {
-                                  _recentSearches = [];
-                                });
-                              },
-                              child: Container(
+                          Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: Material(
+                              borderRadius: BorderRadius.circular(80),
+                              child: InkWell(
+                                onTap: () {
+                                  PreferencesUpdate().updateString(
+                                    'searches_last_cleared',
+                                    DateTime.now().toString(),
+                                    upload: true,
+                                  ); //TODO  timezone problem
+                                  setState(() {
+                                    _recentSearches = [];
+                                  });
+                                },
+                                child: Container(
                                   padding: EdgeInsets.all(5),
-                                  child: Text(
-                                    'Clear All',
-                                    style: TextStyle(
-                                        color: Colors.blue,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700),
-                                  )),
+                                  child: Row(
+                                    children: [
+                                      // Text(
+                                      //   'Clear All',
+                                      //   style: TextStyle(
+                                      //       color: Theme.of(context)
+                                      //           .iconTheme
+                                      //           .color
+                                      //           .withOpacity(0.7),
+                                      //       fontSize: 14,
+                                      //       fontWeight: FontWeight.w700),
+                                      // ),
+                                      // SizedBox(
+                                      //   width: 5,
+                                      // ),
+                                      Icon(FluentIcons.delete_16_filled,
+                                          size: 18,
+                                          color: Theme.of(context)
+                                              .iconTheme
+                                              .color),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
-                          )
+                          ),
                         ],
                       ),
                     );
@@ -302,25 +321,35 @@ class _RecentSearchesState extends State<RecentSearches> {
                   return Column(children: [
                     ListTile(
                       dense: true,
-                      leading: Icon(
-                        FluentIcons.search_square_24_regular,
-                        size: 26,
-                      ),
+                      leading: Icon(FluentIcons.arrow_circle_up_left_24_regular,
+                          size: 26,
+                          color: Color.fromRGBO(
+                              50 +
+                                  (((index + 1) * 160) ~/
+                                      _recentSearches.length),
+                              60 +
+                                  (((index + 1) * 100) ~/
+                                      _recentSearches.length),
+                              230 +
+                                  (((index + 1) * 10) ~/
+                                      _recentSearches.length),
+                              1)),
                       key: UniqueKey(),
                       title: Text(
                         _recentSearches[index - 1]['text'],
                         style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 22,
-                            color: Colors.blue),
+                          fontFamily: 'Stark Sans',
+                          fontWeight: FontWeight.w600,
+                          fontSize: 22,
+                        ),
                       ),
                       onTap: () {
                         widget.callback(_recentSearches[index - 1]['text']);
                       },
                       trailing: IconButton(
                         icon: Icon(
-                          Icons.clear,
-                          size: 20,
+                          FluentIcons.block_16_regular,
+                          size: 22,
                           color: Theme.of(context).iconTheme.color,
                         ),
                         onPressed: () async {
@@ -338,7 +367,6 @@ class _RecentSearchesState extends State<RecentSearches> {
                       height: 1,
                       color: Colors.grey.withOpacity(0.3),
                       thickness: 1,
-                      indent: 50,
                     )
                   ]);
                 });

@@ -1,9 +1,13 @@
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:flick_video_player/flick_video_player.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+
+import '../main.dart';
 
 class VideoDisplay extends StatefulWidget {
   final FlickManager flickManager;
@@ -14,64 +18,109 @@ class VideoDisplay extends StatefulWidget {
   _VideoDisplayState createState() => _VideoDisplayState();
 }
 
-class _VideoDisplayState extends State<VideoDisplay> {
+class _VideoDisplayState extends State<VideoDisplay> with RouteAware {
+  /// Called when the current route has been popped off.
+  @override
+  void didPop() {
+    widget.flickManager.flickControlManager.autoPause();
+    super.didPop();
+  }
+
+  /// Called when the top route has been popped off, and the current route
+  /// shows up.
+  @override
+  void didPopNext() {
+    print("didPopNext");
+
+    super.didPopNext();
+  }
+
+  /// Called when the current route has been pushed.
+  @override
+  void didPush() {
+    print("didPush");
+    super.didPush();
+  }
+
+  /// Called when a new route has been pushed, and the current route is no
+  /// longer visible.
+  @override
+  void didPushNext() {
+    widget.flickManager.flickControlManager.autoPause();
+    super.didPushNext();
+  }
+
+  @override
+  void dispose() {
+    widget.flickManager.dispose();
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    routeObserver.subscribe(this, ModalRoute.of(context));
+    super.didChangeDependencies();
+  }
+
   @override
   Widget build(BuildContext context) {
     return VisibilityDetector(
-        key: ObjectKey(widget.flickManager),
-        onVisibilityChanged: (visibility) {
-          if (widget.autoplay) {
-            if (visibility.visibleFraction == 0 && this.mounted) {
-              widget.flickManager.flickControlManager.autoPause();
-            } else if (visibility.visibleFraction == 1) {
-              widget.flickManager.flickControlManager.autoResume();
-            }
+      key: ObjectKey(widget.flickManager),
+      onVisibilityChanged: (visibility) {
+        if (widget.autoplay) {
+          if (visibility.visibleFraction == 0 && this.mounted) {
+            widget.flickManager.flickControlManager.autoPause();
+          } else if (visibility.visibleFraction == 1) {
+            widget.flickManager.flickControlManager.autoResume();
           }
-        },
-        child: Container(
-          child: FlickVideoPlayer(
-            flickManager: widget.flickManager,
-            wakelockEnabledFullscreen: true,
-            wakelockEnabled: true,
-            flickVideoWithControls: FlickVideoWithControls(
-              playerLoadingFallback: Positioned.fill(
-                child: Stack(
-                  children: <Widget>[
-                    Positioned.fill(
-                      child: Container(
-                        color: Colors.black,
+        }
+      },
+      child: Container(
+        child: FlickVideoPlayer(
+          flickManager: widget.flickManager,
+          wakelockEnabledFullscreen: true,
+          wakelockEnabled: true,
+          flickVideoWithControls: FlickVideoWithControls(
+            playerLoadingFallback: Positioned.fill(
+              child: Stack(
+                children: <Widget>[
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black,
+                    ),
+                  ),
+                  Positioned(
+                    right: 10,
+                    top: 10,
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        backgroundColor: Colors.white,
+                        strokeWidth: 4,
                       ),
                     ),
-                    Positioned(
-                      right: 10,
-                      top: 10,
-                      child: Container(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          backgroundColor: Colors.white,
-                          strokeWidth: 4,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              controls: PortraitVideoControls(
-                pauseOnTap: true,
+                  ),
+                ],
               ),
             ),
-            flickVideoWithControlsFullscreen: FlickVideoWithControls(
-              playerLoadingFallback: Center(child: Icon(Icons.warning)),
-              controls: LandscapeVideoControls(),
-              iconThemeData: IconThemeData(
-                size: 40,
-                color: Colors.white,
-              ),
-              textStyle: TextStyle(fontSize: 16, color: Colors.white),
+            controls: PortraitVideoControls(
+              pauseOnTap: true,
             ),
           ),
-        ));
+          flickVideoWithControlsFullscreen: FlickVideoWithControls(
+            playerLoadingFallback: Center(child: Icon(Icons.warning)),
+            controls: LandscapeVideoControls(),
+            iconThemeData: IconThemeData(
+              size: 40,
+              color: Colors.white,
+            ),
+            textStyle: TextStyle(fontSize: 16, color: Colors.white),
+          ),
+        ),
+      ),
+    );
   }
 }
 

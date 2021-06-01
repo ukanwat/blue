@@ -86,6 +86,7 @@ dependencies {
     implementation 'androidx.multidex:multidex:2.0.0'
     implementation 'com.google.firebase:firebase-messaging:21.1.0'
     implementation 'com.facebook.android:facebook-android-sdk:[5,6)'
+    // implementation 'com.google.firebase:firebase-appcheck-debug:16.0.0-beta01'
 }
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'

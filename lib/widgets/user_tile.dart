@@ -53,70 +53,96 @@ class _UserTileState extends State<UserTile> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: () {
-        setState(() {
-          undo = !undo;
-        });
-        if (widget.type == Tile.block) {
-          if (undo) {
-            Functions().unblockUser(peer);
-          } else {
-            Functions().blockUser(peer);
-          }
-        } else if (widget.type == Tile.mute) {
-          if (undo) {
-            Functions().unmuteUser(peer);
-          } else {
-            Functions().muteUser(peer);
-          }
-        } else if (widget.type == Tile.follow) {
+        onTap: () {
           GoTo().profileScreen(context, widget.user.userId);
-        }
-      },
-      leading: Container(
-        child: GestureDetector(
-          onTap: () {
-            GoTo().profileScreen(context, widget.user.userId);
-          },
-          child: Container(
-            child: CircleAvatar(
-              backgroundImage: CachedNetworkImageProvider(
-                  widget.user.avatarUrl ?? Strings.emptyAvatarUrl),
+        },
+        leading: Container(
+          child: GestureDetector(
+            onTap: () {
+              GoTo().profileScreen(context, widget.user.userId);
+            },
+            child: Container(
+              child: CircleAvatar(
+                backgroundImage: CachedNetworkImageProvider(
+                    widget.user.avatarUrl ?? Strings.emptyAvatarUrl),
+              ),
             ),
           ),
         ),
-      ),
-      title: Text(
-        widget.user.name,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
+        title: Text(
+          widget.user.name,
+          style: TextStyle(
+              fontFamily: 'Stark Sans',
+              fontWeight: FontWeight.w600,
+              fontSize: 18),
         ),
-      ),
-      subtitle: Text(
-        widget.user.username,
-        style: TextStyle(),
-      ),
-      trailing: (widget.type == Tile.follow)
-          ? follow
+        subtitle: Text(
+          widget.user.username,
+          style: TextStyle(fontSize: 13),
+        ),
+        trailing: GestureDetector(
+          child: follow
               ? Container(
                   width: 10,
                 )
-              : TextButton(
-                  child: Text(
-                    'Follow',
-                    style: TextStyle(color: Colors.blue),
+              : Container(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        width: 3.5,
+                        color: (widget.type == Tile.follow)
+                            ? Colors.blue
+                            : undo
+                                ? Colors.blue
+                                : Colors.red,
+                      )),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 0, horizontal: 4),
+                    child: Text(
+                      (widget.type == Tile.follow)
+                          ? 'Follow'
+                          : '${undo ? '' : 'Un'}${widget.type.toString().substring(5)}',
+                      style: TextStyle(
+                          color: (widget.type == Tile.follow)
+                              ? Colors.blue
+                              : undo
+                                  ? Colors.blue
+                                  : Colors.red,
+                          fontFamily: 'Stark Sans',
+                          fontWeight: FontWeight.w800),
+                    ),
                   ),
-                  onPressed: () {
-                    Functions().handleFollowUser(widget.user.userId);
-                    setState(() {
-                      follow = true;
-                    });
-                  },
-                )
-          : Text(
-              '${undo ? '' : 'Un'}${widget.type.toString().substring(5)}',
-              style: TextStyle(color: Colors.blue, fontSize: 20),
-            ),
-    );
+                ),
+          onTap: () {
+            if (widget.type == Tile.block) {
+              setState(() {
+                undo = !undo;
+              });
+              if (undo) {
+                Functions().unblockUser(peer);
+              } else {
+                Functions().blockUser(peer);
+              }
+            } else if (widget.type == Tile.mute) {
+              setState(() {
+                undo = !undo;
+              });
+              if (undo) {
+                Functions().unmuteUser(peer);
+              } else {
+                Functions().muteUser(peer);
+              }
+            } else if (widget.type == Tile.follow) {
+              if (follow) {
+                return;
+              }
+              Functions().handleFollowUser(widget.user.userId);
+              setState(() {
+                follow = true;
+              });
+            }
+          },
+        ));
   }
 }

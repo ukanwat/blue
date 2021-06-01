@@ -26,15 +26,22 @@ class TagScreen extends StatefulWidget {
 
 class _TagScreenState extends State<TagScreen> {
   String tag;
-  Map tagMap;
+  dynamic tagMap;
   bool isFollowing = false;
+  String label;
   setTag() async {
     tagMap = await Hasura.getTag(tag);
   }
 
-  @override
-  void didChangeDependencies() {
-    tag = ModalRoute.of(context).settings.arguments;
+  getTag() async {
+    dynamic _tagMap = ModalRoute.of(context).settings.arguments;
+    if (_tagMap.runtimeType == String) {
+      _tagMap = await Hasura.getTag(_tagMap);
+    }
+
+    tagMap = _tagMap;
+    tag = tagMap['tag'];
+    label = tagMap['label'];
     List tags = PreferencesUpdate().getStringList('followed_tags');
 
     tags = PreferencesUpdate().getStringList('followed_tags');
@@ -55,7 +62,11 @@ class _TagScreenState extends State<TagScreen> {
       }
       PreferencesUpdate().setStringList('followed_tags', tags);
     }
+  }
 
+  @override
+  void didChangeDependencies() {
+    getTag();
     super.didChangeDependencies();
   }
 
@@ -149,15 +160,46 @@ class _TagScreenState extends State<TagScreen> {
                                       fontWeight: FontWeight.w700)),
                             ),
                           )),
-                      background: Container(
-                        height: double.infinity,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                            color: colors
-                                .elementAt(Random().nextInt(colors.length)),
-                            gradient: FlutterGradients.findByName(
-                                FlutterGradientNames.values[Random().nextInt(
-                                    FlutterGradientNames.values.length - 2)])),
+                      background: Stack(
+                        children: [
+                          Container(
+                            height: double.infinity,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                                color: colors
+                                    .elementAt(Random().nextInt(colors.length)),
+                                gradient: FlutterGradients.findByName(
+                                    FlutterGradientNames.values[Random()
+                                        .nextInt(
+                                            FlutterGradientNames.values.length -
+                                                2)])),
+                          ),
+                          Center(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                    height: MediaQuery.of(context).padding.top),
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                  child: Text(
+                                    label ?? '',
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .iconTheme
+                                            .color
+                                            .withOpacity(0.8),
+                                        fontFamily: 'Stark Sans',
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 20),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
                       )),
                 ),
                 SliverPersistentHeader(
@@ -200,8 +242,12 @@ class _TagScreenState extends State<TagScreen> {
               padding: EdgeInsets.zero,
               margin: EdgeInsets.zero,
               child: TabBarView(children: <Widget>[
-                TagPopularScreen(tag),
-                TagRecentScreen(tag)
+                Transform.translate(
+                    offset: Offset.fromDirection(1.57, -46),
+                    child: TagPopularScreen(tag)),
+                Transform.translate(
+                    offset: Offset.fromDirection(1.57, -46),
+                    child: TagRecentScreen(tag)),
               ]),
             )),
       ),

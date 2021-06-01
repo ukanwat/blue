@@ -27,7 +27,7 @@ PreferredSize header(context,
               ? <Widget>[actionButton2, actionButton]
               : <Widget>[actionButton])
           : null,
-      backgroundColor: Theme.of(context).canvasColor,
+      backgroundColor: Theme.of(context).backgroundColor,
       title: textTitleExists
           ? title
           : Image.asset(

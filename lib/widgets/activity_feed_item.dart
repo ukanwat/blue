@@ -14,7 +14,6 @@ import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/services/go_to.dart';
 
-//TODO activity feed item only uploads user id of heisenberg
 class ActivityFeedItem extends StatefulWidget {
   final String imageUrl;
   final int sourceId;

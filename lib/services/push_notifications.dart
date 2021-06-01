@@ -114,11 +114,13 @@ class PushNotificationsManager {
   }
 
   Future<void> getToken() async {
-    await _firebaseMessaging.getToken().then((deviceToken) {
-      PreferencesUpdate().updateString('token', deviceToken);
+    try {
+      await _firebaseMessaging.getToken().then((deviceToken) {
+        PreferencesUpdate().updateString('token', deviceToken);
 
-      Hasura.updateUser(token: deviceToken);
-      print(deviceToken);
-    });
+        Hasura.updateUser(token: deviceToken);
+        print(deviceToken);
+      });
+    } catch (e) {}
   }
 }

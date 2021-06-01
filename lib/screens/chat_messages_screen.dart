@@ -441,10 +441,11 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                                 child: TextField(
                                   focusNode: focusNode,
                                   controller: messageController,
+                                  keyboardType: TextInputType.text,
                                   style: TextStyle(
                                       fontSize: 18,
                                       color: Theme.of(context).iconTheme.color),
-                                  maxLines: 4,
+                                  maxLines: 5,
                                   minLines: 1,
                                   decoration: InputDecoration(
                                     contentPadding:
@@ -651,8 +652,8 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         padding: EdgeInsets.only(top: 0, left: 0, right: 0, bottom: 70),
         itemBuilder: (_, i) {
           if (i == 0) {
-            if (messageItems == []) {
-              messageItems = [Container()];
+            if (messageItems.length == 0) {
+              messageItems.add(Container());
             }
 
             return messageItems[0];

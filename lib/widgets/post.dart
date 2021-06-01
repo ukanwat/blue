@@ -475,25 +475,27 @@ class _PostState extends State<Post> {
                   child: Padding(
                     padding: const EdgeInsets.only(left: 10),
                     child: Text(widget.title,
-                        style: PreferencesUpdate().getBool('serif', def: false)
-                            ? TextStyle(
-                                fontFamily: 'Georgia',
-                                fontSize: 19,
-                                fontWeight: FontWeight.w400,
-                                letterSpacing: 0,
-                                wordSpacing: 0,
-                                height: 1.25,
-                                color: Theme.of(context)
-                                    .textSelectionTheme
-                                    .selectionColor)
-                            : TextStyle(
-                                fontFamily: 'Lexend Deca',
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0,
-                                wordSpacing: 0,
-                                height: 1.25,
-                              ),
+                        style:
+                            PreferencesUpdate().getBool('serif', def: false) ==
+                                    true
+                                ? TextStyle(
+                                    fontFamily: 'Georgia',
+                                    fontSize: 19,
+                                    fontWeight: FontWeight.w400,
+                                    letterSpacing: 0,
+                                    wordSpacing: 0,
+                                    height: 1.25,
+                                    color: Theme.of(context)
+                                        .textSelectionTheme
+                                        .selectionColor)
+                                : TextStyle(
+                                    fontFamily: 'Stark Sans',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0,
+                                    wordSpacing: 0,
+                                    height: 1.25,
+                                  ),
                         maxLines: tagBarVisible ? 5 : 2,
                         overflow: TextOverflow.ellipsis),
                   ),
@@ -884,7 +886,7 @@ class _PostState extends State<Post> {
         contentsViewList.add(Container(
             height: MediaQuery.of(context).size.width /
                 contentsInfo[i]['aspectRatio'],
-            child: Container(child: VideoDisplay(flickManager, false))
+            child: Container(child: VideoDisplay(flickManager, true))
             // KiddVideoPlayer(
             //   fromUrl: true,
             //   videoUrl: contents['$i'],
@@ -970,14 +972,14 @@ class _PostState extends State<Post> {
       child: Text(
         text,
         style: TextStyle(
-          fontFamily: 'Yahoo Sans',
+          fontFamily: 'Stark Sans',
           fontSize: 16,
           letterSpacing: 0,
           wordSpacing: 0,
           height: 1.25,
         ),
       ),
-      padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
     );
   }
 

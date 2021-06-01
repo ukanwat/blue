@@ -135,22 +135,38 @@ class _PostsSectionState extends State<PostsSection>
                   ),
                   isFollowing
                       ? Container()
-                      : TextButton(
-                          onPressed: () async {
-                            setState(() {
-                              PreferencesUpdate().addToList(
-                                'followed_tags',
-                                tagMap,
-                              );
-                            });
-                            Hasura.followTag(tagMap['tag_id']);
-                            setState(() {
-                              isFollowing = true;
-                            });
-                          },
-                          child: Text(
-                            'Follow',
-                            style: TextStyle(fontWeight: FontWeight.w600),
+                      : Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: GestureDetector(
+                            onTap: () async {
+                              setState(() {
+                                PreferencesUpdate().addToList(
+                                  'followed_tags',
+                                  tagMap,
+                                );
+                              });
+                              Hasura.followTag(tagMap['tag_id']);
+                              setState(() {
+                                isFollowing = true;
+                              });
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  border:
+                                      Border.all(width: 3, color: Colors.blue)),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 0, horizontal: 4),
+                                child: Text(
+                                  'Follow',
+                                  style: TextStyle(
+                                      color: Colors.blue,
+                                      fontFamily: 'Stark Sans',
+                                      fontWeight: FontWeight.w800),
+                                ),
+                              ),
+                            ),
                           ),
                         )
                 ],
@@ -173,7 +189,7 @@ class _PostsSectionState extends State<PostsSection>
             GestureDetector(
               onTap: () {
                 Navigator.of(context)
-                    .pushNamed(TagScreen.routeName, arguments: widget.tag);
+                    .pushNamed(TagScreen.routeName, arguments: tagMap);
               },
               child: Container(
                 height: 32,

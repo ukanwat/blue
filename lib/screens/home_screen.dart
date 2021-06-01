@@ -108,8 +108,9 @@ class _HomeScreenState extends State<HomeScreen>
                     padding: const EdgeInsets.only(left: 10, top: 8),
                     child: Text('FOLLOWING',
                         style: TextStyle(
+                          fontFamily: 'Stark Sans',
                           fontSize: 12,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w800,
                           color: Colors.grey.withOpacity(0.7),
                         )),
                   )

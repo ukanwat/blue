@@ -8,13 +8,12 @@ import 'package:blue/screens/settings/general/drafts_screen.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/functions.dart';
-import 'package:blue/services/global_network/displaytype.dart';
-import 'package:blue/services/global_network/global_network.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/services/push_notifications.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +25,6 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:blue/main.dart';
 import 'package:blue/screens/communication_tabbar_screen.dart';
 import 'package:blue/screens/post_screen.dart';
-import 'package:flutter_offline/flutter_offline.dart';
 import './explore_screen.dart';
 import './home.dart';
 import './profile_screen.dart';
@@ -91,12 +89,15 @@ class _TabsScreenState extends State<TabsScreen> {
           'label': tag['tag']['label'],
           'tag_id': tag['tag']['tag_id'],
           'image_url': tag['tag']['image_id'],
+          'follower_count': tag['tag']['follower_count'],
+          'post_count': tag['tag']['post_count'],
         });
       });
       PreferencesUpdate().setStringList('followed_tags', tags);
     }
   }
 
+  StreamSubscription<ConnectivityResult> subscription;
   @override
   void initState() {
     Functions().updateEmail();
@@ -108,9 +109,30 @@ class _TabsScreenState extends State<TabsScreen> {
     if (Boxes.saveBox.isEmpty) {
       PreferencesUpdate().setSaves();
     }
+
+    subscription = Connectivity()
+        .onConnectivityChanged
+        .listen((ConnectivityResult result) {
+      if (ConnectivityResult.none == result) {
+        snackbar('You are offline.', context,
+            leadingIcon: Icon(FluentIcons.cloud_offline_24_regular));
+      } else {
+        snackbar("You're back online.", context,
+            leadingIcon: Icon(
+              FluentIcons.cloud_24_regular,
+              color: Colors.greenAccent,
+            ), seeMore: () {
+          setState(() {
+            _key = UniqueKey();
+          });
+        }, fnLabel: "Refresh App", duration: Duration(seconds: 30));
+      }
+    });
     setLists();
     super.initState();
   }
+
+  Key _key = UniqueKey();
 
   @override
   void didChangeDependencies() {
@@ -143,109 +165,115 @@ class _TabsScreenState extends State<TabsScreen> {
   @override
   Widget build(BuildContext context) {
     print(currentUser.id);
-    return Scaffold(
-      key: scaffoldKey,
-      body: Hasura.jwtToken == null
-          ? Center(
-              child: circularProgress(),
-            )
-          : PageView(
-              physics: NeverScrollableScrollPhysics(),
-              controller: _pageController,
-              onPageChanged: onPageChanged,
-              children: <Widget>[
-                HomeScreen(),
-                ExploreScreen(),
-                Container(),
-                CommunicationTabbarScreen(),
-                ProfileScreen(
-                  profileId: Boxes.currentUserBox.get('user_id'),
-                  tabPage: true,
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        key: scaffoldKey,
+        body: Hasura.jwtToken == null
+            ? Center(
+                child: circularProgress(),
+              )
+            : PageView(
+                key: _key,
+                physics: NeverScrollableScrollPhysics(),
+                controller: _pageController,
+                onPageChanged: onPageChanged,
+                children: <Widget>[
+                  HomeScreen(),
+                  ExploreScreen(),
+                  Container(),
+                  CommunicationTabbarScreen(),
+                  ProfileScreen(
+                    profileId: Boxes.currentUserBox.get('user_id'),
+                    tabPage: true,
+                  ),
+                ],
+              ),
+        bottomNavigationBar: Theme(
+          data: Theme.of(context).copyWith(
+            // sets the background color of the `BottomNavigationBar`
+            canvasColor: AppColors.navBar,
+            // sets the active color of the `BottomNavigationBar` if `Brightness` is light
+            primaryColor: Theme.of(context).primaryColor.withOpacity(0.8),
+          ),
+          child: SizedBox(
+            height: Platform.isIOS ? 78 : 50,
+            child: BottomNavigationBar(
+              iconSize: 24,
+              elevation: 10,
+              selectedFontSize: 0,
+              type: BottomNavigationBarType.fixed,
+              showSelectedLabels: false,
+              showUnselectedLabels: false,
+              unselectedItemColor: Color.fromRGBO(200, 200, 200, 1),
+              selectedItemColor: Color.fromRGBO(250, 250, 250, 1),
+              items: <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                  label: 'Home',
+                  icon: Icon(
+                    FluentIcons.home_24_filled,
+                    size: 24,
+                  ),
+                  activeIcon: Icon(
+                    FluentIcons.home_24_filled,
+                    size: 24,
+                  ),
+                ),
+                BottomNavigationBarItem(
+                  label: 'Explore',
+                  icon: Icon(
+                    FlutterIcons.search_faw,
+                    size: 22,
+                    // size: 34,
+                  ),
+                  activeIcon: Icon(
+                    FlutterIcons.search_faw,
+                    size: 22,
+                  ),
+                ),
+                BottomNavigationBarItem(
+                  label: 'Post',
+                  activeIcon: Container(
+                      height: 24,
+                      child:
+                          Image.asset("assets/images/stark-bnb-icon-wa.png")),
+                  icon: Container(
+                      height: 24,
+                      child:
+                          Image.asset("assets/images/stark-bnb-icon-wi.png")),
+                ),
+                BottomNavigationBarItem(
+                  label: 'Notifications',
+                  icon: Icon(
+                    FluentIcons.alert_24_filled,
+                    size: 24,
+                  ),
+                  activeIcon: Icon(
+                    FluentIcons.alert_24_filled,
+                    size: 24,
+                  ),
+                ),
+                BottomNavigationBarItem(
+                  label: 'Profile',
+                  icon: CircleAvatar(
+                    maxRadius: 12,
+                    backgroundImage: CachedNetworkImageProvider(Boxes
+                            .currentUserBox
+                            .get("avatar_url") ??
+                        "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                  ),
+                  activeIcon: CircleAvatar(
+                    maxRadius: 12,
+                    backgroundImage: CachedNetworkImageProvider(Boxes
+                            .currentUserBox
+                            .get("avatar_url") ??
+                        "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                  ),
                 ),
               ],
+              onTap: navigationTapped,
+              currentIndex: _page,
             ),
-      bottomNavigationBar: Theme(
-        data: Theme.of(context).copyWith(
-          // sets the background color of the `BottomNavigationBar`
-          canvasColor: AppColors.navBar,
-          // sets the active color of the `BottomNavigationBar` if `Brightness` is light
-          primaryColor: Theme.of(context).primaryColor.withOpacity(0.8),
-        ),
-        child: SizedBox(
-          height: Platform.isIOS ? 78 : 50,
-          child: BottomNavigationBar(
-            iconSize: 24,
-            elevation: 10,
-            selectedFontSize: 0,
-            type: BottomNavigationBarType.fixed,
-            showSelectedLabels: false,
-            showUnselectedLabels: false,
-            unselectedItemColor: Color.fromRGBO(200, 200, 200, 1),
-            selectedItemColor: Color.fromRGBO(250, 250, 250, 1),
-            items: <BottomNavigationBarItem>[
-              BottomNavigationBarItem(
-                label: 'Home',
-                icon: Icon(
-                  FluentIcons.home_24_filled,
-                  size: 24,
-                ),
-                activeIcon: Icon(
-                  FluentIcons.home_24_filled,
-                  size: 24,
-                ),
-              ),
-              BottomNavigationBarItem(
-                label: 'Explore',
-                icon: Icon(
-                  FlutterIcons.search_faw,
-                  size: 22,
-                  // size: 34,
-                ),
-                activeIcon: Icon(
-                  FlutterIcons.search_faw,
-                  size: 22,
-                ),
-              ),
-              BottomNavigationBarItem(
-                label: 'Post',
-                activeIcon: Container(
-                    height: 24,
-                    child: Image.asset("assets/images/stark-bnb-icon-wa.png")),
-                icon: Container(
-                    height: 24,
-                    child: Image.asset("assets/images/stark-bnb-icon-wi.png")),
-              ),
-              BottomNavigationBarItem(
-                label: 'Notifications',
-                icon: Icon(
-                  FluentIcons.alert_24_filled,
-                  size: 24,
-                ),
-                activeIcon: Icon(
-                  FluentIcons.alert_24_filled,
-                  size: 24,
-                ),
-              ),
-              BottomNavigationBarItem(
-                label: 'Profile',
-                icon: CircleAvatar(
-                  maxRadius: 12,
-                  backgroundImage: CachedNetworkImageProvider(Boxes
-                          .currentUserBox
-                          .get("avatar_url") ??
-                      "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
-                ),
-                activeIcon: CircleAvatar(
-                  maxRadius: 12,
-                  backgroundImage: CachedNetworkImageProvider(Boxes
-                          .currentUserBox
-                          .get("avatar_url") ??
-                      "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
-                ),
-              ),
-            ],
-            onTap: navigationTapped,
-            currentIndex: _page,
           ),
         ),
       ),
@@ -300,13 +328,13 @@ class _TabsScreenState extends State<TabsScreen> {
                                       Text(
                                         'Create new Post',
                                         style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w500,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w700,
                                             fontSize: 18),
                                       ),
                                       Icon(
                                         FluentIcons.edit_24_regular,
-                                        color: Colors.white,
+                                        color: Colors.black,
                                       )
                                     ],
                                   )))),
@@ -332,7 +360,7 @@ class _TabsScreenState extends State<TabsScreen> {
                                 Text(
                                   'See Drafts',
                                   style: TextStyle(
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w700,
                                       fontSize: 18),
                                 ),
                                 Icon(FluentIcons.drafts_24_regular)
@@ -358,6 +386,7 @@ class _TabsScreenState extends State<TabsScreen> {
   void dispose() {
     super.dispose();
     _pageController.dispose();
+    subscription.cancel();
   }
 
   void onPageChanged(int page) {

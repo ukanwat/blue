@@ -231,7 +231,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               Icon(
                 icon,
                 size: 14,
-                color: Colors.white,
+                color: Colors.black,
               ),
               SizedBox(
                 width: 10,
@@ -240,8 +240,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                 text,
                 style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold),
+                    fontFamily: 'Stark Sans',
+                    color: Colors.black,
+                    fontWeight: FontWeight.w700),
               ),
             ],
           ),
@@ -634,17 +635,20 @@ class _ProfileScreenState extends State<ProfileScreen>
                   mKController.hideMenu();
                 });
               },
-              child: Center(
-                  child: Text(
-                value.toString().substring(5),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: sort == value
-                      ? Colors.blue
-                      : Theme.of(context).iconTheme.color,
-                ),
-              ))),
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                child: Center(
+                    child: Text(
+                  value.toString().substring(5),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: sort == value
+                        ? Colors.blue
+                        : Theme.of(context).iconTheme.color,
+                  ),
+                )),
+              )),
         ));
   }
 
@@ -891,6 +895,10 @@ class _ProfileScreenState extends State<ProfileScreen>
             body: RefreshIndicator(
               onRefresh: () async {
                 setState(() {
+                  posts = [];
+                  lastDoc = 0;
+                  addPosts(sort, changing: true);
+                  mKController.hideMenu();
                   Hasura.getUser(self: true);
                 });
                 await Future.delayed(Duration(milliseconds: 500));
@@ -1172,16 +1180,18 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           CrossAxisAlignment.center,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        GestureDetector(
-                                          onTap: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: Icon(
-                                            FluentIcons.chevron_left_24_filled,
-                                            size: 26,
-                                            color: Colors.blue,
+                                        if (widget.tabPage != true)
+                                          GestureDetector(
+                                            onTap: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Icon(
+                                              FluentIcons
+                                                  .chevron_left_24_filled,
+                                              size: 26,
+                                              color: Colors.blue,
+                                            ),
                                           ),
-                                        ),
                                         Center(
                                           child: CircleAvatar(
                                             maxRadius: 24,

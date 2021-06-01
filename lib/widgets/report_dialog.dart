@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/widgets/progress.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -6,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Project imports:
 import 'package:blue/screens/home.dart';
+import 'package:get/get.dart';
 
 class ReportDialog extends StatefulWidget {
   final int postId;
@@ -44,7 +46,8 @@ class _ReportDialogState extends State<ReportDialog> {
           children: <Widget>[
             Text(
               "Report an issue",
-              style: TextStyle(color: Theme.of(context).iconTheme.color.withOpacity(0.8),
+              style: TextStyle(
+                color: Theme.of(context).iconTheme.color.withOpacity(0.8),
                 fontSize: 16.0,
                 fontWeight: FontWeight.w500,
               ),
@@ -64,7 +67,8 @@ class _ReportDialogState extends State<ReportDialog> {
             SizedBox(height: 20.0),
             InkWell(
               onTap: () async {
-                 Navigator.of(context).pop();
+                snackbar('post reported', Get.context);
+                Navigator.of(context).pop();
               },
               child: Container(
                 decoration: BoxDecoration(
@@ -85,7 +89,7 @@ class _ReportDialogState extends State<ReportDialog> {
             ),
             InkWell(
               onTap: () async {
-                 Navigator.of(context).pop();
+                Navigator.of(context).pop();
               },
               child: Container(
                 decoration: BoxDecoration(
@@ -106,7 +110,8 @@ class _ReportDialogState extends State<ReportDialog> {
             ),
             InkWell(
               onTap: () async {
-                    Navigator.of(context).pop();
+                snackbar('post reported', Get.context);
+                Navigator.of(context).pop();
               },
               child: Container(
                 decoration: BoxDecoration(
@@ -132,6 +137,7 @@ class _ReportDialogState extends State<ReportDialog> {
                 borderRadius: BorderRadius.circular(10),
               ),
               onPressed: () {
+                snackbar('post reported', Get.context);
                 Navigator.of(context).pop(); // To close the dialog
               },
               child: Text(

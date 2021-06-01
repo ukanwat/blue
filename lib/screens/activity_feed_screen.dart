@@ -23,12 +23,16 @@ class ActivityFeedScreen extends StatefulWidget {
 class _ActivityFeedScreenState extends State<ActivityFeedScreen>
     with AutomaticKeepAliveClientMixin<ActivityFeedScreen> {
   List<ActivityFeedItem> data = [];
-  DateTime time = DateTime.utc(2019);
-  bool empty = false;
   int offset = 0;
   int limit = 100;
   bool loaded = false;
+
+  bool adding = false;
   getFeed() async {
+    if (adding) {
+      return;
+    }
+    adding = true;
     List feedData = await Hasura.getNotifications(offset: offset, limit: limit);
     print(feedData);
     offset = offset + feedData.length;
@@ -44,24 +48,12 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen>
         loaded = true;
       });
     }
-    if (feedData.length == 0 && offset == 0) {
-      setState(() {
-        empty = true;
-      });
-    }
 
+    adding = false;
     return true;
   }
 
-  refreshFeed() async {}
-
   bool get wantKeepAlive => true;
-
-  @override
-  void initState() {
-    getFeed();
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,20 +64,16 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen>
           subtitle:
               'Stay tuned! Notifications about your activity will show up here');
     }
-    return RefreshIndicator(
-        onRefresh: () async {
-          await refreshFeed();
+    return LoadMore(
+        onLoadMore: () async {
+          return (await getFeed());
         },
-        child: LoadMore(
-            onLoadMore: () async {
-              return (await getFeed());
-            },
-            isFinish: loaded,
-            child: ListView.builder(
-              itemBuilder: (context, i) {
-                return data[i];
-              },
-              itemCount: data.length,
-            )));
+        isFinish: loaded,
+        child: ListView.builder(
+          itemBuilder: (context, i) {
+            return data[i];
+          },
+          itemCount: data.length,
+        ));
   }
 }

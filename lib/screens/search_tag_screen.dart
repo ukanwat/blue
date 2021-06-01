@@ -142,7 +142,8 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
                   if (loading == true) {
                     return;
                   }
-                  int id = await Hasura.createTag(tagSearchController.text);
+                  int id = await Hasura.createTag(tagSearchController.text
+                      .replaceAll(new RegExp(r"\s+"), ""));
                   Navigator.of(context).pop({id: searchTerm});
                 },
                 child: Padding(

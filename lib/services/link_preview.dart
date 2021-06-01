@@ -2,6 +2,8 @@
 import 'dart:convert';
 
 // Flutter imports:
+import 'package:blue/constants/strings.dart';
+import 'package:blue/services/yt_id.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart' hide Element;
 
@@ -11,6 +13,7 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:html/dom.dart' hide Text;
 import 'package:html/parser.dart' as parser;
 import 'package:http/http.dart' as http;
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 /// Link Preview Widget
 class LinkPreview extends StatefulWidget {
@@ -77,7 +80,7 @@ class _LinkPreviewState extends State<LinkPreview> {
   }
 
   Future<void> _init() async {
-    _url = widget.url.toLowerCase().trim();
+    _url = widget.url.replaceAll(new RegExp(r"\s+"), "");
     if (!(_url.startsWith(
           'http://',
         ) ||
@@ -99,18 +102,25 @@ class _LinkPreviewState extends State<LinkPreview> {
 
   @override
   Widget build(BuildContext context) {
+    print('ss');
+    print(_url);
     if (widget.builder != null) {
       return widget.builder(_info);
     }
     if (_info is YoutubeInfo) {
       print((_info as YoutubeInfo).url);
+      print('uk');
       return Container(
-        height: (MediaQuery.of(context).size.width - 20) * (9 / 16),
+        height: (MediaQuery.of(context).size.width * 0.5),
         child: Stack(
+          alignment: Alignment.center,
           children: <Widget>[
-            CachedNetworkImage(
-              imageUrl: (_info as YoutubeInfo).url,
-              fit: BoxFit.contain,
+            Container(
+              width: MediaQuery.of(context).size.width - 20,
+              child: CachedNetworkImage(
+                imageUrl: (_info as YoutubeInfo).url,
+                fit: BoxFit.cover,
+              ),
             ),
             Container(
               width: double.infinity,
@@ -123,17 +133,18 @@ class _LinkPreviewState extends State<LinkPreview> {
                   Expanded(
                       child: Icon(FlutterIcons.youtube_mco,
                           size: 60, color: Colors.white)),
-                  if ((_info as YoutubeInfo).title != '')
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 7, vertical: 7),
-                      width: double.infinity,
-                      color: Colors.black.withOpacity(0.3),
-                      child: Center(
-                          child: Text((_info as YoutubeInfo).title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: Colors.white))),
-                    )
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 7, vertical: 7),
+                    width: double.infinity,
+                    color: Colors.black.withOpacity(0.3),
+                    child: Center(
+                        child: Text(
+                            // (_info as YoutubeInfo).title ??
+                            _url,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: Colors.white))),
+                  )
                 ],
               ),
             )
@@ -326,34 +337,38 @@ class WebAnalyzer {
         urlPattern,
       ).hasMatch(url);
       String mediaBody;
-      try {
-        mediaBody = const Utf8Decoder().convert(response.bodyBytes);
-        // Improved performance
-        mediaBody = mediaBody.replaceFirst(_bodyReg, "<body></body>");
-        mediaBody = mediaBody.replaceAll(_scriptReg, "");
-        final mediaDocument = parser.parse(mediaBody);
-        if (isYoutubeVideo) {
-          return YoutubeInfo(
-              url: _analyzeIcon(mediaDocument, url),
-              title: _analyzeTitle(mediaDocument));
-        }
-        // get image or video
-        if (multimedia) {
-          final gif = _analyzeGif(mediaDocument, url);
-          if (gif != null) return gif;
 
-          final video = _analyzeVideo(mediaDocument, url);
-          if (video != null) return video;
-        }
-        final info = WebInfo(
-          title: _analyzeTitle(mediaDocument),
-          icon: _analyzeIcon(mediaDocument, url),
-          description: _analyzeDescription(mediaDocument),
-        );
-        return info;
-      } catch (e) {
-        print("//axaxaxxaxaxax");
+      mediaBody = const Utf8Decoder().convert(response.bodyBytes);
+      // Improved performance
+      mediaBody = mediaBody.replaceFirst(_bodyReg, "<body></body>");
+      mediaBody = mediaBody.replaceAll(_scriptReg, "");
+      final mediaDocument = parser.parse(mediaBody);
+      print('XXXXXXXXXXXXXXXXXXXXXX');
+      print(mediaBody);
+
+      if (isYoutubeVideo) {
+        String videoId = getIdFromUrl(url);
+        dynamic meta = YoutubePlayerController(
+          initialVideoId: videoId,
+        ).metadata;
+        return YoutubeInfo(
+            url: 'https://img.youtube.com/vi/$videoId/hqdefault.jpg',
+            title: meta.title ?? '');
       }
+      // get image or video
+      if (multimedia) {
+        final gif = _analyzeGif(mediaDocument, url);
+        if (gif != null) return gif;
+
+        final video = _analyzeVideo(mediaDocument, url);
+        if (video != null) return video;
+      }
+      final info = WebInfo(
+        title: _analyzeTitle(mediaDocument),
+        icon: _analyzeIcon(mediaDocument, url),
+        description: _analyzeDescription(mediaDocument),
+      );
+      return info;
 
       var requiredAttributes = ['title', 'image'];
       var data = {};

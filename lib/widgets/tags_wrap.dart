@@ -51,6 +51,8 @@ class _TagsWrapState extends State<TagsWrap> {
           'label': tag['tag']['label'],
           'tag_id': tag['tag']['tag_id'],
           'image_url': tag['tag']['image_id'],
+          'follower_count': tag['tag']['follower_count'],
+          'post_count': tag['tag']['post_count'],
         });
       });
       PreferencesUpdate().setStringList('followed_tags', tags);
@@ -63,7 +65,7 @@ class _TagsWrapState extends State<TagsWrap> {
         tagListTiles.add(InkWell(
           onTap: () async {
             Navigator.of(context)
-                .pushNamed(TagScreen.routeName, arguments: tags[i]['tag']);
+                .pushNamed(TagScreen.routeName, arguments: tags[i]);
           },
           child: Container(
             alignment: Alignment.center,

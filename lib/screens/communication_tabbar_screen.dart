@@ -128,8 +128,8 @@ class _CommunicationTabbarScreenState extends State<CommunicationTabbarScreen>
               )
             ],
             automaticallyImplyLeading: false,
-            backgroundColor: Theme.of(context).canvasColor,
-            elevation: 0.3,
+            backgroundColor: Theme.of(context).backgroundColor,
+            elevation: 0,
             title: Row(
               children: <Widget>[
                 Padding(
@@ -156,28 +156,34 @@ class _CommunicationTabbarScreenState extends State<CommunicationTabbarScreen>
             titleSpacing: 0,
             bottom: PreferredSize(
               preferredSize: new Size(double.infinity, 36),
-              child: TabBar(
-                controller: _tabController,
-                indicatorWeight: 3,
-                indicatorSize: TabBarIndicatorSize.tab,
-                labelStyle:
-                    TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                labelColor: Theme.of(context).iconTheme.color,
-                indicatorColor: Theme.of(context).iconTheme.color,
-                tabs: <Widget>[
-                  Tab(
-                    icon: Icon(
-                      FluentIcons.mail_inbox_24_filled,
-                      size: 26,
+              child: Container(
+                decoration: BoxDecoration(
+                    border: Border(
+                        bottom: BorderSide(
+                            width: 1, color: Colors.grey.withOpacity(0.3)))),
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorWeight: 3,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  labelStyle:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  labelColor: Theme.of(context).iconTheme.color,
+                  indicatorColor: Theme.of(context).iconTheme.color,
+                  tabs: <Widget>[
+                    Tab(
+                      icon: Icon(
+                        FluentIcons.mail_inbox_24_filled,
+                        size: 26,
+                      ),
                     ),
-                  ),
-                  Tab(
-                    icon: Icon(
-                      FluentIcons.chat_24_filled,
-                      size: 26,
+                    Tab(
+                      icon: Icon(
+                        FluentIcons.chat_24_filled,
+                        size: 26,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

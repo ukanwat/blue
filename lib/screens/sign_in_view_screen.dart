@@ -66,162 +66,167 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.light, //TODO
         statusBarBrightness: Brightness.light));
-    return Scaffold(
-      backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: false,
-      body: Column(
-        children: <Widget>[
-          Stack(
-            children: <Widget>[
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top),
-                  ),
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.1,
-                  ),
-                  Center(
-                      child: Container(
-                          height: 120, child: Image.asset('assets/logo.png'))),
-                  Container(
-                    padding: EdgeInsets.only(top: 50),
-                    width: double.infinity,
-                    child: Center(
-                      child: Text(
-                        'Welcome To',
-                        style: TextStyle(
-                            fontFamily: 'Techna Sans Regular',
-                            fontSize: 30 * scale,
-                            color: Colors.black),
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: new Scaffold(
+        backgroundColor: Colors.white,
+        resizeToAvoidBottomInset: false,
+        body: Column(
+          children: <Widget>[
+            Stack(
+              children: <Widget>[
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.only(
+                          top: MediaQuery.of(context).padding.top),
+                    ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.1,
+                    ),
+                    Center(
+                        child: Container(
+                            height: 120,
+                            child: Image.asset('assets/logo.png'))),
+                    Container(
+                      padding: EdgeInsets.only(top: 50),
+                      width: double.infinity,
+                      child: Center(
+                        child: Text(
+                          'Welcome To',
+                          style: TextStyle(
+                              fontFamily: 'Techna Sans Regular',
+                              fontSize: 30 * scale,
+                              color: Colors.black),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          Container(
-            width: double.infinity,
-            child: Center(
-              child: Text(
-                'Stark',
-                style: TextStyle(
-                    fontFamily: 'Techna Sans Regular',
-                    fontSize: 90 * scale,
-                    color: Colors.black),
-              ),
+                  ],
+                ),
+              ],
             ),
-          ),
-          SizedBox(
-            height: 0,
-          ),
-          Container(
-            width: double.infinity,
-            child: Center(
-              child: Text('Explore Now',
+            Container(
+              width: double.infinity,
+              child: Center(
+                child: Text(
+                  'Stark',
                   style: TextStyle(
                       fontFamily: 'Techna Sans Regular',
-                      fontSize: 35 * scale,
-                      color: Colors.blue)),
-            ),
-          ),
-          Expanded(child: Container()),
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                height: 235.0,
-                decoration: new BoxDecoration(
-                  gradient: FlutterGradients.aquaGuidance(),
-                  borderRadius: BorderRadius.vertical(
-                      top: Radius.elliptical(
-                          MediaQuery.of(context).size.width, 120.0)),
+                      fontSize: 90 * scale,
+                      color: Colors.black),
                 ),
               ),
-              Column(
-                children: [
-                  SizedBox(
-                    height: 10,
+            ),
+            SizedBox(
+              height: 0,
+            ),
+            Container(
+              width: double.infinity,
+              child: Center(
+                child: Text('Explore Now',
+                    style: TextStyle(
+                        fontFamily: 'Techna Sans Regular',
+                        fontSize: 35 * scale,
+                        color: Colors.blue)),
+              ),
+            ),
+            Expanded(child: Container()),
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  height: 235.0,
+                  decoration: new BoxDecoration(
+                    gradient: FlutterGradients.aquaGuidance(),
+                    borderRadius: BorderRadius.vertical(
+                        top: Radius.elliptical(
+                            MediaQuery.of(context).size.width, 120.0)),
                   ),
-                  Container(
-                    height: 45,
-                    child: GoogleAuthButton(
-                        onPressed: () {
-                          googleSignIn(context);
-                        },
-                        style: AuthButtonStyle(
-                          iconType: AuthIconType.secondary,
-                        )),
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Container(
-                    height: 45,
-                    child: EmailAuthButton(
-                        onPressed: () {
-                          Navigator.of(context)
-                              .pushNamed(EmailSignInScreen.routeName);
-                        },
-                        text: 'Sign in with Email   ',
-                        style: AuthButtonStyle(
-                          iconType: AuthIconType.secondary,
-                        )),
-                  ),
-                  SizedBox(
-                    height: 15,
-                  ),
-                  Text('By Creating an account, you agree to Stark',
-                      style: TextStyle(color: Colors.white, fontSize: 11)),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          Functions().launchURL(
-                              'https://www.stark.social/terms', context);
-                        },
-                        child: Text('Terms of Service',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              decoration: TextDecoration.underline,
-                            )),
-                      ),
-                      SizedBox(
-                        width: 4,
-                      ),
-                      Text('and',
-                          style: TextStyle(color: Colors.white, fontSize: 11)),
-                      SizedBox(
-                        width: 4,
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Functions().launchURL(
-                              'https://www.stark.social/privacy-policy',
-                              context);
-                        },
-                        child: Text('Privacy Policy',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              decoration: TextDecoration.underline,
-                            )),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 50,
-                  )
-                ],
-              )
-            ],
-          ),
-        ],
+                ),
+                Column(
+                  children: [
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Container(
+                      height: 45,
+                      child: GoogleAuthButton(
+                          onPressed: () {
+                            googleSignIn(context);
+                          },
+                          style: AuthButtonStyle(
+                            iconType: AuthIconType.secondary,
+                          )),
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Container(
+                      height: 45,
+                      child: EmailAuthButton(
+                          onPressed: () {
+                            Navigator.of(context)
+                                .pushNamed(EmailSignInScreen.routeName);
+                          },
+                          text: 'Sign in with Email   ',
+                          style: AuthButtonStyle(
+                            iconType: AuthIconType.secondary,
+                          )),
+                    ),
+                    SizedBox(
+                      height: 15,
+                    ),
+                    Text('By Creating an account, you agree to Stark',
+                        style: TextStyle(color: Colors.white, fontSize: 11)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Functions().launchURL(
+                                'https://www.stark.social/terms', context);
+                          },
+                          child: Text('Terms of Service',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                decoration: TextDecoration.underline,
+                              )),
+                        ),
+                        SizedBox(
+                          width: 4,
+                        ),
+                        Text('and',
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 11)),
+                        SizedBox(
+                          width: 4,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Functions().launchURL(
+                                'https://www.stark.social/privacy-policy',
+                                context);
+                          },
+                          child: Text('Privacy Policy',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                decoration: TextDecoration.underline,
+                              )),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 50,
+                    )
+                  ],
+                )
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -128,8 +128,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                 height: MediaQuery.of(context).size.height,
                 width: double.infinity,
                 child: Center(
-                    child: emptyState(
-                        context, "Search something new!", 'Searching')),
+                    child: emptyState(context, "No Results!", 'Searching')),
               )
             : ListView.builder(
                 itemBuilder: (context, i) {

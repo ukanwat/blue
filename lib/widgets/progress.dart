@@ -58,7 +58,11 @@ ArsProgressDialog progressOverlay({BuildContext context}) {
 }
 
 snackbar(String text, BuildContext context,
-    {Duration duration, Color color, Function seeMore}) {
+    {Duration duration,
+    Color color,
+    Function seeMore,
+    Icon leadingIcon,
+    String fnLabel}) {
   showFlash(
       context: Get.context,
       duration: Duration(seconds: 3),
@@ -69,6 +73,7 @@ snackbar(String text, BuildContext context,
           position: FlashPosition.bottom,
           style: FlashStyle.grounded,
           child: FlashBar(
+            icon: leadingIcon ?? Icon(FluentIcons.info_16_regular),
             primaryAction: seeMore == null
                 ? Container()
                 : GestureDetector(
@@ -76,7 +81,7 @@ snackbar(String text, BuildContext context,
                     child: Container(
                       padding: EdgeInsets.only(left: 10),
                       child: Text(
-                        'See more',
+                        fnLabel ?? 'See more',
                         style: TextStyle(color: Colors.blue),
                       ),
                     ),

@@ -50,6 +50,7 @@ import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/services/push_notifications.dart';
 import 'package:blue/widgets/progress.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 // Package imports:
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:firebase_core/firebase_core.dart';
@@ -80,6 +81,7 @@ void main() async {
     DeviceOrientation.portraitUp,
   ]);
   await Firebase.initializeApp();
+  // await FirebaseAppCheck.instance.activate();
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
   await PushNotificationsManager().initNotif();
   var dir = await getApplicationDocumentsDirectory();
@@ -141,6 +143,8 @@ class MyApp extends StatefulWidget {
   }
 }
 
+RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+
 class MyAppState extends State<MyApp> {
   @override
   void initState() {
@@ -160,6 +164,7 @@ class MyAppState extends State<MyApp> {
                 create: (BuildContext context) =>
                     ConnectivityService().connectionStatusController.stream,
                 child: GetMaterialApp(
+                    navigatorObservers: [routeObserver],
                     debugShowCheckedModeBanner: false,
                     title: 'Stark',
                     theme: notifier.darkTheme == true

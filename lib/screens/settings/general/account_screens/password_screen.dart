@@ -24,16 +24,26 @@ class _PasswordScreenState extends State<PasswordScreen> {
 
   bool validate() {
     if (currentPasswordController.text == '') {
+      errorText = 'Current Password is empty';
       return false;
     }
     if (newPasswordController.text == '') {
+      errorText = 'New Password is empty';
+      return false;
+    }
+
+    if (newPasswordController.text.length < 8) {
+      errorText = 'New password must be atleast 8 chararcters long';
       return false;
     }
     return true;
   }
 
+  String errorText;
+
   submit() async {
-    if (validate()) {
+    bool b = validate();
+    if (b) {
       try {
         final auth = Provider.of(context).auth;
         await auth.changePassword(newPasswordController.text,
@@ -49,7 +59,9 @@ class _PasswordScreenState extends State<PasswordScreen> {
 
       Navigator.pop(context);
     } else {
-      snackbar('Something went wrong!', context, color: Colors.red);
+      snackbar(errorText == null ? 'Something went wrong!' : errorText, context,
+          color: Colors.red);
+      errorText = null;
     }
   }
 

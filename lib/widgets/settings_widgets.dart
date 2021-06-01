@@ -15,7 +15,9 @@ PreferredSize settingsHeader(BuildContext context, String title) {
       backgroundColor: Theme.of(context).canvasColor,
       centerTitle: false,
       elevation: 0.4,
-      title: Text(title, style: TextStyle(fontFamily: 'Techna Sans Regular')),
+      title: Text(title,
+          style:
+              TextStyle(fontFamily: 'Stark Sans', fontWeight: FontWeight.w800)),
       automaticallyImplyLeading: false,
       leading: IconButton(
         icon: Icon(
@@ -42,7 +44,7 @@ Container settingsSectionTitle(
     color: Theme.of(context).iconTheme.color == Colors.white
         ? Theme.of(context).backgroundColor
         : Color.fromRGBO(245, 245, 245, 1),
-    padding: EdgeInsets.only(top: 24, bottom: 10, left: 14),
+    padding: EdgeInsets.only(top: 8, bottom: 8, left: 10),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
@@ -52,15 +54,16 @@ Container settingsSectionTitle(
           title,
           style: TextStyle(
             fontSize: 18,
+            fontFamily: 'Stark Sans',
             fontWeight: FontWeight.w800,
           ),
         ),
         SizedBox(width: 5),
-        Icon(
-          icon.icon,
-          size: 18,
-          color: Colors.blue,
-        ),
+        // Icon(
+        //   icon.icon,
+        //   size: 18,
+        //   color: Colors.blue,
+        // ),
       ],
     ),
   );

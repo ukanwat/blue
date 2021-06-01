@@ -2,8 +2,10 @@
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
+import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/url_bottom_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
 // Project imports:
@@ -53,6 +55,7 @@ class Functions {
 
   reportUser(Map peer, Report option) async {
     Hasura.reportUser(peer['peerId'], option);
+    snackbar('user reported', Get.context);
     PreferencesUpdate().addToList('reported_accounts_$option', peer['peerId']);
   }
 
@@ -61,13 +64,15 @@ class Functions {
   }
 
   updateEmail() async {
-    String email =
-        await Hasura.getUserEmail(AuthService.firebaseAuth.currentUser.uid);
-    if (email == null) {
-      //TODO
-    } else if (AuthService.firebaseAuth.currentUser.email != email) {
-      Hasura.updateUser(email: AuthService.firebaseAuth.currentUser.email);
-    }
+    try {
+      String email =
+          await Hasura.getUserEmail(AuthService.firebaseAuth.currentUser.uid);
+      if (email == null) {
+        //TODO
+      } else if (AuthService.firebaseAuth.currentUser.email != email) {
+        Hasura.updateUser(email: AuthService.firebaseAuth.currentUser.email);
+      }
+    } catch (e) {}
   }
 
   static String abbreviateNumber(int value, {bool hideLess}) {
