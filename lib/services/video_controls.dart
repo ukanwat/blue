@@ -1,3 +1,4 @@
+import 'package:blue/services/preferences_update.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
@@ -31,7 +32,7 @@ class _VideoDisplayState extends State<VideoDisplay> with RouteAware {
   @override
   void didPopNext() {
     print("didPopNext");
-
+    widget.flickManager.flickControlManager.autoPause();
     super.didPopNext();
   }
 
@@ -39,6 +40,7 @@ class _VideoDisplayState extends State<VideoDisplay> with RouteAware {
   @override
   void didPush() {
     print("didPush");
+    widget.flickManager.flickControlManager.autoPause();
     super.didPush();
   }
 
@@ -72,7 +74,10 @@ class _VideoDisplayState extends State<VideoDisplay> with RouteAware {
           if (visibility.visibleFraction == 0 && this.mounted) {
             widget.flickManager.flickControlManager.autoPause();
           } else if (visibility.visibleFraction == 1) {
-            widget.flickManager.flickControlManager.autoResume();
+            bool autoplay = PreferencesUpdate().getBool('autoplay_videos');
+            if (autoplay == true) {
+              widget.flickManager.flickControlManager.autoResume();
+            }
           }
         }
       },

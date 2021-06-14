@@ -1191,7 +1191,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               size: 26,
                                               color: Colors.blue,
                                             ),
-                                          ),
+                                          )
+                                        else
+                                          Container(width: 26),
                                         Center(
                                           child: CircleAvatar(
                                             maxRadius: 24,

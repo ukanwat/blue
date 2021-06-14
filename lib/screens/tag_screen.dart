@@ -243,10 +243,10 @@ class _TagScreenState extends State<TagScreen> {
               margin: EdgeInsets.zero,
               child: TabBarView(children: <Widget>[
                 Transform.translate(
-                    offset: Offset.fromDirection(1.57, -46),
+                    offset: Offset.fromDirection(1.57, -MediaQuery.of(context).padding.top),
                     child: TagPopularScreen(tag)),
                 Transform.translate(
-                    offset: Offset.fromDirection(1.57, -46),
+                    offset: Offset.fromDirection(1.57, -MediaQuery.of(context).padding.top),
                     child: TagRecentScreen(tag)),
               ]),
             )),
