@@ -3,8 +3,9 @@ import 'package:blue/widgets/post.dart';
 class PostService {
   Future<dynamic> Function(int) fn;
   dynamic Function(dynamic) transform;
+  String key;
   bool compact;
-  PostService(this.fn, this.transform, this.compact);
+  PostService(this.key, this.fn, this.transform, this.compact);
   bool loaded = false;
   bool _complete = false;
   List<Post> _posts = [];

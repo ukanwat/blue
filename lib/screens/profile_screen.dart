@@ -6,6 +6,7 @@ import 'package:blue/constants/strings.dart';
 import 'package:blue/screens/follows_screen.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
+import 'package:blue/widgets/url_bottom_sheet.dart';
 import 'package:blue/widgets/user_report_dialog.dart';
 import 'package:flutter/material.dart';
 
@@ -562,6 +563,84 @@ class _ProfileScreenState extends State<ProfileScreen>
                       ),
                     ),
                   ),
+
+                if ((user.social['instagram'] != null &&
+                        user.social['instagram'] != '' &&
+                        user.social['instagram'] != '_') ||
+                    (user.social['facebook'] != null &&
+                        user.social['facebook'] != '' &&
+                        user.social['facebook'] != '_') ||
+                    (user.social['snapchat'] != null &&
+                        user.social['snapchat'] != '' &&
+                        user.social['snapchat'] != '_') ||
+                    (user.social['twitter'] != null &&
+                        user.social['twitter'] != '' &&
+                        user.social['twitter'] != '_'))
+                  Padding(
+                    padding: const EdgeInsets.only(left: 15),
+                    child: Row(
+                      children: [
+                        if (user.social['instagram'] != null &&
+                            user.social['instagram'] != '' &&
+                            user.social['instagram'] != '_')
+                          Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: GestureDetector(
+                              onTap: () {
+                                showUrlBottomSheet(context,
+                                    'https://instagram.com/${user.social['instagram']}');
+                              },
+                              child: Icon(
+                                FlutterIcons.instagram_faw,
+                                size: 22,
+                              ),
+                            ),
+                          ),
+                        if (user.social['facebook'] != null &&
+                            user.social['facebook'] != '' &&
+                            user.social['facebook'] != '_')
+                          Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: GestureDetector(
+                                onTap: () {
+                                  showUrlBottomSheet(context,
+                                      'https://facebook.com/${user.social['facebook']}');
+                                },
+                                child: Icon(
+                                  FlutterIcons.facebook_faw,
+                                  size: 22,
+                                ),
+                              )),
+                        if (user.social['snapchat'] != null &&
+                            user.social['snapchat'] != '' &&
+                            user.social['snapchat'] != '_')
+                          Padding(
+                              padding: const EdgeInsets.only(right: 15),
+                              child: GestureDetector(
+                                onTap: () {
+                                  showUrlBottomSheet(context,
+                                      'https://snapchat.com/add/${user.social['snapchat']}');
+                                },
+                                child: Icon(
+                                  FlutterIcons.snapchat_ghost_faw,
+                                  size: 22,
+                                ),
+                              )),
+                        if (user.social['twitter'] != null &&
+                            user.social['twitter'] != '' &&
+                            user.social['twitter'] != '_')
+                          GestureDetector(
+                              onTap: () {
+                                showUrlBottomSheet(context,
+                                    'https://twitter.com/${user.social['twitter']}');
+                              },
+                              child: Icon(
+                                FlutterIcons.twitter_faw,
+                                size: 22,
+                              ))
+                      ],
+                    ),
+                  )
                 // ],
               ],
             ),

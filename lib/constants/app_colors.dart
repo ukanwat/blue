@@ -19,7 +19,6 @@ class AppColors {
     Colors.blue,
     Colors.blueGrey,
     Colors.cyan,
-    Colors.yellowAccent
   ];
   Random _random = new Random();
   Color get rndColor {

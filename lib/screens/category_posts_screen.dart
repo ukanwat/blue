@@ -119,7 +119,7 @@ class _EverythingPostsScreenState extends State<EverythingPostsScreen>
   double pos = 0;
   @override
   void initState() {
-    pS = PostService(fn, transform, true);
+    pS = PostService('all', fn, transform, true);
     getPopTags();
     super.initState();
   }

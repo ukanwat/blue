@@ -1234,6 +1234,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0"
+  show_overlay:
+    dependency: "direct main"
+    description:
+      name: show_overlay
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.8"
   simple_animations:
     dependency: "direct main"
     description:

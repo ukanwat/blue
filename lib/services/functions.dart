@@ -59,8 +59,31 @@ class Functions {
     PreferencesUpdate().addToList('reported_accounts_$option', peer['peerId']);
   }
 
+  Future<void> _launchYoutubeVideo(String _youtubeUrl) async {
+    if (_youtubeUrl != null && _youtubeUrl.isNotEmpty) {
+      if (await canLaunch(_youtubeUrl)) {
+        final bool _nativeAppLaunchSucceeded = await launch(
+          _youtubeUrl,
+          forceSafariVC: false,
+          universalLinksOnly: true,
+        );
+        if (!_nativeAppLaunchSucceeded) {
+          await launch(_youtubeUrl, forceSafariVC: true);
+        }
+      }
+    }
+  }
+
   launchURL(String url, BuildContext context) async {
-    showUrlBottomSheet(context, url);
+    var urlPattern =
+        r"((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$";
+    if (RegExp(
+      urlPattern,
+    ).hasMatch(url)) {
+      _launchYoutubeVideo(url);
+    } else {
+      showUrlBottomSheet(context, url);
+    }
   }
 
   updateEmail() async {

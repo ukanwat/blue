@@ -8,6 +8,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sliding_sheet/sliding_sheet.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
@@ -70,31 +71,31 @@ class _CustomWebViewState extends State<CustomWebView> {
         ),
       ),
       body: WebViewPlus(
-        onWebViewCreated: (controller) {
-          controller.loadUrl(widget.url);
-        },
-        // onProgress: (url) {
-        //   _controller.getHeight().then((double height) {
-        //     t = true;
-        //     print(height);
-        //     if (height > 1000)
-        //       setState(() {
-        //         _height = height + 400;
-        //       });
-        //   });
-        // },
-        // onPageFinished: (url) {
-        //   _controller.getHeight().then((double height) {
-        //     t = true;
-        //     print(height);
+          onWebViewCreated: (controller) {
+            controller.loadUrl(widget.url);
+          },
+          // onProgress: (url) {
+          //   _controller.getHeight().then((double height) {
+          //     t = true;
+          //     print(height);
+          //     if (height > 1000)
+          //       setState(() {
+          //         _height = height + 400;
+          //       });
+          //   });
+          // },
+          // onPageFinished: (url) {
+          //   _controller.getHeight().then((double height) {
+          //     t = true;
+          //     print(height);
 
-        //     setState(() {
-        //       _height = height;
-        //     });
-        //   });
-        // },
-        javascriptMode: JavascriptMode.unrestricted,
-      ),
+          //     setState(() {
+          //       _height = height;
+          //     });
+          //   });
+          // },
+
+          javascriptMode: JavascriptMode.unrestricted),
     );
   }
 }

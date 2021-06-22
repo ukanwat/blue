@@ -33,14 +33,14 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                         color: Theme.of(context).iconTheme.color),
                     backgroundColor: Theme.of(context).cardColor,
                   ),
-                  subtitle: Text('199,928,392 Posts',
-                      style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          color: Theme.of(context)
-                              .iconTheme
-                              .color
-                              .withOpacity(0.8))),
+                  // subtitle: Text('199,928,392 Posts',
+                  //     style: TextStyle(
+                  //         fontSize: 12,
+                  //         fontWeight: FontWeight.w400,
+                  //         color: Theme.of(context)
+                  //             .iconTheme
+                  //             .color
+                  //             .withOpacity(0.8))),
                   title: Text(
                     '${doc["label"]}',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),

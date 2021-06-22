@@ -14,6 +14,7 @@ class User {
   final dynamic userId;
   final int followerCount;
   final int followingCount;
+  final Map social;
   User(
       {this.id,
       this.username,
@@ -26,22 +27,23 @@ class User {
       this.avatarUrl,
       this.userId,
       this.followerCount,
-      this.followingCount});
+      this.followingCount,
+      this.social});
 
   factory User.fromDocument(Map doc) {
     return User(
-      id: doc['id'],
-      email: doc['email'],
-      username: doc['username'],
-      photoUrl: doc['photo_url'],
-      name: doc['name'],
-      about: doc['about'],
-      website: doc['website'],
-      headerUrl: doc['header_url'],
-      avatarUrl: doc['avatar_url'],
-      userId: doc['user_id'],
-      followingCount: doc['following_count'],
-      followerCount: doc['follower_count'],
-    );
+        id: doc['id'],
+        email: doc['email'],
+        username: doc['username'],
+        photoUrl: doc['photo_url'],
+        name: doc['name'],
+        about: doc['about'],
+        website: doc['website'],
+        headerUrl: doc['header_url'],
+        avatarUrl: doc['avatar_url'],
+        userId: doc['user_id'],
+        followingCount: doc['following_count'],
+        followerCount: doc['follower_count'],
+        social: doc['social']);
   }
 }

@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:image/image.dart' as Im;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -51,6 +52,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   File croppedImage;
   File headerImage;
   bool _websiteValid = true;
+  Map social = {};
   getUser() async {
     setState(() {
       isLoading = true;
@@ -62,7 +64,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     displayNameController.text = user.name;
     aboutController.text = user.about;
     websiteController.text = user.website;
-
+    socialField = TextEditingController(
+        text: user.social['instagram'] == '_'
+            ? ''
+            : user.social['instagram'] ?? '');
+    instagramField = TextEditingController(
+        text: user.social['instagram'] == '_'
+            ? ''
+            : user.social['instagram'] ?? '');
+    facebookField = TextEditingController(
+        text: user.social['facebook'] == '_'
+            ? ''
+            : user.social['facebook'] ?? '');
+    snapchatField = TextEditingController(
+        text: user.social['snapchat'] == '_'
+            ? ''
+            : user.social['snapchat'] ?? '');
+    twitterField = TextEditingController(
+        text:
+            user.social['twitter'] == '_' ? '' : user.social['twitter'] ?? '');
     setState(() {
       isLoading = false;
     });
@@ -88,6 +108,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   updateProfileData() async {
     progressOverlay(context: context).show();
+
+    social = {
+      "instagram": instagramField.text == '' ? "_" : instagramField.text,
+      "facebook": facebookField.text == '' ? "_" : facebookField.text,
+      "snapchat": snapchatField.text == '' ? "_" : snapchatField.text,
+      "twitter": twitterField.text == '' ? "_" : twitterField.text,
+    };
     setState(() {
       displayNameController.text.trim().length < 3 ||
               displayNameController.text.isEmpty
@@ -146,7 +173,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             about: aboutController.text,
             website: websiteController.text.trim(),
             photoUrl: profilePictureUrl,
-            avatarUrl: avatarUrl);
+            avatarUrl: avatarUrl,
+            social: social);
       } else {
         await Hasura.updateUser(
             name: displayNameController.text,
@@ -154,7 +182,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             website: websiteController.text.trim(),
             photoUrl: profilePictureUrl,
             avatarUrl: avatarUrl,
-            headerUrl: headerUrl);
+            headerUrl: headerUrl,
+            social: social);
       }
 
       progressOverlay(context: context).dismiss();
@@ -176,16 +205,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
       if (headerUrl == null) {
         await Hasura.updateUser(
-          name: displayNameController.text,
-          about: aboutController.text,
-          website: websiteController.text.trim(),
-        );
+            name: displayNameController.text,
+            about: aboutController.text,
+            website: websiteController.text.trim(),
+            social: social);
       } else {
         await Hasura.updateUser(
             name: displayNameController.text,
             about: aboutController.text,
             website: websiteController.text.trim(),
-            headerUrl: headerUrl);
+            headerUrl: headerUrl,
+            social: social);
       }
 
       progressOverlay(context: context).dismiss();
@@ -271,6 +301,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+  String soci = 'instagram';
   Column buildAboutField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,6 +350,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+  TextEditingController instagramField = TextEditingController();
+  TextEditingController facebookField = TextEditingController();
+  TextEditingController snapchatField = TextEditingController();
+  TextEditingController twitterField = TextEditingController();
+  TextEditingController socialField = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -494,6 +530,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                                 Text(
                                                   'Tap to Change',
                                                   style: TextStyle(
+                                                      color: Colors.white,
                                                       fontWeight:
                                                           FontWeight.bold),
                                                 )
@@ -508,13 +545,138 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                       Padding(
                         padding: EdgeInsets.all(16.0),
-                        child: Column(
-                          children: <Widget>[
-                            buildDisplayNameField(),
-                            buildAboutField(),
-                            buildWebsiteField(),
-                          ],
-                        ),
+                        child: Column(children: <Widget>[
+                          buildDisplayNameField(),
+                          buildAboutField(),
+                          buildWebsiteField(),
+                          SizedBox(
+                            height: 20,
+                          ),
+                          Row(
+                            children: [
+                              Text(
+                                'Social Links',
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    color: Theme.of(context)
+                                        .iconTheme
+                                        .color
+                                        .withOpacity(0.46)),
+                              ),
+                              Expanded(
+                                child: Container(),
+                              )
+                            ],
+                          ),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          Row(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    color: soci == 'instagram'
+                                        ? Theme.of(context).cardColor
+                                        : Theme.of(context).backgroundColor),
+                                padding: const EdgeInsets.all(0.0),
+                                child: IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      setSocialUsername();
+                                      soci = 'instagram';
+                                      socialField = instagramField;
+                                    });
+                                  },
+                                  icon: Icon(
+                                    FlutterIcons.instagram_faw,
+                                    size: 28,
+                                    color: Colors.pink,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    color: soci == 'facebook'
+                                        ? Theme.of(context).cardColor
+                                        : Theme.of(context).backgroundColor),
+                                padding: const EdgeInsets.all(0.0),
+                                child: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        setSocialUsername();
+                                        soci = 'facebook';
+                                        socialField = facebookField;
+                                      });
+                                    },
+                                    icon: Icon(
+                                      FlutterIcons.facebook_faw,
+                                      color: Colors.blue[700],
+                                      size: 28,
+                                    )),
+                              ),
+                              Container(
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: soci == 'snapchat'
+                                          ? Theme.of(context).cardColor
+                                          : Theme.of(context).backgroundColor),
+                                  padding: const EdgeInsets.all(0.0),
+                                  child: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        setSocialUsername();
+                                        soci = 'snapchat';
+                                        socialField = snapchatField;
+                                      });
+                                    },
+                                    icon: Icon(
+                                      FlutterIcons.snapchat_ghost_faw,
+                                      color: Colors.yellow,
+                                      size: 28,
+                                    ),
+                                  )),
+                              Container(
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: soci == 'twitter'
+                                          ? Theme.of(context).cardColor
+                                          : Theme.of(context).backgroundColor),
+                                  padding: const EdgeInsets.all(0.0),
+                                  child: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        setSocialUsername();
+                                        soci = 'twitter';
+                                        socialField = twitterField;
+                                      });
+                                    },
+                                    icon: Icon(
+                                      FlutterIcons.twitter_faw,
+                                      color: Colors.blue,
+                                      size: 28,
+                                    ),
+                                  ))
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Text('@'),
+                              SizedBox(
+                                width: 5,
+                              ),
+                              Expanded(
+                                child: TextField(
+                                  controller: socialField,
+                                  decoration: InputDecoration(
+                                      hintText: '$soci username...'),
+                                ),
+                              ),
+                            ],
+                          )
+                        ]),
                       ),
                     ],
                   ),
@@ -523,4 +685,56 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
     );
   }
+
+  setSocialUsername() {
+    if (soci == 'instagram') {
+      instagramField = socialField;
+    }
+    if (soci == 'facebook') {
+      facebookField = socialField;
+    }
+    if (soci == 'snapchat') {
+      snapchatField = socialField;
+    }
+    if (soci == 'twitter') {
+      twitterField = socialField;
+    }
+  }
 }
+
+//  Row(
+//                             children: [
+//                               Padding(
+//                                 padding: const EdgeInsets.all(8.0),
+//                                 child: Icon(
+//                                   FlutterIcons.instagram_faw,
+//                                   size: 28,
+//                                   color: Colors.pink,
+//                                 ),
+//                               ),
+//                               Padding(
+//                                 padding: const EdgeInsets.all(8.0),
+//                                 child: Icon(
+//                                   FlutterIcons.facebook_faw,
+//                                   color: Colors.blue[700],
+//                                   size: 28,
+//                                 ),
+//                               ),
+//                               Padding(
+//                                 padding: const EdgeInsets.all(8.0),
+//                                 child: Icon(
+//                                   FlutterIcons.snapchat_ghost_faw,
+//                                   color: Colors.yellow,
+//                                   size: 28,
+//                                 ),
+//                               ),
+//                               Padding(
+//                                 padding: const EdgeInsets.all(8.0),
+//                                 child: Icon(
+//                                   FlutterIcons.twitter_faw,
+//                                   color: Colors.blue,
+//                                   size: 28,
+//                                 ),
+//                               )
+//                             ],
+//                           ),

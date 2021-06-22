@@ -135,7 +135,8 @@ class Hasura {
       String photoUrl,
       String avatarUrl,
       bool deleteToken,
-      String token}) async {
+      String token,
+      Map social}) async {
     print('updating user');
     int userId = Boxes.currentUserBox.get('user_id');
     if (userId == null) {
@@ -164,6 +165,9 @@ class Hasura {
     }
     if (email != null) {
       fields = fields + 'email: "$email",';
+    }
+    if (social != null) {
+      fields = fields + 'social: $social,';
     }
     if (username != null) {
       fields = fields + 'username: "$username",';
@@ -226,6 +230,7 @@ class Hasura {
     website
     follower_count
     following_count
+    social
   }
 }""";
     return hasuraConnect.query(
@@ -335,10 +340,12 @@ class Hasura {
       {Map<int, String> tags,
       String topicName,
       String thumbUrl,
-      String customUserId}) async {
+      String customUserId,
+      String subtitle}) async {
     if (jwtToken == null) return;
     var userId = await getUserId();
 
+    String subtitleText = subtitle == '' ? '' : 'subtitle:$subtitle,';
     if (!kReleaseMode) {
       if (customUserId != null && customUserId != '') {
         try {
@@ -361,14 +368,14 @@ class Hasura {
     }
     String _doc = tags == null
         ? """mutation insertData  {
-  insert_posts_one(object: {contents: $contents, owner_id: $userId, title: "$title", $topic $thumb}
+  insert_posts_one(object: {contents: $contents, owner_id: $userId,$subtitleText title: "$title", $topic $thumb}
         ) {
     post_id
   }
 }
 """
         : """mutation{
-  insert_posts_one(object: {contents: $contents, owner_id: $userId, title: "$title", $topic post_tags: {data: [$tagsString]}, $thumb}) {
+  insert_posts_one(object: {contents: $contents, owner_id: $userId,$subtitleText title: "$title", $topic post_tags: {data: [$tagsString]}, $thumb}) {
     post_id
   }
 }

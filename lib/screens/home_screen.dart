@@ -17,6 +17,7 @@ import './home.dart';
 import '../widgets/banner_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
+  HomeScreen(Key key) : super(key: key);
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -67,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen>
   Future refreshPosts() async {
     setState(() {
       posts = PaginatedPosts(
-        length: 5,
+        length: 50,
         key: UniqueKey(),
         orderBy: '{score:desc}',
       );
@@ -79,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen>
     super.didChangeDependencies();
 
     posts = PaginatedPosts(
-      length: 4,
+      length: 50,
       key: UniqueKey(),
       orderBy: '{score:desc}',
     );

@@ -162,6 +162,7 @@ class _TabsScreenState extends State<TabsScreen> {
     super.didChangeDependencies();
   }
 
+  int keyIndex = 0;
   @override
   Widget build(BuildContext context) {
     print(currentUser.id);
@@ -179,7 +180,7 @@ class _TabsScreenState extends State<TabsScreen> {
                 controller: _pageController,
                 onPageChanged: onPageChanged,
                 children: <Widget>[
-                  HomeScreen(),
+                  HomeScreen(ValueKey(keyIndex)),
                   ExploreScreen(),
                   Container(),
                   CommunicationTabbarScreen(),
@@ -280,7 +281,13 @@ class _TabsScreenState extends State<TabsScreen> {
     );
   }
 
+  int pageIndex = 0;
   void navigationTapped(int page) {
+    if (page == 0 && pageIndex == 0) {
+      setState(() {
+        keyIndex = keyIndex + 1;
+      });
+    }
     if (page == 2) {
       showModalBottomSheet<void>(
           context: context,
@@ -379,6 +386,8 @@ class _TabsScreenState extends State<TabsScreen> {
       // Navigator.pushNamed(context, PostScreen.routeName);
     } else
       _pageController.jumpToPage(page);
+
+    pageIndex = page;
   }
 
   Future loadCurrentUser() async {}

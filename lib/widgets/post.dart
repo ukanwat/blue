@@ -22,12 +22,12 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share/share.dart';
+import 'package:show_overlay/show_overlay.dart' as ov;
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import '../services/functions.dart';
 // Project imports:
 import 'package:blue/main.dart';
-import 'package:blue/screens/explore_posts_screen.dart';
 import 'package:blue/screens/profile_screen.dart';
 import 'package:blue/screens/tag_screen.dart';
 import 'package:blue/services/link_preview.dart';
@@ -240,212 +240,135 @@ class _PostState extends State<Post> {
   bool constraintContent = false;
   String compactPostText;
   showOptions(BuildContext context) {
-    overlayOptions = createOverlayOptions(context);
-    Overlay.of(context).insert(overlayOptions);
+    createOverlayOptions(context);
+    // Overlay.of(context).insert(overlayOptions);
   }
 
-  OverlayEntry createOverlayOptions(BuildContext context) {
+  Function createOverlayOptions(BuildContext context) {
     RenderBox getBox = context.findRenderObject();
     Offset position = getBox.localToGlobal(Offset.zero);
-    return OverlayEntry(
-        builder: (context) => Stack(
-              children: <Widget>[
-                Positioned.fill(
-                    child: GestureDetector(
-                  onTap: overlayOptions?.remove,
-                  onLongPress: overlayOptions?.remove,
-                  onHorizontalDragStart: (_) {
-                    overlayOptions?.remove();
-                  },
-                  onVerticalDragStart: (_) {
-                    overlayOptions?.remove();
-                  },
-                  child: Container(
-                    color: Colors.transparent,
-                  ),
-                )),
-                Positioned(
-                  left: position.dx + 10,
-                  top: position.dy + 10,
-                  width: 220,
-                  child: Material(
+    return ov.showOverlay(
+        context: context,
+        // animationDuration: Duration(milliseconds: 200),
+        barrierDismissible: true,
+        builder: (_, __, close) {
+          return Stack(
+            children: <Widget>[
+              Positioned.fill(
+                  child: GestureDetector(
+                onDoubleTap: close,
+                onTap: close,
+                child: Container(
+                  color: Colors.transparent,
+                ),
+              )),
+              Positioned(
+                left: position.dx + 10,
+                top: position.dy + 10,
+                width: 220,
+                child: Material(
+                  borderRadius: BorderRadius.circular(15),
+                  color: Theme.of(context).canvasColor,
+                  elevation: 1.0,
+                  child: ClipRRect(
                     borderRadius: BorderRadius.circular(15),
-                    color: Theme.of(context).canvasColor,
-                    elevation: 1.0,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
-                      child: Column(
-                        children: <Widget>[
-                          ListTile(
-                            onTap: () {
+                    child: Column(
+                      children: <Widget>[
+                        ListTile(
+                          onTap: () {
+                            setState(() {
+                              overlayOptions?.remove();
+                            });
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return ReportDialog(
+                                      widget.postId, widget.title);
+                                });
+                          },
+                          dense: true,
+                          leading: Icon(
+                            FluentIcons.flag_24_regular,
+                            color: Theme.of(context).iconTheme.color,
+                          ),
+                          title: Text('Report'),
+                        ),
+                        ListTile(
+                          dense: true,
+                          leading: Icon(
+                            FluentIcons.block_24_regular,
+                            color: Theme.of(context).iconTheme.color,
+                          ),
+                          title: Text('Not Interested'),
+                          onTap: () {
+                            setState(() {
+                              overlayOptions?.remove();
+                              notInterested = true;
+                            });
+                            Future.delayed(Duration(seconds: 3)).then((value) {
+                              if (widget.postActionExists) {
+                                Hasura.updatePostAction(
+                                    postId, 'not_interested:true');
+                              } else {
+                                Hasura.insertPostAction(
+                                    postId, 'not_interested:true');
+                              }
+                            });
+                          },
+                        ),
+                        if (ownerId != currentUser.userId)
+                          DownvoteTile(vote, postId, () {
+                            if (vote == Vote.down) {
                               setState(() {
-                                overlayOptions?.remove();
+                                vote = Vote.none;
                               });
-                              showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return ReportDialog(
-                                        widget.postId, widget.title);
-                                  });
-                            },
+                              unvote();
+                            } else
+                              setState(() {
+                                vote = Vote.down;
+                              });
+                          }, widget.postActionExists),
+                        if (isFollowing)
+                          ListTile(
                             dense: true,
                             leading: Icon(
-                              FluentIcons.flag_24_regular,
+                              FluentIcons.person_delete_24_regular,
                               color: Theme.of(context).iconTheme.color,
                             ),
-                            title: Text('Report'),
+                            onTap: () async {
+                              Functions().handleUnfollowUser(
+                                  widget.ownerId); //TODO wait for future
+                              setState(() {
+                                isFollowing = false;
+                                overlayOptions?.remove();
+                              });
+                            },
+                            title: Text('Unfollow'),
                           ),
+                        if (Boxes.currentUserBox.get('user_id') == ownerId)
                           ListTile(
                             dense: true,
                             leading: Icon(
-                              FluentIcons.block_24_regular,
-                              color: Theme.of(context).iconTheme.color,
+                              FluentIcons.delete_24_regular,
+                              color: Colors.red,
                             ),
-                            title: Text('Not Interested'),
-                            onTap: () {
-                              setState(() {
-                                overlayOptions?.remove();
-                                notInterested = true;
-                              });
-                              Future.delayed(Duration(seconds: 3))
-                                  .then((value) {
-                                if (widget.postActionExists) {
-                                  Hasura.updatePostAction(
-                                      postId, 'not_interested:true');
-                                } else {
-                                  Hasura.insertPostAction(
-                                      postId, 'not_interested:true');
-                                }
-                              });
+                            onTap: () async {
+                              overlayOptions?.remove();
+                              deletePost();
                             },
-                          ),
-                          if (ownerId != currentUser.userId)
-                            DownvoteTile(vote, postId, () {
-                              if (vote == Vote.down) {
-                                setState(() {
-                                  vote = Vote.none;
-                                });
-                                unvote();
-                              } else
-                                setState(() {
-                                  vote = Vote.down;
-                                });
-                            }, widget.postActionExists),
-                          if (isFollowing)
-                            ListTile(
-                              dense: true,
-                              leading: Icon(
-                                FluentIcons.person_delete_24_regular,
-                                color: Theme.of(context).iconTheme.color,
-                              ),
-                              onTap: () async {
-                                Functions().handleUnfollowUser(
-                                    widget.ownerId); //TODO wait for future
-                                setState(() {
-                                  isFollowing = false;
-                                  overlayOptions?.remove();
-                                });
-                              },
-                              title: Text('Unfollow'),
+                            title: Text(
+                              'Delete',
+                              style: TextStyle(color: Colors.red),
                             ),
-                          if (Boxes.currentUserBox.get('user_id') == ownerId)
-                            ListTile(
-                              dense: true,
-                              leading: Icon(
-                                FluentIcons.delete_24_regular,
-                                color: Colors.red,
-                              ),
-                              onTap: () async {
-                                overlayOptions?.remove();
-                                deletePost();
-                              },
-                              title: Text(
-                                'Delete',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            )
-                        ],
-                      ),
+                          )
+                      ],
                     ),
                   ),
                 ),
-              ],
-            ));
-  }
-
-  String _date(DateTime tm) {
-    DateTime today = new DateTime.now();
-    Duration oneDay = new Duration(days: 1);
-    Duration twoDay = new Duration(days: 2);
-    Duration oneWeek = new Duration(days: 7);
-    String month;
-    switch (tm.month) {
-      case 1:
-        month = "January";
-        break;
-      case 2:
-        month = "February";
-        break;
-      case 3:
-        month = "March";
-        break;
-      case 4:
-        month = "April";
-        break;
-      case 5:
-        month = "May";
-        break;
-      case 6:
-        month = "June";
-        break;
-      case 7:
-        month = "July";
-        break;
-      case 8:
-        month = "August";
-        break;
-      case 9:
-        month = "September";
-        break;
-      case 10:
-        month = "October";
-        break;
-      case 11:
-        month = "November";
-        break;
-      case 12:
-        month = "December";
-        break;
-    }
-    Duration difference = today.difference(tm);
-
-    if (difference.compareTo(oneDay) < 1) {
-      return "Today";
-    } else if (difference.compareTo(twoDay) < 1) {
-      return "Yesterday";
-    } else if (difference.compareTo(oneWeek) < 1) {
-      switch (tm.weekday) {
-        case 1:
-          return "Monday";
-        case 2:
-          return "Tuesday";
-        case 3:
-          return "Wednesday";
-        case 4:
-          return "Thurdsday";
-        case 5:
-          return "Friday";
-        case 6:
-          return "Saturday";
-        case 7:
-          return "Sunday";
-      }
-    } else if (tm.year == today.year) {
-      return '${tm.day} $month';
-    } else {
-      return '${tm.day} $month ${tm.year}';
-    }
-    return "";
+              ),
+            ],
+          );
+        });
   }
 
   buildPostHeader() {

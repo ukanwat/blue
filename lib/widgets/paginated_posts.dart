@@ -40,7 +40,7 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
   int lastDoc;
   bool empty = false;
   double pos = 0;
-
+  bool loading = false;
   ScrollController _scrollController = ScrollController();
   double currOff = 0;
   @override
@@ -51,6 +51,8 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
   }
 
   addPosts() async {
+    if (loading) return;
+    loading = true;
     print('adding posts');
     if (loaded == true) return;
 
@@ -127,6 +129,8 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
 
     //  List d = [];
     //  d.elementAt(i)
+
+    loading = false;
   }
 
   @override

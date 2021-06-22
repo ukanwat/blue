@@ -6,6 +6,7 @@ import 'dart:ui';
 
 // Flutter imports:
 import 'package:blue/widgets/banner_dialog.dart';
+import 'package:blue/widgets/empty_dialog.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
@@ -80,6 +81,7 @@ class _PostScreenState extends State<PostScreen> {
   FlickManager flickManager;
   VideoPlayerController _videoPlayerController;
   TextEditingController titleController = TextEditingController();
+  TextEditingController subtitleController = TextEditingController();
   TextEditingController currentTextController = TextEditingController();
   List<TextEditingController> textControllers = List();
   bool editingText = false;
@@ -335,7 +337,8 @@ class _PostScreenState extends State<PostScreen> {
         tags: tags,
         topicName: topicName,
         thumbUrl: thumbUrl,
-        customUserId: customUserIdController.text);
+        customUserId: customUserIdController.text,
+        subtitle: subtitleController.text);
   }
 
   final TextEditingController customUserIdController = TextEditingController();
@@ -1144,36 +1147,62 @@ class _PostScreenState extends State<PostScreen> {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: CircleAvatar(
-                    maxRadius: 20,
-                    backgroundImage: CachedNetworkImageProvider(Boxes
-                            .currentUserBox
-                            .get('avatar_url') ??
-                        "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
-                  ),
-                ),
+                // Padding(
+                //   padding: const EdgeInsets.all(8.0),
+                //   child: CircleAvatar(
+                //     maxRadius: 20,
+                //     backgroundImage: CachedNetworkImageProvider(Boxes
+                //             .currentUserBox
+                //             .get('avatar_url') ??
+                //         "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                //   ),
+                // ),
                 Expanded(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-                    width: double.infinity,
-                    child: TextField(
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                      maxLines: 1,
-                      minLines: 1,
-                      controller: titleController,
-                      decoration: InputDecoration(
-                        hintText: "Title",
-                        hintStyle: TextStyle(
-                            color: Theme.of(context)
-                                .iconTheme
-                                .color
-                                .withOpacity(0.8)),
-                        border: InputBorder.none,
+                  child: Column(
+                    children: [
+                      Container(
+                        color: Theme.of(context).cardColor,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(2.0),
+                              child: Text(
+                                'TITLE',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                      Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                        width: double.infinity,
+                        child: TextField(
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w500),
+                          maxLines: 1,
+                          minLines: 1,
+                          controller: titleController,
+                          decoration: InputDecoration(
+                            hintText: "Some Title...",
+                            hintStyle: TextStyle(
+                                color: Theme.of(context)
+                                    .iconTheme
+                                    .color
+                                    .withOpacity(0.8)),
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 if (!kReleaseMode)
@@ -1198,10 +1227,48 @@ class _PostScreenState extends State<PostScreen> {
                   )
               ],
             ),
+            Container(
+              color: Theme.of(context).cardColor,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Text(
+                      'SUBTITLE',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+              width: double.infinity,
+              child: TextField(
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                maxLines: 1,
+                minLines: 1,
+                controller: subtitleController,
+                decoration: InputDecoration(
+                  hintText: "(Optional)",
+                  hintStyle: TextStyle(
+                      color:
+                          Theme.of(context).iconTheme.color.withOpacity(0.8)),
+                  border: InputBorder.none,
+                ),
+              ),
+            ),
             Divider(
-              color: Colors.grey,
+              color: Colors.grey.withOpacity(0.3),
               height: 1,
-              thickness: 0.3,
+              thickness: 1,
             ),
             if (_contents.length > 0)
               Column(
@@ -1310,15 +1377,69 @@ Repeatedly posting the same content, posting something incomprehensible (like ju
     );
   }
 
+  limitIconBox(IconData icon, String s) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 13, vertical: 4),
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: Theme.of(context).cardColor),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon),
+          Text(
+            s,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 11),
+          )
+        ],
+      ),
+    );
+  }
+
   showLimits(BuildContext context) {
     snackbar("You've reached the limit.", context, seeMore: () {
       showDialog(
           context: context,
           builder: (context) {
-            return BannerDialog(
-                'Post Limits',
-                'Post is limited to 500 characters, 10 images, 5 links and 1 Video.',
-                true);
+            return EmptyDialog(
+              Container(
+                height: 90,
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('Post Limits',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          limitIconBox(Icons.text_fields, '1000\nchars'),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          limitIconBox(
+                              FluentIcons.image_16_filled, '10\nimages'),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          limitIconBox(FluentIcons.link_16_filled, '5\nlinks'),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          limitIconBox(FluentIcons.video_16_filled, '1\nvideo')
+                        ],
+                      )
+                    ]),
+              ),
+              noHorizontalPadding: true,
+            );
+            // BannerDialog(
+            //     'Post Limits',
+            //     'Post is limited to 500 characters, 10 images, 5 links and 1 Video.',
+            //     true);
           });
     });
   }
@@ -1465,9 +1586,82 @@ class TextDisplayWidget extends StatefulWidget {
 }
 
 class _TextDisplayWidgetState extends State<TextDisplayWidget> {
+  limitIconBox(IconData icon, String s) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 13, vertical: 4),
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: Theme.of(context).cardColor),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon),
+          Text(
+            s,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 11),
+          )
+        ],
+      ),
+    );
+  }
+
+  showLimits(BuildContext context) {
+    snackbar("You've reached the limit.", context, seeMore: () {
+      showDialog(
+          context: context,
+          builder: (context) {
+            return EmptyDialog(
+              Container(
+                height: 90,
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('Post Limits',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          limitIconBox(Icons.text_fields, '1000\nchars'),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          limitIconBox(
+                              FluentIcons.image_16_filled, '10\nimages'),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          limitIconBox(FluentIcons.link_16_filled, '5\nlinks'),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          limitIconBox(FluentIcons.video_16_filled, '1\nvideo')
+                        ],
+                      )
+                    ]),
+              ),
+              noHorizontalPadding: true,
+            );
+            // BannerDialog(
+            //     'Post Limits',
+            //     'Post is limited to 500 characters, 10 images, 5 links and 1 Video.',
+            //     true);
+          });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    print('ddd ${500 + widget.textController.text.length - textLength}');
     widget.onTextSelect();
+    if ((500 + widget.textController.text.length - textLength) < 0 &&
+        widget.textController.text.length == 0) {
+      showLimits(context);
+      return Container();
+    }
     return Container(
         padding: const EdgeInsets.only(left: 14, right: 14, top: 8, bottom: 2),
         child: TextFormField(
@@ -1480,6 +1674,9 @@ class _TextDisplayWidgetState extends State<TextDisplayWidget> {
               hintText: 'Something...',
               border: InputBorder.none),
           maxLines: null,
+          onChanged: (c) {
+            if (500 + widget.textController.text.length - textLength == 0) {}
+          },
           onTap: () {
             setState(() {
               widget.onTextSelect();
