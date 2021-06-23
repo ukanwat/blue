@@ -115,14 +115,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Text(
                         'Settings',
                         style: TextStyle(
-                          fontFamily: 'Techna Sans Regular',
-                          fontSize: 24,
-                        ),
+                            fontFamily: 'Stark Sans',
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800),
                       ),
                     ],
                   )),
               settingsSectionTitle(
-                  'General',
+                  'General ⚙️',
                   Icon(
                     FluentIcons.content_settings_20_regular,
                     color: Colors.blueAccent,
@@ -157,7 +157,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
 
               settingsSectionTitle(
-                  'Notifications',
+                  'Notifications 🔔',
                   Icon(
                     FluentIcons.alert_20_regular,
                     color: Colors.blueAccent,
@@ -192,7 +192,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
 
               settingsSectionTitle(
-                  'Privacy',
+                  'Privacy 👮‍♀️',
                   Icon(
                     FluentIcons.person_20_regular,
                     color: Colors.blueAccent,
@@ -227,11 +227,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               //   color: Theme.of(context).canvasColor,
               // ),
               settingsSectionTitle(
-                  'Support & Feedback',
-                  Icon(
-                    FluentIcons.person_support_20_regular,
-                    color: Colors.blueAccent,
-                  ),
+                  'Support & Feedback 📞',
+                  Icon(FluentIcons.person_support_20_regular,
+                      color: Colors.blueAccent),
                   context),
 
               Padding(
@@ -297,7 +295,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               settingsSectionTitle(
-                  'About',
+                  'About ℹ️',
                   Icon(
                     FluentIcons.info_24_regular,
                     color: Colors.blueAccent,
@@ -339,19 +337,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
 
               Container(
-                padding: EdgeInsets.only(top: 8),
+                padding: EdgeInsets.only(top: 12),
                 width: double.infinity,
                 color: dark
                     ? Theme.of(context).backgroundColor
                     : Theme.of(context).canvasColor,
-                height: 40,
+                height: 30,
                 child: Center(
                   child: Text(
-                    'v${packageInfo == null ? ' ' : packageInfo.version}',
-                    style: TextStyle(fontSize: 14),
+                    'v${packageInfo == null ? ' ' : '${packageInfo.version}' + '+' + '${packageInfo.buildNumber}'}',
+                    style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w900),
                   ),
                 ),
-              )
+              ),
+              Center(
+                  child: Text(
+                'Stark',
+                style:
+                    TextStyle(fontFamily: 'Techna Sans Regular', fontSize: 20),
+              ))
             ],
           ),
         ),

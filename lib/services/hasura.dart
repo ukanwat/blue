@@ -348,7 +348,7 @@ class Hasura {
     if (jwtToken == null) return;
     var userId = await getUserId();
 
-    String subtitleText = subtitle == '' ? '' : 'subtitle:$subtitle,';
+    String subtitleText = subtitle == '' ? '' : 'subtitle:"$subtitle",';
     if (!kReleaseMode) {
       if (customUserId != null && customUserId != '') {
         try {

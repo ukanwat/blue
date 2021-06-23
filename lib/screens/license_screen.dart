@@ -11,6 +11,7 @@ import 'package:flutter/widgets.dart' hide Flow;
 // Project imports:
 import 'package:blue/screens/package_licenses_screen.dart';
 import 'package:blue/widgets/settings_widgets.dart';
+import 'package:package_info/package_info.dart';
 
 class LicenseScreen extends StatefulWidget {
   static const routeName = 'license';
@@ -19,9 +20,11 @@ class LicenseScreen extends StatefulWidget {
 }
 
 class _LicenseScreenState extends State<LicenseScreen> {
+  PackageInfo packageInfo;
   @override
   void initState() {
     super.initState();
+
     _initLicenses();
   }
 
@@ -31,6 +34,7 @@ class _LicenseScreenState extends State<LicenseScreen> {
   bool _loaded = false;
 
   Future<void> _initLicenses() async {
+    packageInfo = await PackageInfo.fromPlatform();
     int debugFlowId = -1;
     assert(() {
       final Flow flow = Flow.begin();
@@ -61,8 +65,6 @@ class _LicenseScreenState extends State<LicenseScreen> {
       } else {
         licenses[licenseName] = [paragraphs];
       }
-
-    
     }
     if (!mounted) {
       return;
@@ -79,30 +81,28 @@ class _LicenseScreenState extends State<LicenseScreen> {
           },
           child: Container(
             decoration: const BoxDecoration(
-                border:
-                    Border(top: BorderSide(width: 0, color: Colors.grey))),
+                border: Border(top: BorderSide(width: 0, color: Colors.grey))),
             padding: EdgeInsets.symmetric(vertical: 20),
             margin: EdgeInsets.symmetric(horizontal: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Expanded(
-                                  child: Container(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                    key,
-                    maxLines: 10,
-                    overflow: TextOverflow.ellipsis,
-                    style:  TextStyle(
-                      color: Theme.of(context).iconTheme.color,              //TODO
-                        fontWeight: FontWeight.w500, fontSize: 16),
-                    textAlign: TextAlign.left,
+                  child: Container(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      key,
+                      maxLines: 10,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          color: Theme.of(context).iconTheme.color, //TODO
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16),
+                      textAlign: TextAlign.left,
+                    ),
                   ),
-                                  ),
                 ),
-                Text(
-                  
-                  value.length > 1
+                Text(value.length > 1
                     ? '${value.length} Licenses'
                     : '            ')
               ],
@@ -123,7 +123,8 @@ class _LicenseScreenState extends State<LicenseScreen> {
   Widget build(BuildContext context) {
     assert(debugCheckHasMaterialLocalizations(context));
     final String name = 'Stark';
-    final String version = 'Build Version 1.0';
+    final String version =
+        'Build Version  v${packageInfo == null ? ' ' : '${packageInfo.version}' + '+' + '${packageInfo.buildNumber}'}';
     final Widget icon = Container(
       color: Colors.blue,
       width: 100,
@@ -131,7 +132,8 @@ class _LicenseScreenState extends State<LicenseScreen> {
     );
     final String applicationLegalese = '© 2020 Stark. All Rights Reserved';
 
-    return Scaffold(backgroundColor: Theme.of(context).backgroundColor,
+    return Scaffold(
+      backgroundColor: Theme.of(context).backgroundColor,
       appBar: settingsHeader(context, 'Acknowledgements'),
       // All of the licenses page text is English. We don't want localized text
       // or text direction.
@@ -148,8 +150,10 @@ class _LicenseScreenState extends State<LicenseScreen> {
                     const EdgeInsets.symmetric(horizontal: 0.0, vertical: 12.0),
                 children: <Widget>[
                   Text(name,
-                      style: TextStyle(fontSize: 55,fontFamily: 'Techna Sans Regular',color: Theme.of(context).iconTheme.color),
-                      
+                      style: TextStyle(
+                          fontSize: 55,
+                          fontFamily: 'Techna Sans Regular',
+                          color: Theme.of(context).iconTheme.color),
                       textAlign: TextAlign.center),
                   // if (icon != null)
                   //   IconTheme(data: Theme.of(context).iconTheme, child: icon),
@@ -167,7 +171,11 @@ class _LicenseScreenState extends State<LicenseScreen> {
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 24.0),
                       child: Center(
-                        child: CircularProgressIndicator(strokeWidth: 2,valueColor:  AlwaysStoppedAnimation<Color>(Colors.blue),),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.blue),
+                        ),
                       ),
                     ),
                 ],

@@ -122,7 +122,7 @@ InkWell settingsPageNavigationTile(
             color: Theme.of(context).iconTheme.color.withOpacity(0.16),
             width: removeBorder ? 0 : 1),
       )),
-      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 13),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

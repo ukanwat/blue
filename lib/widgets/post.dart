@@ -282,9 +282,7 @@ class _PostState extends State<Post> {
                       children: <Widget>[
                         ListTile(
                           onTap: () {
-                            setState(() {
-                              overlayOptions?.remove();
-                            });
+                            close();
                             showDialog(
                                 context: context,
                                 builder: (context) {
@@ -307,8 +305,8 @@ class _PostState extends State<Post> {
                           ),
                           title: Text('Not Interested'),
                           onTap: () {
+                            close();
                             setState(() {
-                              overlayOptions?.remove();
                               notInterested = true;
                             });
                             Future.delayed(Duration(seconds: 3)).then((value) {
@@ -324,6 +322,7 @@ class _PostState extends State<Post> {
                         ),
                         if (ownerId != currentUser.userId)
                           DownvoteTile(vote, postId, () {
+                            close();
                             if (vote == Vote.down) {
                               setState(() {
                                 vote = Vote.none;
@@ -342,11 +341,11 @@ class _PostState extends State<Post> {
                               color: Theme.of(context).iconTheme.color,
                             ),
                             onTap: () async {
+                              close();
                               Functions().handleUnfollowUser(
                                   widget.ownerId); //TODO wait for future
                               setState(() {
                                 isFollowing = false;
-                                overlayOptions?.remove();
                               });
                             },
                             title: Text('Unfollow'),
@@ -359,7 +358,7 @@ class _PostState extends State<Post> {
                               color: Colors.red,
                             ),
                             onTap: () async {
-                              overlayOptions?.remove();
+                              close();
                               deletePost();
                             },
                             title: Text(

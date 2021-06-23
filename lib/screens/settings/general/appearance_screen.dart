@@ -74,7 +74,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
           builder: (context, notifier, child) => ListView(
             children: <Widget>[
               settingsSectionTitle(
-                  "Theme",
+                  "Theme 🎨",
                   Icon(
                     FluentIcons.paint_bucket_24_regular,
                   ),
@@ -142,7 +142,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                 )),
               ),
               settingsSectionTitle(
-                  "Autoplay",
+                  "Autoplay 🎥",
                   Icon(
                     FluentIcons.play_24_regular,
                   ),
@@ -181,7 +181,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                 )),
               ),
               settingsSectionTitle(
-                  "Title font",
+                  "Title font 🔤",
                   Icon(
                     FluentIcons.text_font_size_24_regular,
                   ),
