@@ -30,6 +30,7 @@ class Hasura {
     owner_id
     post_id
     title
+    subtitle
     user{
       avatar_url
       username
@@ -102,6 +103,7 @@ class Hasura {
     owner_id
     post_id
     title
+    subtitle
     comment_count
     user{
       avatar_url
@@ -310,6 +312,7 @@ class Hasura {
     print(doc);
 
     dynamic data = await hasuraConnect.mutation(doc);
+    print('convData: $data');
     return data['data']["insert_conversations_one"]['conv_id'];
   }
 
@@ -513,6 +516,7 @@ class Hasura {
     owner_id
     post_id
     title
+    subtitle
     thumbnail
     actions_by_user{
       not_interested
@@ -555,6 +559,7 @@ class Hasura {
     owner_id
     post_id
     title
+    subtitle
     actions_by_user{
       not_interested
       up
@@ -585,6 +590,7 @@ class Hasura {
     owner_id
     post_id
     title
+    subtitle
     actions_by_user{
       not_interested
       up
@@ -732,6 +738,7 @@ class Hasura {
     owner_id
     post_id
     title
+    subtitle
      actions_by_user{
       not_interested
       up
@@ -880,11 +887,7 @@ class Hasura {
   ) async {
     int userId = await getUserId();
     String doc = """query{
-  messages(where: {_and: [{conv_id: {_eq: $convId}}, 
-    {_or: [{sender_id: {_neq: $userId}}, 
-    {_or:[{deleted_by_sender:{_is_null:true}},{deleted_by_sender:{_eq:false}}]}]},
-    {_or: [{sender_id: {_eq: $userId}},
-    {_or:[{deleted_by_sender:{_is_null:true}},{deleted_by_sender:{_eq:false}}]}]}]}) {
+  messages(where: {conv_id: {_eq: $convId}}, limit:100) {
     created_at
     data
     msg_id
@@ -1242,6 +1245,7 @@ __typename
     owner_id
     post_id
     title
+    subtitle
     user{
       avatar_url
       username
@@ -1313,6 +1317,7 @@ __typename
     owner_id
     post_id
     title
+    subtitle
     user{
       avatar_url
       username
@@ -1382,6 +1387,7 @@ __typename
     owner_id
     post_id
     title
+    subtitle
     user{
       avatar_url
       username
@@ -1430,6 +1436,7 @@ __typename
     owner_id
     post_id
     title
+    subtitle
     user{
       avatar_url
       username
@@ -1515,6 +1522,7 @@ __typename
     owner_id
     post_id
     title
+    subtitle
     thumbnail
     actions_by_user{
       not_interested

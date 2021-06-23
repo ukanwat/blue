@@ -160,11 +160,13 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
   }
 
   _send(Function fn) async {
-    if (data.isEmpty) {
-      if (convId == null) {
-        convId = await Hasura.insertConversation(widget.peerUser.userId);
-      }
+    if (convId == null) {
+      convId = await Hasura.insertConversation(widget.peerUser.userId);
+      data = [];
+      setState(() {});
+    }
 
+    if (convId == null) {
       setState(() {
         focusNode = new FocusNode();
         first = false;
@@ -276,9 +278,12 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
           size: 26,
         ),
         onPressed: () async {
-          if (data.isEmpty) {
-            if (convId == null)
-              convId = await Hasura.insertConversation(widget.peerUser.userId);
+          if (convId == null) {
+            convId = await Hasura.insertConversation(widget.peerUser.userId);
+            data = [];
+            setState(() {});
+          }
+          if (convId == null) {
             setState(() {
               focusNode = new FocusNode();
               first = false;
@@ -516,7 +521,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     if (dataEmpty == null) {
       dataEmpty = data.isEmpty;
     }
-    if (dataEmpty) {
+    if (dataEmpty || convId == null) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
@@ -725,58 +730,59 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
-                      InkWell(
-                        onTap: () async {
-                          Navigator.pop(context);
-                          if (myText) {
-                            if (messageItem.deletedBySender == false) {
-                              await Hasura.deleteMessage(messageItem.id);
+                      if (myText)
+                        InkWell(
+                          onTap: () async {
+                            Navigator.pop(context);
+                            if (myText) {
+                              if (messageItem.deletedBySender == false) {
+                                await Hasura.deleteMessage(messageItem.id);
+                              } else {
+                                await Hasura.messageDeleteForMe(
+                                    messageItem.id, true);
+                              }
                             } else {
-                              await Hasura.messageDeleteForMe(
-                                  messageItem.id, true);
+                              if (messageItem.deletedBySender == true) {
+                                await Hasura.deleteMessage(messageItem.id);
+                              } else {
+                                await Hasura.messageDeleteForMe(
+                                    messageItem.id, false);
+                              }
                             }
-                          } else {
-                            if (messageItem.deletedBySender == true) {
-                              await Hasura.deleteMessage(messageItem.id);
-                            } else {
-                              await Hasura.messageDeleteForMe(
-                                  messageItem.id, false);
-                            }
-                          }
-                          setState(() {
-                            data = null;
-                            addMessages();
-                            loading = true;
-                          });
-                        },
-                        child: Container(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 15, horizontal: 20),
-                            decoration: new BoxDecoration(
-                              color: Theme.of(context).canvasColor,
-                              shape: BoxShape.rectangle,
-                              borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(10),
-                                  topRight: Radius.circular(10)),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black26,
-                                  blurRadius: 10.0,
-                                  offset: const Offset(0.0, 10.0),
-                                ),
-                              ],
-                            ),
-                            child: Container(
-                              height: 20,
-                              child: Center(
-                                  child: Text(
-                                myText
-                                    ? 'Delete this Message'
-                                    : 'Delete for me',
-                                style: TextStyle(fontSize: 16),
+                            setState(() {
+                              data = null;
+                              addMessages();
+                              loading = true;
+                            });
+                          },
+                          child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 15, horizontal: 20),
+                              decoration: new BoxDecoration(
+                                color: Theme.of(context).canvasColor,
+                                shape: BoxShape.rectangle,
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(10),
+                                    topRight: Radius.circular(10)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 10.0,
+                                    offset: const Offset(0.0, 10.0),
+                                  ),
+                                ],
+                              ),
+                              child: Container(
+                                height: 20,
+                                child: Center(
+                                    child: Text(
+                                  myText
+                                      ? 'Delete this Message'
+                                      : 'Delete for me',
+                                  style: TextStyle(fontSize: 16),
+                                )),
                               )),
-                            )),
-                      ),
+                        ),
                       Divider(
                         color: Theme.of(context).cardColor,
                         height: 1,

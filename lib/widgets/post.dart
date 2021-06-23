@@ -57,6 +57,7 @@ class Post extends StatefulWidget {
   final String username;
   final String photoUrl;
   final String title;
+  final String subtitle;
   final String topicName;
   final String topicId;
   final dynamic contents;
@@ -85,6 +86,7 @@ class Post extends StatefulWidget {
       this.username,
       this.photoUrl,
       this.title,
+      this.subtitle,
       this.topicName,
       this.topicId,
       this.contents,
@@ -137,6 +139,7 @@ class Post extends StatefulWidget {
     return Post(
       upvoted: doc['actions_by_user']['up'],
       postId: doc['post_id'],
+      subtitle: doc['subtitle'],
       ownerId: doc['owner_id'],
       username: doc['user']['username'] ?? '',
       photoUrl: doc['user']['avatar_url'] ?? Strings.emptyAvatarUrl,
@@ -178,7 +181,8 @@ class Post extends StatefulWidget {
       downvotes: this.downvotes,
       thumbUrl: this.thumbUrl,
       tags: this.tags,
-      commentCount: this.commentCount);
+      commentCount: this.commentCount,
+      subtitle: this.subtitle);
 }
 
 Vote vote;
@@ -209,11 +213,13 @@ class _PostState extends State<Post> {
   final int downvotes;
   final int commentCount;
   final String thumbUrl;
+  final String subtitle;
   _PostState(
       {this.postId,
       this.ownerId,
       this.username,
       this.photoUrl,
+      this.subtitle,
       this.title,
       this.topicName,
       this.topicId,
@@ -664,7 +670,7 @@ class _PostState extends State<Post> {
                   padding:
                       EdgeInsets.only(left: 12, top: 0, right: 5, bottom: 3),
                   child: Text(
-                    compactPostText ?? '',
+                    subtitle ?? compactPostText ?? '',
                     textAlign: TextAlign.left,
                     style: TextStyle(
                       fontSize: 14,
