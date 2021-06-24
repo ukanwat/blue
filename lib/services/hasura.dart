@@ -645,6 +645,7 @@ class Hasura {
   tags(where: {tag: {_ilike: "%$tag%"}},order_by:{post_count:desc},limit:20) {
    tag
    tag_id
+   label
    post_count
   }
 }""");
@@ -1685,7 +1686,7 @@ __typename
 
   static getPopularTags() async {
     dynamic doc = await hasuraConnect.query("""query{
-  tags(order_by:{popularity:desc},limit:10){
+  tags(order_by:{last_count:desc},limit:10){
     tag_id
     tag
     image_url

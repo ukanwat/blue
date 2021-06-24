@@ -95,11 +95,11 @@ const client = new graphqlReq.GraphQLClient('https://app.stark.social/v1/graphql
     },
 })
 
-exports.scheduledFunctionCrontab = functions.pubsub.schedule('5 10 * * *')
+exports.PostsCron = functions.pubsub.schedule('*/5 * * * *')
     .timeZone('America/New_York') // Users can choose timezone - default is America/Los_Angeles
     .onRun(async (context) => {
         const mutation = `mutation{
-        insert_cron_one(object:{type:"posts"}){
+        insert_cron_one(object:{type:"posts",args:{off:0, lim:1000}}){
          __typename
        }
        }`;
@@ -107,6 +107,39 @@ exports.scheduledFunctionCrontab = functions.pubsub.schedule('5 10 * * *')
         await client.request(mutation);
 
 
-        console.log('This will be run every day at 11:05 AM Eastern!');
+        console.log('This will be run every 5 minutes!');
+        return null;
+    });
+
+
+exports.PostsCron1 = functions.pubsub.schedule('*/50 * * * *')
+    .timeZone('America/New_York') // Users can choose timezone - default is America/Los_Angeles
+    .onRun(async (context) => {
+        const mutation = `mutation{
+        insert_cron_one(object:{type:"posts",args:{off:1000, lim:10000}}){
+         __typename
+       }
+       }`;
+
+        await client.request(mutation);
+
+
+        console.log('This will be run every 50 minutes!');
+        return null;
+    });
+
+exports.TagsCron = functions.pubsub.schedule('5 11 * * *')
+    .timeZone('America/New_York') // Users can choose timezone - default is America/Los_Angeles
+    .onRun(async (context) => {
+        const mutation = `mutation{
+        insert_cron_one(object:{type:"tags"}){
+         __typename
+       }
+       }`;
+
+        await client.request(mutation);
+
+
+        console.log('This will be run everydat at 5:11 AM!');
         return null;
     });

@@ -370,6 +370,17 @@ class _TabsScreenState extends State<TabsScreen> {
                                       fontWeight: FontWeight.w700,
                                       fontSize: 18),
                                 ),
+                                SizedBox(
+                                  width: 6,
+                                ),
+                                Text(
+                                  '${Boxes.draftBox.keys.length}',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 19,
+                                      color: Colors.grey),
+                                ),
+                                Expanded(child: Container()),
                                 Icon(FluentIcons.drafts_24_regular)
                               ],
                             ),
@@ -377,7 +388,7 @@ class _TabsScreenState extends State<TabsScreen> {
                         ),
                       ),
                       decoration: BoxDecoration(
-                          color: Theme.of(context).canvasColor,
+                          color: Theme.of(context).cardColor,
                           borderRadius: new BorderRadius.circular(10)),
                     )
                   ],

@@ -3,6 +3,9 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:blue/services/hasura.dart';
+import 'package:blue/widgets/custom_image.dart';
+import 'package:blue/widgets/post.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +32,8 @@ class _TagScreenState extends State<TagScreen> {
   dynamic tagMap;
   bool isFollowing = false;
   String label;
+  int followerCount;
+  int postCount;
   setTag() async {
     tagMap = await Hasura.getTag(tag);
   }
@@ -41,7 +46,10 @@ class _TagScreenState extends State<TagScreen> {
 
     tagMap = _tagMap;
     tag = tagMap['tag'];
+    getThumbnail();
     label = tagMap['label'];
+    followerCount = tagMap['follower_count'];
+    postCount = tagMap['post_count'];
     List tags = PreferencesUpdate().getStringList('followed_tags');
 
     tags = PreferencesUpdate().getStringList('followed_tags');
@@ -67,8 +75,19 @@ class _TagScreenState extends State<TagScreen> {
   @override
   void didChangeDependencies() {
     getTag();
+
     super.didChangeDependencies();
   }
+
+  getThumbnail() async {
+    dynamic doc = await Hasura.getTagPosts(1, 0, '{created_at:desc}', tag: tag);
+
+    setState(() {
+      thumbUrl = doc[0]['thumbnail'];
+    });
+  }
+
+  String thumbUrl;
 
   List colors = [
     Colors.red,
@@ -110,6 +129,7 @@ class _TagScreenState extends State<TagScreen> {
                             onSelected: (selectedValue) async {
                               if (selectedValue == 'Unfollow') {
                                 setState(() {
+                                  followerCount = followerCount - 1;
                                   PreferencesUpdate().removeFromList(
                                     'followed_tags',
                                     tagMap,
@@ -130,9 +150,11 @@ class _TagScreenState extends State<TagScreen> {
                                   tagMap,
                                 );
                               });
+
                               Hasura.followTag(tagMap['tag_id']);
                               setState(() {
                                 isFollowing = true;
+                                followerCount++;
                               });
                             },
                             icon: Icon(
@@ -154,7 +176,7 @@ class _TagScreenState extends State<TagScreen> {
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(15),
                                   color: Colors.transparent),
-                              child: Text('#$tag',
+                              child: Text('#${tag == null ? '' : tag}',
                                   style: TextStyle(
                                       fontSize: 22.0,
                                       fontWeight: FontWeight.w700)),
@@ -174,6 +196,52 @@ class _TagScreenState extends State<TagScreen> {
                                             FlutterGradientNames.values.length -
                                                 2)])),
                           ),
+                          Stack(children: [
+                            Center(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(15),
+                                child: Container(
+                                  child: thumbUrl == null
+                                      ? Container()
+                                      : CachedNetworkImage(
+                                          imageUrl: thumbUrl,
+                                          fit: BoxFit.cover,
+                                        ),
+                                  decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                          colors: [
+                                            Colors.black.withOpacity(0.4),
+                                            Colors.black.withOpacity(0.4),
+                                          ],
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter),
+                                      color: Colors.transparent,
+                                      borderRadius: BorderRadius.circular(15)),
+                                  width: 180,
+                                  height: 120,
+                                ),
+                              ),
+                            ),
+                            Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (followerCount != null)
+                                    Text(
+                                      '$followerCount members',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  if (postCount != null)
+                                    Text(
+                                      '$postCount posts',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                ],
+                              ),
+                            )
+                          ]),
                           Center(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -190,7 +258,7 @@ class _TagScreenState extends State<TagScreen> {
                                         color: Theme.of(context)
                                             .iconTheme
                                             .color
-                                            .withOpacity(0.8),
+                                            .withOpacity(0.9),
                                         fontFamily: 'Stark Sans',
                                         fontWeight: FontWeight.w800,
                                         fontSize: 20),
@@ -243,10 +311,12 @@ class _TagScreenState extends State<TagScreen> {
               margin: EdgeInsets.zero,
               child: TabBarView(children: <Widget>[
                 Transform.translate(
-                    offset: Offset.fromDirection(1.57, -MediaQuery.of(context).padding.top),
+                    offset: Offset.fromDirection(
+                        1.57, -MediaQuery.of(context).padding.top),
                     child: TagPopularScreen(tag)),
                 Transform.translate(
-                    offset: Offset.fromDirection(1.57, -MediaQuery.of(context).padding.top),
+                    offset: Offset.fromDirection(
+                        1.57, -MediaQuery.of(context).padding.top),
                     child: TagRecentScreen(tag)),
               ]),
             )),

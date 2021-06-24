@@ -53,9 +53,11 @@ class _LinkPreviewState extends State<LinkPreview> {
   String _url;
   InfoBase _info;
   bool _failedToLoadImage = false;
+  bool loaded = false;
   @override
   void initState() {
     _init();
+
     super.initState();
   }
 
@@ -98,12 +100,21 @@ class _LinkPreviewState extends State<LinkPreview> {
     if (mounted) setState(() {});
     if (_info.runtimeType == WebInfo)
       _validateImageUri((_info as WebInfo).icon);
+
+    loaded = true;
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     print('ss');
     print(_url);
+    if (!loaded)
+      return Container(
+          child: Center(child: Icon(FluentIcons.link_48_filled)),
+          height: 100,
+          width: MediaQuery.of(context).size.width,
+          color: Theme.of(context).cardColor);
     if (widget.builder != null) {
       return widget.builder(_info);
     }

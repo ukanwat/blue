@@ -383,7 +383,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                               begin: Alignment.bottomCenter,
                               end: Alignment(0, 0.3),
                               colors: [
-                            Colors.black54.withOpacity(0.2),
+                            Colors.black54.withOpacity(0.32),
                             Colors.transparent
                           ])),
                       height: 150,

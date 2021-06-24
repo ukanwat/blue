@@ -85,6 +85,7 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
                         tagStrings.add(element['tag']);
                       });
                     });
+                    print(tagResults);
                     loading = false;
                     print(value);
                     print(tagStrings);
@@ -155,7 +156,9 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
                         child: Padding(
                             padding: EdgeInsets.symmetric(vertical: 5),
                             child: Text(
-                              searchTerm == null ? '' : '#$searchTerm',
+                              searchTerm == null
+                                  ? ''
+                                  : '#${searchTerm.toLowerCase().replaceAll(new RegExp(r"\s+"), "")}',
                               maxLines: 1,
                               style: TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.w500),
@@ -180,34 +183,44 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
                 child: circularProgress(),
               ),
             if (searchTerm != '' && !loading)
-              Material(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemBuilder: (context, i) {
-                    return InkWell(
-                      onTap: () {
-                        Navigator.of(context).pop(
-                            {tagResults[i]['tag_id']: tagResults[i]['tag']});
-                      },
-                      child: Padding(
-                          padding: EdgeInsets.all(8),
-                          child: Column(
-                            children: [
-                              Text(
-                                tagResults[i]['tag'],
-                                style: TextStyle(
-                                    fontSize: 22, fontWeight: FontWeight.w600),
-                              ),
-                              Text(
-                                '${tagResults[i]['postCount']} Posts',
-                                style: TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w400),
-                              ),
-                            ],
-                          )),
-                    );
-                  },
-                  itemCount: tagResults.length,
+              Expanded(
+                child: Material(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemBuilder: (context, i) {
+                      return InkWell(
+                        onTap: () {
+                          Navigator.of(context).pop(
+                              {tagResults[i]['tag_id']: tagResults[i]['tag']});
+                        },
+                        child: Padding(
+                            padding: EdgeInsets.all(8),
+                            child: Column(
+                              children: [
+                                Text(
+                                  tagResults[i]['tag'],
+                                  style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                                // Text(
+                                //   tagResults[i]['label'],
+                                //   style: TextStyle(
+                                //       fontSize: 22,
+                                //       fontWeight: FontWeight.w600),
+                                // ),
+                                Text(
+                                  '${tagResults[i]['postCount']} Posts',
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400),
+                                ),
+                              ],
+                            )),
+                      );
+                    },
+                    itemCount: tagResults.length,
+                  ),
                 ),
               ),
             if (searchTerm == '')

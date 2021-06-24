@@ -18,6 +18,13 @@ PreferredSize header(context,
   return PreferredSize(
     preferredSize: Size.fromHeight(50.0),
     child: AppBar(
+      bottom: PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(
+            height: 1,
+            thickness: 1,
+            color: Theme.of(context).iconTheme.color.withOpacity(0.1),
+          )),
       brightness: Theme.of(context).brightness,
       systemOverlayStyle:
           SystemUiOverlayStyle(statusBarIconBrightness: Brightness.light),
