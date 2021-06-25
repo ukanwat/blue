@@ -12,8 +12,6 @@ String messagToken;
 
 bool userSigningUp = false;
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print('Handling a background message ${message.messageId}');
-  print(message.data);
   flutterLocalNotificationsPlugin.show(
       message.data.hashCode,
       message.data['title'],
@@ -47,13 +45,16 @@ class PushNotificationsManager {
   initMessage() async {
     getToken();
     bool ret;
-    bool agree = await PreferencesUpdate().getFuture('push_notif_agree');
+    bool agree = await PreferencesUpdate().getFuture(
+      'push_notif_agree',
+    );
+    await PreferencesUpdate().updateBool('push_notif_agree', agree);
     if (!agree) {
       await showDialog(
           context: Get.context,
           builder: (context) {
             return ShowDialog(
-              description: 'Would you like to receive push notifictions?',
+              description: 'Would you like to receive push notifications?',
               title: 'Push Notifications',
               leftButtonText: 'No',
               rightButtonText: 'Yes',
@@ -138,9 +139,7 @@ class PushNotificationsManager {
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
-  Future notificationSelected(String payload) async {
-    print(payload);
-  }
+  Future notificationSelected(String payload) async {}
 
   Future<void> getToken() async {
     try {
@@ -148,7 +147,6 @@ class PushNotificationsManager {
         PreferencesUpdate().updateString('token', deviceToken);
 
         Hasura.updateUser(token: deviceToken);
-        print(deviceToken);
       });
     } catch (e) {}
   }

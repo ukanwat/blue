@@ -128,7 +128,6 @@ class AuthService {
   Future changePassword(
       String newPassword, String password, BuildContext context) async {
     auth.User firebaseUser = firebaseAuth.currentUser;
-    print('$newPassword dwwf $password');
     bool error = false;
     String _accountType = PreferencesUpdate().getString('accountType');
     if (firebaseUser != null && _accountType != 'google') {
@@ -170,7 +169,6 @@ class AuthService {
         getCurrentUser();
       } catch (e) {
         error = true;
-        print(e);
       }
     }
     if (!error) {
@@ -189,7 +187,6 @@ class AuthService {
     } else if (!Boxes.currentUserBox.isOpen) {
       await Boxes.openCurrentUserBox();
     }
-    print(_doc);
     _doc['data']['users_by_pk'].forEach((key, value) async {
       if (key != 'timestamp') await Boxes.currentUserBox.put(key, value);
     });
@@ -233,10 +230,8 @@ class AuthService {
 
     auth.User user = _user;
     _user = null;
-    print(result);
     Map info = {};
     if (!exists) {
-      print(user.uid);
       info = await listenCreateUser(user.uid, context);
 
       userSigningUp = true;
@@ -288,7 +283,6 @@ class AuthService {
       }
       progressOverlay(context: context).dismiss();
     }
-    print('doc: $doc');
     return doc.docs.first.data();
   }
 
@@ -298,7 +292,6 @@ class AuthService {
   }
 
   Future<String> loginUser(LoginData data, BuildContext context) async {
-    print('Email: ${data.name}, Password: ${data.password}');
     userSignedIn = false;
     progressOverlay(context: context).show();
 
@@ -314,13 +307,11 @@ class AuthService {
       Future.delayed(Duration(seconds: 1));
     }
     progressOverlay(context: context).dismiss();
-    print('verified: ${_user.emailVerified}');
     if (!_user.emailVerified) {
       await navigatorKey.currentState.pushNamed(ShowScreen.routeName);
     }
     progressOverlay(context: context).show();
     bool hasuraUserExists = await Hasura.userExists(_user.uid);
-    print('hasura user exists: $hasuraUserExists ');
     if (!hasuraUserExists) {
       userSigningUp = true;
       Map info = await AuthService().listenCreateUser(_user.uid, context);

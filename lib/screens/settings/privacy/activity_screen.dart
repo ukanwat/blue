@@ -20,8 +20,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
   void initState() {
     bool _setPrivate = PreferencesUpdate().getBool('set_private');
     bool _trackActivity = PreferencesUpdate().getBool('track_activity');
-    print(_setPrivate);
-    print(_trackActivity);
     if (_setPrivate != null) setPrivate = _setPrivate;
     if (_trackActivity != null) trackActivity = _trackActivity;
 

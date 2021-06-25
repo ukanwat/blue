@@ -7,7 +7,6 @@ import 'hasura.dart';
 
 class PostFunctions {
   handleUpvoteButton(int postId, Vote vote, bool actionExists) async {
-    print('up: $vote');
     if (!actionExists) {
       Hasura.insertPostAction(postId, 'up:${_boolVote(vote, true)}');
     } else {
@@ -31,7 +30,6 @@ class PostFunctions {
   }
 
   handleDownvoteButton(int postId, Vote vote, bool actionExists) async {
-    print(_boolVote(vote, false));
     if (!actionExists) {
       Hasura.insertPostAction(postId, 'up:${_boolVote(vote, false)}');
     } else {

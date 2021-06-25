@@ -34,7 +34,6 @@ class _TagsWrapState extends State<TagsWrap> {
   getFollowedTags() async {
     tags = PreferencesUpdate().getStringList('followed_tags');
 
-    print(tags);
     bool b = tags == null;
     if (!b) {
       b = tags.length == 0;
@@ -43,8 +42,6 @@ class _TagsWrapState extends State<TagsWrap> {
     }
     if (b) {
       dynamic tagsData = await Hasura.getFollowedTags();
-      print(tags);
-      print(tagsData);
       tagsData.forEach((tag) {
         tags.add({
           'tag': tag['tag']['tag'],

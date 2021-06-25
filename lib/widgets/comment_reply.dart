@@ -107,7 +107,6 @@ class _CommentReplyState extends State<CommentReply> {
 
   @override
   Widget build(BuildContext context) {
-    print('reply vote:    ${widget.vote}');
     int votes = widget.upvotes - widget.downvotes;
     return Column(children: <Widget>[
       SizedBox(
@@ -229,7 +228,6 @@ class _CommentReplyState extends State<CommentReply> {
                             //     maxLines = 8;
                             //   }
                             // });
-                            print(maxLines);
                           },
                           child: Text(
                             exceeded ? 'See more' : 'See less',

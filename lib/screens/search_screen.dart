@@ -224,7 +224,6 @@ class _RecentSearchesState extends State<RecentSearches> {
 
   init() async {
     _recentSearches = await Hasura.getSearches(8);
-    print(_recentSearches);
     setState(() {
       loading = false;
     });

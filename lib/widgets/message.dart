@@ -47,8 +47,6 @@ class Message extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool myText = Boxes.currentUserBox.get('user_id') == idFrom;
-    print(idFrom);
-    print(message);
     return (deletedBySender == true && myText) ||
             (deletedBySender == false && !myText)
         ? Container()

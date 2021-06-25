@@ -63,7 +63,6 @@ class _FollowingPostsScreenState extends State<FollowingPostsScreen>
         });
       return;
     }
-    print('loaded: $loaded, plength: ${_p.length}, ');
 
     if (_p.length < length) {
       if (this.mounted)

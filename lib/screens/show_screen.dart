@@ -26,7 +26,6 @@ class _ShowScreenState extends State<ShowScreen> {
     l = c.listen((user) {
       user.reload();
       if (user.emailVerified) {
-        print('  userVerified =   ${user.emailVerified}');
         userVerified = true;
         c = null;
       }
@@ -34,7 +33,6 @@ class _ShowScreenState extends State<ShowScreen> {
 
     while (!userVerified) {
       await Future.delayed(Duration(seconds: 1));
-      print('  userVerified =   $userVerified');
     }
     Navigator.pop(context);
   }

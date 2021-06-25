@@ -15,6 +15,7 @@ import 'package:blue/widgets/settings_widgets.dart';
 import 'package:video_player/video_player.dart';
 import 'package:blue/widgets/show_dialog.dart';
 import 'package:blue/widgets/empty_state.dart';
+
 class DraftsScreen extends StatefulWidget {
   static const routeName = 'drafts';
   @override
@@ -26,8 +27,7 @@ class _DraftsScreenState extends State<DraftsScreen> {
   @override
   void initState() {
     // draftBox.keys.forEach((key) { draftBox.delete(key);});
-    contentsData =  Boxes.draftBox.values.toList();
-    print('drafts - $contentsData');
+    contentsData = Boxes.draftBox.values.toList();
     super.initState();
   }
 
@@ -36,11 +36,15 @@ class _DraftsScreenState extends State<DraftsScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       appBar: settingsHeader(context, 'Drafts'),
-      body:contentsData.length== 0 ? Container(height:MediaQuery.of(context).size.height,width:MediaQuery.of(context).size.width,child:emptyState(context, 'no drafts yet', 'none')): ListView.builder(
+      body: contentsData.length == 0
+          ? Container(
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              child: emptyState(context, 'no drafts yet', 'none'))
+          : ListView.builder(
               itemCount: contentsData.length,
               itemBuilder: (_, i) {
                 List post = contentsData[i]['contentsData'];
-                print('draft data $post');
                 List<Widget> widgets = [];
                 post.forEach((element) {
                   switch (element['info']['type']) {
@@ -53,7 +57,7 @@ class _DraftsScreenState extends State<DraftsScreen> {
                         ),
                       ));
                       break;
-      
+
                     case 'image':
                       widgets.add(Image.file(File(element['content'])));
                       break;
@@ -82,17 +86,19 @@ class _DraftsScreenState extends State<DraftsScreen> {
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(6),
                               color: Theme.of(context).canvasColor),
-                          margin: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          margin:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                           child: ClipRRect(
                               borderRadius: BorderRadius.circular(6),
                               child: LinkPreview(
                                 url: element['content'],
                                 bodyStyle: TextStyle(fontSize: 13),
-                                titleStyle: TextStyle(fontWeight: FontWeight.w500),
+                                titleStyle:
+                                    TextStyle(fontWeight: FontWeight.w500),
                                 showMultimedia: true,
                               ))));
                       break;
-      
+
                     case 'video':
                       FlickManager flickManager;
                       VideoPlayerController _videoPlayerController;
@@ -100,18 +106,16 @@ class _DraftsScreenState extends State<DraftsScreen> {
                           VideoPlayerController.file(File(element['content']))
                             ..initialize().then((_) {
                               flickManager = FlickManager(
-                                videoPlayerController: _videoPlayerController,autoPlay: false,autoInitialize: true
-                              );
+                                  videoPlayerController: _videoPlayerController,
+                                  autoPlay: false,
+                                  autoInitialize: true);
                             });
-                      widgets.add(
-                        VideoDisplay(flickManager, false)
-                      
-                        );
+                      widgets.add(VideoDisplay(flickManager, false));
                       break; //TODO check for video
-      
+
                   }
                 });
-      
+
                 return Container(
                   margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                   decoration: BoxDecoration(
@@ -123,7 +127,8 @@ class _DraftsScreenState extends State<DraftsScreen> {
                       Container(
                         child: Text(
                           contentsData[i]['title'],
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w600),
                           textAlign: TextAlign.left,
                         ),
                         padding: EdgeInsets.all(10),
@@ -134,26 +139,35 @@ class _DraftsScreenState extends State<DraftsScreen> {
                         children: [
                           Expanded(
                               child: ClipRRect(
-                            borderRadius:
-                                BorderRadius.only(bottomLeft: Radius.circular(10)),
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(10)),
                             child: Material(
                               child: InkWell(
                                 onTap: () {
-                                  showDialog(context: context,builder: (context){
-                                       return ShowDialog(title: 'Delete Draft',description: 'Are you sure you want to delete this draft?',leftButtonText: 'Cancel',rightButtonText: 'Delete',rightButtonFunction: ()async{
-                                      
-                                         setState(() {
-                                           Boxes.draftBox.deleteAt(i);
-                                          contentsData.removeAt(i);
-                                         
-                                         });
-                                         Navigator.of(context).pop();
-                                         
-                                          final Directory _appDocDir = await getApplicationDocumentsDirectory();
-                                             Directory(_appDocDir.path+'/posts/${contentsData[i]['postId']}').deleteSync(recursive: true);
-      
-                                       },);
-                                  });
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return ShowDialog(
+                                          title: 'Delete Draft',
+                                          description:
+                                              'Are you sure you want to delete this draft?',
+                                          leftButtonText: 'Cancel',
+                                          rightButtonText: 'Delete',
+                                          rightButtonFunction: () async {
+                                            setState(() {
+                                              Boxes.draftBox.deleteAt(i);
+                                              contentsData.removeAt(i);
+                                            });
+                                            Navigator.of(context).pop();
+
+                                            final Directory _appDocDir =
+                                                await getApplicationDocumentsDirectory();
+                                            Directory(_appDocDir.path +
+                                                    '/posts/${contentsData[i]['postId']}')
+                                                .deleteSync(recursive: true);
+                                          },
+                                        );
+                                      });
                                 },
                                 child: Container(
                                   padding: EdgeInsets.symmetric(vertical: 11),
@@ -188,12 +202,14 @@ class _DraftsScreenState extends State<DraftsScreen> {
                           ),
                           Expanded(
                               child: ClipRRect(
-                            borderRadius:
-                                BorderRadius.only(bottomRight: Radius.circular(10)),
+                            borderRadius: BorderRadius.only(
+                                bottomRight: Radius.circular(10)),
                             child: Material(
                               child: InkWell(
                                 onTap: () {
-                                  Navigator.of(context).pushNamed(PostScreen.routeName,arguments: i);
+                                  Navigator.of(context).pushNamed(
+                                      PostScreen.routeName,
+                                      arguments: i);
                                 },
                                 child: Container(
                                   padding: EdgeInsets.symmetric(vertical: 10),
@@ -228,8 +244,6 @@ class _DraftsScreenState extends State<DraftsScreen> {
                 );
               },
             ),
-          );
-        }
-      }
-      
- 
+    );
+  }
+}

@@ -257,7 +257,6 @@ class _CommentState extends State<Comment> {
                                         maxLines = 8;
                                       }
                                     });
-                                    print(maxLines);
                                   },
                                   child: Text(
                                     exceeded ? 'See more' : 'See less',

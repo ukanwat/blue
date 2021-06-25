@@ -50,7 +50,6 @@ class _ProfileImageCropScreenState extends State<ProfileImageCropScreen> {
                     area: area,
                   );
 
-                  debugPrint('$file');
                   Navigator.pop(context, file);
                 },
                 child: Text(

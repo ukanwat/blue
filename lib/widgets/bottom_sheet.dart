@@ -20,6 +20,4 @@ void showSheet(BuildContext context, Widget child, Widget header) async {
       },
     );
   });
-
-  print(result); // This is the result.
 }

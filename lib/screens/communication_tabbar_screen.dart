@@ -79,8 +79,6 @@ class _CommunicationTabbarScreenState extends State<CommunicationTabbarScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    print(MediaQuery.of(context).viewInsets.top);
-    print(currentUser.about);
     return DefaultTabController(
       length: 2,
       child: Scaffold(

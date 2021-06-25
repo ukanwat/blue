@@ -58,7 +58,6 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
         widgets = _people
             .map((doc) => ListTile(
                   onTap: () {
-                    print('result profile: $doc');
                     GoTo().profileScreen(context, doc["user_id"]);
                   },
                   leading: CircleAvatar(
@@ -85,8 +84,6 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
 
   searchPosts() async {
     List<dynamic> _posts = await Hasura.searchPosts(widget.search);
-    print('sss');
-    print(_posts);
     if (this.mounted)
       setState(() {
         _posts.forEach((doc) {
@@ -96,7 +93,6 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
             commentsShown: false,
           ));
         });
-        print(widgets.length);
         loading = false;
       });
   }

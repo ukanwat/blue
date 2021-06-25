@@ -31,7 +31,6 @@ class _VideoDisplayState extends State<VideoDisplay> with RouteAware {
   /// shows up.
   @override
   void didPopNext() {
-    print("didPopNext");
     widget.flickManager.flickControlManager.autoPause();
     super.didPopNext();
   }
@@ -39,7 +38,6 @@ class _VideoDisplayState extends State<VideoDisplay> with RouteAware {
   /// Called when the current route has been pushed.
   @override
   void didPush() {
-    print("didPush");
     widget.flickManager.flickControlManager.autoPause();
     super.didPush();
   }

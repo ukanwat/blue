@@ -62,21 +62,18 @@ class _ChatsScreenState extends State<ChatsScreen>
     int i = 0;
     data.forEach((doc) {
       int convId = doc['conv_id'];
-      print('convId: $convId - ${Hasura.getUserId()}');
 
       if (doc['user1']['user_id'] == Boxes.currentUserBox.get('user_id')) {
         doc = doc['user2'];
       } else {
         doc = doc['user1'];
       }
-      print(doc);
       User user = User.fromDocument({
         'avatar_url': doc['avatar_url'],
         'user_id': doc['user_id'],
         'username': doc['username'],
         'name': doc['name']
       });
-      print(user);
       Widget userChat = OpenContainer<bool>(
           transitionType: ContainerTransitionType.fadeThrough,
           openBuilder: (BuildContext _, VoidCallback openContainer) {
@@ -193,7 +190,6 @@ class _ChatsScreenState extends State<ChatsScreen>
         ),
         onDismissed: (DismissDirection d) {
           setState(() {
-            print(i);
             chatUsers.removeAt(i - 1);
           });
           Hasura.hideConversation(user.userId, widget.archived);
@@ -210,7 +206,6 @@ class _ChatsScreenState extends State<ChatsScreen>
           //               onTap: () {
           //                 Navigator.of(context).pop();
           //                 setState(() {
-          //                   print(i);
           //                   chatUsers.removeAt(i - 1);
           //                 });
           //                 // Hasura.hideConversation(user.userId);

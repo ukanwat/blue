@@ -60,7 +60,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     Map doc = await Hasura.getUser(self: true);
     user = User.fromDocument(doc['data']['users_by_pk']);
-    print(user.headerUrl);
     displayNameController.text = user.name;
     aboutController.text = user.about;
     websiteController.text = user.website;

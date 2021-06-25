@@ -29,8 +29,6 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   String id;
   LoginData signupData;
   Future<String> signupUser(LoginData data) async {
-    print('Email: ${data.name}, Password: ${data.password}');
-
     var uid = await AuthService()
         .createUserWithEmailAndPassword(data.name, data.password, context);
     if (uid == null) {
@@ -57,7 +55,6 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   @override
   void initState() {
     // if (ldata != null) {
-    //   print('ld : ${ldata.name}');
     //   ldata = null;
     //   loginUser(widget.ld);
     // }
@@ -83,7 +80,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                 userSignedIn = false;
 
                 AuthService().signOut(context);
-                
+
                 var a = await AuthService().loginUser(signupData, context);
                 if (a == null) {
                   return;

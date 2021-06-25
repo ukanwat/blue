@@ -34,7 +34,6 @@ class _ActivityFeedScreenState extends State<ActivityFeedScreen>
     }
     adding = true;
     List feedData = await Hasura.getNotifications(offset: offset, limit: limit);
-    print(feedData);
     offset = offset + feedData.length;
     setState(() {
       feedData.forEach((doc) {

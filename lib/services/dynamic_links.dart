@@ -11,7 +11,6 @@ import '../widgets/post.dart';
 class DynamicLinksService {
   static Future<String> createDynamicLink(String parameter) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    print(packageInfo.packageName);
     String uriPrefix = "https://starkapp.page.link";
 
     final DynamicLinkParameters parameters = DynamicLinkParameters(
@@ -52,11 +51,9 @@ class DynamicLinksService {
 
     FirebaseDynamicLinks.instance.onLink(
         onSuccess: (PendingDynamicLinkData dynamicLink) async {
-      handleDynamicLink(dynamicLink, context);
-    }, onError: (OnLinkErrorException e) async {
-      print('onLinkError');
-      print(e.message);
-    });
+          handleDynamicLink(dynamicLink, context);
+        },
+        onError: (OnLinkErrorException e) async {});
   }
 
   static handleDynamicLink(
@@ -66,12 +63,10 @@ class DynamicLinksService {
     if (deepLink == null) {
       return;
     }
-    print(deepLink); //TODO
     if (deepLink.pathSegments.contains('post')) {
       String postId = deepLink.queryParameters['id'];
 
       var doc = await Hasura.getPost(int.parse(postId));
-      print(doc);
       if (postId != null) {
         Navigator.of(context).pushNamed(CommentsScreen.routeName, arguments: {
           'post': Post.fromDocument(

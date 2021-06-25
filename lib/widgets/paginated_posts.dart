@@ -53,7 +53,6 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
   addPosts() async {
     if (loading) return;
     loading = true;
-    print('adding posts');
     if (loaded == true) return;
 
     if (lastDoc == null) {
@@ -71,7 +70,6 @@ class _PaginatedPostsState extends State<PaginatedPosts> {
             where: widget.where ?? null);
       }
 
-      print('ddddgg $_p');
       _posts = _p
           .map((doc) => Post.fromDocument(
                 doc,

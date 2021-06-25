@@ -73,7 +73,6 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
                 if (value == '') {
                   tagResults = [];
                 } else {
-                  print('search tag: $value');
                   Future future = Hasura.findTags(_searchTerm
                       .toLowerCase()
                       .replaceAll(new RegExp(r"\s+"), ""));
@@ -85,17 +84,10 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
                         tagStrings.add(element['tag']);
                       });
                     });
-                    print(tagResults);
                     loading = false;
-                    print(value);
-                    print(tagStrings);
-                    print(tagStrings.contains(tagSearchController.text
-                        .replaceAll(new RegExp(r"\s+"), "")
-                        .toLowerCase()));
                   });
                 }
                 // setState(() {
-                //   print('d');
                 //   loading = false;
                 // });
               },

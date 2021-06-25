@@ -107,8 +107,6 @@ class _LinkPreviewState extends State<LinkPreview> {
 
   @override
   Widget build(BuildContext context) {
-    print('ss');
-    print(_url);
     if (!loaded)
       return Container(
           child: Center(child: Icon(FluentIcons.link_48_filled)),
@@ -119,8 +117,6 @@ class _LinkPreviewState extends State<LinkPreview> {
       return widget.builder(_info);
     }
     if (_info is YoutubeInfo) {
-      print((_info as YoutubeInfo).url);
-      print('uk');
       return Container(
         height: (MediaQuery.of(context).size.width * 0.5),
         child: Stack(
@@ -331,9 +327,7 @@ class WebAnalyzer {
         info._timeout = DateTime.now().add(cache);
         _map[url] = info;
       }
-    } catch (e) {
-      print("Get web info error($url) $e");
-    }
+    } catch (e) {}
 
     return info;
   }
@@ -341,7 +335,6 @@ class WebAnalyzer {
   static InfoBase _getWebInfo(
       http.Response response, String url, bool multimedia) {
     if (response.statusCode == 200) {
-      print("asadasdasdawsdasdasda");
       var urlPattern =
           r"((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$";
       bool isYoutubeVideo = RegExp(
@@ -354,8 +347,6 @@ class WebAnalyzer {
       mediaBody = mediaBody.replaceFirst(_bodyReg, "<body></body>");
       mediaBody = mediaBody.replaceAll(_scriptReg, "");
       final mediaDocument = parser.parse(mediaBody);
-      print('XXXXXXXXXXXXXXXXXXXXXX');
-      print(mediaBody);
 
       if (isYoutubeVideo) {
         String videoId = getIdFromUrl(url);
@@ -457,7 +448,6 @@ class WebAnalyzer {
   static String _scrapeImage(Document document, String url) {
     var images = document.body.getElementsByTagName("img");
     var imageSrc = "";
-    print('$imageSrc ppppppppppppppppppppppppppppppppppppppp');
     if (images.length > 0) {
       imageSrc = images[0].attributes["src"];
 
@@ -466,11 +456,9 @@ class WebAnalyzer {
       }
     }
     if (imageSrc == "") {
-      print("WARNING - WebPageParser - " + url);
       print(
           "WARNING - WebPageParser - image might be empty. Tag <img> was not found.");
     }
-    print('$imageSrc ppppppppppppppppppppppppppppppppppppppp');
     return imageSrc;
   }
 
@@ -548,7 +536,6 @@ class WebAnalyzer {
   //     }
   //   }
   //   if (imageSrc == "") {
-  //     print("WARNING - WebPageParser - " + url);
   //     print(
   //         "WARNING - WebPageParser - image might be empty. Tag <img> was not found.");
   //   }

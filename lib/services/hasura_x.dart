@@ -72,7 +72,6 @@ class HasuraConnectX extends HasuraConnect {
       // to avoid unncessary connections/disconnetions
       // another option is to pause authStateSubscription when currentSnapshots.isEmpty
       if (currentSnapshots.isNotEmpty) {
-        //print('refreshing ${currentSnapshots.length} snapshot(s) from HasuraConnectX');
         refreshSubscriptions();
       }
     });
@@ -111,7 +110,6 @@ class HasuraConnectX extends HasuraConnect {
 
   // recreate all the snapshots that are still active based on currentSnapshots map
   void _recreateSnapshots() {
-    // print('recreating connections....');
     for (var key in currentSnapshots.keys) {
       final intermediateSnapshot = currentSnapshots[key];
       subscription(

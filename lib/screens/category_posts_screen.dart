@@ -145,7 +145,6 @@ class _EverythingPostsScreenState extends State<EverythingPostsScreen>
         popTags != [] &&
         popTags.length != 0 &&
         _items.length != 0) {
-      print(popTags);
       _items.add(Container(child: PostsSection(popTags[0]['tag'], 'Top')));
       popTags.removeAt(0);
     }

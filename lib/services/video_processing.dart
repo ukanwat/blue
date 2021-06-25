@@ -40,8 +40,6 @@
 //     return info['duration'];
 //   }
 
-  
-
 //   void updatePlaylistUrls(File file,String videoName) {
 //     final lines = file.readAsLinesSync();
 //     var updatedLines = List<String>();
@@ -99,7 +97,6 @@
 //     final FlutterFFmpeg _encoder = FlutterFFmpeg();
 
 //     final info = await getMediaInformation(file.path);
-//     print(info);
 //     final aspectRatio = getAspectRatio(info);
 //     double videoHeight;
 //     double videoWidth;
@@ -118,7 +115,6 @@
 //     String tempArguments = '';
 //     videoWidth = 960;
 //     videoHeight = 540;
-//     print('${VideoProcessing.checkAudio(info)}');
 //     if (VideoProcessing.checkAudio(info)) {
 //       tempArguments = '-y -i ${file.path} ' +
 //           '-preset fast -g 48 -sc_threshold 0 ' +
@@ -145,7 +141,6 @@
 //     }
 //     await _encoder
 //         .execute(tempArguments)
-//         .then((rc) => print("FFmpeg process exited with rc $rc"));
 
 //     String thumbFilePath = await getThumb(
 //         file.path,
@@ -154,9 +149,7 @@
 
 //     final String thumbUrl = await uploadFile(thumbFilePath, 'thumbnail',postId);
 //     final String videoUrl = await _uploadHLSFiles(outDir, 'video_$postId',postId);
-//     print('$thumbUrl  $videoUrl');
 //     return {'thumbUrl': thumbUrl, 'videoUrl': videoUrl};
 //   }
 
-  
 // }

@@ -22,7 +22,6 @@ class CommentGet extends GetxController {
 
     userCommentReplies[commentId] = userCommentReplies[commentId] + [reply];
 
-    print(userCommentReplies);
     update([commentId]);
   }
 

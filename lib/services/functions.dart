@@ -41,9 +41,6 @@ class Functions {
   }
 
   muteUser(Map peer) async {
-    print(peer);
-
-    print(PreferencesUpdate().getStringList('muted_messages'));
     PreferencesUpdate().addToList('muted_messages', peer['peerId']);
     Hasura.muteUser(peer['peerId']);
   }

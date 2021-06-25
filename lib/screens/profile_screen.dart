@@ -84,21 +84,17 @@ class _ProfileScreenState extends State<ProfileScreen>
   var future;
   @override
   void didChangeDependencies() {
-    print(widget.profileId);
-    print('d');
     addPosts(Sort.Recent);
     _controller.addListener(() {
       if (_controller.position.pixels == _controller.position.maxScrollExtent &&
           empty != true &&
           loaded != true) {
-        print('');
         setState(() {
           addPosts(sort, changing: true);
         });
       }
     });
 
-    print(widget.profileId);
     super.didChangeDependencies();
   }
 
@@ -115,7 +111,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       setState(() {
         loaded = false;
       });
-    print('owner-${widget.profileId}');
     int length = Hasura.postLimit;
     int _id = widget.profileId;
     String _where = "{owner_id:{_eq:$_id}}";
@@ -330,7 +325,6 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   buildProfileHeaderTemp() {
-    print('current user id ^');
     future = Hasura.getUser(
         id: widget.profileId,
         self: Boxes.currentUserBox.get('user_id') == widget.profileId
@@ -346,7 +340,6 @@ class _ProfileScreenState extends State<ProfileScreen>
           if (!snapshot.hasData) {
             return Container(height: 200, child: circularProgress());
           }
-          print(snapshot.data['data']['users_by_pk']);
           User user = User.fromDocument(snapshot.data['data']['users_by_pk']);
           if (Boxes.currentUserBox.get('user_id') == widget.profileId) {
             Boxes.currentUserBox.put('avatar_url', user.avatarUrl);
@@ -827,7 +820,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           color:
                                               Theme.of(context).iconTheme.color,
                                         ), () async {
-                                      print('userID:${_profileUser.userId}');
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -930,8 +922,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                     _profileUser.photoUrl,
                                                 'peerName': _profileUser.name
                                               };
-                                              print(
-                                                  '$selectedValue user $peer');
                                               switch (selectedValue) {
                                                 case 'Unfollow':
                                                   Functions()

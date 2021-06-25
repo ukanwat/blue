@@ -139,7 +139,6 @@ class _PostScreenState extends State<PostScreen> {
     contentsInfo[fileIndex] = infoMap; //
     setState(() {
       if (_image == null) {
-        print('File is not available');
       } else {
         contentsData.add({
           'info': {
@@ -179,8 +178,6 @@ class _PostScreenState extends State<PostScreen> {
   addVideoContent(File _video) {
     VideoPlayerController _vidController =
         new VideoPlayerController.file(_video);
-    print(_video.path);
-    print(_video.uri);
     if (_vidController.value.duration.compareTo(Duration(minutes: 3)) > 0) {
       snackbar('video cannot be longer than 3 minutes', context);
       return;
@@ -329,7 +326,6 @@ class _PostScreenState extends State<PostScreen> {
               ? "$value"
               : """\"$value\""""; //TODO
     });
-    print(customContents);
     if (tags == {}) {
       tags = null;
     }
@@ -423,7 +419,6 @@ class _PostScreenState extends State<PostScreen> {
     }
 
     File thumbImg;
-    print('tindex: $thumbIndex ');
     if (_thumbContent == ThumbContent.carousel) {
       thumbImg = contentsData[thumbIndex]['content'][0];
     } else if (_thumbContent == ThumbContent.image) {
@@ -450,7 +445,6 @@ class _PostScreenState extends State<PostScreen> {
       thumbUrl = await uploadImage(compressedImageFile, thumb: true);
     }
 
-    print("doc:$topicName");
     await uploadPost(
         contents: firestoreContents,
         title: titleController.text,
@@ -478,7 +472,6 @@ class _PostScreenState extends State<PostScreen> {
     contentsInfo[index] = infoMap;
     contentsMap[index] = textController;
     contentType.add('text');
-    print(contentsMap);
     return TextDisplayWidget(textController, textFocusNode, () {
       int length = 0;
       for (int i = 0; i < contentsData.length; i++) {
@@ -597,7 +590,6 @@ class _PostScreenState extends State<PostScreen> {
       _url = 'https://$_url';
     }
 
-    print(_url);
     try {
       response = await head(Uri.parse(_url));
     } catch (error) {
@@ -883,8 +875,6 @@ class _PostScreenState extends State<PostScreen> {
             },
             child: contentsData[i]['widget']));
       }
-      print('content data: $contentsData');
-      print(contentsData[i]);
       if (contentsData[i] != null) {
         switch (contentsData[i]['info']['type']) {
           case 'image':
@@ -911,8 +901,6 @@ class _PostScreenState extends State<PostScreen> {
         contentsData.removeAt(i);
       }
     }
-    print('cimg: $cimg');
-    print(Boxes.draftBox.values);
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       appBar: AppBar(
@@ -970,7 +958,6 @@ class _PostScreenState extends State<PostScreen> {
                               _modifiedContentsData[i]['content'] = _path;
                               break;
                             // case 'video':
-                            //   // print('its video draft content');
                             //   // final _fileName = Path.basename(
                             //   //     _modifiedContentsData[i]['content'].path);
                             //   // String _path =
@@ -1125,7 +1112,6 @@ class _PostScreenState extends State<PostScreen> {
           actions: <Widget>[
             IconButton(
               onPressed: () {
-                print(contentsData);
                 Navigator.of(context)
                     .pushNamed(SelectTopicScreen.routeName, arguments: {
                   'post-function': handleSubmit,
@@ -1655,7 +1641,6 @@ class _TextDisplayWidgetState extends State<TextDisplayWidget> {
 
   @override
   Widget build(BuildContext context) {
-    print('ddd ${500 + widget.textController.text.length - textLength}');
     widget.onTextSelect();
     if ((500 + widget.textController.text.length - textLength) < 0 &&
         widget.textController.text.length == 0) {

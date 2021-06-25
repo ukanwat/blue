@@ -52,7 +52,6 @@ class FileStorage {
       await storageReference.delete();
       successful = true;
     } catch (e) {
-      print(e);
       successful = false;
     }
     return successful;

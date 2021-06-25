@@ -664,13 +664,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.11"
-  flutter_point_tab_bar:
-    dependency: "direct main"
-    description:
-      name: flutter_point_tab_bar
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.2.0"
   flutter_signin_button:
     dependency: "direct main"
     description:
@@ -961,6 +954,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.0.1"
+  lazy_load_scrollview:
+    dependency: "direct main"
+    description:
+      name: lazy_load_scrollview
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.3.0"
   linkify:
     dependency: transitive
     description:

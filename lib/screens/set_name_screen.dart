@@ -170,8 +170,6 @@ class _SetNameScreenState extends State<SetNameScreen> {
                                     bool notExists = await Hasura.checkUsername(
                                         usernameController.text);
                                     progressOverlay(context: context).dismiss();
-                                    print('noexists');
-                                    print(notExists);
                                     if (notExists) {
                                       snackbar(
                                           'username is unavailable', context,
@@ -185,7 +183,6 @@ class _SetNameScreenState extends State<SetNameScreen> {
                                         'name': nameController.text,
                                         'username': usernameController.text
                                       });
-                                      print('noexists');
                                     } else if ((data['provider'] == 'google') ||
                                         (data['provider'] == 'facebook')) {
                                       Navigator.of(context).pop();

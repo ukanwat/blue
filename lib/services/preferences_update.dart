@@ -40,8 +40,6 @@ class PreferencesUpdate {
       _list = [];
     }
 
-    print(key);
-    print(_list.runtimeType);
     return _list.contains(value);
   }
 
@@ -118,10 +116,13 @@ class PreferencesUpdate {
     return Boxes.preferenceBox.get(key);
   }
 
-  getFuture(String key) async {
+  getFuture(
+    String key,
+  ) async {
     if (!Boxes.preferenceBox.containsKey(key)) {
       return await Hasura.getPreferences(key);
     }
+
     return Boxes.preferenceBox.get(key);
   }
 

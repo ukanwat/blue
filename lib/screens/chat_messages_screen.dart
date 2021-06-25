@@ -79,7 +79,6 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         sendingStateMap['count'] = sendingStateMap['count'] + 1;
         messageController.clear();
       });
-      print('convId : $convId');
       await Hasura.insertMessage(
           widget.peerUser.userId, convId, 'text', textMessage, context);
 
@@ -88,11 +87,9 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
       sendingStateMap['id'].forEach((k, v) {
         if (v == false) valid = false;
       });
-      print(valid);
       Future.delayed(const Duration(milliseconds: 1000), () {
         setState(() {
           if (valid) {
-            print(sendingStateMap['count']);
             sendingStateMap['state'] =
                 sendingStateMap['count'] > 1 ? 'All Sent' : 'Sent';
           }
@@ -136,9 +133,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         });
         Future.delayed(const Duration(milliseconds: 5000), () {
           setState(() {
-            print('assfsz gif');
             if (valid) {
-              print(sendingStateMap['count']);
               sendingStateMap['state'] =
                   sendingStateMap['count'] > 1 ? 'All Sent' : 'Sent';
             }
@@ -213,7 +208,6 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
       });
       if (pickedFile != null) {
         image = File(pickedFile.path);
-        print('file opened');
         String downloadUrl = await FileStorage.uploadImage(
             convId.toString(), image,
             bucket: 'chat-messages');
@@ -228,7 +222,6 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         Future.delayed(const Duration(milliseconds: 1000), () {
           setState(() {
             if (valid) {
-              print(sendingStateMap['count']);
               sendingStateMap['state'] =
                   sendingStateMap['count'] > 1 ? 'All Sent' : 'Sent';
             }
@@ -245,9 +238,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         });
       }
       return true;
-    } catch (e) {
-      print(e);
-    }
+    } catch (e) {}
   }
 
   getConvId() async {
@@ -633,13 +624,11 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
       bool myText = currentUser.id == messageItem.idFrom;
       if (doc['hide'] != true || myText)
         messageItems.add(messageTransform(messageItem, myText, i));
-      print(lastTimestamp.toString());
       lastTimestamp = messageItem.timestamp;
       if (firstTime == null) {
         firstTime = lastTimestamp;
       }
       if (length == i) {
-        print(lastTimestamp.toString());
         messageItems.add(Container(
             padding: EdgeInsets.symmetric(vertical: 15),
             child: Center(
@@ -649,7 +638,6 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
             ))));
       }
     });
-    print("lastt $lastTimestamp");
     return Scrollbar(
       thickness: 2,
       radius: Radius.circular(5),
@@ -680,7 +668,6 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
  }""")),
                   builder: (result) {
                     if (result.data == null) return Container();
-                    print('subs: $result');
                     return ListView.builder(
                       physics: NeverScrollableScrollPhysics(),
                       shrinkWrap: true,

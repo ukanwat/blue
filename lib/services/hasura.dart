@@ -419,8 +419,14 @@ class Hasura {
     $key
   }
 }""");
+    print("""query{
+   preferences_by_pk(user_id:$userId){
+    $key
+  }
+}""");
+    print(data);
     if (data['data']['preferences_by_pk'] == null) {
-      return DateTime(2020).toString();
+      return null;
     }
     return data['data']['preferences_by_pk'][key];
   }

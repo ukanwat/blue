@@ -57,7 +57,6 @@ class _PostsSectionState extends State<PostsSection>
           }
         });
       });
-      print('isFollowing: $isFollowing');
 
       if (!isFollowing) {
         setTag();

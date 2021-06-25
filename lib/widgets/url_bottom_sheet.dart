@@ -77,7 +77,6 @@ class _CustomWebViewState extends State<CustomWebView> {
           // onProgress: (url) {
           //   _controller.getHeight().then((double height) {
           //     t = true;
-          //     print(height);
           //     if (height > 1000)
           //       setState(() {
           //         _height = height + 400;
@@ -87,7 +86,6 @@ class _CustomWebViewState extends State<CustomWebView> {
           // onPageFinished: (url) {
           //   _controller.getHeight().then((double height) {
           //     t = true;
-          //     print(height);
 
           //     setState(() {
           //       _height = height;

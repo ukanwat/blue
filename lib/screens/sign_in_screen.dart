@@ -63,7 +63,6 @@ class _SignInScreenState extends State<SignInScreen> {
           if (uid = null) {
             return;
           }
-          print("Signed In with ID $uid");
           //   usersRef.document(user.id).setData({
           //   'id': user.id,
           //   'username': username,
@@ -76,7 +75,6 @@ class _SignInScreenState extends State<SignInScreen> {
           //     Navigator.of(context).pushReplacementNamed('/home');         TODO:
         } else if (authFormType == AuthFormType.reset) {
           await auth.sendPasswordResetEmail(_email);
-          print("Password reset email sent");
           _warning = "A password reset link has been sent to $_email";
           setState(() {
             authFormType = AuthFormType.signIn;
@@ -89,7 +87,6 @@ class _SignInScreenState extends State<SignInScreen> {
           Navigator.of(context).pop(_username);
         }
       } catch (e) {
-        print(e);
         setState(() {
           _warning = e.message;
         });

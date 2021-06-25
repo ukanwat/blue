@@ -28,7 +28,6 @@ import '../widgets/comment.dart';
 import './home.dart';
 import '../services/boxes.dart';
 import '../services/hasura.dart';
-import 'package:flutter_point_tab_bar/pointTabIndicator.dart';
 
 enum CommentSort { best, top, oldest, newest }
 
@@ -68,7 +67,6 @@ class _CommentsScreenState extends State<CommentsScreen>
 
   @override
   Widget build(BuildContext context) {
-    print('lengthhhh');
     return Scaffold(
       body: SafeArea(
           child: Stack(children: <Widget>[
@@ -224,7 +222,6 @@ class _CommentsState extends State<Comments>
         loaded = true;
       });
     }
-    print('loaded:$loaded  ${snapshot.length}');
   }
 
   addComments(Post data) async {

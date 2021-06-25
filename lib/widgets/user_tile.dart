@@ -31,8 +31,6 @@ class _UserTileState extends State<UserTile> {
   bool follow = false;
   @override
   void initState() {
-    print(widget.user.toString());
-
     peer = {
       'peerId': widget.user.userId,
       'peerUsername': widget.user.username,

@@ -67,9 +67,7 @@ class _FlutterLinkPreviewState extends State<FlutterLinkPreview> {
         useMultithread: widget.useMultithread,
       );
       if (mounted) setState(() {});
-    } else {
-      print("Links don't start with http or https from : $_url");
-    }
+    } else {}
   }
 
   @override
@@ -214,11 +212,7 @@ class WebAnalyzer {
         info._timeout = DateTime.now().add(cache);
         _map[url] = info;
       }
-    } catch (e) {
-      print("Get web error:$url, Error:$e");
-    }
-
-    // print("$url cost ${DateTime.now().difference(start).inMilliseconds}");
+    } catch (e) {}
 
     return info;
   }
@@ -227,7 +221,6 @@ class WebAnalyzer {
     final response = await _requestUrl(url);
 
     if (response == null) return null;
-    // print("$url ${response.statusCode}");
     if (multimedia) {
       final String contentType = response.headers["content-type"];
       if (contentType != null) {
@@ -316,7 +309,6 @@ class WebAnalyzer {
       ..headers["cache-control"] = "no-cache"
       ..headers["Cookie"] = cookie ?? _cookies[uri.host]
       ..headers["accept"] = "*/*";
-    // print(request.headers);
     final stream = await client.send(request);
 
     if (stream.statusCode == HttpStatus.movedTemporarily ||
@@ -334,7 +326,6 @@ class WebAnalyzer {
         }
         count++;
         client.close();
-        // print("Redirect ====> $url");
         return _requestUrl(url, count: count, cookie: cookie);
       }
     } else if (stream.statusCode == HttpStatus.ok) {
@@ -350,7 +341,6 @@ class WebAnalyzer {
       }
     }
     client.close();
-    if (res == null) print("Get web info empty($url)");
     return res;
   }
 
@@ -363,13 +353,10 @@ class WebAnalyzer {
       } catch (e) {
         try {
           html = gbk.decode(response.bodyBytes);
-        } catch (e) {
-          print("Web page resolution failure from:$url Error:$e");
-        }
+        } catch (e) {}
       }
 
       if (html == null) {
-        print("Web page resolution failure from:$url");
         return null;
       }
 
@@ -377,7 +364,6 @@ class WebAnalyzer {
       // final start = DateTime.now();
       final headHtml = _getHeadHtml(html);
       final document = parser.parse(headHtml);
-      // print("dom cost ${DateTime.now().difference(start).inMilliseconds}");
       final uri = Uri.parse(url);
 
       // get image or video
@@ -471,7 +457,6 @@ class WebAnalyzer {
       if (body.length > 300) {
         body = body.substring(0, 300);
       }
-      // print("html cost ${DateTime.now().difference(start).inMilliseconds}");
       return body;
     }
     return description;
