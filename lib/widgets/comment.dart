@@ -155,10 +155,12 @@ class _CommentState extends State<Comment> {
                   ),
                   Text(
                     widget.username,
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
                   ),
                   Container(
-                    margin: EdgeInsets.symmetric(horizontal: 2),
+                    margin: EdgeInsets.symmetric(horizontal: 4),
                     height: 3,
                     width: 3,
                     decoration: BoxDecoration(
@@ -168,7 +170,7 @@ class _CommentState extends State<Comment> {
                   ),
                   Text(
                     '${timeago.format(widget.timestamp)}',
-                    style: TextStyle(fontSize: 13),
+                    style: TextStyle(fontSize: 13, color: Colors.grey),
                   ),
                   Expanded(child: Container()),
                   SizedBox(

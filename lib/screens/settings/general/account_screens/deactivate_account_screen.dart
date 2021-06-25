@@ -1,5 +1,6 @@
 // Flutter imports:
 import 'package:blue/services/auth_service.dart';
+import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:

@@ -90,6 +90,7 @@ void main() async {
   await getCurrentUser();
 
   await Boxes.openBoxes();
+
   Hive.registerAdapter<HiveUser>(HiveUserAdapter());
   Hive.registerAdapter<HivePost>(HivePostAdapter());
   bool dark = PreferencesUpdate().getBool('theme') == true;

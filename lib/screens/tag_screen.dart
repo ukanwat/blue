@@ -34,6 +34,7 @@ class _TagScreenState extends State<TagScreen> {
   String label;
   int followerCount;
   int postCount;
+  Gradient gradient;
   setTag() async {
     tagMap = await Hasura.getTag(tag);
   }
@@ -75,7 +76,8 @@ class _TagScreenState extends State<TagScreen> {
   @override
   void didChangeDependencies() {
     getTag();
-
+    gradient = FlutterGradients.findByName(FlutterGradientNames
+        .values[Random().nextInt(FlutterGradientNames.values.length - 2)]);
     super.didChangeDependencies();
   }
 
@@ -108,6 +110,15 @@ class _TagScreenState extends State<TagScreen> {
                 (BuildContext context, bool innerBoxIsScrolled) {
               return <Widget>[
                 SliverAppBar(
+                  automaticallyImplyLeading: false,
+                  leading: IconButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: Icon(
+                      CupertinoIcons.back,
+                    ),
+                  ),
                   elevation: 0,
                   expandedHeight: 160.0,
                   floating: false,
@@ -190,11 +201,7 @@ class _TagScreenState extends State<TagScreen> {
                             decoration: BoxDecoration(
                                 color: colors
                                     .elementAt(Random().nextInt(colors.length)),
-                                gradient: FlutterGradients.findByName(
-                                    FlutterGradientNames.values[Random()
-                                        .nextInt(
-                                            FlutterGradientNames.values.length -
-                                                2)])),
+                                gradient: gradient),
                           ),
                           Stack(children: [
                             Center(
@@ -230,12 +237,14 @@ class _TagScreenState extends State<TagScreen> {
                                     Text(
                                       '$followerCount members',
                                       style: TextStyle(
+                                          color: Colors.white,
                                           fontWeight: FontWeight.bold),
                                     ),
                                   if (postCount != null)
                                     Text(
                                       '$postCount posts',
                                       style: TextStyle(
+                                          color: Colors.white,
                                           fontWeight: FontWeight.bold),
                                     ),
                                 ],
@@ -255,10 +264,7 @@ class _TagScreenState extends State<TagScreen> {
                                   child: Text(
                                     label ?? '',
                                     style: TextStyle(
-                                        color: Theme.of(context)
-                                            .iconTheme
-                                            .color
-                                            .withOpacity(0.9),
+                                        color: Colors.white.withOpacity(0.9),
                                         fontFamily: 'Stark Sans',
                                         fontWeight: FontWeight.w800,
                                         fontSize: 20),

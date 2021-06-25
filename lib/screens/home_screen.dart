@@ -1,7 +1,10 @@
 // Flutter imports:
+import 'dart:io';
+
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/widgets/bottom_sheet.dart';
+import 'package:blue/widgets/show_dialog.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -12,6 +15,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:blue/screens/following_posts_screen.dart';
 import 'package:blue/widgets/paginated_posts.dart';
 import 'package:blue/widgets/tags_wrap.dart';
+import 'package:share/share.dart';
 import '../widgets/header.dart';
 import './home.dart';
 import '../widgets/banner_dialog.dart';
@@ -118,18 +122,47 @@ class _HomeScreenState extends State<HomeScreen>
                 : Container(),
           ],
         ),
-        actionButton2: IconButton(
-            icon: Icon(
-              followingPosts
-                  ? FluentIcons.arrow_hook_up_left_24_regular
-                  : FluentIcons.new_24_regular,
-              size: 26,
-            ),
-            onPressed: () {
-              setState(() {
-                followingPosts = !followingPosts;
-              });
-            }),
+        actionButton2: Row(
+          children: [
+            if (!Platform.isAndroid)
+              TextButton(
+                  child: Text(
+                    'INVITE',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return ShowDialog(
+                          description: 'Invite your friends to Stark',
+                          rightButtonText: 'Invite',
+                          leftButtonText: 'Cancel',
+                          rightButtonFunction: () {
+                            Navigator.pop(context);
+                            Share.share(
+                                "I'm inviting you to Stark https://starkinvite.page.link/i",
+                                subject: 'App Invitation');
+                          },
+                          title: 'Invite',
+                        );
+                      },
+                    );
+                  }),
+            IconButton(
+                icon: Icon(
+                  followingPosts
+                      ? FluentIcons.arrow_hook_up_left_24_regular
+                      : FluentIcons.new_24_regular,
+                  size: 26,
+                ),
+                onPressed: () {
+                  setState(() {
+                    followingPosts = !followingPosts;
+                  });
+                }),
+          ],
+        ),
         actionButton: IconButton(
           icon: Icon(
             FluentIcons.add_24_regular,

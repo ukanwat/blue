@@ -1,8 +1,10 @@
 // Flutter imports:
 import 'package:blue/services/functions.dart';
 import 'package:blue/widgets/comment_reply.dart';
+import 'package:blue/widgets/empty_state.dart';
 import 'package:blue/widgets/loadmore_widget.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -196,6 +198,7 @@ class Comments extends StatefulWidget {
 
 class _CommentsState extends State<Comments>
     with AutomaticKeepAliveClientMixin<Comments> {
+  TextEditingController fakeId = TextEditingController();
   List<Widget> comments = [];
   int count = 0;
   int length = 5;
@@ -225,8 +228,19 @@ class _CommentsState extends State<Comments>
   }
 
   addComments(Post data) async {
-    dynamic doc = await Hasura.insertComment(
-        data.postId, commentsController.text, data.ownerId);
+    dynamic doc;
+    if (fakeId.text == '' || fakeId.text == null) {
+      doc = await Hasura.insertComment(
+        data.postId,
+        commentsController.text,
+        data.ownerId,
+      );
+    } else {
+      doc = await Hasura.insertComment(
+          data.postId, commentsController.text, data.ownerId,
+          fakeId: int.parse(fakeId.text));
+    }
+
     setState(() {
       comments.insert(
           0, Comment.fromDocument(doc, data.postId, doc['comment_id']));
@@ -265,89 +279,101 @@ class _CommentsState extends State<Comments>
                   return Container();
                 }
                 if (i == 1) {
-                  return Container(
-                      decoration: BoxDecoration(
-                          border: Border.symmetric(
-                              horizontal: BorderSide(
-                                  color: Theme.of(context).cardColor,
-                                  width: 1))),
-                      padding: const EdgeInsets.symmetric(vertical: 0.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          SizedBox(
-                            width: 20,
-                          ),
-                          PopupMenuButton(
-                            elevation: 2,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  sort.toString().substring(12),
-                                  style: TextStyle(fontSize: 20),
+                  return Column(
+                    children: [
+                      Container(
+                          decoration: BoxDecoration(
+                              border: Border.symmetric(
+                                  horizontal: BorderSide(
+                                      color: Theme.of(context).cardColor,
+                                      width: 1))),
+                          padding: const EdgeInsets.symmetric(vertical: 0.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                              ),
+                              PopupMenuButton(
+                                elevation: 2,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      sort.toString().substring(12),
+                                      style: TextStyle(fontSize: 20),
+                                    ),
+                                    Icon(
+                                      FluentIcons.chevron_down_24_filled,
+                                      size: 19,
+                                    ),
+                                  ],
                                 ),
-                                Icon(
-                                  FluentIcons.chevron_down_24_filled,
-                                  size: 19,
+                                padding: EdgeInsets.zero,
+                                color: Theme.of(context).backgroundColor,
+                                // iconSize: 20,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                              ],
-                            ),
-                            padding: EdgeInsets.zero,
-                            color: Theme.of(context).backgroundColor,
-                            // iconSize: 20,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            itemBuilder: (_) => [
-                              PopupMenuItem(child: Text('Best'), value: 'Best'),
-                              PopupMenuItem(child: Text('Top'), value: 'Top'),
-                              PopupMenuItem(
-                                  child: Text('Older'), value: 'Oldest'),
-                              PopupMenuItem(
-                                  child: Text('Recent'), value: 'Newest'),
+                                itemBuilder: (_) => [
+                                  PopupMenuItem(
+                                      child: Text('Best'), value: 'Best'),
+                                  PopupMenuItem(
+                                      child: Text('Top'), value: 'Top'),
+                                  PopupMenuItem(
+                                      child: Text('Older'), value: 'Oldest'),
+                                  PopupMenuItem(
+                                      child: Text('Recent'), value: 'Newest'),
+                                ],
+                                // icon:
+                                onSelected: (selectedValue) async {
+                                  switch (selectedValue) {
+                                    case 'Best':
+                                      sort = CommentSort.best;
+
+                                      break;
+                                    case 'Top':
+                                      sort = CommentSort.top;
+
+                                      break;
+                                    case 'Oldest':
+                                      sort = CommentSort.oldest;
+
+                                      break;
+                                    case 'Newest':
+                                      sort = CommentSort.newest;
+
+                                      break;
+                                  }
+
+                                  setState(() {
+                                    comments = [];
+                                    loaded = false;
+                                    count = 0;
+                                  });
+                                },
+                              ),
+                              Expanded(child: Container()),
+                              IconButton(
+                                icon: Icon(
+                                    FluentIcons.arrow_clockwise_24_regular),
+                                onPressed: () {
+                                  setState(() {
+                                    loaded = false;
+                                    comments = [];
+                                    count = 0;
+                                  });
+                                },
+                              ),
                             ],
-                            // icon:
-                            onSelected: (selectedValue) async {
-                              switch (selectedValue) {
-                                case 'Best':
-                                  sort = CommentSort.best;
-
-                                  break;
-                                case 'Top':
-                                  sort = CommentSort.top;
-
-                                  break;
-                                case 'Oldest':
-                                  sort = CommentSort.oldest;
-
-                                  break;
-                                case 'Newest':
-                                  sort = CommentSort.newest;
-
-                                  break;
-                              }
-
-                              setState(() {
-                                comments = [];
-                                loaded = false;
-                                count = 0;
-                              });
-                            },
-                          ),
-                          Expanded(child: Container()),
-                          IconButton(
-                            icon: Icon(FluentIcons.arrow_clockwise_24_regular),
-                            onPressed: () {
-                              setState(() {
-                                loaded = false;
-                                comments = [];
-                                count = 0;
-                              });
-                            },
-                          ),
-                        ],
-                      ));
+                          )),
+                      if (comments.length == 0 && loaded == true)
+                        Container(
+                            height: 300,
+                            child:
+                                emptyState(context, 'No Comments', 'Welcome'))
+                    ],
+                  );
                 }
 
                 return comments[i - 2];
@@ -436,6 +462,14 @@ class _CommentsState extends State<Comments>
                                   SizedBox(
                                     width: 5,
                                   ),
+                                  if (!kReleaseMode)
+                                    Container(
+                                        width: 50,
+                                        child: TextField(
+                                          controller: fakeId,
+                                          decoration:
+                                              InputDecoration(hintText: 'ID'),
+                                        )),
                                   Expanded(
                                     child: TextField(
                                       focusNode: value.focusNode,

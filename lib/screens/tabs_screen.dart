@@ -37,7 +37,7 @@ class TabsScreen extends StatefulWidget {
   _TabsScreenState createState() => _TabsScreenState();
 }
 
-class _TabsScreenState extends State<TabsScreen> {
+class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
   PageController _pageController;
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   int _page = 0;
@@ -98,10 +98,19 @@ class _TabsScreenState extends State<TabsScreen> {
   }
 
   StreamSubscription<ConnectivityResult> subscription;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      Boxes.preferenceBox.put('start_time', DateTime.now().toString());
+    }
+  }
+
   @override
   void initState() {
+    Boxes.preferenceBox.put('start_time', DateTime.now().toString());
+    WidgetsBinding.instance.addObserver(this);
     Functions().updateEmail();
-    PreferencesUpdate()..removeFromList('blocked_accounts', ['100']);
     PushNotificationsManager().initMessage();
     if (Boxes.followingBox.isEmpty) {
       PreferencesUpdate().setFollowings();
@@ -117,15 +126,20 @@ class _TabsScreenState extends State<TabsScreen> {
         snackbar('You are offline.', context,
             leadingIcon: Icon(FluentIcons.cloud_offline_24_regular));
       } else {
-        snackbar("You're back online.", context,
-            leadingIcon: Icon(
-              FluentIcons.cloud_24_regular,
-              color: Colors.greenAccent,
-            ), seeMore: () {
-          setState(() {
-            _key = UniqueKey();
-          });
-        }, fnLabel: "Refresh App", duration: Duration(seconds: 30));
+        String time = Boxes.preferenceBox.get('start_time');
+        if (time != null) if (DateTime.parse(time)
+            .add(Duration(seconds: 60))
+            .isBefore(DateTime.now())) {
+          snackbar("You're back online.", context,
+              leadingIcon: Icon(
+                FluentIcons.cloud_24_regular,
+                color: Colors.greenAccent,
+              ), seeMore: () {
+            setState(() {
+              _key = UniqueKey();
+            });
+          }, fnLabel: "Refresh App", duration: Duration(seconds: 30));
+        }
       }
     });
     setLists();
@@ -405,6 +419,7 @@ class _TabsScreenState extends State<TabsScreen> {
   @override
   void dispose() {
     super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     _pageController.dispose();
     subscription.cancel();
   }

@@ -365,16 +365,16 @@ class _ProfileScreenState extends State<ProfileScreen>
                       color: Theme.of(context).backgroundColor,
                       child: user.headerUrl == null
                           ? Container(
-                              height: 150,
+                              height: 150 + MediaQuery.of(context).padding.top,
                               width: double.infinity,
                               color: Theme.of(context).cardColor,
                             )
                           : CachedNetworkImage(
                               imageUrl: user.headerUrl,
                               fit: BoxFit.cover,
-                              height: 150,
+                              height: 150 + MediaQuery.of(context).padding.top,
                             ),
-                      height: 150,
+                      height: 150 + MediaQuery.of(context).padding.top,
                       width: double.infinity,
                     ),
                     Container(
@@ -383,10 +383,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                               begin: Alignment.bottomCenter,
                               end: Alignment(0, 0.3),
                               colors: [
-                            Colors.black54.withOpacity(0.32),
+                            Colors.black54.withOpacity(0.42),
                             Colors.transparent
                           ])),
-                      height: 150,
+                      height: 150 + MediaQuery.of(context).padding.top,
                       width: double.infinity,
                     )
                   ],
@@ -746,7 +746,8 @@ class _ProfileScreenState extends State<ProfileScreen>
         preferredSize: Size.fromHeight(0),
         child: Container(),
       ),
-      body: SafeArea(
+      extendBodyBehindAppBar: true,
+      body: Container(
         child: NestedScrollView(
             controller: _controller,
             headerSliverBuilder: (context, _) {
@@ -760,16 +761,21 @@ class _ProfileScreenState extends State<ProfileScreen>
                         builder: (BuildContext context, double stuckAmount) {
                           stuckAmount = 1.0 - stuckAmount.clamp(0.0, 1.0);
                           return Container(
-                            height: 50.0,
+                            height: 50.0 + MediaQuery.of(context).padding.top,
                             decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                     begin: Alignment.topCenter,
                                     end: Alignment.bottomCenter,
                                     colors: [
-                                  Colors.black54.withOpacity(0.5),
+                                  Colors.black54.withOpacity(0.8),
+                                  Colors.black54.withOpacity(0.6),
+                                  Colors.black54.withOpacity(0.3),
                                   Colors.transparent
                                 ])),
-                            padding: EdgeInsets.symmetric(horizontal: 10.0),
+                            padding: EdgeInsets.only(
+                                top: MediaQuery.of(context).padding.top,
+                                right: 10,
+                                left: 10),
                             alignment: Alignment.centerLeft,
                             child: Row(
                               children: <Widget>[
@@ -1251,9 +1257,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 ));
                             if (stuckAmount > 0.0 && _profileUser != null)
                               button = Container(
-                                  height: 68.0,
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 0.0),
+                                  height:
+                                      68.0 + MediaQuery.of(context).padding.top,
+                                  padding: EdgeInsets.only(
+                                      top: MediaQuery.of(context).padding.top),
                                   child: Center(
                                     child: Row(
                                       crossAxisAlignment:

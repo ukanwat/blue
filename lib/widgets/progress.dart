@@ -79,7 +79,7 @@ snackbar(String text, BuildContext context,
                 : GestureDetector(
                     onTap: seeMore,
                     child: Container(
-                      padding: EdgeInsets.only(left: 10),
+                      padding: EdgeInsets.only(right: 10, left: 10),
                       child: Text(
                         fnLabel ?? 'See more',
                         style: TextStyle(color: Colors.blue),

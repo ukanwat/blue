@@ -1,8 +1,12 @@
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
+import 'package:blue/widgets/empty_dialog.dart';
+import 'package:blue/widgets/show_dialog.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:get/get.dart';
 
 String messagToken;
 
@@ -40,11 +44,36 @@ class PushNotificationsManager {
   static final PushNotificationsManager _instance =
       PushNotificationsManager._();
 
-  initMessage() {
-    if (userSigningUp) {
-      getToken();
+  initMessage() async {
+    getToken();
+    bool ret;
+    bool agree = await PreferencesUpdate().getFuture('push_notif_agree');
+    if (!agree) {
+      await showDialog(
+          context: Get.context,
+          builder: (context) {
+            return ShowDialog(
+              description: 'Would you like to receive push notifictions?',
+              title: 'Push Notifications',
+              leftButtonText: 'No',
+              rightButtonText: 'Yes',
+              leftButtonFunction: () {
+                Navigator.pop(context);
+                ret = true;
+              },
+              rightButtonFunction: () {
+                Navigator.pop(context);
+                PreferencesUpdate()
+                    .uploadValue('push_notif_agree', true, false);
+              },
+            );
+          });
+    }
+
+    if (ret == true) {
       return;
     }
+
     var initialzationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     var initialzationSettingsiOS = IOSInitializationSettings();

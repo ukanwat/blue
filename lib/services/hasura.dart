@@ -1077,8 +1077,15 @@ __typename
 }""");
   }
 
-  static insertComment(dynamic postId, String comment, int ownerId) async {
+  static insertComment(dynamic postId, String comment, int ownerId,
+      {int fakeId}) async {
     int userId = await getUserId();
+    if (!kReleaseMode) {
+      if (fakeId != null) {
+        userId = fakeId;
+      }
+    }
+
     print(userId);
     String doc = """mutation{
   insert_comments_one(object:{data:"$comment",post_id:$postId,user_id:$userId,}){
