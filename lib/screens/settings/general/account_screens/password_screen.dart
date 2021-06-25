@@ -49,10 +49,8 @@ class _PasswordScreenState extends State<PasswordScreen> {
         await auth.changePassword(newPasswordController.text,
             currentPasswordController.text, context);
       } catch (e) {
-        print(e);
         setState(() {
           _warning = e.message;
-          print(_warning);
           snackbar(_warning, context, color: Colors.red);
         });
       }

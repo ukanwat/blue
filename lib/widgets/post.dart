@@ -110,8 +110,6 @@ class Post extends StatefulWidget {
 
   factory Post.fromDocument(Map doc,
       {bool isCompact, bool commentsShown, Color color}) {
-    print('doc:');
-    print(doc);
     if (isCompact == null) isCompact = false;
     if (commentsShown == null) commentsShown = false;
     Map data = {};
@@ -128,14 +126,12 @@ class Post extends StatefulWidget {
         _tags.add(element['tg']['tag']);
       });
     }
-    print(doc);
     if (doc['actions_by_user'] == null) {
       doc['actions_by_user'] = {};
     } else {
       doc['actions_by_user'] = doc['actions_by_user'][0];
     }
 
-    print(doc['actions_by_user']);
     return Post(
       upvoted: doc['actions_by_user']['up'],
       postId: doc['post_id'],
@@ -755,9 +751,6 @@ class _PostState extends State<Post> {
                 itemCount: tags.length,
                 scrollDirection: Axis.horizontal,
                 itemBuilder: (_, i) {
-                  print(
-                    tags[i],
-                  );
                   return InkWell(
                     onTap: () async {
                       Navigator.of(context)
@@ -794,8 +787,6 @@ class _PostState extends State<Post> {
     if (this.mounted && persistentCallbackAdded == false) {
       persistentCallbackAdded = true;
     }
-    print(contents);
-    print(title);
     for (int i = 0; i < contents.length; i++) {
       if (contentsInfo[i]['type'] == 'image') {
         if (thumbnailType != CompactPostThumbnailType.video) {
@@ -806,7 +797,6 @@ class _PostState extends State<Post> {
             contentsInfo[i]['aspectRatio'], contentsInfo[i]['blurHash']));
       } else if (contentsInfo[i]['type'] == 'video') {
         compactPostThumbnailData = contentsInfo[i]['thumbUrl'];
-        print(contents['$i']);
         thumbnailType = CompactPostThumbnailType.video;
         var flickManager = FlickManager(
           videoPlayerController: VideoPlayerController.network(contents['$i']),
@@ -956,7 +946,6 @@ class _PostState extends State<Post> {
 
   bool increment;
   buildPostFooter() {
-    print("increment:$increment");
     return Padding(
       padding: EdgeInsets.only(top: 5),
       child: Column(
@@ -1039,7 +1028,6 @@ class _PostState extends State<Post> {
                           footerButton(
                               FluentIcons.bookmark_24_filled, Colors.blue,
                               () async {
-                            print(Boxes.saveBox.keys);
                             setState(() {
                               isSaved = false;
                               showSaveBar = false;
@@ -1321,7 +1309,6 @@ class _PostState extends State<Post> {
 
   getContentSize() {
     RenderBox _contentsBox = _contentsKey.currentContext.findRenderObject();
-    print(_contentsBox);
     setState(() {
       contentsHeight = _contentsBox.size.height;
     });
@@ -1330,7 +1317,6 @@ class _PostState extends State<Post> {
   @override
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
-    print(contentsInfo);
     deleted = widget.notInterested == true || deleted;
     return deleted == true
         ? Container()
@@ -1562,13 +1548,11 @@ class DownvoteTileState extends State<DownvoteTile> {
   @override
   void initState() {
     vote = widget.vote;
-    print(vote);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    print(vote);
     return ListTile(
       dense: true,
       leading: Transform.rotate(
@@ -1584,7 +1568,6 @@ class DownvoteTileState extends State<DownvoteTile> {
       ),
       title: Text('Downvote'),
       onTap: () {
-        print('postid : ${widget.postId}');
         PostFunctions()
             .handleDownvoteButton(widget.postId, vote, widget.postActionExists);
         if (vote == Vote.down) {
@@ -1639,5 +1622,3 @@ class ExpandIconPainter extends CustomPainter {
 //     flickManager = FlickManager(
 //       videoPlayerController: _controller,
 //     );
-// print(  contents['$i'],);
-// print('video url');

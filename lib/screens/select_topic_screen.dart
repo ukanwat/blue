@@ -45,7 +45,6 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
       }
       int key = doc.keys.first;
       String value = doc.values.first;
-      print(doc);
       if (value != null && !tags.containsKey(key))
         setState(() {
           tags[key] = value;

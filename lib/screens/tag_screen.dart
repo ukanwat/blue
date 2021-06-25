@@ -54,7 +54,6 @@ class _TagScreenState extends State<TagScreen> {
     List tags = PreferencesUpdate().getStringList('followed_tags');
 
     tags = PreferencesUpdate().getStringList('followed_tags');
-    print('$tag $tags');
     if (tags != null) {
       setState(() {
         tags.forEach((_tag) {
@@ -64,7 +63,6 @@ class _TagScreenState extends State<TagScreen> {
           }
         });
       });
-      print('isFollowing: $isFollowing');
 
       if (!isFollowing) {
         setTag();

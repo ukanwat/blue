@@ -53,7 +53,6 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
   setLists() async {
     if (PreferencesUpdate().isListEmpty('blocked_accounts')) {
       List accounts = await Hasura.blockedUsers(idOnly: true);
-      print(accounts);
       List<dynamic> list = accounts.map((d) => d['blocked_user_id']).toList();
       if (list == null) {
         list = [];
@@ -72,7 +71,6 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
 
     List tags = PreferencesUpdate().getStringList('followed_tags');
 
-    print(tags);
     bool b = tags == null;
     if (!b) {
       b = tags.length == 0;
@@ -81,8 +79,6 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
     }
     if (b) {
       dynamic tagsData = await Hasura.getFollowedTags();
-      print(tags);
-      print(tagsData);
       tagsData.forEach((tag) {
         tags.add({
           'tag': tag['tag']['tag'],
@@ -179,7 +175,6 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
   int keyIndex = 0;
   @override
   Widget build(BuildContext context) {
-    print(currentUser.id);
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
