@@ -9,7 +9,6 @@ import 'package:blue/providers/provider_widget.dart' as PW;
 import 'package:blue/providers/theme.dart';
 import 'package:blue/screens/about_screen.dart';
 import 'package:blue/screens/all_saved_posts_screen.dart';
-import 'package:blue/screens/all_topics_screen.dart';
 import 'package:blue/screens/chat_info_screen.dart';
 import 'package:blue/screens/chat_messages_screen.dart';
 import 'package:blue/screens/collection_posts_screen.dart';
@@ -242,11 +241,6 @@ class MyAppState extends State<MyApp> {
                 // },
                 onGenerateRoute: (settings) {
                   switch (settings.name) {
-                    case AllTopicsScreen.routeName:
-                      return CupertinoPageRoute(
-                          builder: (_) => AllTopicsScreen(),
-                          settings: settings);
-                      break;
                     case AboutScreen.routeName:
                       return CupertinoPageRoute(
                           builder: (_) => AboutScreen(), settings: settings);

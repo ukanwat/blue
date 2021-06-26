@@ -70,7 +70,7 @@ class _VideoDisplayState extends State<VideoDisplay> with RouteAware {
       onVisibilityChanged: (visibility) {
         if (widget.autoplay) {
           if (visibility.visibleFraction == 0 && this.mounted) {
-            widget.flickManager.flickControlManager.pause();
+            widget.flickManager.flickControlManager.autoPause();
           } else if (visibility.visibleFraction == 1) {
             bool autoplay = PreferencesUpdate().getBool('autoplay_videos');
             if (autoplay == true) {

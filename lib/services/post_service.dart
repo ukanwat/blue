@@ -5,7 +5,8 @@ class PostService {
   dynamic Function(dynamic) transform;
   String key;
   bool compact;
-  PostService(this.key, this.fn, this.transform, this.compact);
+  bool comments;
+  PostService(this.key, this.fn, this.transform, this.compact, this.comments);
   bool loaded = false;
   bool _complete = false;
   List<Post> _posts = [];
@@ -27,7 +28,7 @@ class PostService {
         transform(
           d,
         ),
-        commentsShown: true,
+        commentsShown: comments,
         isCompact: compact,
       ));
       offset++;
@@ -45,7 +46,7 @@ class PostService {
     adding = true;
 
     if (!init) {
-      await Future.delayed(Duration(milliseconds: 800));
+      await Future.delayed(Duration(milliseconds: 500));
     }
     if (init) {
       init = false;
@@ -67,6 +68,8 @@ class PostService {
       _complete = true;
     }
     adding = false;
+    print('start:$start');
+    print('load: $loadIndex');
     return _posts.sublist(start, loadIndex);
   }
 }
