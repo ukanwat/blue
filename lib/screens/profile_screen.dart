@@ -969,6 +969,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               ];
             },
             body: RefreshIndicator(
+              color: Theme.of(context).accentColor,
               onRefresh: () async {
                 setState(() {
                   posts = [];
@@ -992,257 +993,303 @@ class _ProfileScreenState extends State<ProfileScreen>
                           builder: (BuildContext context, double stuckAmount) {
                             stuckAmount = 1.0 - stuckAmount.clamp(0.0, 1.0);
                             Widget button = Container(
-                                height: 50.0,
+                                height: 72.0,
                                 color: Color.lerp(
                                     Theme.of(context).backgroundColor,
                                     Theme.of(context).backgroundColor,
                                     stuckAmount),
                                 padding: EdgeInsets.symmetric(horizontal: 10.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
+                                child: Column(
                                   children: [
-                                    MKDropDownMenu(
-                                      controller: mKController,
-                                      menuBuilder: () {
-                                        return Container(
-                                          child: Material(
-                                            child: Column(
-                                              children: [
-                                                sortTab(Sort.Recent),
-                                                Divider(
-                                                  indent: 10,
-                                                  endIndent: 10,
-                                                  thickness: 1,
-                                                  height: 1,
-                                                  color: Colors.grey
-                                                      .withOpacity(0.4),
-                                                ),
-                                                sortTab(Sort.Best),
-                                                Divider(
-                                                  indent: 10,
-                                                  endIndent: 10,
-                                                  thickness: 1,
-                                                  height: 1,
-                                                  color: Colors.grey
-                                                      .withOpacity(0.4),
-                                                ),
-                                                sortTab(Sort.Oldest),
-                                              ],
-                                            ),
-                                          ),
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                        );
-                                      },
-                                      menuMargin: 8,
-                                      headerBuilder: (b) {
-                                        if (true) {
-                                          return Padding(
-                                            padding:
-                                                const EdgeInsets.only(left: 8),
-                                            child: Row(
-                                              children: [
-                                                Icon(
-                                                  b
-                                                      ? FluentIcons
-                                                          .chevron_up_12_filled
-                                                      : FluentIcons
-                                                          .chevron_down_12_filled,
-                                                  size: 16,
-                                                ),
-                                                Text(
-                                                  sort.toString().substring(5),
-                                                  style: TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.w800),
-                                                )
-                                              ],
-                                            ),
-                                          );
-                                        }
-                                      },
-                                    ),
-                                    SizedBox(
-                                      width: 10,
-                                    ),
                                     Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
-                                        GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              _compact = false;
-                                              loaded = false;
-                                              lastDoc = 0;
-                                              empty = false;
-                                              posts = [];
-                                            });
-                                            addPosts(sort, changing: true);
+                                        MKDropDownMenu(
+                                          controller: mKController,
+                                          menuBuilder: () {
+                                            return Container(
+                                              child: Material(
+                                                child: Column(
+                                                  children: [
+                                                    sortTab(Sort.Recent),
+                                                    Divider(
+                                                      indent: 10,
+                                                      endIndent: 10,
+                                                      thickness: 1,
+                                                      height: 1,
+                                                      color: Colors.grey
+                                                          .withOpacity(0.4),
+                                                    ),
+                                                    sortTab(Sort.Best),
+                                                    Divider(
+                                                      indent: 10,
+                                                      endIndent: 10,
+                                                      thickness: 1,
+                                                      height: 1,
+                                                      color: Colors.grey
+                                                          .withOpacity(0.4),
+                                                    ),
+                                                    sortTab(Sort.Oldest),
+                                                  ],
+                                                ),
+                                              ),
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                            );
                                           },
-                                          child: Container(
-                                            height: 24,
-                                            width: 24,
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 4, vertical: 4),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              // color: Theme.of(context)
-                                              //     .iconTheme
-                                              //     .color
-                                              //     .withOpacity(
-                                              //         _compact ? 1 : 0.7)
-                                              children: [
-                                                Container(
-                                                  height: 6,
-                                                  decoration: BoxDecoration(
-                                                      color: Theme.of(context)
-                                                          .iconTheme
-                                                          .color
-                                                          .withOpacity(!_compact
-                                                              ? 1
-                                                              : 0.7),
-                                                      borderRadius:
-                                                          BorderRadius.only(
-                                                              topLeft: Radius
-                                                                  .circular(3),
-                                                              topRight: Radius
-                                                                  .circular(3),
-                                                              bottomLeft: Radius
-                                                                  .circular(1),
-                                                              bottomRight:
-                                                                  Radius.circular(
-                                                                      1))),
+                                          menuMargin: 8,
+                                          headerBuilder: (b) {
+                                            if (true) {
+                                              return Padding(
+                                                padding: const EdgeInsets.only(
+                                                    left: 8),
+                                                child: Row(
+                                                  children: [
+                                                    Icon(
+                                                      b
+                                                          ? FluentIcons
+                                                              .chevron_up_12_filled
+                                                          : FluentIcons
+                                                              .chevron_down_12_filled,
+                                                      size: 16,
+                                                    ),
+                                                    Text(
+                                                      sort
+                                                          .toString()
+                                                          .substring(5),
+                                                      style: TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w800),
+                                                    )
+                                                  ],
                                                 ),
-                                                Container(
-                                                  height: 6,
-                                                  decoration: BoxDecoration(
-                                                      color: Theme.of(context)
-                                                          .iconTheme
-                                                          .color
-                                                          .withOpacity(!_compact
-                                                              ? 1
-                                                              : 0.7),
-                                                      borderRadius:
-                                                          BorderRadius.only(
-                                                              topLeft: Radius
-                                                                  .circular(1),
-                                                              topRight: Radius
-                                                                  .circular(1),
-                                                              bottomLeft: Radius
-                                                                  .circular(3),
-                                                              bottomRight:
-                                                                  Radius.circular(
-                                                                      3))),
-                                                ),
-                                              ],
-                                            ),
-                                            decoration: BoxDecoration(
-                                                border: Border.all(
-                                                    width: 1,
-                                                    color: _compact
-                                                        ? Theme.of(context)
-                                                            .backgroundColor
-                                                        : Colors.grey
-                                                            .withOpacity(0.4)),
-                                                color: _compact
-                                                    ? Theme.of(context)
-                                                        .backgroundColor
-                                                    : Theme.of(context)
-                                                        .canvasColor,
-                                                borderRadius:
-                                                    BorderRadius.circular(5)),
-                                          ),
+                                              );
+                                            }
+                                          },
                                         ),
                                         SizedBox(
-                                          width: 3,
+                                          width: 10,
                                         ),
-                                        GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              _compact = true;
-                                              loaded = false;
-                                              lastDoc = 0;
-                                              empty = false;
-                                              posts = [];
-                                            });
-                                            addPosts(sort, changing: true);
-                                          },
-                                          child: Container(
-                                            height: 24,
-                                            width: 24,
-                                            padding: EdgeInsets.all(4),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Container(
-                                                  height: 3.4,
-                                                  decoration: BoxDecoration(
-                                                      color: Theme.of(context)
-                                                          .iconTheme
-                                                          .color
-                                                          .withOpacity(_compact
-                                                              ? 1
-                                                              : 0.7),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              1)),
-                                                ),
-                                                Container(
-                                                  height: 3.4,
-                                                  decoration: BoxDecoration(
-                                                      color: Theme.of(context)
-                                                          .iconTheme
-                                                          .color
-                                                          .withOpacity(_compact
-                                                              ? 1
-                                                              : 0.7),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              1)),
-                                                ),
-                                                Container(
-                                                  height: 3.4,
-                                                  decoration: BoxDecoration(
-                                                      color: Theme.of(context)
-                                                          .iconTheme
-                                                          .color
-                                                          .withOpacity(_compact
-                                                              ? 1
-                                                              : 0.7),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              1)),
-                                                ),
-                                              ],
-                                            ),
-                                            decoration: BoxDecoration(
-                                                border: Border.all(
-                                                    width: 1,
-                                                    color: !_compact
-                                                        ? Theme.of(context)
-                                                            .backgroundColor
-                                                        : Colors.grey
-                                                            .withOpacity(0.4)),
-                                                color: !_compact
-                                                    ? Theme.of(context)
-                                                        .backgroundColor
-                                                    : Theme.of(context)
-                                                        .canvasColor,
-                                                borderRadius:
-                                                    BorderRadius.circular(5)),
-                                          ),
-                                        ),
+                                        Expanded(child: Container()),
+                                        buildProfileButton()
                                       ],
                                     ),
-                                    Expanded(child: Container()),
-                                    buildProfileButton()
+                                    Container(
+                                      height: 36,
+                                      margin: EdgeInsets.symmetric(
+                                          vertical: 3, horizontal: 3),
+                                      child: Center(
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.max,
+                                          children: [
+                                            Expanded(
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  setState(() {
+                                                    _compact = false;
+                                                    loaded = false;
+                                                    lastDoc = 0;
+                                                    empty = false;
+                                                    posts = [];
+                                                  });
+                                                  addPosts(sort,
+                                                      changing: true);
+                                                },
+                                                child: Container(
+                                                  height: 28,
+                                                  width: 24,
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 4,
+                                                      vertical: 6),
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    // color: Theme.of(context)
+                                                    //     .iconTheme
+                                                    //     .color
+                                                    //     .withOpacity(
+                                                    //         _compact ? 1 : 0.7)
+                                                    children: [
+                                                      Container(
+                                                        height: 6,
+                                                        width: 15,
+                                                        decoration: BoxDecoration(
+                                                            color: Theme.of(context)
+                                                                .iconTheme
+                                                                .color
+                                                                .withOpacity(
+                                                                    !_compact
+                                                                        ? 1
+                                                                        : 0.7),
+                                                            borderRadius: BorderRadius.only(
+                                                                topLeft: Radius
+                                                                    .circular(
+                                                                        3),
+                                                                topRight:
+                                                                    Radius.circular(
+                                                                        3),
+                                                                bottomLeft:
+                                                                    Radius.circular(
+                                                                        1),
+                                                                bottomRight:
+                                                                    Radius.circular(
+                                                                        1))),
+                                                      ),
+                                                      Container(
+                                                        height: 6,
+                                                        width: 15,
+                                                        decoration: BoxDecoration(
+                                                            color: Theme.of(context)
+                                                                .iconTheme
+                                                                .color
+                                                                .withOpacity(
+                                                                    !_compact
+                                                                        ? 1
+                                                                        : 0.7),
+                                                            borderRadius: BorderRadius.only(
+                                                                topLeft: Radius
+                                                                    .circular(
+                                                                        1),
+                                                                topRight:
+                                                                    Radius.circular(
+                                                                        1),
+                                                                bottomLeft:
+                                                                    Radius.circular(
+                                                                        3),
+                                                                bottomRight:
+                                                                    Radius.circular(
+                                                                        3))),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                          width: 1,
+                                                          color: _compact
+                                                              ? Theme.of(
+                                                                      context)
+                                                                  .backgroundColor
+                                                              : Colors.grey
+                                                                  .withOpacity(
+                                                                      0)),
+                                                      color: _compact
+                                                          ? Theme.of(context)
+                                                              .backgroundColor
+                                                          : Theme.of(context)
+                                                              .cardColor
+                                                              .withOpacity(0.5),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5)),
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  setState(() {
+                                                    _compact = true;
+                                                    loaded = false;
+                                                    lastDoc = 0;
+                                                    empty = false;
+                                                    posts = [];
+                                                  });
+                                                  addPosts(sort,
+                                                      changing: true);
+                                                },
+                                                child: Container(
+                                                  height: 28,
+                                                  width: 24,
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 4,
+                                                      vertical: 6),
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Container(
+                                                        height: 3.4,
+                                                        width: 15,
+                                                        decoration: BoxDecoration(
+                                                            color: Theme.of(
+                                                                    context)
+                                                                .iconTheme
+                                                                .color
+                                                                .withOpacity(
+                                                                    _compact
+                                                                        ? 1
+                                                                        : 0.7),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        1)),
+                                                      ),
+                                                      Container(
+                                                        height: 3.4,
+                                                        width: 15,
+                                                        decoration: BoxDecoration(
+                                                            color: Theme.of(
+                                                                    context)
+                                                                .iconTheme
+                                                                .color
+                                                                .withOpacity(
+                                                                    _compact
+                                                                        ? 1
+                                                                        : 0.7),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        1)),
+                                                      ),
+                                                      Container(
+                                                        height: 3.4,
+                                                        width: 15,
+                                                        decoration: BoxDecoration(
+                                                            color: Theme.of(
+                                                                    context)
+                                                                .iconTheme
+                                                                .color
+                                                                .withOpacity(
+                                                                    _compact
+                                                                        ? 1
+                                                                        : 0.7),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        1)),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                          width: 1,
+                                                          color: !_compact
+                                                              ? Theme.of(
+                                                                      context)
+                                                                  .backgroundColor
+                                                              : Colors.grey
+                                                                  .withOpacity(
+                                                                      0)),
+                                                      color: !_compact
+                                                          ? Theme.of(context)
+                                                              .backgroundColor
+                                                          : Theme.of(context)
+                                                              .cardColor
+                                                              .withOpacity(0.5),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5)),
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    )
                                   ],
                                 ));
                             if (stuckAmount > 0.0 && _profileUser != null)
@@ -1250,7 +1297,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   height:
                                       68.0 + MediaQuery.of(context).padding.top,
                                   padding: EdgeInsets.only(
-                                      top: MediaQuery.of(context).padding.top),
+                                      top: MediaQuery.of(context).padding.top,
+                                      right: 10),
                                   child: Center(
                                     child: Row(
                                       crossAxisAlignment:

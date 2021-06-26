@@ -613,10 +613,15 @@ class Hasura {
     if (userId == null) {
       userId = await getUserId();
     }
-    var time = await PreferencesUpdate().getFuture('searches_last_cleared');
-    DateTime timed =
-        DateTime.parse(time).subtract(DateTime.now().timeZoneOffset);
-    time = timed.toString();
+    var time =
+        DateTime.parse(PreferencesUpdate().getFuture('searches_last_cleared'));
+    if (time == null) {
+      time = DateTime(2020);
+      PreferencesUpdate()
+          .uploadValue('searches_last_cleared', time.toString(), true);
+    }
+    DateTime timed = time.subtract(DateTime.now().timeZoneOffset);
+    time = timed;
     String field;
     if (time == null) {
       field = "where:{user_id:{_eq:$userId}}";

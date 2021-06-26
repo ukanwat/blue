@@ -37,10 +37,8 @@ class _HomeScreenState extends State<HomeScreen>
         AutomaticKeepAliveClientMixin<HomeScreen>,
         SingleTickerProviderStateMixin {
   List<Post> p = [];
-  Widget posts = Container();
   PostService pS;
   bool followingPosts = false;
-  bool topicLoading = true;
   int length = 100;
   bool loaded = false;
 

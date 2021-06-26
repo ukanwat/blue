@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/widgets/custom_image.dart';
 import 'package:blue/widgets/post.dart';
+import 'package:blue/widgets/progress.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/cupertino.dart';
@@ -46,7 +47,10 @@ class _TagScreenState extends State<TagScreen> {
     }
 
     tagMap = _tagMap;
-    tag = tagMap['tag'];
+
+    setState(() {
+      tag = tagMap['tag'];
+    });
     getThumbnail();
     label = tagMap['label'];
     followerCount = tagMap['follower_count'];
@@ -310,20 +314,25 @@ class _TagScreenState extends State<TagScreen> {
                 ),
               ];
             },
-            body: Container(
-              padding: EdgeInsets.zero,
-              margin: EdgeInsets.zero,
-              child: TabBarView(children: <Widget>[
-                Transform.translate(
-                    offset: Offset.fromDirection(
-                        1.57, -MediaQuery.of(context).padding.top),
-                    child: TagPopularScreen(tag)),
-                Transform.translate(
-                    offset: Offset.fromDirection(
-                        1.57, -MediaQuery.of(context).padding.top),
-                    child: TagRecentScreen(tag)),
-              ]),
-            )),
+            body: tag == null
+                ? Container(
+                    height: 100,
+                    width: MediaQuery.of(context).padding.top,
+                    child: Center(child: circularProgress()))
+                : Container(
+                    padding: EdgeInsets.zero,
+                    margin: EdgeInsets.zero,
+                    child: TabBarView(children: <Widget>[
+                      Transform.translate(
+                          offset: Offset.fromDirection(
+                              1.57, -MediaQuery.of(context).padding.top),
+                          child: TagPopularScreen(tag)),
+                      Transform.translate(
+                          offset: Offset.fromDirection(
+                              1.57, -MediaQuery.of(context).padding.top),
+                          child: TagRecentScreen(tag)),
+                    ]),
+                  )),
       ),
     );
   }

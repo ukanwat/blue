@@ -23,9 +23,6 @@ import 'package:hasura_connect/hasura_connect.dart';
 import 'package:image/image.dart' as Im;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:uuid/uuid.dart';
-
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
@@ -37,7 +34,6 @@ import '../services/file_storage.dart';
 import '../widgets/header.dart';
 import '../widgets/message.dart';
 import '../widgets/progress.dart';
-import '../widgets/send_button.dart';
 import './chat_info_screen.dart';
 import './gifs_screen.dart';
 
@@ -257,6 +253,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     super.initState();
   }
 
+  bool sendingText = false;
   Container sendButton({Function sendFunction}) {
     return Container(
       margin: EdgeInsets.only(right: 4, left: 0),
@@ -269,6 +266,9 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
           size: 26,
         ),
         onPressed: () async {
+          setState(() {
+            sendingText = true;
+          });
           if (convId == null) {
             convId = await Hasura.insertConversation(widget.peerUser.userId);
             data = [];
@@ -292,6 +292,10 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
               dataEmpty = false;
             });
           }
+
+          setState(() {
+            sendingText = false;
+          });
         },
       ),
     );
@@ -473,7 +477,19 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                                 ),
                               ),
                             ),
-                            sendButton(sendFunction: sendMessage)
+                            sendingText
+                                ? Container(
+                                    height: 41,
+                                    margin: EdgeInsets.only(right: 8, left: 4),
+                                    width: 41,
+                                    child: CircularProgressIndicator(
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Color(0xFFFFFFFF))),
+                                    decoration: BoxDecoration(
+                                        color: Colors.blue,
+                                        shape: BoxShape.circle))
+                                : sendButton(sendFunction: sendMessage)
                           ],
                         ),
                       ),
