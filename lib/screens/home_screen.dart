@@ -108,12 +108,18 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   addItems() async {
+    if (loaded == true) {
+      return;
+    }
     List<Post> _posts = await pS.getPosts(8);
+    print('posts: $_posts');
     if (_posts.length == 0) {
       setState(() {
         loaded = true;
       });
     }
+
+    print('loaded:$loaded');
     _posts.forEach((element) {
       print(element.title);
     });
@@ -128,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen>
   Widget build(context) {
     super.build(context);
     return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
+      backgroundColor: Theme.of(context).canvasColor,
       appBar: header(
         context,
         implyLeading: false,
@@ -168,6 +174,7 @@ class _HomeScreenState extends State<HomeScreen>
                       context: context,
                       builder: (context) {
                         return ShowDialog(
+                          noLeft: true,
                           description: 'Invite your friends to Stark',
                           rightButtonText: 'Invite',
                           leftButtonText: 'Cancel',
@@ -177,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 "I'm inviting you to Stark https://starkinvite.page.link/i",
                                 subject: 'App Invitation');
                           },
-                          title: 'Invite',
+                          title: 'App Invitation',
                         );
                       },
                     );
@@ -229,13 +236,12 @@ class _HomeScreenState extends State<HomeScreen>
                           positionData.startPosition <=
                               positionData.viewportSize,
                       child: Container(
-                        color: Theme.of(context).backgroundColor,
+                        color: Theme.of(context).canvasColor,
                         child: RefreshIndicator(
                           onRefresh: () => refreshPosts(),
                           child: LazyLoadScrollView(
                             isLoading: loaded,
                             onEndOfPage: () {
-                              print('s');
                               addItems();
                             },
                             child: ListView.builder(
@@ -244,9 +250,12 @@ class _HomeScreenState extends State<HomeScreen>
                                 itemBuilder: (context, i) {
                                   if (i == p.length) {
                                     return Container(
-                                      height: 150,
+                                      color: Theme.of(context).canvasColor,
+                                      height: 120,
                                       width: MediaQuery.of(context).size.width,
-                                      child: Center(child: circularProgress()),
+                                      child: loaded
+                                          ? Container()
+                                          : Center(child: circularProgress()),
                                     );
                                   }
                                   return VisibleNotifierWidget(

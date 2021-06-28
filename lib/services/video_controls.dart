@@ -13,7 +13,8 @@ import '../main.dart';
 class VideoDisplay extends StatefulWidget {
   final FlickManager flickManager;
   final bool autoplay;
-  VideoDisplay(this.flickManager, this.autoplay);
+  final Widget thumbnail;
+  VideoDisplay(this.flickManager, this.autoplay, {this.thumbnail});
 
   @override
   _VideoDisplayState createState() => _VideoDisplayState();
@@ -75,7 +76,7 @@ class _VideoDisplayState extends State<VideoDisplay> with RouteAware {
             bool autoplay = PreferencesUpdate().getBool('autoplay_videos');
             if (autoplay == true) {
               widget.flickManager.flickControlManager.autoResume();
-            }
+            } else {}
           }
         }
       },
@@ -85,34 +86,36 @@ class _VideoDisplayState extends State<VideoDisplay> with RouteAware {
           wakelockEnabledFullscreen: true,
           wakelockEnabled: true,
           flickVideoWithControls: FlickVideoWithControls(
-            playerLoadingFallback: Positioned.fill(
-              child: Stack(
-                children: <Widget>[
-                  Positioned.fill(
-                    child: Container(
-                      color: Colors.black,
-                    ),
-                  ),
-                  Positioned(
-                    right: 10,
-                    top: 10,
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        backgroundColor: Colors.white,
-                        strokeWidth: 4,
+            playerLoadingFallback: widget.thumbnail ??
+                Positioned.fill(
+                  child: Stack(
+                    children: <Widget>[
+                      Positioned.fill(
+                        child: Container(
+                          color: Colors.black,
+                        ),
                       ),
-                    ),
+                      Positioned(
+                        right: 10,
+                        top: 10,
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            backgroundColor: Colors.white,
+                            strokeWidth: 4,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
             controls: PortraitVideoControls(
               pauseOnTap: true,
             ),
           ),
           flickVideoWithControlsFullscreen: FlickVideoWithControls(
+            videoFit: BoxFit.contain,
             playerLoadingFallback: Center(child: Icon(Icons.warning)),
             controls: LandscapeVideoControls(),
             iconThemeData: IconThemeData(
@@ -247,6 +250,7 @@ class LandscapeVideoControls extends StatelessWidget {
                         width: 10,
                       ),
                       FlickSoundToggle(
+                        toggleMute: () {},
                         padding: EdgeInsets.all(5),
                         size: 26,
                       ),

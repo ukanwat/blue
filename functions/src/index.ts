@@ -7,7 +7,7 @@ admin.initializeApp(functions.config().firebase);
 import BillingLimiter from "firebase-billing-limiter";
 
 exports.BillingLimiter = BillingLimiter({
-    disableProjectAmount: 100, // The amount that will trigger the disabling (in your project billing currency).
+    disableProjectAmount: 5000, // The amount that will trigger the disabling (in your project billing currency).
     topicId: "billing", // The topicid created on the quotas.
 });
 

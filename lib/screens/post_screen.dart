@@ -60,7 +60,7 @@ class _PostScreenState extends State<PostScreen> {
   //limits
   int lvid = 1;
   int limg = 10;
-  int ltxt = 750;
+  int ltxt = 800;
   int llnk = 5;
   //count
   int cvid = 0;
@@ -362,7 +362,13 @@ class _PostScreenState extends State<PostScreen> {
           thumbIndex = i;
           _thumbContent = ThumbContent.text;
         }
-        firestoreContents['$x'] = contentsData[i]['content'].text;
+        firestoreContents['$x'] =
+            contentsData[i]['content'].text.replaceAll('\n', "\\n");
+
+        firestoreContents['$x'] = firestoreContents['$x']
+            .replaceAll('\'', '\\\'')
+            .replaceAll('\"', '\\\"');
+        print(firestoreContents['$x']);
         firestoreContentsInfo['$x'] = contentsData[i]['info'];
         x++;
       } else if (contentsData[i]['info']['type'] == 'image') {
@@ -1574,7 +1580,7 @@ class TextDisplayWidget extends StatefulWidget {
 class _TextDisplayWidgetState extends State<TextDisplayWidget> {
   limitIconBox(IconData icon, String s) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 13, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 13, vertical: 2),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           color: Theme.of(context).cardColor),

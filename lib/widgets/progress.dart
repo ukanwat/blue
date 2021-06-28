@@ -7,21 +7,30 @@ import 'package:get/get.dart';
 
 // Package imports:
 import 'package:nuts_activity_indicator/nuts_activity_indicator.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 
 circularProgress() {
   return Container(
-    alignment: Alignment.center,
-    padding: EdgeInsets.only(top: 5, bottom: 5, left: 5, right: 5),
-    child: CircularProgressIndicator(
-      strokeWidth: 2,
-      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1ee682)),
-    ),
+      alignment: Alignment.center,
+      padding: EdgeInsets.only(top: 5, bottom: 5, left: 5, right: 5),
+      child: SizedBox(
+        height: 30,
+        width: 30,
+        child: LoadingIndicator(
+          color: Theme.of(Get.context).accentColor,
+          indicatorType: Indicator.lineSpinFadeLoader,
+        ),
+      )
+      // CircularProgressIndicator(
+      //   strokeWidth: 2,
+      //   valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1ee682)),
+      // ),
 //     child:NutsActivityIndicator(
 //     radius: 20,endRatio: 0.9,relativeWidth: 0.6,
 //     tickCount: 16,
 //     startRatio: 0.55,
 // ),
-  );
+      );
 }
 
 Container linearProgress() {

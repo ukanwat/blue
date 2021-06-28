@@ -1,6 +1,7 @@
 // Flutter imports:
 import 'package:blue/screens/explore_screen.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -117,12 +118,12 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                 if (selectedTopicTile != null) {
                   setState(() {
                     showDialog(
-                        barrierDismissible: false,
+                        barrierDismissible: !kReleaseMode,
                         // useRootNavigator: false,
                         context: context,
                         builder: (BuildContext context) => WillPopScope(
                               onWillPop: () async {
-                                return false;
+                                return !kReleaseMode;
                               },
                               child: Dialog(
                                 insetPadding: EdgeInsets.symmetric(

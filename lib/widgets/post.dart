@@ -305,14 +305,16 @@ class _PostState extends State<Post> {
                             setState(() {
                               notInterested = true;
                             });
-                            Future.delayed(Duration(seconds: 3)).then((value) {
-                              if (widget.postActionExists) {
-                                Hasura.updatePostAction(
+                            Future.delayed(Duration(seconds: 3))
+                                .then((value) async {
+                              if (actionExists) {
+                                await Hasura.updatePostAction(
                                     postId, 'not_interested:true');
                               } else {
-                                Hasura.insertPostAction(
+                                await Hasura.insertPostAction(
                                     postId, 'not_interested:true');
                               }
+                              actionExists = true;
                             });
                           },
                         ),
@@ -328,7 +330,7 @@ class _PostState extends State<Post> {
                               setState(() {
                                 vote = Vote.down;
                               });
-                          }, widget.postActionExists),
+                          }, actionExists),
                         if (isFollowing)
                           ListTile(
                             dense: true,
@@ -458,12 +460,12 @@ class _PostState extends State<Post> {
                             overflow: TextOverflow.fade,
                             softWrap: false,
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 17,
                               fontWeight: FontWeight.w500,
                               color: Theme.of(context)
                                   .iconTheme
                                   .color
-                                  .withOpacity(0.83),
+                                  .withOpacity(0.9),
                             )),
                       ),
                       SizedBox(
@@ -672,7 +674,7 @@ class _PostState extends State<Post> {
                       color: Theme.of(context).iconTheme.color.withOpacity(0.9),
                       fontWeight: FontWeight.w400,
                     ),
-                    maxLines: 4,
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -723,9 +725,7 @@ class _PostState extends State<Post> {
             ));
   }
 
-  unvote() async {
-    //TODO
-  }
+  unvote() async {}
 
   Container tagBar() {
     return Container(
@@ -799,12 +799,19 @@ class _PostState extends State<Post> {
         compactPostThumbnailData = contentsInfo[i]['thumbUrl'];
         thumbnailType = CompactPostThumbnailType.video;
         var flickManager = FlickManager(
+          autoPlay: PreferencesUpdate().getBool('autoplay_videos') ?? true,
           videoPlayerController: VideoPlayerController.network(contents['$i']),
         );
         contentsViewList.add(Container(
             height: MediaQuery.of(context).size.width /
                 contentsInfo[i]['aspectRatio'],
-            child: Container(child: VideoDisplay(flickManager, true))
+            child: Container(
+                child: VideoDisplay(flickManager, true,
+                    thumbnail: cachedNetworkImage(
+                      context,
+                      contentsInfo[i]['thumbUrl'],
+                      aspectRatio: contentsInfo[i]['aspectRatio'],
+                    )))
             // KiddVideoPlayer(
             //   fromUrl: true,
             //   videoUrl: contents['$i'],
@@ -828,7 +835,7 @@ class _PostState extends State<Post> {
         if (compactPostText == null) {
           compactPostText = contents['$i'];
           compactPostText = compactPostText.substring(
-              0, contents['$i'].length > 100 ? 100 : contents['$i'].length);
+              0, contents['$i'].length > 200 ? 200 : contents['$i'].length);
         }
       } else if (contentsInfo[i]['type'] == 'link') {
         contentsViewList.add(linkContentContainer(contents['$i']));
@@ -1093,6 +1100,9 @@ class _PostState extends State<Post> {
                           await DynamicLinksService.createDynamicLink(
                               'post?id=$postId');
                       Share.share(_link, subject: 'Sharing this Post');
+
+                      await Hasura.postShareAction(postId, actionExists);
+                      actionExists = true;
                     }),
                     Text(
                       '${Functions.abbreviateNumber(widget.shares, hideLess: true)}',
@@ -1141,7 +1151,7 @@ class _PostState extends State<Post> {
                 Container(
                   width: 20,
                   child: Text(
-                    '${Functions.abbreviateNumber(widget.comments, hideLess: true)}',
+                    '${Functions.abbreviateNumber(widget.commentCount, hideLess: true)}',
                     style: TextStyle(fontWeight: FontWeight.w500, fontSize: 19),
                   ),
                 ),
@@ -1194,15 +1204,16 @@ class _PostState extends State<Post> {
                   borderRadius: BorderRadius.circular(20),
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: () {
+                    onTap: () async {
                       if (isOwner) {
                         return;
                       }
                       if (vote == null) {
                         return;
                       }
-                      PostFunctions().handleUpvoteButton(
-                          postId, vote, widget.postActionExists);
+                      await PostFunctions()
+                          .handleUpvoteButton(postId, vote, actionExists);
+                      actionExists = true;
                       if (vote == Vote.up) {
                         setState(() {
                           vote = Vote.none;
@@ -1284,9 +1295,10 @@ class _PostState extends State<Post> {
   }
 
   bool alreadyUpvoted = false;
-
+  bool actionExists;
   @override
   void initState() {
+    actionExists = widget.postActionExists;
     isOwner = Boxes.currentUserBox.get('user_id') == widget.ownerId;
 
     if (Boxes.followingBox.containsKey(ownerId)) {
@@ -1333,7 +1345,7 @@ class _PostState extends State<Post> {
                     Text(
                       "You won't see this post again",
                     ),
-                    FlatButton(
+                    TextButton(
                       onPressed: () {
                         setState(() {
                           notInterested = false;
@@ -1385,7 +1397,7 @@ class _PostState extends State<Post> {
                                   time: widget.time,
                                   votes: widget.votes,
                                   notInterested: widget.notInterested,
-                                  postActionExists: widget.postActionExists,
+                                  postActionExists: actionExists,
                                   thumbUrl: widget.thumbUrl,
                                   upvoted: widget.upvoted,
                                 ),

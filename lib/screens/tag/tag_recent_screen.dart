@@ -59,6 +59,9 @@ class _TagRecentScreenState extends State<TagRecentScreen>
   }
 
   addItems() async {
+    if (loaded == true) {
+      return;
+    }
     List<Post> _posts = await pS.getPosts(8);
     if (_posts.length == 0) {
       setState(() {
@@ -106,7 +109,9 @@ class _TagRecentScreenState extends State<TagRecentScreen>
                           return Container(
                             height: 150,
                             width: MediaQuery.of(context).size.width,
-                            child: Center(child: circularProgress()),
+                            child: loaded
+                                ? Container()
+                                : Center(child: circularProgress()),
                           );
                         }
                         return VisibleNotifierWidget(

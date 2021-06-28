@@ -152,7 +152,10 @@ class Hasura {
       }
     }
     if (about != null) {
-      aboutModified = about.replaceAll("\n", "\\n");
+      aboutModified = about
+          .replaceAll("\n", "\\n")
+          .replaceAll('\'', '\\\'')
+          .replaceAll('\"', '\\\"');
     }
     //TODO check more
 
@@ -368,6 +371,7 @@ class Hasura {
   }
 }
 """;
+    print(_doc);
 
     dynamic _data = await hasuraConnect.mutation(_doc);
   }
@@ -613,8 +617,8 @@ class Hasura {
     if (userId == null) {
       userId = await getUserId();
     }
-    var time =
-        DateTime.parse(PreferencesUpdate().getFuture('searches_last_cleared'));
+    var time = DateTime.parse(
+        await PreferencesUpdate().getFuture('searches_last_cleared'));
     if (time == null) {
       time = DateTime(2020);
       PreferencesUpdate()
@@ -751,7 +755,8 @@ class Hasura {
       userId = await getUserId();
     }
     if (data != null) {
-      data = data.replaceAll("\n", "\\n");
+      data = data.replaceAll("\n", "\\n")
+        ..replaceAll('\'', '\\\'').replaceAll('\"', '\\\"');
     }
     String doc = """mutation{
   insert_messages_one(object:{data:"$data",sender_id:$userId,conv_id:$convId,type:"$type",sender_name: "${Boxes.currentUserBox.get("name")}" }){created_at}
@@ -1636,5 +1641,25 @@ __typename
 }""");
 
     return data['data']['follows'];
+  }
+
+  static postShareAction(
+    int postId,
+    bool update,
+  ) async {
+    int userId = await getUserId();
+    String doc = update
+        ? """mutation{
+  update_post_actions_by_pk(pk_columns:{post_id: $postId,user_id:$userId},_set:{shared:true}){
+   __typename
+  }
+}"""
+        : """mutation{
+  insert_post_actions_one(object:{user_id:$userId,post_id:$postId,shared:true}){
+   __typename
+  }
+}""";
+    print(doc);
+    await hasuraConnect.mutation(doc);
   }
 }
