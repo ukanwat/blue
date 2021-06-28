@@ -17,7 +17,7 @@ circularProgress() {
         height: 30,
         width: 30,
         child: LoadingIndicator(
-          color: Theme.of(Get.context).accentColor,
+          color: Colors.white,
           indicatorType: Indicator.lineSpinFadeLoader,
         ),
       )
