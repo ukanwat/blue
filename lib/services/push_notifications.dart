@@ -69,6 +69,8 @@ class PushNotificationsManager {
               },
             );
           });
+
+      await PreferencesUpdate().uploadValue('push_notif_agree', true, false);
     }
 
     if (ret == true) {

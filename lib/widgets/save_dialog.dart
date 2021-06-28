@@ -83,6 +83,7 @@ class _SaveDialogState extends State<SaveDialog> {
       elevation: 0.0,
       backgroundColor: Colors.transparent,
       child: Container(
+        constraints: BoxConstraints(maxWidth: 500),
         padding: EdgeInsets.symmetric(vertical: 20, horizontal: 15),
         decoration: new BoxDecoration(
           color: Theme.of(context).canvasColor,

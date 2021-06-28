@@ -25,6 +25,7 @@ class ShowDialog extends StatelessWidget {
       elevation: 0.0,
       backgroundColor: Colors.transparent,
       child: Container(
+        constraints: BoxConstraints(maxWidth: 500),
         padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         decoration: new BoxDecoration(
           color: Theme.of(context).canvasColor,

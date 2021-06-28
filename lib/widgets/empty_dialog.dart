@@ -27,6 +27,7 @@ class _EmptyDialogState extends State<EmptyDialog> {
       elevation: 0.0,
       backgroundColor: Colors.transparent,
       child: Container(
+          constraints: BoxConstraints(maxWidth: 500),
           padding: EdgeInsets.symmetric(
               vertical: 20,
               horizontal: widget.noHorizontalPadding == true ? 0 : 15),
