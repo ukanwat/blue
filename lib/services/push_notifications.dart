@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'package:uuid/uuid.dart';
+
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
@@ -7,6 +10,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'package:image/image.dart' as Im;
+import 'package:path_provider/path_provider.dart';
 
 String messagToken;
 
@@ -82,44 +88,48 @@ class PushNotificationsManager {
     var initialzationSettingsiOS = IOSInitializationSettings();
     var initializationSettings = InitializationSettings(
         android: initialzationSettingsAndroid, iOS: initialzationSettingsiOS);
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      RemoteNotification notification = message.notification;
-      AndroidNotification android = message.notification?.android;
-      if (notification != null && android != null) {
-        flutterLocalNotificationsPlugin.show(
-          notification.hashCode,
-          notification.title,
-          notification.body,
-          NotificationDetails(
-              android: AndroidNotificationDetails(
-                channel.id,
-                channel.name,
-                channel.description,
-                // TODO add a proper drawable resource to android, for now using
-                //      one that already exists in example app.
-                icon: 'launch_background',
-              ),
-              iOS: IOSNotificationDetails()),
-        );
-      }
-    });
+    // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    //   RemoteNotification notification = message.notification;
+    //   AndroidNotification android = message.notification?.android;
+    //   if (notification != null && android != null) {
+    //     flutterLocalNotificationsPlugin.show(
+    //       notification.hashCode,
+    //       notification.title,
+    //       notification.body,
+    //       NotificationDetails(
+    //           android: AndroidNotificationDetails(
+    //             channel.id,
+    //             channel.name,
+    //             channel.description,
+    //             //      one that already exists in example app.
+    //             icon: 'launch_background',
+    //           ),
+    //           iOS: IOSNotificationDetails()),
+    //     );
+    //   }
+    // });
     flutterLocalNotificationsPlugin.initialize(initializationSettings);
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification notification = message.notification;
       AndroidNotification android = message.notification?.android;
+      String url = android.imageUrl;
       if (notification != null && android != null) {
-        flutterLocalNotificationsPlugin.show(
-            notification.hashCode,
-            notification.title,
-            notification.body,
-            NotificationDetails(
-              android: AndroidNotificationDetails(
-                channel.id,
-                channel.name,
-                channel.description,
-                icon: android?.smallIcon,
-              ),
-            ));
+        if (url == null) {
+          flutterLocalNotificationsPlugin.show(
+              notification.hashCode,
+              notification.title,
+              notification.body,
+              NotificationDetails(
+                android: AndroidNotificationDetails(
+                  channel.id,
+                  channel.name,
+                  channel.description,
+                  icon: android?.smallIcon,
+                ),
+              ));
+        } else {
+          _showBigPictureNotification(url, notification);
+        }
       }
     });
     getToken();
@@ -137,6 +147,45 @@ class PushNotificationsManager {
       badge: true,
       sound: true,
     );
+  }
+
+  Future<File> _downloadAndSaveFile(String url, String fileName) async {
+    final Directory directory = await getApplicationDocumentsDirectory();
+    final String filePath = '${directory.path}/$fileName';
+    final http.Response response = await http.get(Uri.parse(url));
+    final File file = File(filePath);
+    await file.writeAsBytes(response.bodyBytes);
+    return file;
+  }
+
+  Future<void> _showBigPictureNotification(
+      String url, RemoteNotification notification) async {
+    final File file = await _downloadAndSaveFile(url, 'bigPicture');
+    Im.Image image = Im.copyResize(
+      Im.decodeImage(file.readAsBytesSync()),
+      width: 48,
+    );
+    Im.Image image2 = Im.copyResizeCropSquare(image, 48);
+    final tempDir = await getTemporaryDirectory();
+    final path = tempDir.path;
+    String fileName = Uuid().v4();
+    final compressedImageFile = File('$path/img_$fileName.jpg')
+      ..writeAsBytesSync(Im.encodeJpg(image2, quality: 100));
+    final BigPictureStyleInformation bigPictureStyleInformation =
+        BigPictureStyleInformation(FilePathAndroidBitmap(file.path),
+            largeIcon: FilePathAndroidBitmap(compressedImageFile.path),
+            contentTitle: 'overridden <b>big</b> content title',
+            htmlFormatContentTitle: true,
+            summaryText: 'summary <i>text</i>',
+            htmlFormatSummaryText: true);
+    final AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+            channel.id, channel.name, channel.description,
+            styleInformation: bigPictureStyleInformation);
+    final NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(notification.hashCode,
+        notification.title, notification.body, platformChannelSpecifics);
   }
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;

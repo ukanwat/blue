@@ -61,18 +61,18 @@ export const notification = functions.https.onRequest(async (req, resp) => {
     };
     const message2 = {
         "token": messageData.token + '',
-        "notification": {
-            "title": messageData.data.title + '',
-        },
+
         "android": {
             "notification": {
+                "title": messageData.data.title + '',
                 "imageUrl": imgUrl + '',
+                "body": 'image',
             },
         },
 
     };
 
-
+    console.log(message2);
     if (body !== null) {
         await admin.messaging().send(message1);
     }

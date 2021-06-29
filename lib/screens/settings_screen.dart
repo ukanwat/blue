@@ -358,7 +358,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 'Stark',
                 style:
                     TextStyle(fontFamily: 'Techna Sans Regular', fontSize: 20),
-              ))
+              )),
+              SizedBox(
+                height: 10,
+              )
             ],
           ),
         ),
