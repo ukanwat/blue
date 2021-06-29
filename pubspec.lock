@@ -169,6 +169,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.0"
+  carousel_slider:
+    dependency: "direct main"
+    description:
+      name: carousel_slider
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "4.0.0"
   characters:
     dependency: transitive
     description:
@@ -317,7 +324,7 @@ packages:
     source: hosted
     version: "3.0.0"
   crypto:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: crypto
       url: "https://pub.dartlang.org"
@@ -643,6 +650,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0-nullsafety.0"
+  flutter_login_facebook:
+    dependency: "direct main"
+    description:
+      name: flutter_login_facebook
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.1"
   flutter_native_splash:
     dependency: "direct dev"
     description:
@@ -968,6 +982,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.0"
+  list_ext:
+    dependency: transitive
+    description:
+      name: list_ext
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.2"
   loading_indicator:
     dependency: "direct main"
     description:
@@ -1248,6 +1269,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.8"
+  sign_in_with_apple:
+    dependency: "direct main"
+    description:
+      name: sign_in_with_apple
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.0"
   simple_animations:
     dependency: "direct main"
     description:

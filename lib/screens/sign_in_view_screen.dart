@@ -1,5 +1,7 @@
 // Flutter imports:
 
+import 'dart:io';
+
 import 'package:auth_buttons/auth_buttons.dart';
 import 'package:blue/main.dart';
 import 'package:blue/providers/verify_email.dart';
@@ -43,6 +45,17 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
       result = await navigatorKey.currentState.pushNamed(
           SetNameScreen.routeName,
           arguments: {"provider": "google"});
+    }
+    await _auth.signInContinue(context, exists, result);
+  }
+
+  appleSignIn(BuildContext context) async {
+    final _auth = Provider.of(context).auth;
+    bool exists = await _auth.signInWithApple();
+    var result;
+    if (!exists) {
+      result = await navigatorKey.currentState
+          .pushNamed(SetNameScreen.routeName, arguments: {"provider": "apple"});
     }
     await _auth.signInContinue(context, exists, result);
   }
@@ -136,7 +149,7 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
               alignment: Alignment.center,
               children: [
                 Container(
-                  height: 235.0,
+                  height: 290,
                   decoration: new BoxDecoration(
                     gradient: FlutterGradients.aquaGuidance(),
                     borderRadius: BorderRadius.vertical(
@@ -149,22 +162,57 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
                     SizedBox(
                       height: 10,
                     ),
+                    if (false)
+                      Container(
+                        height: 45,
+                        width: 285,
+                        child: AppleAuthButton(
+                            onPressed: () {
+                              appleSignIn(context);
+                            },
+                            darkMode: true,
+                            style: AuthButtonStyle(
+                              iconType: AuthIconType.outlined,
+                            )),
+                      ),
+                    SizedBox(
+                      height: 10,
+                    ),
                     Container(
                       height: 45,
+                      width: 285,
+                      child: FacebookAuthButton(
+                          onPressed: () {
+                            facebookSignIn(context);
+                          },
+                          darkMode: true,
+                          style: AuthButtonStyle(
+                            iconType: AuthIconType.outlined,
+                          )),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Container(
+                      height: 45,
+                      width: 285,
                       child: GoogleAuthButton(
                           onPressed: () {
                             googleSignIn(context);
                           },
+                          darkMode: true,
                           style: AuthButtonStyle(
                             iconType: AuthIconType.secondary,
                           )),
                     ),
                     SizedBox(
-                      height: 20,
+                      height: 10,
                     ),
                     Container(
                       height: 45,
+                      width: 285,
                       child: EmailAuthButton(
+                          darkMode: true,
                           onPressed: () {
                             Navigator.of(context)
                                 .pushNamed(EmailSignInScreen.routeName);
@@ -219,7 +267,7 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
                       ],
                     ),
                     SizedBox(
-                      height: 50,
+                      height: 10,
                     )
                   ],
                 )

@@ -15,6 +15,7 @@ class User {
   final int followerCount;
   final int followingCount;
   final Map social;
+  final bool profileComplete;
   User(
       {this.id,
       this.username,
@@ -28,7 +29,8 @@ class User {
       this.userId,
       this.followerCount,
       this.followingCount,
-      this.social});
+      this.social,
+      this.profileComplete});
 
   factory User.fromDocument(Map doc) {
     return User(
@@ -44,6 +46,7 @@ class User {
         userId: doc['user_id'],
         followingCount: doc['following_count'],
         followerCount: doc['follower_count'],
-        social: doc['social']);
+        social: doc['social'],
+        profileComplete: doc['profile_complete']);
   }
 }

@@ -6,6 +6,7 @@ import 'dart:math' as math;
 
 // Flutter imports:
 import 'package:blue/constants/strings.dart';
+import 'package:blue/providers/posts_tracker.dart';
 import 'package:blue/services/dynamic_links.dart';
 import 'package:blue/services/post_functions.dart';
 import 'package:blue/widgets/show_dialog.dart';
@@ -19,6 +20,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:flick_video_player/flick_video_player.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share/share.dart';
@@ -931,360 +933,348 @@ class _PostState extends State<Post> {
             )));
   }
 
-  Widget footerButton(IconData iconData, Color color, Function function) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 0, left: 2),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          customBorder: new CircleBorder(),
-          onTap: function,
-          child: Padding(
-            padding: const EdgeInsets.all(6),
-            child: Icon(
-              iconData,
-              size: 26,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   bool increment;
   buildPostFooter() {
-    return Padding(
-      padding: EdgeInsets.only(top: 5),
-      child: Column(
-        children: <Widget>[
-          if (showSaveBar)
-            Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 5, horizontal: 6),
-                child: Container(
-                  margin: EdgeInsets.symmetric(vertical: 0, horizontal: 8),
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      color: Colors.blue.withOpacity(0.15)),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: <Widget>[
-                      Text(
-                        'Saved!',
-                        style: TextStyle(fontSize: 18),
+    return GetBuilder<PostGet>(
+        init: PostGet(),
+        id: postId,
+        builder: (value) {
+          return Padding(
+            padding: EdgeInsets.only(top: 5),
+            child: Column(
+              children: <Widget>[
+                if (showSaveBar)
+                  Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 6),
+                      child: Container(
+                        margin:
+                            EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            color: Colors.blue.withOpacity(0.15)),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: <Widget>[
+                            Text(
+                              'Saved!',
+                              style: TextStyle(fontSize: 18),
+                            ),
+                            FlatButton(
+                                onPressed: () {
+                                  setState(() {
+                                    showSaveBar = false;
+                                  });
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) =>
+                                        SaveDialog(this.widget),
+                                  );
+                                },
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                                child: Text(
+                                  'Save to Collection',
+                                  style: TextStyle(
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 18),
+                                ))
+                          ],
+                        ),
+                      )),
+                if (widget.isCompact)
+                  if (tagBarVisible) tagBar(),
+                Row(
+                  mainAxisAlignment: widget.isCompact
+                      ? MainAxisAlignment.spaceAround
+                      : MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.max,
+                  children: <Widget>[
+                    if (widget.isCompact)
+                      SizedBox(
+                        width: 6,
                       ),
-                      FlatButton(
-                          onPressed: () {
-                            setState(() {
-                              showSaveBar = false;
-                            });
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) =>
-                                  SaveDialog(this.widget),
-                            );
-                          },
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                          child: Text(
-                            'Save to Collection',
-                            style: TextStyle(
-                                color: Colors.blue,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 18),
-                          ))
-                    ],
-                  ),
-                )),
-          if (widget.isCompact)
-            if (tagBarVisible) tagBar(),
-          Row(
-            mainAxisAlignment: widget.isCompact
-                ? MainAxisAlignment.spaceAround
-                : MainAxisAlignment.start,
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              if (widget.isCompact)
-                SizedBox(
-                  width: 6,
-                ),
-              if (widget.isCompact)
-                tagBarVisible
-                    ? footerButton(FlutterIcons.ios_arrow_up_ion,
-                        Theme.of(context).iconTheme.color, () {
-                        setState(() {
-                          tagBarVisible = false;
-                        });
-                      })
-                    : footerButton(FlutterIcons.ios_arrow_down_ion,
-                        Theme.of(context).iconTheme.color, () async {
-                        setState(() {
-                          tagBarVisible = true;
-                        });
-                      }),
-              if (widget.isCompact)
-                SizedBox(
-                  width: 14,
-                ),
-              isSaved
-                  ? Container(
-                      width: 60,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          footerButton(
-                              FluentIcons.bookmark_24_filled, Colors.blue,
+                    if (widget.isCompact)
+                      tagBarVisible
+                          ? FooterButton(FlutterIcons.ios_arrow_up_ion, () {
+                              setState(() {
+                                tagBarVisible = false;
+                              });
+                            })
+                          : FooterButton(FlutterIcons.ios_arrow_down_ion,
                               () async {
-                            setState(() {
-                              isSaved = false;
-                              showSaveBar = false;
-                            });
-                            Boxes.saveBox.delete(postId);
-                            await Hasura.deleteSavedPost(postId);
-                          }),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 0, left: 0),
-                            child: Text(
-                              '${Functions.abbreviateNumber(widget.saves, hideLess: true)}',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500, fontSize: 19),
+                              setState(() {
+                                tagBarVisible = true;
+                              });
+                            }),
+                    if (widget.isCompact)
+                      SizedBox(
+                        width: 14,
+                      ),
+                    isSaved
+                        ? Container(
+                            width: 60,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                FooterButton(FluentIcons.bookmark_24_filled,
+                                    () async {
+                                  value.setSaved(false, postId);
+                                  setState(() {
+                                    isSaved = false;
+                                    showSaveBar = false;
+                                  });
+                                  Boxes.saveBox.delete(postId);
+                                  await Hasura.deleteSavedPost(postId);
+                                }),
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.only(right: 0, left: 0),
+                                  child: Text(
+                                    '${Functions.abbreviateNumber(widget.saves, hideLess: true)}',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 19),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : Container(
+                            width: 60,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                FooterButton(FluentIcons.bookmark_24_regular,
+                                    () async {
+                                  value.setSaved(true, postId);
+                                  setState(() {
+                                    isSaved = true;
+                                  });
+
+                                  await Hasura.insertSavedPost(postId);
+                                  Boxes.saveBox.put(postId, true);
+
+                                  setState(() {
+                                    showSaveBar = true;
+                                  });
+                                  Future.delayed(
+                                      const Duration(milliseconds: 4000), () {
+                                    setState(() {
+                                      showSaveBar = false;
+                                    });
+                                  });
+                                }),
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.only(right: 0, left: 0),
+                                  child: Text(
+                                      '${Functions.abbreviateNumber(value.getSaved(postId) == null ? widget.saves : value.getSaved(postId) ? widget.saves + 1 : widget.saves - 1, hideLess: true)}',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 19)),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    )
-                  : Container(
+                    Container(
                       width: 60,
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          footerButton(
-                              FluentIcons.bookmark_24_regular, Colors.blue,
-                              () async {
-                            setState(() {
-                              isSaved = true;
-                            });
+                          FooterButton(FluentIcons.share_24_regular, () async {
+                            String _link =
+                                await DynamicLinksService.createDynamicLink(
+                                    'post?id=$postId');
+                            Share.share(_link, subject: 'Sharing this Post');
 
-                            await Hasura.insertSavedPost(postId);
-                            Boxes.saveBox.put(postId, true);
-
-                            setState(() {
-                              showSaveBar = true;
-                            });
-                            Future.delayed(const Duration(milliseconds: 4000),
-                                () {
-                              setState(() {
-                                showSaveBar = false;
-                              });
-                            });
+                            await Hasura.postShareAction(postId, actionExists);
+                            actionExists = true;
                           }),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 0, left: 0),
-                            child: Text(
-                              '${Functions.abbreviateNumber(widget.saves, hideLess: true)}',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500, fontSize: 19),
-                            ),
+                          Text(
+                            '${Functions.abbreviateNumber(widget.shares, hideLess: true)}',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w500, fontSize: 19),
                           ),
                         ],
                       ),
                     ),
-              Container(
-                width: 60,
-                child: Row(
-                  children: [
-                    footerButton(
-                        FluentIcons.share_24_regular, Colors.orange[900],
-                        () async {
-                      String _link =
-                          await DynamicLinksService.createDynamicLink(
-                              'post?id=$postId');
-                      Share.share(_link, subject: 'Sharing this Post');
+                    if (!(widget.commentsShown || widget.isCompact))
+                      Container(
+                        width: 40,
+                        child: FooterButton(FluentIcons.comment_24_regular, () {
+                          showComments(context,
+                              post: Post(
+                                commentsShown: true,
+                                contents: this.widget.contents,
+                                contentsInfo: this.widget.contentsInfo,
+                                isCompact: false,
+                                ownerId: this.widget.ownerId,
+                                photoUrl: this.widget.photoUrl,
+                                postId: this.widget.postId,
+                                tags: this.widget.tags,
+                                title: this.widget.title,
+                                topicId: this.widget.topicId,
+                                topicName: this.widget.topicName,
+                                upvotes: this.widget.upvotes,
+                                username: this.widget.username,
+                                comments: this.widget.comments,
+                                downvotes: this.widget.downvotes,
+                                saves: this.widget.saves,
+                                shares: this.widget.shares,
+                                commentCount: this.commentCount,
+                                time: widget.time,
+                                votes: widget.votes,
+                                notInterested: widget.notInterested,
+                                postActionExists: widget.postActionExists,
+                                thumbUrl: widget.thumbUrl,
+                                upvoted: widget.upvoted,
+                              ),
+                              index: 1);
+                        }),
+                      ),
+                    if (!(widget.commentsShown || widget.isCompact))
+                      Container(
+                        width: 20,
+                        child: Text(
+                          '${Functions.abbreviateNumber(widget.commentCount, hideLess: true)}',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500, fontSize: 19),
+                        ),
+                      ),
+                    // if (!widget.isCompact)
+                    Expanded(
+                        child:
+                            //  (contentsHeight != null) &&
+                            //         (contentsHeight ==
+                            //                 MediaQuery.of(context).size.height * 0.8 ||
+                            //             contentsHeight >
+                            //                 MediaQuery.of(context).size.height * 0.8)
+                            //     ?
+                            // Center(
+                            //     child: SizedBox(
+                            //       height: 28,
+                            //       width: 30,
+                            //       child: GestureDetector(
+                            //         onTap: () {
+                            //           if (!constraintContent) {
+                            //             setState(() {
+                            //               constraintContent = true;
+                            //               getContentSize();
+                            //             });
+                            //           } else {
+                            //             setState(() {
+                            //               constraintContent = false;
+                            //               getContentSize();
+                            //             });
+                            //           }
+                            //         },
+                            //         child: Padding(
+                            //           padding: EdgeInsets.only(left: 0),
+                            //           child: CustomPaint(
+                            //             //                       <-- CustomPaint widget
+                            //             size: Size(30, 30),
+                            //             painter: ExpandIconPainter(
+                            //                 constraintContent ? false : true,
+                            //                 context),
+                            //           ),
+                            //         ),
+                            //       ),
+                            //     ),
+                            //   )
 
-                      await Hasura.postShareAction(postId, actionExists);
-                      actionExists = true;
-                    }),
-                    Text(
-                      '${Functions.abbreviateNumber(widget.shares, hideLess: true)}',
-                      style:
-                          TextStyle(fontWeight: FontWeight.w500, fontSize: 19),
+                            // :
+                            Container()),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 5),
+                      child: Material(
+                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () async {
+                            if (isOwner) {
+                              return;
+                            }
+                            if (vote == null) {
+                              return;
+                            }
+                            await PostFunctions()
+                                .handleUpvoteButton(postId, vote, actionExists);
+                            actionExists = true;
+                            if (vote == Vote.up) {
+                              setState(() {
+                                vote = Vote.none;
+                              });
+                              if (increment == null) {
+                                setState(() {
+                                  increment = false;
+                                });
+                              } else {
+                                setState(() {
+                                  increment = false;
+                                });
+                              }
+                            } else if (vote == Vote.none) {
+                              setState(() {
+                                vote = Vote.up;
+                              });
+                              if (increment == null) {
+                                setState(() {
+                                  increment = true;
+                                });
+                              } else {
+                                setState(() {
+                                  increment = null;
+                                });
+                              }
+                            }
+                          },
+                          customBorder: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.only(right: 3, left: 6),
+                                  child: Text(
+                                    increment == null
+                                        ? '${Functions.abbreviateNumber(upvotes, hideLess: true)}'
+                                        : increment
+                                            ? '${Functions.abbreviateNumber(upvotes + 1, hideLess: true)}'
+                                            : '${Functions.abbreviateNumber(upvotes - 1, hideLess: true)}',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 19),
+                                  ),
+                                ),
+                                Icon(
+                                    vote == Vote.up
+                                        ? FluentIcons.keyboard_shift_24_filled
+                                        : FluentIcons.keyboard_shift_24_regular,
+                                    size: 24.0,
+                                    color: isOwner
+                                        ? Colors.blue.withOpacity(0.7)
+                                        : Colors.blue),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
-              if (!(widget.commentsShown || widget.isCompact))
-                Container(
-                  width: 40,
-                  child: footerButton(FluentIcons.comment_24_regular,
-                      Theme.of(context).accentColor, () {
-                    showComments(context,
-                        post: Post(
-                          commentsShown: true,
-                          contents: this.widget.contents,
-                          contentsInfo: this.widget.contentsInfo,
-                          isCompact: false,
-                          ownerId: this.widget.ownerId,
-                          photoUrl: this.widget.photoUrl,
-                          postId: this.widget.postId,
-                          tags: this.widget.tags,
-                          title: this.widget.title,
-                          topicId: this.widget.topicId,
-                          topicName: this.widget.topicName,
-                          upvotes: this.widget.upvotes,
-                          username: this.widget.username,
-                          comments: this.widget.comments,
-                          downvotes: this.widget.downvotes,
-                          saves: this.widget.saves,
-                          shares: this.widget.shares,
-                          commentCount: this.commentCount,
-                          time: widget.time,
-                          votes: widget.votes,
-                          notInterested: widget.notInterested,
-                          postActionExists: widget.postActionExists,
-                          thumbUrl: widget.thumbUrl,
-                          upvoted: widget.upvoted,
-                        ),
-                        index: 1);
-                  }),
+                Padding(
+                  padding: EdgeInsets.only(bottom: 7),
                 ),
-              if (!(widget.commentsShown || widget.isCompact))
-                Container(
-                  width: 20,
-                  child: Text(
-                    '${Functions.abbreviateNumber(widget.commentCount, hideLess: true)}',
-                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 19),
-                  ),
-                ),
-              // if (!widget.isCompact)
-              Expanded(
-                  child:
-                      //  (contentsHeight != null) &&
-                      //         (contentsHeight ==
-                      //                 MediaQuery.of(context).size.height * 0.8 ||
-                      //             contentsHeight >
-                      //                 MediaQuery.of(context).size.height * 0.8)
-                      //     ?
-                      // Center(
-                      //     child: SizedBox(
-                      //       height: 28,
-                      //       width: 30,
-                      //       child: GestureDetector(
-                      //         onTap: () {
-                      //           if (!constraintContent) {
-                      //             setState(() {
-                      //               constraintContent = true;
-                      //               getContentSize();
-                      //             });
-                      //           } else {
-                      //             setState(() {
-                      //               constraintContent = false;
-                      //               getContentSize();
-                      //             });
-                      //           }
-                      //         },
-                      //         child: Padding(
-                      //           padding: EdgeInsets.only(left: 0),
-                      //           child: CustomPaint(
-                      //             //                       <-- CustomPaint widget
-                      //             size: Size(30, 30),
-                      //             painter: ExpandIconPainter(
-                      //                 constraintContent ? false : true,
-                      //                 context),
-                      //           ),
-                      //         ),
-                      //       ),
-                      //     ),
-                      //   )
-
-                      // :
-                      Container()),
-              Padding(
-                padding: const EdgeInsets.only(right: 5),
-                child: Material(
-                  borderRadius: BorderRadius.circular(20),
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () async {
-                      if (isOwner) {
-                        return;
-                      }
-                      if (vote == null) {
-                        return;
-                      }
-                      await PostFunctions()
-                          .handleUpvoteButton(postId, vote, actionExists);
-                      actionExists = true;
-                      if (vote == Vote.up) {
-                        setState(() {
-                          vote = Vote.none;
-                        });
-                        if (increment == null) {
-                          setState(() {
-                            increment = false;
-                          });
-                        } else {
-                          setState(() {
-                            increment = false;
-                          });
-                        }
-                      } else if (vote == Vote.none) {
-                        setState(() {
-                          vote = Vote.up;
-                        });
-                        if (increment == null) {
-                          setState(() {
-                            increment = true;
-                          });
-                        } else {
-                          setState(() {
-                            increment = null;
-                          });
-                        }
-                      }
-                    },
-                    customBorder: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(right: 3, left: 6),
-                            child: Text(
-                              increment == null
-                                  ? '${Functions.abbreviateNumber(upvotes, hideLess: true)}'
-                                  : increment
-                                      ? '${Functions.abbreviateNumber(upvotes + 1, hideLess: true)}'
-                                      : '${Functions.abbreviateNumber(upvotes - 1, hideLess: true)}',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500, fontSize: 19),
-                            ),
-                          ),
-                          Icon(
-                              vote == Vote.up
-                                  ? FluentIcons.keyboard_shift_24_filled
-                                  : FluentIcons.keyboard_shift_24_regular,
-                              size: 24.0,
-                              color: isOwner
-                                  ? Colors.blue.withOpacity(0.7)
-                                  : Colors.blue),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: EdgeInsets.only(bottom: 7),
-          ),
-        ],
-      ),
-    );
+              ],
+            ),
+          );
+        });
   }
 
   @override
@@ -1634,3 +1624,36 @@ class ExpandIconPainter extends CustomPainter {
 //     flickManager = FlickManager(
 //       videoPlayerController: _controller,
 //     );
+
+class FooterButton extends StatefulWidget {
+  final Function function;
+  final IconData iconData;
+
+  const FooterButton(this.iconData, this.function);
+
+  @override
+  _FooterButtonState createState() => _FooterButtonState();
+}
+
+class _FooterButtonState extends State<FooterButton> {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 0, left: 2),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          customBorder: new CircleBorder(),
+          onTap: widget.function,
+          child: Padding(
+            padding: const EdgeInsets.all(6),
+            child: Icon(
+              widget.iconData,
+              size: 26,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

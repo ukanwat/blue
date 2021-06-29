@@ -1,5 +1,9 @@
 // Dart imports:
 import 'dart:convert';
+import 'dart:math';
+import 'package:crypto/crypto.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+
 import 'push_notifications.dart';
 // Flutter imports:
 import 'package:argon_buttons_flutter/argon_buttons_flutter.dart';
@@ -18,7 +22,7 @@ import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/empty_dialog.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_login_facebook/flutter_login_facebook.dart';
 // Package imports:
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
@@ -55,6 +59,56 @@ class AuthService {
     userSignedIn = false;
     await auth.signOut(context);
     await Boxes.clearBoxes();
+  }
+
+  /// Generates a cryptographically secure random nonce, to be included in a
+  /// credential request.
+  String generateNonce([int length = 32]) {
+    final charset =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)])
+        .join();
+  }
+
+  String sha256ofString(String input) {
+    final bytes = utf8.encode(input);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
+  signInWithApple() async {
+    // To prevent replay attacks with the credential returned from Apple, we
+    // include a nonce in the credential request. When signing in with
+    // Firebase, the nonce in the id token returned by Apple, is expected to
+    // match the sha256 hash of `rawNonce`.
+    final rawNonce = generateNonce();
+    final nonce = sha256ofString(rawNonce);
+
+    // Request credential for the currently signed in Apple account.
+    final appleCredential = await SignInWithApple.getAppleIDCredential(
+      scopes: [
+        AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName,
+      ],
+      nonce: nonce,
+    );
+
+    // Create an `OAuthCredential` from the credential returned by Apple.
+    final oauthCredential = auth.OAuthProvider("apple.com").credential(
+      idToken: appleCredential.identityToken,
+      rawNonce: rawNonce,
+    );
+
+    // Sign in the user with Firebase. If the nonce we generated earlier does
+    // not match the nonce in `appleCredential.identityToken`, sign in will fail.
+    _user =
+        (await auth.FirebaseAuth.instance.signInWithCredential(oauthCredential))
+            .user;
+
+    await Functions().updateEmail();
+    bool hasuraUserExists = await Hasura.userExists(_user.uid);
+    return hasuraUserExists;
   }
 
   // Email & Password Sign Up
@@ -199,13 +253,20 @@ class AuthService {
   signInWithFacebook(BuildContext context) async {
     // final LoginResult result = await FacebookAuth.instance.login();
     // // Create a credential from the access token
-    // final auth.OAuthCredential credential =
-    //     auth.FacebookAuthProvider.credential(result.accessToken.token);
-    // // Once signed in, return the UserCredential
-    // _user = (await auth.FirebaseAuth.instance.signInWithCredential(credential))
-    //     .user;
+    final fb = FacebookLogin();
 
-    // await  Functions().updateEmail();
+// Log in
+    final res = await fb.logIn();
+
+    final FacebookAccessToken accessToken = res.accessToken;
+    print('Access token: ${accessToken.token}');
+    final auth.OAuthCredential credential =
+        auth.FacebookAuthProvider.credential(accessToken.token);
+    // Once signed in, return the UserCredential
+    _user = (await auth.FirebaseAuth.instance.signInWithCredential(credential))
+        .user;
+
+    await Functions().updateEmail();
     bool hasuraUserExists = await Hasura.userExists(_user.uid);
     return hasuraUserExists;
   }

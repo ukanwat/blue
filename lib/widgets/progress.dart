@@ -17,7 +17,7 @@ circularProgress() {
         height: 30,
         width: 30,
         child: LoadingIndicator(
-          color: Colors.white,
+          color: Colors.grey,
           indicatorType: Indicator.lineSpinFadeLoader,
         ),
       )

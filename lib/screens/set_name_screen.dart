@@ -58,8 +58,7 @@ class _SetNameScreenState extends State<SetNameScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                if ((data['provider'] != 'google') &&
-                                    (data['provider'] != 'facebook'))
+                                if (data['provider'] == 'email')
                                   Container(
                                     height: 45,
                                     child: TextFormField(
@@ -86,8 +85,7 @@ class _SetNameScreenState extends State<SetNameScreen> {
                                           )),
                                     ),
                                   ),
-                                if ((data['provider'] != 'google') &&
-                                    (data['provider'] != 'facebook'))
+                                if (data['provider'] == 'email')
                                   SizedBox(height: 20),
                                 Container(
                                   height: 45,
@@ -145,8 +143,7 @@ class _SetNameScreenState extends State<SetNameScreen> {
                                           color: Colors.white,
                                           fontSize: 18)),
                                   onPressed: () async {
-                                    if ((data['provider'] != 'google') &&
-                                        (data['provider'] != 'facebook')) {
+                                    if (data['provider'] == 'email') {
                                       if (nameController.text == "") {
                                         snackbar(
                                             'display name is empty', context,
@@ -183,8 +180,7 @@ class _SetNameScreenState extends State<SetNameScreen> {
                                         'name': nameController.text,
                                         'username': usernameController.text
                                       });
-                                    } else if ((data['provider'] == 'google') ||
-                                        (data['provider'] == 'facebook')) {
+                                    } else if (data['provider'] != 'email') {
                                       Navigator.of(context).pop();
                                       Navigator.pop(
                                           context, usernameController.text);

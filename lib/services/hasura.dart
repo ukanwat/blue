@@ -135,6 +135,7 @@ class Hasura {
       String photoUrl,
       String avatarUrl,
       bool deleteToken,
+      bool profileComplete,
       String token,
       Map social}) async {
     int userId = Boxes.currentUserBox.get('user_id');
@@ -184,6 +185,9 @@ class Hasura {
     if (headerUrl != null) {
       fields = fields + 'photo_url: "$photoUrl",';
     }
+    if (profileComplete != null) {
+      fields = fields + 'profile_complete: $profileComplete,';
+    }
     if (avatarUrl != null) {
       fields = fields + 'avatar_url: "$avatarUrl",';
     }
@@ -204,6 +208,7 @@ class Hasura {
   static getUser({int id, bool self}) async {
     if (jwtToken == null) return;
     var userId;
+    String extra = '';
     if (self == true) {
       userId = Boxes.currentUserBox.get('user_id');
       if (userId == null) {
@@ -211,6 +216,7 @@ class Hasura {
         userId = await getUserId(uid: uid);
       }
       id = userId;
+      extra = 'profile_complete';
     }
 
     String _doc = """query{
@@ -229,6 +235,7 @@ class Hasura {
     follower_count
     following_count
     social
+    $extra
   }
 }""";
     return hasuraConnect.query(
@@ -617,8 +624,11 @@ class Hasura {
     if (userId == null) {
       userId = await getUserId();
     }
-    var time = DateTime.parse(
-        await PreferencesUpdate().getFuture('searches_last_cleared'));
+    String t = await PreferencesUpdate().getFuture('searches_last_cleared');
+    if (t == null) {
+      t = DateTime(2020).toString();
+    }
+    var time = DateTime.parse(t);
     if (time == null) {
       time = DateTime(2020);
       PreferencesUpdate()
@@ -755,8 +765,10 @@ class Hasura {
       userId = await getUserId();
     }
     if (data != null) {
-      data = data.replaceAll("\n", "\\n")
-        ..replaceAll('\'', '\\\'').replaceAll('\"', '\\\"');
+      data = data
+          .replaceAll("\n", "\\n")
+          .replaceAll('\'', '\\\'')
+          .replaceAll('\"', '\\\"');
     }
     String doc = """mutation{
   insert_messages_one(object:{data:"$data",sender_id:$userId,conv_id:$convId,type:"$type",sender_name: "${Boxes.currentUserBox.get("name")}" }){created_at}

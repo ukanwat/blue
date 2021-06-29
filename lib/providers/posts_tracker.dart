@@ -5,6 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 
-class PostTrackersGet extends GetxController {
-  List visibleItems = [];
+class PostGet extends GetxController {
+  Map<int, bool> isSavedMap = {};
+
+  setSaved(bool saved, int postId) {
+    isSavedMap[postId] = saved;
+    update([postId]);
+  }
+
+  getSaved(int postId) {
+    return isSavedMap[postId];
+  }
 }

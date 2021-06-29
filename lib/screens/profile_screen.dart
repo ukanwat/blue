@@ -4,10 +4,13 @@ import 'dart:ui';
 // Flutter imports:
 import 'package:blue/constants/strings.dart';
 import 'package:blue/screens/follows_screen.dart';
+import 'package:blue/screens/post_screen.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/url_bottom_sheet.dart';
 import 'package:blue/widgets/user_report_dialog.dart';
+import 'package:carousel_pro/carousel_pro.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -324,18 +327,31 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
   }
 
-  buildProfileHeaderTemp() {
-    future = Hasura.getUser(
+  futur() async {
+    return (await Hasura.getUser(
         id: widget.profileId,
         self: Boxes.currentUserBox.get('user_id') == widget.profileId
             ? true
-            : false);
+            : false));
+  }
+
+//  // if(widget.tabPage == true){
+//     dynamic _snapshot = await Hasura.getPosts(1, 0, "{created_at:asc}",
+//         where: "{owner_id:{_eq:$widget.}}");
+//     print(_snapshot);
+//     if (_snapshot.length > 0) {
+//       postExists = true;
+//     }
+//     // }
+  bool postExists = false;
+  buildProfileHeaderTemp() {
+    future = futur();
     return Container(
       color: Colors.white == Theme.of(context).iconTheme.color
           ? Colors.grey.shade900
           : Colors.white,
       child: FutureBuilder(
-        future: future,
+        future: futur(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Container(height: 200, child: circularProgress());
@@ -374,9 +390,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                       decoration: BoxDecoration(
                           gradient: LinearGradient(
                               begin: Alignment.bottomCenter,
-                              end: Alignment(0, 0.3),
+                              end: Alignment(0, 0.5),
                               colors: [
-                            Colors.black54.withOpacity(0.42),
+                            Colors.black54.withOpacity(0.2),
                             Colors.transparent
                           ])),
                       height: 150 + MediaQuery.of(context).padding.top,
@@ -468,10 +484,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                               style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 26,
-                                  color: user.headerUrl != null &&
-                                          user.headerUrl != ''
-                                      ? Colors.white
-                                      : Theme.of(context).iconTheme.color),
+                                  color: Colors.white),
                             ),
                           ),
                         ],
@@ -503,7 +516,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                         ),
                       ],
                     )),
-
                 if (user.about != null && user.about != '')
                   Padding(
                     padding: const EdgeInsets.only(left: 20),
@@ -556,7 +568,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                       ),
                     ),
                   ),
-
                 if ((user.social['instagram'] != null &&
                         user.social['instagram'] != '' &&
                         user.social['instagram'] != '_') ||
@@ -633,8 +644,482 @@ class _ProfileScreenState extends State<ProfileScreen>
                               ))
                       ],
                     ),
-                  )
-                // ],
+                  ),
+                if (widget.tabPage == true)
+                  if (user.profileComplete != true)
+                    FutureBuilder<dynamic>(
+                        future: Hasura.getPosts(1, 0, "{created_at:asc}",
+                            where: "{owner_id:{_eq:${widget.profileId}}}"),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) return Container();
+
+                          bool postExists = snapshot.data.length > 0;
+
+                          return Container(
+                            height: (postExists &&
+                                    (user.avatarUrl != null) &&
+                                    (user.headerUrl != null) &&
+                                    (user.about != null && user.about != ''))
+                                ? 280
+                                : 235,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).canvasColor,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            width: double.maxFinite,
+                            margin: EdgeInsets.symmetric(
+                                horizontal: 15, vertical: 8),
+                            padding: EdgeInsets.symmetric(horizontal: 10),
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 5, horizontal: 10),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'Complete your Profile',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontFamily: 'Stark Sans',
+                                            fontSize: 18),
+                                      ),
+                                      SizedBox(
+                                        width: 5,
+                                      ),
+                                      GestureDetector(
+                                          onTap: () async {
+                                            user = User.fromDocument(
+                                                await Hasura.getUser(
+                                                    self: true));
+
+                                            setState(() {});
+                                          },
+                                          child: Icon(Icons.refresh))
+                                    ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: [
+                                      Expanded(
+                                        child: Container(
+                                          height: 14,
+                                          decoration: BoxDecoration(
+                                              color: Colors.blue,
+                                              borderRadius: BorderRadius.only(
+                                                  bottomLeft:
+                                                      Radius.circular(10),
+                                                  topLeft:
+                                                      Radius.circular(10))),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 2,
+                                      ),
+                                      Expanded(
+                                        child: Container(
+                                          height: 14,
+                                          color: user.avatarUrl == null
+                                              ? Colors.grey.withOpacity(0.3)
+                                              : Colors.blue,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 2,
+                                      ),
+                                      Expanded(
+                                        child: Container(
+                                          height: 14,
+                                          color: user.headerUrl == null
+                                              ? Colors.grey.withOpacity(0.3)
+                                              : Colors.blue,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 2,
+                                      ),
+                                      Expanded(
+                                        child: Container(
+                                          height: 14,
+                                          color: user.about != null &&
+                                                  user.about != ''
+                                              ? Colors.blue
+                                              : Colors.grey.withOpacity(0.3),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 2,
+                                      ),
+                                      Expanded(
+                                        child: Container(
+                                          height: 14,
+                                          decoration: BoxDecoration(
+                                              color: postExists
+                                                  ? Colors.blue
+                                                  : Colors.grey
+                                                      .withOpacity(0.3),
+                                              borderRadius: BorderRadius.only(
+                                                  bottomRight:
+                                                      Radius.circular(10),
+                                                  topRight:
+                                                      Radius.circular(10))),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  width: MediaQuery.of(context).size.width - 50,
+                                  height: 170,
+                                  child: CarouselSlider(
+                                      options: CarouselOptions(
+                                          autoPlay: false,
+                                          enlargeCenterPage: true,
+                                          viewportFraction: 0.7,
+                                          initialPage: 0,
+                                          enableInfiniteScroll: false),
+
+                                      // Carousel(
+                                      //                             dotVerticalPadding: 0,
+                                      //                             dotSize: 6,
+                                      //                             dotIncreaseSize: 1.5,
+                                      //                             dotIncreasedColor: Colors.white,
+                                      //                             dotColor: Colors.grey.withOpacity(0.5),
+                                      //                             showIndicator: true,
+                                      //                             dotPosition: DotPosition.bottomCenter,
+                                      //                             dotSpacing: 15,
+                                      //                             boxFit: BoxFit.fitWidth,
+                                      //                             dotBgColor: Colors.transparent,
+                                      //                             autoplay: false,
+                                      //                             overlayShadow: false,
+                                      //                             moveIndicatorFromBottom: 20,
+                                      items: [
+                                        Container(
+                                          margin: EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context).cardColor,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                          height: 160,
+                                          child: Column(
+                                            children: [
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              Text(
+                                                'Step 1',
+                                                style: TextStyle(
+                                                    fontFamily: 'Stark Sans',
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 15),
+                                              ),
+                                              SizedBox(
+                                                height: 10,
+                                              ),
+                                              Text(
+                                                'Create a Profile',
+                                                style: TextStyle(fontSize: 19),
+                                              ),
+                                              SizedBox(
+                                                height: 10,
+                                              ),
+                                              Icon(
+                                                FluentIcons
+                                                    .checkmark_circle_24_filled,
+                                                color: Colors.green,
+                                              ),
+                                              SizedBox(
+                                                height: 40,
+                                                child: Center(
+                                                  child: TextButton(
+                                                    child: Text(
+                                                      '',
+                                                    ),
+                                                    onPressed: () {},
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          margin: EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context).cardColor,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                          height: 140,
+                                          child: Column(
+                                            children: [
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              Text(
+                                                'Step 2',
+                                                style: TextStyle(
+                                                    fontFamily: 'Stark Sans',
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 15),
+                                              ),
+                                              SizedBox(
+                                                height: 10,
+                                              ),
+                                              Text(
+                                                'Upload Profile Image',
+                                                style: TextStyle(fontSize: 19),
+                                              ),
+                                              SizedBox(
+                                                height: 10,
+                                              ),
+                                              Icon(
+                                                user.avatarUrl == null
+                                                    ? FluentIcons
+                                                        .checkmark_circle_24_regular
+                                                    : FluentIcons
+                                                        .checkmark_circle_24_filled,
+                                                color: user.avatarUrl == null
+                                                    ? Colors.grey
+                                                    : Colors.green,
+                                              ),
+                                              SizedBox(
+                                                height: 40,
+                                                child: Center(
+                                                  child: TextButton(
+                                                    child: Text(
+                                                      'Upload',
+                                                    ),
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pushNamed(
+                                                              EditProfileScreen
+                                                                  .routeName);
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          margin: EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context).cardColor,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                          height: 140,
+                                          child: Column(
+                                            children: [
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              Text(
+                                                'Step 3',
+                                                style: TextStyle(
+                                                    fontFamily: 'Stark Sans',
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 15),
+                                              ),
+                                              SizedBox(
+                                                height: 10,
+                                              ),
+                                              Text(
+                                                'Upload a header image',
+                                                style: TextStyle(fontSize: 19),
+                                              ),
+                                              SizedBox(
+                                                height: 10,
+                                              ),
+                                              Icon(
+                                                user.headerUrl == null
+                                                    ? FluentIcons
+                                                        .checkmark_circle_24_regular
+                                                    : FluentIcons
+                                                        .checkmark_circle_24_filled,
+                                                color: user.avatarUrl == null
+                                                    ? Colors.grey
+                                                    : Colors.green,
+                                              ),
+                                              SizedBox(
+                                                height: 40,
+                                                child: Center(
+                                                  child: TextButton(
+                                                    child: Text(
+                                                      'Upload',
+                                                    ),
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pushNamed(
+                                                              EditProfileScreen
+                                                                  .routeName);
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          margin: EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context).cardColor,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                          height: 140,
+                                          child: Column(
+                                            children: [
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              Text(
+                                                'Step 4',
+                                                style: TextStyle(
+                                                    fontFamily: 'Stark Sans',
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 15),
+                                              ),
+                                              SizedBox(
+                                                height: 10,
+                                              ),
+                                              Text(
+                                                'Write a bio',
+                                                style: TextStyle(fontSize: 19),
+                                              ),
+                                              SizedBox(
+                                                height: 10,
+                                              ),
+                                              Icon(
+                                                user.about != null &&
+                                                        user.about != ''
+                                                    ? FluentIcons
+                                                        .checkmark_circle_24_filled
+                                                    : FluentIcons
+                                                        .checkmark_circle_24_regular,
+                                                color: user.about != null &&
+                                                        user.about != ''
+                                                    ? Colors.green
+                                                    : Colors.grey,
+                                              ),
+                                              SizedBox(
+                                                height: 40,
+                                                child: Center(
+                                                  child: TextButton(
+                                                    child: Text(
+                                                      'Write',
+                                                    ),
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pushNamed(
+                                                              EditProfileScreen
+                                                                  .routeName);
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          margin: EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context).cardColor,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                          height: 140,
+                                          child: Column(
+                                            children: [
+                                              SizedBox(
+                                                height: 5,
+                                              ),
+                                              Text(
+                                                'Step 5',
+                                                style: TextStyle(
+                                                    fontFamily: 'Stark Sans',
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 15),
+                                              ),
+                                              SizedBox(
+                                                height: 10,
+                                              ),
+                                              Text(
+                                                'Create your first post',
+                                                style: TextStyle(fontSize: 19),
+                                              ),
+                                              SizedBox(
+                                                height: 10,
+                                              ),
+                                              Icon(
+                                                postExists
+                                                    ? FluentIcons
+                                                        .checkmark_circle_24_filled
+                                                    : FluentIcons
+                                                        .checkmark_circle_24_regular,
+                                                color: postExists
+                                                    ? Colors.green
+                                                    : Colors.grey,
+                                              ),
+                                              SizedBox(
+                                                height: 40,
+                                                child: Center(
+                                                  child: TextButton(
+                                                    child: Text(
+                                                      'Create',
+                                                    ),
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pushNamed(PostScreen
+                                                              .routeName);
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ]),
+                                ),
+                                if (postExists &&
+                                    (user.avatarUrl != null) &&
+                                    (user.headerUrl != null) &&
+                                    (user.about != null && user.about != ''))
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10),
+                                    child: SizedBox(
+                                      width: double.maxFinite,
+                                      child: TextButton(
+                                        style: TextButton.styleFrom(
+                                          primary: Colors.white,
+                                          backgroundColor: Colors.blue,
+                                          shape: const RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(10))),
+                                        ),
+                                        child: Text('Done'),
+                                        onPressed: () async {
+                                          await Hasura.updateUser(
+                                              profileComplete: true);
+                                          user = User.fromDocument(
+                                              await Hasura.getUser(self: true));
+
+                                          setState(() {});
+                                        },
+                                      ),
+                                    ),
+                                  )
+                              ],
+                            ),
+                          );
+                        })
               ],
             ),
           );
@@ -760,8 +1245,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     begin: Alignment.topCenter,
                                     end: Alignment.bottomCenter,
                                     colors: [
-                                  Colors.black54.withOpacity(0.8),
                                   Colors.black54.withOpacity(0.6),
+                                  Colors.black54.withOpacity(0.5),
                                   Colors.black54.withOpacity(0.3),
                                   Colors.transparent
                                 ])),

@@ -96,8 +96,12 @@ dependencies:
   youtube_player_flutter: ^8.0.0
   show_overlay: ^1.0.8
   loading_indicator: ^2.0.1
+  sign_in_with_apple: ^3.0.0
+  crypto: ^3.0.1
+  carousel_slider: ^4.0.0
   # firebase_app_check: ^0.0.1
-  # flutter_facebook_auth: ^3.3.2
+  # flutter_facebook_auth: ^3.0.0
+  flutter_login_facebook: ^1.0.1
   # google_mobile_ads: ^0.12.1+1
   # firebase_analytics: 
   connectivity_plus: ^1.0.1
