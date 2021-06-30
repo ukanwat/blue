@@ -1,12 +1,14 @@
 // Flutter imports:
-import 'package:blue/services/auth_service.dart';
-import 'package:blue/services/preferences_update.dart';
-import 'package:blue/widgets/show_dialog.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
+// Package imports:
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+
 // Project imports:
+import 'package:blue/services/auth_service.dart';
+import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/settings_widgets.dart';
+import 'package:blue/widgets/show_dialog.dart';
 import '../../edit_profile_screen.dart';
 import 'account_screens/deactivate_account_screen.dart';
 import 'account_screens/email_screen.dart';

@@ -1,12 +1,16 @@
+// Dart imports:
 import 'dart:async';
 import 'dart:convert';
 
+// Package imports:
+import 'package:http/http.dart';
+import 'package:meta/meta.dart';
+
+// Project imports:
 import './models/collection.dart';
 import './models/gif.dart';
 import './models/languages.dart';
 import './models/rating.dart';
-import 'package:http/http.dart';
-import 'package:meta/meta.dart';
 
 class GiphyClient {
   static final baseUri = Uri(scheme: 'https', host: 'api.giphy.com');

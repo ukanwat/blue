@@ -1,17 +1,18 @@
 // Flutter imports:
-import 'package:blue/constants/strings.dart';
-import 'package:blue/main.dart';
-import 'package:blue/services/boxes.dart';
-import 'package:blue/services/functions.dart';
-import 'package:blue/services/go_to.dart';
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
+
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
 
 // Project imports:
+import 'package:blue/constants/strings.dart';
+import 'package:blue/main.dart';
 import 'package:blue/models/user.dart';
 import 'package:blue/screens/profile_screen.dart';
+import 'package:blue/services/boxes.dart';
+import 'package:blue/services/functions.dart';
+import 'package:blue/services/go_to.dart';
+import '../constants/app_colors.dart';
 
 enum Tile { block, mute, follow }
 

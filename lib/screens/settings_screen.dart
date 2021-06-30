@@ -3,8 +3,6 @@ import 'dart:io';
 import 'dart:ui';
 
 // Flutter imports:
-import 'package:blue/services/boxes.dart';
-import 'package:blue/widgets/progress.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +11,8 @@ import 'package:flutter/services.dart';
 import 'package:device_info/device_info.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+import 'package:package_info/package_info.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
@@ -29,9 +29,9 @@ import 'package:blue/screens/settings/notification/email_notifications_screen.da
 import 'package:blue/screens/settings/notification/push_notifications_screen.dart';
 import 'package:blue/screens/settings/privacy/activity_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screen.dart';
+import 'package:blue/services/boxes.dart';
+import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/settings_widgets.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:package_info/package_info.dart';
 
 class SettingsScreen extends StatefulWidget {
   static const routeName = 'settings';

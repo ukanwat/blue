@@ -1,8 +1,4 @@
 // Flutter imports:
-import 'package:blue/services/hasura.dart';
-import 'package:blue/services/post_service.dart';
-import 'package:blue/widgets/loadmore_widget.dart';
-import 'package:blue/widgets/posts_section.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -10,9 +6,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
+import 'package:blue/services/hasura.dart';
+import 'package:blue/services/post_service.dart';
 import 'package:blue/widgets/empty_state.dart';
+import 'package:blue/widgets/loadmore_widget.dart';
 import 'package:blue/widgets/paginated_posts.dart';
 import 'package:blue/widgets/post.dart';
+import 'package:blue/widgets/posts_section.dart';
 import 'package:blue/widgets/progress.dart';
 import 'home.dart';
 

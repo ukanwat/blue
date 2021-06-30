@@ -1,7 +1,12 @@
+// Dart imports:
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
+
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:gbk2utf8/gbk2utf8.dart';
 import 'package:html/dom.dart' hide Text;
 import 'package:html/parser.dart' as parser;

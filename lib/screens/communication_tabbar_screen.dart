@@ -1,5 +1,4 @@
 // Flutter imports:
-import 'package:blue/services/boxes.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -10,6 +9,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:blue/main.dart';
 import 'package:blue/screens/activity_feed_screen.dart';
 import 'package:blue/screens/chats_screen.dart';
+import 'package:blue/services/boxes.dart';
 
 class CommunicationTabbarScreen extends StatefulWidget {
   const CommunicationTabbarScreen({Key key}) : super(key: key);

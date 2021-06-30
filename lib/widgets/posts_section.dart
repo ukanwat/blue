@@ -1,3 +1,10 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+
+// Project imports:
 import 'package:blue/screens/tag_screen.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/functions.dart';
@@ -5,8 +12,6 @@ import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 
 class PostsSection extends StatefulWidget {

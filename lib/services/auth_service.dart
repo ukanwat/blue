@@ -1,18 +1,33 @@
 // Dart imports:
 import 'dart:convert';
 import 'dart:math';
+
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:argon_buttons_flutter/argon_buttons_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:flutter_login/flutter_login.dart';
+import 'package:flutter_login_facebook/flutter_login_facebook.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:hasura_connect/hasura_connect.dart';
+import 'package:hive/hive.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
-import 'push_notifications.dart';
-// Flutter imports:
-import 'package:argon_buttons_flutter/argon_buttons_flutter.dart';
+// Project imports:
 import 'package:blue/models/user.dart';
+import 'package:blue/providers/provider_widget.dart';
 import 'package:blue/providers/verify_email.dart';
+import 'package:blue/screens/home.dart';
 import 'package:blue/screens/set_name_screen.dart';
 import 'package:blue/screens/settings/notification/push_notifications_screen.dart';
 import 'package:blue/screens/settings/notification/push_notifications_screen.dart';
 import 'package:blue/screens/show_screen.dart';
+import 'package:blue/screens/sign_in_view_screen.dart';
 import 'package:blue/screens/tabs_screen.dart';
 import 'package:blue/screens/verify_email_screen.dart';
 import 'package:blue/services/boxes.dart';
@@ -21,25 +36,12 @@ import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/empty_dialog.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_login_facebook/flutter_login_facebook.dart';
-// Package imports:
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart' as auth;
-// import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-import 'package:flutter_login/flutter_login.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:hasura_connect/hasura_connect.dart';
-import 'package:hive/hive.dart';
-import 'package:path_provider/path_provider.dart';
-
-// Project imports:
-import 'package:blue/screens/home.dart';
-import 'package:blue/screens/sign_in_view_screen.dart';
 import '../main.dart';
 import '../screens/sign_in_screen.dart';
 import 'boxes.dart';
-import 'package:blue/providers/provider_widget.dart';
+import 'push_notifications.dart';
+
+// import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 class AuthService {
   static final auth.FirebaseAuth firebaseAuth = auth.FirebaseAuth.instance;
@@ -53,7 +55,7 @@ class AuthService {
   }
 
   static logout(BuildContext context) async {
-    Hasura.updateUser(deleteToken: true);
+    await Hasura.updateUser(deleteToken: true);
     await Functions().updateEmail();
     var auth = Provider.of(context).auth;
     userSignedIn = false;

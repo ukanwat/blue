@@ -1,7 +1,12 @@
-import 'package:argon_buttons_flutter/argon_buttons_flutter.dart';
-import 'package:blue/widgets/empty_dialog.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:argon_buttons_flutter/argon_buttons_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+// Project imports:
+import 'package:blue/widgets/empty_dialog.dart';
 
 class EmailVerifyDialog extends StatelessWidget {
   final User _user;

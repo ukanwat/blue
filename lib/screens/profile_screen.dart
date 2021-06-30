@@ -2,43 +2,43 @@
 import 'dart:ui';
 
 // Flutter imports:
-import 'package:blue/constants/strings.dart';
-import 'package:blue/screens/follows_screen.dart';
-import 'package:blue/screens/post_screen.dart';
-import 'package:blue/services/hasura.dart';
-import 'package:blue/services/preferences_update.dart';
-import 'package:blue/widgets/url_bottom_sheet.dart';
-import 'package:blue/widgets/user_report_dialog.dart';
-import 'package:carousel_pro/carousel_pro.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_pro/carousel_pro.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:mk_drop_down_menu/mk_drop_down_menu.dart';
 import 'package:provider/provider.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:mk_drop_down_menu/mk_drop_down_menu.dart';
 // Project imports:
+import 'package:blue/constants/strings.dart';
 import 'package:blue/main.dart';
 import 'package:blue/screens/about_screen.dart';
 import 'package:blue/screens/all_saved_posts_screen.dart';
 import 'package:blue/screens/chat_messages_screen.dart';
+import 'package:blue/screens/follows_screen.dart';
+import 'package:blue/screens/post_screen.dart';
+import 'package:blue/services/hasura.dart';
+import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/empty_state.dart';
 import 'package:blue/widgets/paginated_posts.dart';
+import 'package:blue/widgets/url_bottom_sheet.dart';
+import 'package:blue/widgets/user_report_dialog.dart';
 import '../models/user.dart';
+import '../services/boxes.dart';
 import '../services/functions.dart';
 import '../widgets/post.dart';
 import '../widgets/progress.dart';
 import './edit_profile_screen.dart';
 import './home.dart';
 import './settings_screen.dart';
-import '../services/boxes.dart';
 
 enum Sort { Recent, Oldest, Best }
 
@@ -360,7 +360,16 @@ class _ProfileScreenState extends State<ProfileScreen>
           if (Boxes.currentUserBox.get('user_id') == widget.profileId) {
             Boxes.currentUserBox.put('avatar_url', user.avatarUrl);
           }
-
+          int initialIndex = 4;
+          if (user.about == null || user.about == '') {
+            initialIndex = 3;
+          }
+          if (user.headerUrl == null) {
+            initialIndex = 2;
+          }
+          if (user.avatarUrl == null) {
+            initialIndex = 1;
+          }
           _profileUser = user;
           profileName = user.name;
           return Container(
@@ -676,6 +685,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   padding: const EdgeInsets.symmetric(
                                       vertical: 5, horizontal: 10),
                                   child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       Text(
                                         'Complete your Profile',
@@ -685,17 +696,20 @@ class _ProfileScreenState extends State<ProfileScreen>
                                             fontSize: 18),
                                       ),
                                       SizedBox(
-                                        width: 5,
+                                        width: 10,
                                       ),
-                                      GestureDetector(
-                                          onTap: () async {
-                                            user = User.fromDocument(
-                                                await Hasura.getUser(
-                                                    self: true));
+                                      SizedBox(
+                                        height: 30,
+                                        child: TextButton(
+                                            onPressed: () async {
+                                              user = User.fromDocument(
+                                                  await Hasura.getUser(
+                                                      self: true));
 
-                                            setState(() {});
-                                          },
-                                          child: Icon(Icons.refresh))
+                                              setState(() {});
+                                            },
+                                            child: Text('Refresh')),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -781,7 +795,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           autoPlay: false,
                                           enlargeCenterPage: true,
                                           viewportFraction: 0.7,
-                                          initialPage: 0,
+                                          initialPage: initialIndex,
                                           enableInfiniteScroll: false),
 
                                       // Carousel(
@@ -943,7 +957,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                         .checkmark_circle_24_regular
                                                     : FluentIcons
                                                         .checkmark_circle_24_filled,
-                                                color: user.avatarUrl == null
+                                                color: user.headerUrl == null
                                                     ? Colors.grey
                                                     : Colors.green,
                                               ),
@@ -990,7 +1004,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                 height: 10,
                                               ),
                                               Text(
-                                                'Write a bio',
+                                                'Write About you',
                                                 style: TextStyle(fontSize: 19),
                                               ),
                                               SizedBox(
@@ -1265,7 +1279,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 widget.tabPage != true
                                     ? headerButton(
                                         Icon(
-                                          FluentIcons.arrow_left_24_regular,
+                                          FluentIcons.arrow_left_24_filled,
                                           size: 26,
                                           color:
                                               Theme.of(context).iconTheme.color,
@@ -1300,7 +1314,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     padding: EdgeInsets.only(right: 5),
                                     child: headerButton(
                                         Icon(
-                                          FluentIcons.chat_24_regular,
+                                          FluentIcons.chat_24_filled,
                                           size: 26,
                                           color:
                                               Theme.of(context).iconTheme.color,
@@ -1322,7 +1336,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     padding: EdgeInsets.only(right: 10),
                                     child: headerButton(
                                         Icon(
-                                          FluentIcons.bookmark_24_regular,
+                                          FluentIcons.bookmark_24_filled,
                                           size: 26,
                                           color:
                                               Theme.of(context).iconTheme.color,
@@ -1335,7 +1349,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         Boxes.currentUserBox.get('user_id')
                                     ? headerButton(
                                         Icon(
-                                          FluentIcons.settings_24_regular,
+                                          FlutterIcons.gear_oct,
                                           size: 26,
                                           color:
                                               Theme.of(context).iconTheme.color,

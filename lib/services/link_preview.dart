@@ -2,18 +2,20 @@
 import 'dart:convert';
 
 // Flutter imports:
-import 'package:blue/constants/strings.dart';
-import 'package:blue/services/yt_id.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart' hide Element;
 
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:html/dom.dart' hide Text;
 import 'package:html/parser.dart' as parser;
 import 'package:http/http.dart' as http;
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+
+// Project imports:
+import 'package:blue/constants/strings.dart';
+import 'package:blue/services/yt_id.dart';
 
 /// Link Preview Widget
 class LinkPreview extends StatefulWidget {

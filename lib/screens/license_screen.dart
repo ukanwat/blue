@@ -8,10 +8,12 @@ import 'package:flutter/material.dart' hide Flow;
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart' hide Flow;
 
+// Package imports:
+import 'package:package_info/package_info.dart';
+
 // Project imports:
 import 'package:blue/screens/package_licenses_screen.dart';
 import 'package:blue/widgets/settings_widgets.dart';
-import 'package:package_info/package_info.dart';
 
 class LicenseScreen extends StatefulWidget {
   static const routeName = 'license';

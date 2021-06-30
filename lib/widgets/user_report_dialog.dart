@@ -1,8 +1,11 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/services/functions.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:flutter/material.dart';
 
 class UserReportDialog extends StatefulWidget {
   final Map peer;

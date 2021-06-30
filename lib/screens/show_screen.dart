@@ -1,10 +1,16 @@
+// Dart imports:
 import 'dart:async';
 
-import 'package:blue/services/auth_service.dart';
-import 'package:blue/widgets/email_verify_dialog.dart';
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
+
+// Project imports:
+import 'package:blue/services/auth_service.dart';
+import 'package:blue/widgets/email_verify_dialog.dart';
 
 class ShowScreen extends StatefulWidget {
   static const routeName = 'show';

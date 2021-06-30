@@ -1,21 +1,21 @@
 // Flutter imports:
-import 'package:blue/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 // Project imports:
-import '../widgets/post.dart';
+import 'package:blue/constants/app_colors.dart';
 import 'package:blue/main.dart';
 import 'package:blue/widgets/empty_state.dart';
 import 'package:blue/widgets/progress.dart';
+import '../services/hasura.dart';
+import '../services/preferences_update.dart';
+import '../widgets/post.dart';
 import './home.dart';
 import './search_results_screen.dart';
-import '../services/hasura.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import '../services/preferences_update.dart';
 
 class SearchScreen extends StatefulWidget {
   static const routeName = '/search';

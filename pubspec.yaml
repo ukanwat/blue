@@ -23,9 +23,9 @@ dependencies:
   flutter_icons: ^1.1.0
   cloud_firestore: ^2.0.0
   firebase_auth: ^1.2.0
-  flutter_local_notifications: ^6.0.0
+  flutter_local_notifications: ^6.0.0                       #
   google_sign_in: ^5.0.4
-  cached_network_image: ^3.0.0
+  cached_network_image: ^3.0.0             #
   image_picker: ^0.6.5+1
   firebase_storage: ^8.0.1
   intl: ^0.17.0
@@ -33,36 +33,35 @@ dependencies:
   video_player: ^2.1.3
   flick_video_player: ^0.3.1
   provider: ^5.0.0
-  video_thumbnail: ^0.2.1
-  firebase_database: ^6.0.0
+  video_thumbnail: ^0.2.1    #
+  firebase_database: ^6.0.0  #
   carousel_pro: ^1.0.0
-  multi_image_picker: ^4.7.15
+  multi_image_picker: ^4.7.15    #
   url_launcher: ^6.0.4
   flutter_linkify: ^3.1.3
-  video_compress: ^3.0.0
+  video_compress: ^3.0.0         #
   full_screen_image: ^1.0.2
-  flutter_clipboard_manager: ^0.0.2
-  image_downloader: ^0.20.0
-  flutter_cache_manager: ^3.0.2
-  device_info: ^0.4.2+4
-  flutter_email_sender: ^3.0.1
-  webview_flutter: ^2.0.4
-  visibility_detector: ^0.1.5
+  flutter_clipboard_manager: ^0.0.2   #
+  image_downloader: ^0.20.0     #
+  flutter_cache_manager: ^3.0.2   #
+  device_info: ^0.4.2+4    #
+  flutter_email_sender: ^3.0.1   #
+  webview_flutter: ^2.0.4      #
+  visibility_detector: ^0.1.5      
   fluentui_system_icons: ^1.1.106
   animations: ^1.1.2
-  firebase_dynamic_links: ^2.0.0
+  firebase_dynamic_links: ^2.0.0    #
   firebase_core: ^1.1.0
-  package_info: ^0.4.3+2
+  package_info: ^0.4.3+2     #
   page_transition: ^1.1.7+3
   sortedmap: ^0.5.0
-  flutter_svg: ^0.22.0
-  nuts_activity_indicator: ^0.1.1
+  flutter_svg: ^0.22.0          #
   hive: ^2.0.4
   hive_flutter: ^1.0.0
-  path_provider: ^2.0.0
+  path_provider: ^2.0.0      #
   sticky_headers: ^0.1.8+1
-  import_sorter: ^4.4.1
-  share: ^2.0.1
+  import_sorter: ^4.4.1         ##
+  share: ^2.0.1                #
   string_validator: ^0.2.0-nullsafety.0
   hasura_connect: ^3.0.2
   firebase_messaging: ^10.0.0
@@ -73,44 +72,45 @@ dependencies:
   ars_progress_dialog: ^0.1.2
   flutter_login: ^2.0.0-nullsafety.0
   argon_buttons_flutter: ^1.0.6
-  graphql_flutter: ^5.0.0-nullsafety.5
+  graphql_flutter: ^5.0.0-nullsafety.5      #
   simple_animations: ^3.1.1
-  flutter_offline: 
-  sliding_sheet: ^0.5.0
+  flutter_offline:      #
+  sliding_sheet: ^0.5.0  
   flutter_signin_button:
   auth_buttons: 
-  mk_drop_down_menu: ^1.1.0
-  flutter_gradients: ^1.0.0+3
+  mk_drop_down_menu: ^1.1.0    #
+  flutter_gradients: ^1.0.0+3    
   shimmer: ^2.0.0
-  webview_flutter_plus: 
+  webview_flutter_plus:           ##
   dio: ^4.0.0
-  image_gallery_saver: ^1.6.9
+  image_gallery_saver: ^1.6.9        #
   get: ^4.1.4
   flutter_sticky_header: ^0.6.0
   html: ^0.15.0
   gbk2utf8: ^1.0.1
-  firebase_crashlytics: ^2.0.4
-  image_crop: ^0.4.0
+  firebase_crashlytics: ^2.0.4     #
+  image_crop: ^0.4.0                 #
   scrollable_positioned_list: ^0.2.0-nullsafety.0
   widgets_visibility_provider: ^3.0.1
-  youtube_player_flutter: ^8.0.0
+  youtube_player_flutter: ^8.0.0       ##
   show_overlay: ^1.0.8
   loading_indicator: ^2.0.1
-  sign_in_with_apple: ^3.0.0
-  crypto: ^3.0.1
+  sign_in_with_apple: ^3.0.0     #
+  crypto: ^3.0.1         
   carousel_slider: ^4.0.0
   # firebase_app_check: ^0.0.1
   # flutter_facebook_auth: ^3.0.0
-  flutter_login_facebook: ^1.0.1
+  flutter_login_facebook: ^1.0.1     #
   # google_mobile_ads: ^0.12.1+1
   # firebase_analytics: 
-  connectivity_plus: ^1.0.1
-  logger: ^1.0.0
+  # connectivity_plus: ^1.0.0
+  connectivity: ^3.0.6
   lazy_load_scrollview: ^1.3.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
   http: ^0.13.3
+  flutter_launcher_icons: ^0.9.0
   
 
 dev_dependencies:
@@ -119,7 +119,6 @@ dev_dependencies:
   hive_generator:
   build_runner:    
   flutter_native_splash: 
-  flutter_launcher_icons:
 
 flutter_native_splash:
   color: "#ffffff"

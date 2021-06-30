@@ -1,30 +1,31 @@
-// Flutter imports:
+// Dart imports:
 import 'dart:io';
 
-import 'package:blue/constants/app_colors.dart';
-import 'package:blue/services/boxes.dart';
-import 'package:blue/services/hasura.dart';
-import 'package:blue/services/post_service.dart';
-import 'package:blue/widgets/bottom_sheet.dart';
-import 'package:blue/widgets/post.dart';
-import 'package:blue/widgets/progress.dart';
-import 'package:blue/widgets/show_dialog.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:animations/animations.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-
-// Project imports:
-import 'package:blue/screens/following_posts_screen.dart';
-import 'package:blue/widgets/paginated_posts.dart';
-import 'package:blue/widgets/tags_wrap.dart';
 import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
 import 'package:share/share.dart';
 import 'package:widgets_visibility_provider/widgets_visibility_provider.dart';
+
+// Project imports:
+import 'package:blue/constants/app_colors.dart';
+import 'package:blue/screens/following_posts_screen.dart';
+import 'package:blue/services/boxes.dart';
+import 'package:blue/services/hasura.dart';
+import 'package:blue/services/post_service.dart';
+import 'package:blue/widgets/bottom_sheet.dart';
+import 'package:blue/widgets/paginated_posts.dart';
+import 'package:blue/widgets/post.dart';
+import 'package:blue/widgets/progress.dart';
+import 'package:blue/widgets/show_dialog.dart';
+import 'package:blue/widgets/tags_wrap.dart';
+import '../widgets/banner_dialog.dart';
 import '../widgets/header.dart';
 import './home.dart';
-import '../widgets/banner_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen(Key key) : super(key: key);
@@ -92,7 +93,6 @@ class _HomeScreenState extends State<HomeScreen>
       "{score:desc}",
     );
 
-    print(_snapshot.length);
     return _snapshot;
   }
 
@@ -112,21 +112,16 @@ class _HomeScreenState extends State<HomeScreen>
       return;
     }
     List<Post> _posts = await pS.getPosts(8);
-    print('posts: $_posts');
     if (_posts.length == 0) {
       setState(() {
         loaded = true;
       });
     }
 
-    print('loaded:$loaded');
-    _posts.forEach((element) {
-      print(element.title);
-    });
+    _posts.forEach((element) {});
     setState(() {
       p = p + _posts;
     });
-    print(_posts.length);
   }
 
   bool get wantKeepAlive => true;

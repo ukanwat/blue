@@ -1,20 +1,24 @@
-// Flutter imports:
+// Dart imports:
 import 'dart:io';
 
-import 'package:blue/screens/post_screen.dart';
-import 'package:blue/services/link_preview.dart';
-import 'package:blue/services/video_controls.dart';
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:carousel_pro/carousel_pro.dart';
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-// Project imports:
-import 'package:blue/services/boxes.dart';
-import 'package:blue/widgets/settings_widgets.dart';
 import 'package:video_player/video_player.dart';
-import 'package:blue/widgets/show_dialog.dart';
+
+// Project imports:
+import 'package:blue/screens/post_screen.dart';
+import 'package:blue/services/boxes.dart';
+import 'package:blue/services/link_preview.dart';
+import 'package:blue/services/video_controls.dart';
 import 'package:blue/widgets/empty_state.dart';
+import 'package:blue/widgets/settings_widgets.dart';
+import 'package:blue/widgets/show_dialog.dart';
 
 class DraftsScreen extends StatefulWidget {
   static const routeName = 'drafts';

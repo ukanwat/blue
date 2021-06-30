@@ -12,6 +12,7 @@ import 'package:blue/widgets/header.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
 import '../services/hasura.dart';
+
 class CollectionPostsScreen extends StatefulWidget {
   static const routeName = 'collection-posts';
   @override

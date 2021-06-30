@@ -1,6 +1,11 @@
-import 'package:blue/services/hasura.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:graphql_flutter/graphql_flutter.dart';
+
+// Project imports:
+import 'package:blue/services/hasura.dart';
 
 class Config {
   static final HttpLink httpLink = HttpLink(

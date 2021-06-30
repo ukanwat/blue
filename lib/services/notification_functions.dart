@@ -1,10 +1,13 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:blue/screens/comments_screen.dart';
 import 'package:blue/services/go_to.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/widgets/comment.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:flutter/material.dart';
 
 class NotifFunctions {
   static goToComment(int commentId, BuildContext context) async {

@@ -1,12 +1,11 @@
 // Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:ars_progress_dialog/ars_progress_dialog.dart';
 import 'package:flash/flash.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-// Package imports:
-import 'package:nuts_activity_indicator/nuts_activity_indicator.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 
 circularProgress() {

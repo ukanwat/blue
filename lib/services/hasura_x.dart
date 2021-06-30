@@ -1,7 +1,10 @@
+// Dart imports:
 import 'dart:async';
-import 'package:meta/meta.dart';
+
+// Package imports:
 import 'package:hasura_connect/hasura_connect.dart';
 import 'package:http/http.dart' as http;
+import 'package:meta/meta.dart';
 
 // problem:
 // when subscribing to`HasuraConnect.subscription`, a websocket connection is created on the first subscription

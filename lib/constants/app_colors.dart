@@ -1,6 +1,10 @@
+// Dart imports:
 import 'dart:math';
 
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:flutter_gradients/flutter_gradients.dart';
 
 class AppColors {

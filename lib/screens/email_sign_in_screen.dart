@@ -1,16 +1,21 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
 import 'package:argon_buttons_flutter/argon_buttons_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter_login/flutter_login.dart';
+
+// Project imports:
 import 'package:blue/screens/sign_in_view_screen.dart';
+import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/empty_dialog.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:flutter_login/flutter_login.dart';
-import 'package:blue/services/auth_service.dart';
 import '../main.dart';
 import './set_name_screen.dart';
 

@@ -1,7 +1,4 @@
 // Flutter imports:
-import 'package:blue/services/functions.dart';
-import 'package:blue/services/hasura.dart';
-import 'package:blue/widgets/user_report_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -11,10 +8,13 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
+import 'package:blue/services/functions.dart';
+import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/header.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:blue/widgets/show_dialog.dart';
+import 'package:blue/widgets/user_report_dialog.dart';
 import '../widgets/progress.dart';
 
 class ChatInfoScreen extends StatefulWidget {

@@ -1,11 +1,11 @@
 // Dart imports:
 import 'dart:io';
+import 'dart:io';
 
 // Package imports:
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image/image.dart' as Im;
 import 'package:path_provider/path_provider.dart';
-import 'dart:io';
 import 'package:uuid/uuid.dart';
 
 class FileStorage {

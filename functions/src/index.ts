@@ -62,13 +62,11 @@ export const notification = functions.https.onRequest(async (req, resp) => {
     const message2 = {
         "token": messageData.token + '',
 
-        "android": {
-            "notification": {
-                "title": messageData.data.title + '',
-                "imageUrl": imgUrl + '',
-                "body": 'image',
-            },
+        "notification": {
+            "title": messageData.data.title + '',
+            "imageUrl": imgUrl + '',
         },
+
 
     };
 

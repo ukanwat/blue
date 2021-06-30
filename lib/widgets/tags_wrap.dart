@@ -2,7 +2,6 @@
 import 'dart:convert';
 
 // Flutter imports:
-import 'package:blue/services/hasura.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -11,6 +10,7 @@ import 'package:sortedmap/sortedmap.dart';
 
 // Project imports:
 import 'package:blue/screens/tag_screen.dart';
+import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/progress.dart';
 

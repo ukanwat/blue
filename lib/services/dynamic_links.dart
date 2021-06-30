@@ -1,9 +1,13 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+
 // Package imports:
-import 'package:blue/screens/set_name_screen.dart';
-import 'package:blue/services/hasura.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:package_info/package_info.dart';
-import 'package:flutter/material.dart';
+
+// Project imports:
+import 'package:blue/screens/set_name_screen.dart';
+import 'package:blue/services/hasura.dart';
 import '../screens/comments_screen.dart';
 import '../screens/home.dart';
 import '../widgets/post.dart';

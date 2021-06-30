@@ -1,26 +1,27 @@
-// Flutter imports:
+// Dart imports:
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:blue/services/hasura.dart';
-import 'package:blue/widgets/custom_image.dart';
-import 'package:blue/widgets/post.dart';
-import 'package:blue/widgets/progress.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+// Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter_gradients/flutter_gradients.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/screens/tag/tag_popular_screen.dart';
 import 'package:blue/screens/tag/tag_recent_screen.dart';
+import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
-import 'package:flutter_gradients/flutter_gradients.dart';
+import 'package:blue/widgets/custom_image.dart';
+import 'package:blue/widgets/post.dart';
+import 'package:blue/widgets/progress.dart';
 
 class TagScreen extends StatefulWidget {
   static const routeName = 'tag';

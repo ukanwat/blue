@@ -1,13 +1,15 @@
-import 'package:blue/services/preferences_update.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:flick_video_player/flick_video_player.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+// Project imports:
+import 'package:blue/services/preferences_update.dart';
 import '../main.dart';
 
 class VideoDisplay extends StatefulWidget {

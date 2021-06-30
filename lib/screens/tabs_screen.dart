@@ -1,9 +1,23 @@
-// Flutter imports:
+// Dart imports:
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:connectivity/connectivity.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+
+// Project imports:
 import 'package:blue/constants/app_colors.dart';
+import 'package:blue/main.dart';
+import 'package:blue/screens/communication_tabbar_screen.dart';
+import 'package:blue/screens/post_screen.dart';
 import 'package:blue/screens/settings/general/drafts_screen.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
@@ -12,24 +26,11 @@ import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/services/push_notifications.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
-
-// Package imports:
-import 'package:flutter_icons/flutter_icons.dart';
-
-// Project imports:
-import 'package:blue/main.dart';
-import 'package:blue/screens/communication_tabbar_screen.dart';
-import 'package:blue/screens/post_screen.dart';
+import '../services/dynamic_links.dart';
 import './explore_screen.dart';
 import './home.dart';
 import './profile_screen.dart';
 import 'home_screen.dart';
-import '../services/dynamic_links.dart';
 
 class TabsScreen extends StatefulWidget {
   static const routeName = 'tabs';

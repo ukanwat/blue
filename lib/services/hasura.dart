@@ -1,16 +1,22 @@
+// Flutter imports:
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:hasura_connect/hasura_connect.dart';
+
+// Project imports:
 import 'package:blue/screens/comments_screen.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:hasura_connect/hasura_connect.dart';
-// import 'package:hive_cache_interceptor/hive_cache_interceptor.dart';
-import './token_interceptor.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import './hasura_x.dart';
+import './token_interceptor.dart';
+
+// import 'package:hive_cache_interceptor/hive_cache_interceptor.dart';
 
 enum Report { abusive, spam, inappropriate }
 enum Stat {
@@ -196,7 +202,7 @@ class Hasura {
     }
 
     if (deleteToken == true) {
-      fields = fields + 'token: "null",';
+      fields = fields + 'token: "_",';
     }
     String _doc =
         'mutation{update_users_by_pk(pk_columns: {user_id: $userId}_set:{$fields}) {name}}';
@@ -378,7 +384,6 @@ class Hasura {
   }
 }
 """;
-    print(_doc);
 
     dynamic _data = await hasuraConnect.mutation(_doc);
   }
@@ -430,12 +435,7 @@ class Hasura {
     $key
   }
 }""");
-    print("""query{
-   preferences_by_pk(user_id:$userId){
-    $key
-  }
-}""");
-    print(data);
+
     if (data['data']['preferences_by_pk'] == null) {
       return null;
     }
@@ -606,6 +606,7 @@ class Hasura {
    __typename
   }
 }""";
+    print(doc);
     await hasuraConnect.mutation(doc);
   }
 
@@ -1061,9 +1062,8 @@ __typename
   static insertCommentReply(dynamic postId, int commentId, String text,
       String createdAt, int commenterId) async {
     int userId = await getUserId();
-    String token = await getToken(commenterId);
     String doc = """mutation{
-  insert_comment_replies_one(object:{comment_id:$commentId,user_id:$userId,data:"$text",  payload:{token:"$token"}}){                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+  insert_comment_replies_one(object:{comment_id:$commentId,user_id:$userId,data:"$text", }){                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
     user{
         avatar_url
         username
@@ -1080,6 +1080,7 @@ __typename
 }
 
   """;
+    print(doc);
 
     var data = await hasuraConnect.mutation(doc);
     return data['data']['insert_comment_replies_one'];
@@ -1671,7 +1672,6 @@ __typename
    __typename
   }
 }""";
-    print(doc);
     await hasuraConnect.mutation(doc);
   }
 }

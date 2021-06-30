@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 
 // Project imports:
 import 'package:blue/providers/provider_widget.dart';
-import '../services/auth_service.dart';
 import 'package:blue/widgets/header.dart';
+import '../services/auth_service.dart';
 import 'verify_email_screen.dart';
 
 enum AuthFormType { signIn, signUp, googleSignIn, reset }

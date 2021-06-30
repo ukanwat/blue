@@ -1,3 +1,4 @@
+// Project imports:
 import 'package:blue/widgets/post.dart';
 
 class PostService {
@@ -68,8 +69,6 @@ class PostService {
       _complete = true;
     }
     adding = false;
-    print('start:$start');
-    print('load: $loadIndex');
     return _posts.sublist(start, loadIndex);
   }
 }

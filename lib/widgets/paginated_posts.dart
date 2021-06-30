@@ -1,18 +1,22 @@
 // Flutter imports:
-import 'package:blue/services/hasura.dart';
-import 'package:blue/widgets/loadmore_widget.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:widgets_visibility_provider/widgets_visibility_provider.dart';
+
+// Project imports:
+import 'package:blue/services/hasura.dart';
+import 'package:blue/widgets/empty_state.dart';
+import 'package:blue/widgets/loadmore_widget.dart';
+import 'package:blue/widgets/progress.dart';
+import 'post.dart';
 
 // Package imports:
 
 // Project imports:
 //
-import 'package:blue/widgets/empty_state.dart';
-import 'package:blue/widgets/progress.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:widgets_visibility_provider/widgets_visibility_provider.dart';
-import 'post.dart';
 
 class PaginatedPosts extends StatefulWidget {
   final int length;

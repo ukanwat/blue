@@ -1,8 +1,4 @@
 // Flutter imports:
-import 'package:blue/services/functions.dart';
-import 'package:blue/widgets/comment_reply.dart';
-import 'package:blue/widgets/empty_state.dart';
-import 'package:blue/widgets/loadmore_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -15,19 +11,23 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:provider/provider.dart';
+import 'package:sticky_headers/sticky_headers.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/providers/comment.dart';
+import 'package:blue/services/functions.dart';
 import 'package:blue/services/preferences_update.dart';
+import 'package:blue/widgets/comment_reply.dart';
+import 'package:blue/widgets/empty_state.dart';
 import 'package:blue/widgets/header.dart';
+import 'package:blue/widgets/loadmore_widget.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:sticky_headers/sticky_headers.dart';
-import '../widgets/comment.dart';
-import './home.dart';
 import '../services/boxes.dart';
 import '../services/hasura.dart';
+import '../widgets/comment.dart';
+import './home.dart';
 
 enum CommentSort { best, top, oldest, newest }
 

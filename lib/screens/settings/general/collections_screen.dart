@@ -1,5 +1,4 @@
 // Flutter imports:
-import 'package:blue/services/hasura.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -9,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/screens/all_saved_posts_screen.dart';
+import 'package:blue/services/hasura.dart';
 import 'package:blue/widgets/progress.dart';
 import '../../collection_posts_screen.dart';
 import '../../home.dart';

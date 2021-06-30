@@ -1,5 +1,4 @@
 // Flutter imports:
-import 'package:blue/services/hasura.dart';
 import 'package:flutter/material.dart';
 
 // Project imports:
@@ -7,6 +6,7 @@ import 'package:blue/screens/comments_screen.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/screens/post_view_screen.dart';
 import 'package:blue/screens/profile_screen.dart';
+import 'package:blue/services/hasura.dart';
 import 'package:blue/widgets/post.dart';
 
 class GoTo {

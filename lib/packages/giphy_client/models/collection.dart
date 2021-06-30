@@ -1,3 +1,4 @@
+// Project imports:
 import '../models/gif.dart';
 
 class GiphyCollection {

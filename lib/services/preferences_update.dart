@@ -2,7 +2,6 @@
 import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/services/boxes.dart';
-
 import 'hasura.dart';
 
 class PreferencesUpdate {
@@ -116,10 +115,8 @@ class PreferencesUpdate {
     return Boxes.preferenceBox.get(key);
   }
 
-  getFuture(
-    String key,
-  ) async {
-    if (!Boxes.preferenceBox.containsKey(key)) {
+  getFuture(String key, {bool online}) async {
+    if (!Boxes.preferenceBox.containsKey(key) || online == true) {
       return await Hasura.getPreferences(key);
     }
 

@@ -1,26 +1,31 @@
 // Flutter imports:
 
+// Dart imports:
 import 'dart:io';
 
+// Flutter imports:
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+// Package imports:
 import 'package:auth_buttons/auth_buttons.dart';
+import 'package:flutter_gradients/flutter_gradients.dart';
+import 'package:flutter_login/flutter_login.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
+
+// Project imports:
 import 'package:blue/main.dart';
+import 'package:blue/main.dart';
+import 'package:blue/providers/provider_widget.dart';
 import 'package:blue/providers/verify_email.dart';
 import 'package:blue/screens/email_sign_in_screen.dart';
 import 'package:blue/screens/post_screen.dart';
 import 'package:blue/screens/set_name_screen.dart';
+import 'package:blue/screens/sign_in_screen.dart';
+import 'package:blue/screens/tabs_screen.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/functions.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-// Project imports:
-import 'package:blue/providers/provider_widget.dart';
-import 'package:blue/screens/sign_in_screen.dart';
-import 'package:blue/screens/tabs_screen.dart';
-import 'package:flutter_gradients/flutter_gradients.dart';
-import 'package:flutter_login/flutter_login.dart';
-import 'package:blue/main.dart';
-import 'package:flutter_signin_button/flutter_signin_button.dart';
 
 bool autoLogin = false;
 

@@ -2,9 +2,23 @@
 import 'dart:async';
 
 // Flutter imports:
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+// Package imports:
+import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
+import 'package:hive/hive.dart';
+import 'package:page_transition/page_transition.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
+
+// Project imports:
 import 'package:blue/constants/app_colors.dart';
 import 'package:blue/models/hive_data_model.dart';
-// Project imports:
 import 'package:blue/providers/provider_widget.dart' as PW;
 import 'package:blue/providers/theme.dart';
 import 'package:blue/screens/about_screen.dart';
@@ -47,19 +61,6 @@ import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/services/push_notifications.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-// Package imports:
-import 'package:firebase_auth/firebase_auth.dart' as auth;
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:get/get_navigation/src/root/get_material_app.dart';
-import 'package:hive/hive.dart';
-import 'package:page_transition/page_transition.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
-
 import './screens/comments_screen.dart';
 import './screens/edit_profile_screen.dart';
 import './screens/post_screen.dart';
@@ -70,7 +71,6 @@ import './screens/verify_email_screen.dart';
 import './services/push_notifications.dart';
 import 'models/user.dart';
 import 'screens/settings/general/account_screens/email_screen.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -80,7 +80,7 @@ void main() async {
   await Firebase.initializeApp();
   // await FirebaseAppCheck.instance.activate();
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
-  await PushNotificationsManager().initNotif();
+  //await PushNotificationsManager().initNotif();
   var dir = await getApplicationDocumentsDirectory();
   Hive.init(dir.path);
 

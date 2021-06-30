@@ -1,18 +1,18 @@
 // Flutter imports:
-import 'package:blue/services/hasura.dart';
-import 'package:blue/services/post_service.dart';
-import 'package:blue/widgets/paginated_posts.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-// Project imports:
-import 'package:blue/widgets/post.dart';
-import 'package:blue/widgets/progress.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
 import 'package:widgets_visibility_provider/widgets_visibility_provider.dart';
+
+// Project imports:
+import 'package:blue/services/hasura.dart';
+import 'package:blue/services/post_service.dart';
+import 'package:blue/widgets/paginated_posts.dart';
+import 'package:blue/widgets/post.dart';
+import 'package:blue/widgets/progress.dart';
 import '../home.dart';
 
 class TagRecentScreen extends StatefulWidget {
@@ -39,11 +39,9 @@ class _TagRecentScreenState extends State<TagRecentScreen>
   }
 
   Future fn(int offSet) async {
-    print(widget.tag);
     dynamic _snapshot = await Hasura.getTagPosts(length, offSet, "{score:desc}",
         tag: widget.tag);
 
-    print(_snapshot.length);
     return _snapshot;
   }
 
@@ -68,13 +66,10 @@ class _TagRecentScreenState extends State<TagRecentScreen>
         loaded = true;
       });
     }
-    _posts.forEach((element) {
-      print(element.title);
-    });
+    _posts.forEach((element) {});
     setState(() {
       p = p + _posts;
     });
-    print(_posts.length);
   }
 
   bool get wantKeepAlive => true;
@@ -98,7 +93,6 @@ class _TagRecentScreenState extends State<TagRecentScreen>
                 child: LazyLoadScrollView(
                   isLoading: loaded,
                   onEndOfPage: () {
-                    print('s');
                     addItems();
                   },
                   child: ListView.builder(

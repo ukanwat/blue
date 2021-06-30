@@ -2,15 +2,15 @@
 import 'dart:async';
 
 // Flutter imports:
-import 'package:blue/widgets/url_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
 // Project imports:
 import 'package:blue/widgets/settings_widgets.dart';
-import 'package:webview_flutter_plus/webview_flutter_plus.dart';
+import 'package:blue/widgets/url_bottom_sheet.dart';
 
 class TermsOfServiceScreen extends StatefulWidget {
   static const routeName = 'terms-of-service';

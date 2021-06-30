@@ -1,6 +1,11 @@
-import 'package:blue/widgets/empty_dialog.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+// Flutter imports:
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+
+// Project imports:
+import 'package:blue/widgets/empty_dialog.dart';
 
 class BannerDialog extends StatelessWidget {
   final String title;

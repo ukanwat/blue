@@ -1,11 +1,14 @@
 // Flutter imports:
-import 'package:blue/constants/app_colors.dart';
-import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/foundation.dart';
-import 'package:blue/services/boxes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+
+// Project imports:
+import 'package:blue/constants/app_colors.dart';
+import 'package:blue/services/boxes.dart';
+import 'package:blue/services/preferences_update.dart';
+
 // Package imports:
 
 class ThemeNotifier extends ChangeNotifier {

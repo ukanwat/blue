@@ -1,11 +1,16 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+
+// Project imports:
 import 'package:blue/services/functions.dart';
 import 'package:blue/services/go_to.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
-import '../widgets/progress.dart';
 import '../services/hasura.dart';
-import '../widgets/post.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/post.dart';
+import '../widgets/progress.dart';
 
 enum SearchResultsType { posts, people, tags }
 

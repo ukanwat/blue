@@ -1,14 +1,16 @@
 // Flutter imports:
-import 'package:blue/services/boxes.dart';
-import 'package:blue/services/hasura.dart';
-import 'package:blue/services/preferences_update.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
+// Package imports:
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/models/user.dart';
 import 'package:blue/screens/home.dart';
+import 'package:blue/services/boxes.dart';
+import 'package:blue/services/hasura.dart';
+import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:blue/widgets/user_tile.dart';

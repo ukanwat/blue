@@ -1,5 +1,4 @@
 // Flutter imports:
-import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -12,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:blue/main.dart';
 import 'package:blue/providers/theme.dart';
 import 'package:blue/screens/home.dart';
+import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 
 enum AppTheme { sysDefault, dark, light }

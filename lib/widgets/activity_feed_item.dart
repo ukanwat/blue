@@ -1,7 +1,4 @@
 // Flutter imports:
-import 'package:blue/constants/strings.dart';
-import 'package:blue/services/notification_functions.dart';
-import 'package:blue/widgets/custom_image.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -10,9 +7,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 // Project imports:
+import 'package:blue/constants/strings.dart';
 import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/services/go_to.dart';
+import 'package:blue/services/notification_functions.dart';
+import 'package:blue/widgets/custom_image.dart';
 
 class ActivityFeedItem extends StatefulWidget {
   final String imageUrl;
@@ -95,7 +95,9 @@ class _ActivityFeedItemState extends State<ActivityFeedItem> {
         ),
         leading: CircleAvatar(
           backgroundImage: CachedNetworkImageProvider(
-            widget.avatarUrl ?? Strings.emptyAvatarUrl,
+            widget.avatarUrl == null || widget.avatarUrl == '_'
+                ? Strings.emptyAvatarUrl
+                : widget.avatarUrl,
           ),
         ));
 

@@ -1,16 +1,21 @@
+// Dart imports:
+import 'dart:math';
+
+// Flutter imports:
+import 'package:flutter/material.dart';
+
 // Package imports:
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+// Project imports:
+import 'package:blue/main.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/url_bottom_sheet.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'dart:math';
-import 'package:intl/intl.dart';
-// Project imports:
-import 'package:blue/main.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../screens/home.dart';
 import 'boxes.dart';
 

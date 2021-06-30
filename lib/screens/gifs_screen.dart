@@ -1,16 +1,16 @@
 // Flutter imports:
-import 'package:blue/packages/giphy_client/giphy_client.dart';
-import 'package:blue/packages/giphy_client/models/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:flutter_clipboard_manager/flutter_clipboard_manager.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:shimmer/shimmer.dart';
 
 // Project imports:
+import 'package:blue/packages/giphy_client/giphy_client.dart';
+import 'package:blue/packages/giphy_client/models/collection.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:shimmer/shimmer.dart';
 
 class GIFsScreen extends StatefulWidget {
   static const routeName = 'gifs';

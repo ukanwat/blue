@@ -1,9 +1,12 @@
+// Flutter imports:
+import 'package:flutter/material.dart';
+
+// Project imports:
 import 'package:blue/models/user.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/widgets/empty_state.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/user_tile.dart';
-import 'package:flutter/material.dart';
 
 class PaginatedUserTiles extends StatefulWidget {
   final Tile type;

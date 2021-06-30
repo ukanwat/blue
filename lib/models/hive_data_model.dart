@@ -1,3 +1,4 @@
+// Package imports:
 import 'package:hive/hive.dart';
 
 part 'hive_data_model.g.dart';

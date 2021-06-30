@@ -1,5 +1,4 @@
 // Flutter imports:
-import 'package:blue/services/preferences_update.dart';
 import 'package:flutter/material.dart';
 
 // Project imports:
@@ -7,6 +6,7 @@ import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
 import 'package:blue/screens/settings/privacy/safety_screens/blocked_accounts_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screens/muted_accounts_screen.dart';
+import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 
 class SafetyScreen extends StatefulWidget {

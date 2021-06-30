@@ -5,19 +5,13 @@ import 'dart:io';
 import 'dart:math' as math;
 
 // Flutter imports:
-import 'package:blue/constants/strings.dart';
-import 'package:blue/providers/posts_tracker.dart';
-import 'package:blue/services/dynamic_links.dart';
-import 'package:blue/services/post_functions.dart';
-import 'package:blue/widgets/show_dialog.dart';
-import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_pro/carousel_pro.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:flick_video_player/flick_video_player.dart';
+import 'package:flick_video_player/flick_video_player.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:get/get.dart';
@@ -27,24 +21,32 @@ import 'package:share/share.dart';
 import 'package:show_overlay/show_overlay.dart' as ov;
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
-import '../services/functions.dart';
+
 // Project imports:
+import 'package:blue/constants/strings.dart';
 import 'package:blue/main.dart';
+import 'package:blue/providers/posts_tracker.dart';
 import 'package:blue/screens/profile_screen.dart';
 import 'package:blue/screens/tag_screen.dart';
+import 'package:blue/services/dynamic_links.dart';
 import 'package:blue/services/link_preview.dart';
+import 'package:blue/services/post_functions.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/services/video_controls.dart';
 import 'package:blue/widgets/report_dialog.dart';
 import 'package:blue/widgets/repost_dialog.dart';
 import 'package:blue/widgets/save_dialog.dart';
+import 'package:blue/widgets/show_dialog.dart';
 import '../screens/comments_screen.dart';
 import '../screens/home.dart';
+import '../services/boxes.dart';
+import '../services/functions.dart';
 import '../services/functions.dart';
 import '../services/go_to.dart';
-import '../services/boxes.dart';
-import './custom_image.dart';
 import '../services/hasura.dart';
+import './custom_image.dart';
+
+// import 'package:flick_video_player/flick_video_player.dart';
 
 enum CompactPostThumbnailType {
   video,
@@ -1014,7 +1016,7 @@ class _PostState extends State<Post> {
                       ),
                     isSaved
                         ? Container(
-                            width: 60,
+                            width: 70,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
@@ -1042,7 +1044,7 @@ class _PostState extends State<Post> {
                             ),
                           )
                         : Container(
-                            width: 60,
+                            width: 70,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
@@ -1079,7 +1081,7 @@ class _PostState extends State<Post> {
                             ),
                           ),
                     Container(
-                      width: 60,
+                      width: 70,
                       child: Row(
                         children: [
                           FooterButton(FluentIcons.share_24_regular, () async {
@@ -1135,7 +1137,7 @@ class _PostState extends State<Post> {
                       ),
                     if (!(widget.commentsShown || widget.isCompact))
                       Container(
-                        width: 20,
+                        width: 40,
                         child: Text(
                           '${Functions.abbreviateNumber(widget.commentCount, hideLess: true)}',
                           style: TextStyle(

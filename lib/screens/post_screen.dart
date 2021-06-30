@@ -5,15 +5,13 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 // Flutter imports:
-import 'package:blue/widgets/banner_dialog.dart';
-import 'package:blue/widgets/empty_dialog.dart';
-import 'package:blue/widgets/progress.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // Package imports:
+import 'package:blurhash_dart/blurhash_dart.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_pro/carousel_pro.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flick_video_player/flick_video_player.dart';
@@ -31,19 +29,22 @@ import 'package:string_validator/string_validator.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
-import '../services/hasura.dart';
-import 'package:blurhash_dart/blurhash_dart.dart';
+
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/providers/submit_state.dart';
 import 'package:blue/screens/select_topic_screen.dart';
 import 'package:blue/services/link_preview.dart';
 import 'package:blue/services/video_controls.dart';
+import 'package:blue/widgets/banner_dialog.dart';
+import 'package:blue/widgets/empty_dialog.dart';
+import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/show_dialog.dart';
+import '../services/boxes.dart';
 import '../services/file_storage.dart';
+import '../services/hasura.dart';
 import '../services/video_processing.dart';
 import './home.dart';
-import '../services/boxes.dart';
 
 int textLength = 0;
 enum ContentInsertOptions { Device, Camera, Carousel }

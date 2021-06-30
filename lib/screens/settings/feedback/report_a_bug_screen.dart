@@ -3,8 +3,6 @@ import 'dart:io';
 import 'dart:ui';
 
 // Flutter imports:
-import 'package:blue/services/hasura.dart';
-import 'package:blue/widgets/progress.dart';
 import 'package:flutter/material.dart' hide Feedback;
 import 'package:flutter/services.dart';
 
@@ -14,6 +12,8 @@ import 'package:device_info/device_info.dart';
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/screens/home.dart';
+import 'package:blue/services/hasura.dart';
+import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 
 class ReportABugScreen extends StatefulWidget {

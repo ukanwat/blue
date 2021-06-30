@@ -1,7 +1,10 @@
-import 'package:blue/main.dart';
-import 'package:blue/models/hive_data_model.dart';
+// Package imports:
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
+
+// Project imports:
+import 'package:blue/main.dart';
+import 'package:blue/models/hive_data_model.dart';
 
 class Boxes {
   static Box saveBox;
