@@ -66,7 +66,16 @@ export const notification = functions.https.onRequest(async (req, resp) => {
             "title": messageData.data.title + '',
             "imageUrl": imgUrl + '',
         },
-
+        "apns": {
+            "payload": {
+                "aps": {
+                    "mutable-content": 1,
+                },
+            },
+            "fcm_options": {
+                "image": imgUrl + '',
+            },
+        },
 
     };
 

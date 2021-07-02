@@ -26,6 +26,7 @@ import 'package:blue/screens/tabs_screen.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/functions.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 bool autoLogin = false;
 
@@ -90,66 +91,61 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
         backgroundColor: Colors.white,
         resizeToAvoidBottomInset: false,
         body: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            Stack(
-              children: <Widget>[
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.only(
-                          top: MediaQuery.of(context).padding.top),
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.1,
-                    ),
-                    Center(
-                        child: Container(
-                            height: 120,
-                            child: Image.asset('assets/logo.png'))),
-                    Container(
-                      padding: EdgeInsets.only(top: 50),
-                      width: double.infinity,
-                      child: Center(
-                        child: Text(
-                          'Welcome To',
-                          style: TextStyle(
-                              fontFamily: 'Techna Sans Regular',
-                              fontSize: 30 * scale,
-                              color: Colors.black),
-                        ),
+            Container(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).padding.top + 30),
+                  ),
+                  Center(
+                      child: Container(
+                          height: 100, child: Image.asset('assets/logo.png'))),
+                  Container(
+                    padding: EdgeInsets.only(left: 30),
+                    width: double.maxFinite,
+                    child: Center(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.only(top: 50),
+                            width: double.infinity,
+                            child: Text(
+                              'Welcome To',
+                              style: TextStyle(
+                                  fontFamily: 'Techna Sans Regular',
+                                  fontSize: 35 * scale,
+                                  color: Colors.black),
+                            ),
+                          ),
+                          Container(
+                            width: double.infinity,
+                            child: Text(
+                              'Stark',
+                              style: TextStyle(
+                                fontFamily: 'Techna Sans Regular',
+                                fontSize: 55 * scale,
+                                color: Theme.of(context).accentColor,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ],
-            ),
-            Container(
-              width: double.infinity,
-              child: Center(
-                child: Text(
-                  'Stark',
-                  style: TextStyle(
-                      fontFamily: 'Techna Sans Regular',
-                      fontSize: 90 * scale,
-                      color: Colors.black),
-                ),
+                  ),
+                ],
               ),
             ),
             SizedBox(
               height: 0,
             ),
-            Container(
-              width: double.infinity,
-              child: Center(
-                child: Text('Explore Now',
-                    style: TextStyle(
-                        fontFamily: 'Techna Sans Regular',
-                        fontSize: 35 * scale,
-                        color: Colors.blue)),
-              ),
-            ),
-            Expanded(child: Container()),
             Stack(
               alignment: Alignment.center,
               children: [
@@ -167,68 +163,41 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
                     SizedBox(
                       height: 10,
                     ),
-                    if (false)
-                      Container(
-                        height: 45,
-                        width: 285,
-                        child: AppleAuthButton(
-                            onPressed: () {
-                              appleSignIn(context);
-                            },
-                            darkMode: true,
-                            style: AuthButtonStyle(
-                              iconType: AuthIconType.outlined,
-                            )),
-                      ),
-                    SizedBox(
-                      height: 10,
+                    SignInButton(
+                      Buttons.Apple,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5)),
+                      onPressed: () {
+                        appleSignIn(context);
+                      },
                     ),
-                    Container(
-                      height: 45,
-                      width: 285,
-                      child: FacebookAuthButton(
-                          onPressed: () {
-                            facebookSignIn(context);
-                          },
-                          darkMode: true,
-                          style: AuthButtonStyle(
-                            iconType: AuthIconType.outlined,
-                          )),
+                    SignInButton(
+                      Buttons.Facebook,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5)),
+                      onPressed: () {
+                        facebookSignIn(context);
+                      },
                     ),
-                    SizedBox(
-                      height: 10,
+                    SignInButton(
+                      Buttons.Google,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5)),
+                      onPressed: () {
+                        googleSignIn(context);
+                      },
                     ),
-                    Container(
-                      height: 45,
-                      width: 285,
-                      child: GoogleAuthButton(
-                          onPressed: () {
-                            googleSignIn(context);
-                          },
-                          darkMode: true,
-                          style: AuthButtonStyle(
-                            iconType: AuthIconType.secondary,
-                          )),
+                    SignInButton(
+                      Buttons.Email,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5)),
+                      onPressed: () {
+                        Navigator.of(context)
+                            .pushNamed(EmailSignInScreen.routeName);
+                      },
                     ),
                     SizedBox(
                       height: 10,
-                    ),
-                    Container(
-                      height: 45,
-                      width: 285,
-                      child: EmailAuthButton(
-                          darkMode: true,
-                          onPressed: () {
-                            Navigator.of(context)
-                                .pushNamed(EmailSignInScreen.routeName);
-                          },
-                          text: 'Sign in with Email   ',
-                          style: AuthButtonStyle(
-                            iconType: AuthIconType.secondary,
-                          )),
-                    ),
-                    SizedBox(
-                      height: 15,
                     ),
                     Text('By Creating an account, you agree to Stark',
                         style: TextStyle(color: Colors.white, fontSize: 11)),

@@ -242,6 +242,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     convId = await Hasura.getConvId(widget.peerUser.userId);
   }
 
+  int get conv => convId;
   GraphQLClient _client;
   @override
   void initState() {
@@ -506,7 +507,11 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
       await getConvId();
     }
     usersRef.snapshots();
-    List messages = await Hasura.getMessages(convId);
+    List messages;
+    if (convId == null) {
+      messages = [];
+    } else
+      messages = await Hasura.getMessages(convId);
     if (messages.length == 0) {
       first = true;
     }
@@ -669,12 +674,49 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
             return messageItems[0];
           }
           if (i == 1) {
+            if (convId == null) {
+              return Container();
+            }
+//             return FutureBuilder(
+//                 future: Hasura.hasuraConnect.subscription("""subscription{
+// //  messages(where:{_and:[{conv_id:{_eq:${conv}}},{created_at:{_gt:"$firstTime"}}]},){
+// //      created_at
+// //      data
+// //      msg_id
+// //      sender_id
+// //      type
+// //      deleted_by_sender
+// //    }
+// //  }"""),
+//                 builder: (context, fut) {
+//                   return StreamBuilder(
+//                       stream: fut.data,
+//                       builder: (context, result) {
+//                         print(result);
+//                         if (result.data == null) return Container();
+//                         return ListView.builder(
+//                           physics: NeverScrollableScrollPhysics(),
+//                           shrinkWrap: true,
+//                           itemBuilder: (context, j) {
+//                             return messageTransform(
+//                                 Message.fromDocument(
+//                                   result.data['messages'][j],
+//                                 ),
+//                                 currentUser.id ==
+//                                     result.data['messages'][j]['sender_id'],
+//                                 i);
+//                           },
+//                           itemCount: result.data['messages'].length,
+//                         );
+//                       });
+//                 });
+// //
             return GraphQLProvider(
                 client: Config.initailizeClient(),
                 child: CacheProvider(
                     child: Subscription(
                   options: SubscriptionOptions(document: gql("""subscription{
- messages(where:{_and:[{conv_id:{_eq:${widget.convId}}},{created_at:{_gt:"$firstTime"}}]},){
+ messages(where:{_and:[{conv_id:{_eq:${conv}}},{created_at:{_gt:"$firstTime"}}]},){
      created_at
      data
      msg_id
