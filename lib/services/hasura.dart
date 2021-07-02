@@ -514,7 +514,7 @@ class Hasura {
 
   static getTagPosts(int limit, int offset, String orderby,
       {String tag}) async {
-    String param = 'limit:$limit,offset:$offset,order_by:$orderby';
+    String param = 'limit:10,offset:$offset,order_by:$orderby';
     if (tag != null) {
       param = param + ',where:{post_tags:{tag:{_eq:"$tag"}}}';
     }
@@ -829,7 +829,6 @@ class Hasura {
   static getMessages(
     int convId,
   ) async {
-    int userId = await getUserId();
     String doc = """query{
   messages(where: {conv_id: {_eq: $convId}}, limit:100) {
     created_at
@@ -842,6 +841,7 @@ class Hasura {
 }
 
 """;
+    print(doc);
     var data = await hasuraConnect.query(doc);
     return data['data']['messages'];
   }
@@ -1612,7 +1612,7 @@ __typename
 
   static getPopularTags() async {
     dynamic doc = await hasuraConnect.query("""query{
-  tags(order_by:{last_count:desc},limit:10){
+  tags(order_by:{post_count:desc},limit:100){
     tag_id
     tag
     image_url

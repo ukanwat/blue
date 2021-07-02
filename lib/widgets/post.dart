@@ -82,6 +82,7 @@ class Post extends StatefulWidget {
   final bool notInterested;
   final bool postActionExists;
   final Color color;
+  final double radius;
   // final PostInteractions postInteractions;
 
   Post(
@@ -110,10 +111,11 @@ class Post extends StatefulWidget {
       this.notInterested,
       this.thumbUrl,
       this.postActionExists,
-      this.color});
+      this.color,
+      this.radius});
 
   factory Post.fromDocument(Map doc,
-      {bool isCompact, bool commentsShown, Color color}) {
+      {bool isCompact, bool commentsShown, Color color, double radius}) {
     if (isCompact == null) isCompact = false;
     if (commentsShown == null) commentsShown = false;
     Map data = {};
@@ -162,6 +164,7 @@ class Post extends StatefulWidget {
       shares: doc['share_count'],
       postActionExists: doc['actions_by_user']['time'] != null,
       color: color,
+      radius: radius,
     );
   }
 
@@ -1359,6 +1362,7 @@ class _PostState extends State<Post> {
             : Column(
                 children: [
                   Material(
+                    borderRadius: BorderRadius.circular(widget.radius ?? 0),
                     color: widget.color == null
                         ? Theme.of(context).backgroundColor
                         : widget.color,
@@ -1434,12 +1438,13 @@ class _PostState extends State<Post> {
                       ),
                     ),
                   ),
-                  Divider(
-                      thickness: 1,
-                      indent: 10,
-                      endIndent: 10,
-                      color: Theme.of(context).cardColor,
-                      height: 1),
+                  if (widget.radius == null)
+                    Divider(
+                        thickness: 1,
+                        indent: 10,
+                        endIndent: 10,
+                        color: Theme.of(context).cardColor,
+                        height: 1),
                 ],
               );
   }
@@ -1449,93 +1454,6 @@ showComments(BuildContext context, {Post post, int index}) {
   Navigator.pushNamed(context, CommentsScreen.routeName,
       arguments: {'post': post, 'index': index ?? 0});
 }
-
-// class VideoContentContainer extends StatefulWidget {
-//   final Future<dynamic> initializeVideoPlayerFuture;
-//   final VideoPlayerController controller;
-//   final double aspectRatio;
-//   VideoContentContainer(
-//       {this.initializeVideoPlayerFuture, this.controller, this.aspectRatio});
-//   @override
-//   _VideoContentContainerState createState() => _VideoContentContainerState(
-//       initializeVideoPlayerFuture: this.initializeVideoPlayerFuture,
-//       controller: this.controller,
-//       aspectRatio: this.aspectRatio);
-// }
-
-// class _VideoContentContainerState extends State<VideoContentContainer> {
-//   final Future<dynamic> initializeVideoPlayerFuture;
-//   final VideoPlayerController controller;
-//   final double aspectRatio;
-//   _VideoContentContainerState(
-//       {this.initializeVideoPlayerFuture, this.controller, this.aspectRatio});
-//   Widget playbackButton = Container();
-//   playOrPauseVideo() {
-//     if (controller.value.isPlaying) {
-//       setState(() {
-//         playbackButton = Icon(Icons.play_arrow);
-//         controller.pause();
-//       });
-//     } else
-//       setState(() {
-//         controller.play();
-//       });
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     bool videoMuted = false;
-//     return FutureBuilder(
-//       future: initializeVideoPlayerFuture,
-//       builder: (context, snapshot) {
-//         if (snapshot.connectionState == ConnectionState.done) {
-//           controller.play();
-//           return Stack(
-//             children: <Widget>[
-//               GestureDetector(
-//                 onTap: playOrPauseVideo,
-//                 child: AspectRatio(
-//                   aspectRatio: controller.value.aspectRatio,
-//                   child: VideoPlayer(controller),
-//                 ),
-//               ),
-//               Container(
-//                 child: Row(
-//                   children: <Widget>[
-//                     playbackButton,
-//                     Expanded(
-//                       child: Container(),
-//                     ),
-//                     IconButton(
-//                       icon: videoMuted
-//                           ? Icon(Icons.surround_sound)
-//                           : Icon(Icons.volume_mute),
-//                       onPressed: () {
-//                         setState(() {
-//                           if (videoMuted) {
-//                             controller.setVolume(1);
-//                           } else {
-//                             controller.setVolume(0);
-//                           }
-//                           videoMuted = !videoMuted;
-//                         });
-//                       },
-//                     )
-//                   ],
-//                 ),
-//               )
-//             ],
-//           );
-//         } else {
-//           return Container(
-//             color: Colors.grey,
-//             height: MediaQuery.of(context).size.width / aspectRatio,
-//           );
-//         }
-//       },
-//     );
-//   }
-// }
 
 class DownvoteTile extends StatefulWidget {
   final Vote vote;

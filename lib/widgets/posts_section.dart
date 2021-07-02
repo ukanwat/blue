@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -40,7 +41,8 @@ class _PostsSectionState extends State<PostsSection>
       posts.add(Post.fromDocument(element,
           isCompact: true,
           commentsShown: false,
-          color: Theme.of(context).canvasColor));
+          color: Theme.of(context).backgroundColor,
+          radius: 10));
     });
     setState(() {
       loading = false;
@@ -120,7 +122,7 @@ class _PostsSectionState extends State<PostsSection>
                                 height: 19,
                               ),
                               Text(
-                                '${widget.sectionLabel}',
+                                '${widget.sectionLabel.toUpperCase()}',
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                                 style: TextStyle(
@@ -128,7 +130,7 @@ class _PostsSectionState extends State<PostsSection>
                                         .iconTheme
                                         .color
                                         .withOpacity(0.5),
-                                    fontSize: 14,
+                                    fontSize: 13,
                                     fontWeight: FontWeight.w800),
                               ),
                             ],
@@ -182,13 +184,32 @@ class _PostsSectionState extends State<PostsSection>
               color: Colors.grey.withOpacity(0.3),
             ),
             if (!loading)
-              ...posts
+              CarouselSlider(
+                  items: posts
+                      .map(
+                        (e) => Container(
+                          margin:
+                              EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10)),
+                          child: Center(child: e),
+                        ),
+                      )
+                      .toList(),
+                  options: CarouselOptions(
+                    initialPage: 0,
+                    height: 200,
+                    pageSnapping: true,
+                    enableInfiniteScroll: false,
+                  ))
+            // if (!loading)
+            //   ...posts
             else
               Container(
                 child: Center(
                   child: circularProgress(),
                 ),
-                height: 435,
+                height: 190,
               ),
             GestureDetector(
               onTap: () {

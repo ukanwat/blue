@@ -63,7 +63,21 @@ bool userSigningUp = false;
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   RemoteNotification notification = message.notification;
   AndroidNotification android = message.notification?.android;
+  AppleNotification apple = message.notification?.apple;
   String url = android.imageUrl;
+
+  var initialzationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+  var initialzationSettingsiOS = IOSInitializationSettings(
+    requestSoundPermission: true,
+    requestAlertPermission: true,
+    defaultPresentAlert: true,
+    defaultPresentSound: true,
+    defaultPresentBadge: true,
+  );
+  var initializationSettings = InitializationSettings(
+      android: initialzationSettingsAndroid, iOS: initialzationSettingsiOS);
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
   if (notification != null && android != null) {
     if (url == null || url == '') {
       flutterLocalNotificationsPlugin.show(
@@ -81,6 +95,26 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     } else {
       _showBigPictureNotification(url, notification);
     }
+  }
+
+  if (notification != null && apple != null) {
+    flutterLocalNotificationsPlugin.show(
+      notification.hashCode,
+      notification.title,
+      notification.body,
+      NotificationDetails(
+        iOS: IOSNotificationDetails(
+          presentSound: true,
+          presentAlert: true,
+        ),
+        android: AndroidNotificationDetails(
+          channel.id,
+          channel.name,
+          channel.description,
+          icon: android?.smallIcon,
+        ),
+      ),
+    );
   }
 }
 
@@ -137,7 +171,13 @@ class PushNotificationsManager {
 
     var initialzationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-    var initialzationSettingsiOS = IOSInitializationSettings();
+    var initialzationSettingsiOS = IOSInitializationSettings(
+      requestSoundPermission: true,
+      requestAlertPermission: true,
+      defaultPresentAlert: true,
+      defaultPresentSound: true,
+      defaultPresentBadge: true,
+    );
     var initializationSettings = InitializationSettings(
         android: initialzationSettingsAndroid, iOS: initialzationSettingsiOS);
     // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
