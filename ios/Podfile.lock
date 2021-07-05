@@ -546,6 +546,7 @@ DEPENDENCIES:
   - device_info (from `.symlinks/plugins/device_info/ios`)
   - FBSDKLoginKit
   - Firebase/Core
+  - Firebase/Crashlytics
   - Firebase/Messaging
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
@@ -759,6 +760,6 @@ SPEC CHECKSUMS:
   webview_flutter: 9f491a9b5a66f2573946a389b2677987b0ff8c0b
   wifi_info_flutter: 55d4c2469034f5b5c38063ccefa62f708a503a2b
 
-PODFILE CHECKSUM: 6c56112099f0e5e12a518ca3b1076635d0466154
+PODFILE CHECKSUM: 19c091362e99106a05b596cd16ec4261c54e5754
 
 COCOAPODS: 1.10.1

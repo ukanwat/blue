@@ -27,7 +27,7 @@ class DynamicLinksService {
       iosParameters: IosParameters(
         bundleId: packageInfo.packageName,
         minimumVersion: packageInfo.version,
-        appStoreId: '962194608', //TODO:imp
+        appStoreId: '1574720606', //TODO:imp
       ),
       googleAnalyticsParameters: GoogleAnalyticsParameters(
         campaign: 'share',

@@ -163,14 +163,15 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
                     SizedBox(
                       height: 10,
                     ),
-                    SignInButton(
-                      Buttons.Apple,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5)),
-                      onPressed: () {
-                        appleSignIn(context);
-                      },
-                    ),
+                    if (Platform.isIOS)
+                      SignInButton(
+                        Buttons.Apple,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5)),
+                        onPressed: () {
+                          appleSignIn(context);
+                        },
+                      ),
                     SignInButton(
                       Buttons.Facebook,
                       shape: RoundedRectangleBorder(

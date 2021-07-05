@@ -181,8 +181,11 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
       child: Scaffold(
         key: scaffoldKey,
         body: Hasura.jwtToken == null
-            ? Center(
-                child: circularProgress(),
+            ? Container(
+                color: Theme.of(context).backgroundColor,
+                child: Center(
+                  child: circularProgress(),
+                ),
               )
             : PageView(
                 key: _key,
@@ -256,11 +259,11 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
                 BottomNavigationBarItem(
                   label: 'Notifications',
                   icon: Icon(
-                    FluentIcons.alert_24_filled,
+                    FlutterIcons.ios_chatboxes_ion,
                     size: 24,
                   ),
                   activeIcon: Icon(
-                    FluentIcons.alert_24_filled,
+                    FlutterIcons.ios_chatboxes_ion,
                     size: 24,
                   ),
                 ),

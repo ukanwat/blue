@@ -83,6 +83,7 @@ class Post extends StatefulWidget {
   final bool postActionExists;
   final Color color;
   final double radius;
+  final bool moreCompact;
   // final PostInteractions postInteractions;
 
   Post(
@@ -112,10 +113,15 @@ class Post extends StatefulWidget {
       this.thumbUrl,
       this.postActionExists,
       this.color,
+      this.moreCompact,
       this.radius});
 
   factory Post.fromDocument(Map doc,
-      {bool isCompact, bool commentsShown, Color color, double radius}) {
+      {bool isCompact,
+      bool commentsShown,
+      Color color,
+      double radius,
+      bool moreCompact}) {
     if (isCompact == null) isCompact = false;
     if (commentsShown == null) commentsShown = false;
     Map data = {};
@@ -164,7 +170,7 @@ class Post extends StatefulWidget {
       shares: doc['share_count'],
       postActionExists: doc['actions_by_user']['time'] != null,
       color: color,
-      radius: radius,
+      radius: radius, moreCompact: moreCompact,
     );
   }
 
@@ -556,159 +562,162 @@ class _PostState extends State<Post> {
   }
 
   buildCompactPostHeader() {
-    return Stack(children: <Widget>[
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Padding(
-                  padding:
-                      EdgeInsets.only(left: 10, top: 5, bottom: 8, right: 0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      GestureDetector(
-                        onTap: () {
-                          GoTo().profileScreen(context, widget.ownerId);
-                        },
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 11.5,
-                              backgroundImage: CachedNetworkImageProvider(
-                                  photoUrl ??
-                                      "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
-                              backgroundColor: Colors.grey,
-                            ),
-                            SizedBox(
-                              width: 8,
-                            ),
-                            Container(
-                              height: 24,
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                username,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
-                          mainAxisSize: MainAxisSize.min,
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(),
-                      ),
-                      SizedBox(
-                        width: 5,
-                      ),
-                      if (!isFollowing &&
-                          !(widget.ownerId ==
-                              Boxes.currentUserBox.get('user_id')))
+    return Container(
+      child: Stack(children: <Widget>[
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                    padding:
+                        EdgeInsets.only(left: 10, top: 5, bottom: 8, right: 0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
                         GestureDetector(
                           onTap: () {
-                            Functions().handleFollowUser(
-                                widget.ownerId); // TODO wait for future
-                            setState(() {
-                              isFollowing = true;
-                            });
+                            GoTo().profileScreen(context, widget.ownerId);
                           },
-                          child: Container(
-                            height: 24,
-                            child: FittedBox(
-                              fit: BoxFit.none,
-                              alignment: Alignment.centerRight,
-                              child: Container(
-                                  height: 18,
-                                  width: 18,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(15),
-                                    color: Colors.blue,
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 11.5,
+                                backgroundImage: CachedNetworkImageProvider(
+                                    photoUrl ??
+                                        "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                                backgroundColor: Colors.grey,
+                              ),
+                              SizedBox(
+                                width: 8,
+                              ),
+                              Container(
+                                height: 24,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  username,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
                                   ),
-                                  child: Icon(
-                                    Icons.add,
-                                    color: Colors.white,
-                                    size: 16,
-                                  )),
-                            ),
+                                ),
+                              ),
+                            ],
+                            mainAxisSize: MainAxisSize.min,
                           ),
                         ),
-                      GestureDetector(
-                          child: Container(
-                            height: 24,
-                            padding: const EdgeInsets.only(
-                              left: 10,
-                              right: 10,
+                        Expanded(
+                          child: Container(),
+                        ),
+                        SizedBox(
+                          width: 5,
+                        ),
+                        if (!isFollowing &&
+                            !(widget.ownerId ==
+                                Boxes.currentUserBox.get('user_id')))
+                          GestureDetector(
+                            onTap: () {
+                              Functions().handleFollowUser(
+                                  widget.ownerId); // TODO wait for future
+                              setState(() {
+                                isFollowing = true;
+                              });
+                            },
+                            child: Container(
+                              height: 24,
+                              child: FittedBox(
+                                fit: BoxFit.none,
+                                alignment: Alignment.centerRight,
+                                child: Container(
+                                    height: 18,
+                                    width: 18,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(15),
+                                      color: Colors.blue,
+                                    ),
+                                    child: Icon(
+                                      Icons.add,
+                                      color: Colors.white,
+                                      size: 16,
+                                    )),
+                              ),
                             ),
-                            child: Icon(Icons.more_horiz),
                           ),
-                          onTap: () {
-                            showOptions(context);
-                          }),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding:
-                      EdgeInsets.only(left: 12, top: 0, right: 5, bottom: 3),
-                  child: Text(
-                    widget.title,
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
+                        GestureDetector(
+                            child: Container(
+                              height: 24,
+                              padding: const EdgeInsets.only(
+                                left: 10,
+                                right: 10,
+                              ),
+                              child: Icon(Icons.more_horiz),
+                            ),
+                            onTap: () {
+                              showOptions(context);
+                            }),
+                      ],
                     ),
-                    maxLines: 4,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                Padding(
-                  padding:
-                      EdgeInsets.only(left: 12, top: 0, right: 5, bottom: 3),
-                  child: Text(
-                    subtitle ?? compactPostText ?? '',
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).iconTheme.color.withOpacity(0.9),
-                      fontWeight: FontWeight.w400,
+                  Padding(
+                    padding:
+                        EdgeInsets.only(left: 12, top: 0, right: 5, bottom: 3),
+                    child: Text(
+                      widget.title,
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: widget.moreCompact == true ? 3 : 4,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
+                  Padding(
+                    padding:
+                        EdgeInsets.only(left: 12, top: 0, right: 5, bottom: 3),
+                    child: Text(
+                      subtitle ?? compactPostText ?? '',
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color:
+                            Theme.of(context).iconTheme.color.withOpacity(0.9),
+                        fontWeight: FontWeight.w400,
+                      ),
+                      maxLines: widget.moreCompact == true ? 2 : 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          if (thumbUrl != null)
-            Container(
-              margin: const EdgeInsets.all(8.0),
-              height: MediaQuery.of(context).size.width * 0.20,
-              width: MediaQuery.of(context).size.width * 0.20,
-              child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    child: cachedNetworkImage(context, thumbUrl),
-                    height: MediaQuery.of(context).size.width * 0.20,
-                    width: MediaQuery.of(context).size.width * 0.20,
-                  )),
-            )
-          else
-            Container(
-              margin: const EdgeInsets.all(8.0),
-              height: MediaQuery.of(context).size.width * 0.20,
-            )
-        ],
-      ),
-    ]);
+            if (thumbUrl != null)
+              Container(
+                margin: const EdgeInsets.all(8.0),
+                height: MediaQuery.of(context).size.width * 0.20,
+                width: MediaQuery.of(context).size.width * 0.20,
+                child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      child: cachedNetworkImage(context, thumbUrl),
+                      height: MediaQuery.of(context).size.width * 0.20,
+                      width: MediaQuery.of(context).size.width * 0.20,
+                    )),
+              )
+            else
+              Container(
+                margin: const EdgeInsets.all(8.0),
+                height: MediaQuery.of(context).size.width * 0.20,
+              )
+          ],
+        ),
+      ]),
+    );
   }
 
   deletePost() async {

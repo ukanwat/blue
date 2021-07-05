@@ -1234,10 +1234,9 @@ class _ProfileScreenState extends State<ProfileScreen>
       _controller = ScrollController();
     }
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(0),
-        child: Container(),
-      ),
+      backgroundColor: Theme.of(context).backgroundColor,
+      appBar:
+          PreferredSize(preferredSize: Size.fromHeight(0), child: Container()),
       extendBodyBehindAppBar: true,
       body: Container(
         child: NestedScrollView(
@@ -1992,9 +1991,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                     itemBuilder: (context, i) {
                       if (i == posts.length) {
                         return !loaded
-                            ? Container(child: circularProgress())
+                            ? Container(
+                                color: Theme.of(context).backgroundColor,
+                                child: circularProgress())
                             : empty
                                 ? Container(
+                                    color: Theme.of(context).backgroundColor,
                                     height: 400,
                                     child: emptyState(
                                         context, 'Nothing Here!', 'none'))

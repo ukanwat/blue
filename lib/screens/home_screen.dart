@@ -158,32 +158,31 @@ class _HomeScreenState extends State<HomeScreen>
         ),
         actionButton2: Row(
           children: [
-            if (!Platform.isAndroid)
-              TextButton(
-                  child: Text(
-                    'INVITE',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return ShowDialog(
-                          noLeft: true,
-                          description: 'Invite your friends to Stark',
-                          rightButtonText: 'Invite',
-                          leftButtonText: 'Cancel',
-                          rightButtonFunction: () {
-                            Navigator.pop(context);
-                            Share.share(
-                                "I'm inviting you to Stark https://starkinvite.page.link/i",
-                                subject: 'App Invitation');
-                          },
-                          title: 'App Invitation',
-                        );
-                      },
-                    );
-                  }),
+            TextButton(
+                child: Text(
+                  'INVITE',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return ShowDialog(
+                        noLeft: true,
+                        description: 'Invite your friends to Stark',
+                        rightButtonText: 'Invite',
+                        leftButtonText: 'Cancel',
+                        rightButtonFunction: () {
+                          Navigator.pop(context);
+                          Share.share(
+                              "I'm inviting you to Stark https://starkinvite.page.link/i",
+                              subject: 'App Invitation');
+                        },
+                        title: 'App Invitation',
+                      );
+                    },
+                  );
+                }),
             IconButton(
                 icon: Icon(
                   followingPosts
@@ -231,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen>
                           positionData.startPosition <=
                               positionData.viewportSize,
                       child: Container(
-                        color: Theme.of(context).canvasColor,
+                        color: Theme.of(context).backgroundColor,
                         child: RefreshIndicator(
                           onRefresh: () => refreshPosts(),
                           child: LazyLoadScrollView(
@@ -250,7 +249,12 @@ class _HomeScreenState extends State<HomeScreen>
                                       width: MediaQuery.of(context).size.width,
                                       child: loaded
                                           ? Container()
-                                          : Center(child: circularProgress()),
+                                          : Container(
+                                              color: Theme.of(context)
+                                                  .backgroundColor,
+                                              child: Center(
+                                                  child: circularProgress()),
+                                            ),
                                     );
                                   }
                                   return VisibleNotifierWidget(

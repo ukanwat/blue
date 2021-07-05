@@ -10,6 +10,7 @@ import 'package:blue/main.dart';
 import 'package:blue/screens/activity_feed_screen.dart';
 import 'package:blue/screens/chats_screen.dart';
 import 'package:blue/services/boxes.dart';
+import 'package:uuid/uuid.dart';
 
 class CommunicationTabbarScreen extends StatefulWidget {
   const CommunicationTabbarScreen({Key key}) : super(key: key);
@@ -87,6 +88,7 @@ class _CommunicationTabbarScreenState extends State<CommunicationTabbarScreen>
           preferredSize:
               Size.fromHeight(54 + buildTabbar().preferredSize.height),
           child: AppBar(
+            brightness: Theme.of(context).brightness,
             actions: [
               if (title == 'Direct')
                 IconButton(
@@ -96,11 +98,12 @@ class _CommunicationTabbarScreenState extends State<CommunicationTabbarScreen>
                         : FluentIcons.archive_24_regular,
                   ),
                   onPressed: () {
+                    String uuid = Uuid().v4();
                     setState(() {
                       archivedChats = !archivedChats;
                       screen2 = ChatsScreen(
                         archivedChats,
-                        UniqueKey(),
+                        ValueKey(uuid),
                       );
                     });
                   },
@@ -110,13 +113,14 @@ class _CommunicationTabbarScreenState extends State<CommunicationTabbarScreen>
                   FluentIcons.arrow_clockwise_24_filled,
                 ),
                 onPressed: () {
+                  String uuid = Uuid().v4();
                   setState(() {
                     if ('Notifications' == title) {
                       screen1 = ActivityFeedScreen(UniqueKey());
                     } else
                       screen2 = ChatsScreen(
                         archivedChats,
-                        UniqueKey(),
+                        ValueKey(uuid),
                       );
                   });
                 },

@@ -277,7 +277,7 @@ class _PostScreenState extends State<PostScreen> {
     final path = tempDir.path;
     final Im.Image imageFile = Im.decodeImage(file.readAsBytesSync());
     final compressedImageFile = File('$path/img_$imageId.jpg')
-      ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 30));
+      ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 50));
     return compressedImageFile;
   }
 

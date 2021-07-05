@@ -85,6 +85,7 @@ class _ExploreScreenState extends State<ExploreScreen>
         backgroundColor: Theme.of(context).canvasColor,
         appBar: AppBar(
           centerTitle: true,
+          brightness: Theme.of(context).brightness,
           backgroundColor: Theme.of(context).backgroundColor,
           elevation: 0,
           title: Text(
@@ -113,7 +114,7 @@ class _ExploreScreenState extends State<ExploreScreen>
                     color: Theme.of(context).backgroundColor,
                     height: 40,
                     padding:
-                        EdgeInsets.only(left: 8, right: 8, bottom: 6, top: 4),
+                        EdgeInsets.only(left: 8, right: 8, bottom: 0, top: 0),
                     child: TabBar(
                       onTap: (i) {
                         setState(() {
@@ -122,12 +123,12 @@ class _ExploreScreenState extends State<ExploreScreen>
                       },
                       indicatorWeight: 2.5,
                       indicatorPadding:
-                          EdgeInsets.symmetric(vertical: 1, horizontal: 10),
+                          EdgeInsets.symmetric(vertical: 0, horizontal: 15),
                       isScrollable: true,
                       controller: tabController,
                       indicatorColor: Colors.deepOrange,
-                      labelPadding:
-                          EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                      // labelPadding:
+                      //     EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                       tabs: topicTabs,
                     ),
                   ),

@@ -42,6 +42,7 @@ class _PostsSectionState extends State<PostsSection>
           isCompact: true,
           commentsShown: false,
           color: Theme.of(context).backgroundColor,
+          moreCompact: true,
           radius: 10));
     });
     setState(() {

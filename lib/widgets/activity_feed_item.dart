@@ -1,4 +1,6 @@
 // Flutter imports:
+import 'package:blue/services/functions.dart';
+import 'package:blue/widgets/action_button.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -65,9 +67,15 @@ class _ActivityFeedItemState extends State<ActivityFeedItem> {
   //     activityItemText = '${widget.action} \n';
   //   }
   // }
-
+  Widget trailing;
   @override
   Widget build(BuildContext context) {
+    if (widget.action == 'follow') {
+      trailing = ActionButton(() {
+        Functions().handleFollowUser(widget.sourceId);
+      }, Colors.blue, 'Follow', true);
+    }
+
     return ListTile(
         onTap: () {
           if (widget.action == 'follow') {
@@ -80,7 +88,11 @@ class _ActivityFeedItemState extends State<ActivityFeedItem> {
             NotifFunctions.goToCommentReply(widget.sourceId, context);
           }
         },
-        trailing: Icon(FluentIcons.open_24_regular),
+        trailing: trailing ??
+            Icon(
+              FluentIcons.arrow_right_16_filled,
+              color: Colors.blue,
+            ),
         title: Text(
           widget.title ?? '',
           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),

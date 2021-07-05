@@ -93,6 +93,9 @@ class AuthService {
         AppleIDAuthorizationScopes.email,
         AppleIDAuthorizationScopes.fullName,
       ],
+      webAuthenticationOptions: WebAuthenticationOptions(
+          clientId: 'com.stark.social.service',
+          redirectUri: Uri.parse('https://www.stark.social')),
       nonce: nonce,
     );
 
