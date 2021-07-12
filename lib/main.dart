@@ -2,6 +2,7 @@
 import 'dart:async';
 
 // Flutter imports:
+import 'package:blue/screens/qr_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -93,7 +94,7 @@ void main() async {
   bool dark = PreferencesUpdate().getBool('theme') == true;
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.black.withOpacity(0),
-      systemNavigationBarDividerColor: Colors.grey[900],
+      systemNavigationBarDividerColor: Colors.black,
       systemNavigationBarColor: AppColors.navBar,
       systemNavigationBarIconBrightness: Brightness.light));
   runApp(MyApp());
@@ -362,6 +363,7 @@ class MyAppState extends State<MyApp> {
                   EmailSignInScreen.routeName: (ctx) => EmailSignInScreen(),
                   ShowScreen.routeName: (ctx) => ShowScreen(),
                   FollowsScreen.routeName: (ctx) => FollowsScreen(),
+                  QRScreen.routeName: (ctx) => QRScreen(),
                 }),
           );
         },

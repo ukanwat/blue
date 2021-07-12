@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 // Flutter imports:
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,8 +18,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as Im;
+import 'package:image_downloader/image_downloader.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:path/path.dart' as Path;
@@ -115,7 +117,7 @@ class _PostScreenState extends State<PostScreen> {
 
   handleTakePhoto() async {
     File _cameraImage;
-    var pickedFile = await ImagePicker.pickImage(
+    var pickedFile = await ImagePicker().getImage(
         source: ImageSource.camera,
         maxHeight: 576,
         maxWidth: 576,
@@ -157,7 +159,7 @@ class _PostScreenState extends State<PostScreen> {
 
   handleChooseImageFromGallery() async {
     File _galleryImage;
-    var pickedFile = await ImagePicker.pickImage(
+    var pickedFile = await ImagePicker().getImage(
         source: ImageSource.gallery,
         maxHeight: 576,
         maxWidth: 576,
@@ -168,7 +170,7 @@ class _PostScreenState extends State<PostScreen> {
 
   handleTakeVideo() async {
     File _cameraVideo;
-    var pickedFile = await ImagePicker.pickVideo(
+    var pickedFile = await ImagePicker().getVideo(
       source: ImageSource.camera,
       maxDuration: Duration(minutes: 2),
     );
@@ -206,8 +208,10 @@ class _PostScreenState extends State<PostScreen> {
 
   handleChooseVideoFromGallery() async {
     File _galleryVideo;
-    var pickedFile = await ImagePicker.pickVideo(
-        source: ImageSource.gallery, maxDuration: Duration(minutes: 2));
+    var pickedFile = await ImagePicker().getVideo(
+      source: ImageSource.gallery,
+      maxDuration: Duration(minutes: 2),
+    );
     _galleryVideo = File(pickedFile.path);
     addVideoContent(_galleryVideo);
   }
@@ -431,7 +435,18 @@ class _PostScreenState extends State<PostScreen> {
     } else if (_thumbContent == ThumbContent.image) {
       thumbImg = contentsData[thumbIndex]['content'];
     } else if (_thumbContent == ThumbContent.link) {
+      // String _linkUrl = contentsData[thumbIndex]['content'].text;
+      // if (!_linkUrl.startsWith('http')) {
+      //   _linkUrl = 'https://' + _linkUrl;
+      // }
+      // var c = await MetadataFetch.extract(_linkUrl);
+      // Directory dir = await getApplicationDocumentsDirectory();
+
       thumbImg = null;
+      // try {
+      //   await Dio().download(c.url, dir.path + '/downloads/' + c.url);
+      //   thumbImg = File(dir.path + '/downloads/' + c.url);
+      // } catch (e) {}
     } else if (_thumbContent == ThumbContent.text) {
       thumbImg = null;
     } else if (_thumbContent == ThumbContent.video) {
@@ -444,12 +459,14 @@ class _PostScreenState extends State<PostScreen> {
       final tempDir = await getTemporaryDirectory();
       final path = tempDir.path;
       Im.Image imageFile = Im.decodeImage(thumbImg.readAsBytesSync());
-      imageFile = Im.copyResizeCropSquare(imageFile, 270);
-      // copyResize(imageFile, width: 270, height: 270,);
-      final compressedImageFile = File('$path/img_$id.jpg')
-        ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
+      if (imageFile != null) {
+        imageFile = Im.copyResizeCropSquare(imageFile, 270);
+        // copyResize(imageFile, width: 270, height: 270,);
+        final compressedImageFile = File('$path/img_$id.jpg')
+          ..writeAsBytesSync(Im.encodeJpg(imageFile, quality: 85));
 
-      thumbUrl = await uploadImage(compressedImageFile, thumb: true);
+        thumbUrl = await uploadImage(compressedImageFile, thumb: true);
+      }
     }
 
     await uploadPost(
@@ -585,7 +602,7 @@ class _PostScreenState extends State<PostScreen> {
         return false;
       })['widget'] = linkDisplay(linkController, true);
     });
-    Response response;
+    http.Response response;
     bool errorOccured = false;
     _url = linkController.text.toLowerCase().replaceAll(new RegExp(r"\s+"), "");
     if (!(_url.startsWith(
@@ -598,7 +615,7 @@ class _PostScreenState extends State<PostScreen> {
     }
 
     try {
-      response = await head(Uri.parse(_url));
+      response = await http.head(Uri.parse(_url));
     } catch (error) {
       errorOccured = true;
     }
@@ -1154,45 +1171,64 @@ class _PostScreenState extends State<PostScreen> {
                   child: Column(
                     children: [
                       Container(
-                        color: Theme.of(context).cardColor,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
+                        margin: EdgeInsets.only(top: 5, left: 5, right: 5),
+                        decoration: BoxDecoration(
+                            color: Theme.of(context).canvasColor,
+                            borderRadius: BorderRadius.circular(10)),
+                        child: Column(
                           children: [
-                            SizedBox(
-                              width: 10,
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(10),
+                                    topRight: Radius.circular(10)),
+                                color: Theme.of(context).cardColor,
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  // SizedBox(
+                                  //   width: 10,
+                                  // ),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.only(
+                                            topLeft: Radius.circular(10))),
+                                    padding: const EdgeInsets.only(
+                                        left: 10, bottom: 2, right: 2, top: 2),
+                                    child: Text(
+                                      'TITLE',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.all(2.0),
-                              child: Text(
-                                'TITLE',
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 0),
+                              width: double.infinity,
+                              child: TextField(
                                 style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                                    fontSize: 18, fontWeight: FontWeight.w500),
+                                maxLines: 1,
+                                minLines: 1,
+                                controller: titleController,
+                                decoration: InputDecoration(
+                                  hintText: "Some Title...",
+                                  hintStyle: TextStyle(
+                                      color: Theme.of(context)
+                                          .iconTheme
+                                          .color
+                                          .withOpacity(0.8)),
+                                  border: InputBorder.none,
                                 ),
                               ),
                             ),
                           ],
-                        ),
-                      ),
-                      Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-                        width: double.infinity,
-                        child: TextField(
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w500),
-                          maxLines: 1,
-                          minLines: 1,
-                          controller: titleController,
-                          decoration: InputDecoration(
-                            hintText: "Some Title...",
-                            hintStyle: TextStyle(
-                                color: Theme.of(context)
-                                    .iconTheme
-                                    .color
-                                    .withOpacity(0.8)),
-                            border: InputBorder.none,
-                          ),
                         ),
                       ),
                     ],
@@ -1221,47 +1257,60 @@ class _PostScreenState extends State<PostScreen> {
               ],
             ),
             Container(
-              color: Theme.of(context).cardColor,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Theme.of(context).canvasColor),
+              margin: EdgeInsets.all(5),
+              child: Column(
                 children: [
-                  SizedBox(
-                    width: 10,
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(10),
+                          topRight: Radius.circular(10)),
+                      color: Theme.of(context).cardColor,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: Text(
+                            'SUBTITLE',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: Text(
-                      'SUBTITLE',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                    width: double.infinity,
+                    child: TextField(
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                      maxLines: 1,
+                      minLines: 1,
+                      controller: subtitleController,
+                      decoration: InputDecoration(
+                        hintText: "(Optional)",
+                        hintStyle: TextStyle(
+                            color: Theme.of(context)
+                                .iconTheme
+                                .color
+                                .withOpacity(0.8)),
+                        border: InputBorder.none,
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-              width: double.infinity,
-              child: TextField(
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                maxLines: 1,
-                minLines: 1,
-                controller: subtitleController,
-                decoration: InputDecoration(
-                  hintText: "(Optional)",
-                  hintStyle: TextStyle(
-                      color:
-                          Theme.of(context).iconTheme.color.withOpacity(0.8)),
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-            Divider(
-              color: Colors.grey.withOpacity(0.3),
-              height: 1,
-              thickness: 1,
             ),
             if (_contents.length > 0)
               Column(

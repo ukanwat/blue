@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/services/functions.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -11,6 +12,7 @@ import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/empty_dialog.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/settings_widgets.dart';
+import 'package:intl/intl.dart';
 
 class PushNotificationsScreen extends StatefulWidget {
   static const routeName = 'push-notifications';
@@ -28,7 +30,7 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
   bool features = true;
   bool reminders = true;
   bool loading = true;
-
+  DateTime allMuteTime;
   @override
   void initState() {
     getPushNotificationPreferences();
@@ -48,6 +50,7 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
           directRequests = false;
           features = false;
           reminders = false;
+          allMuteTime = DateTime.parse(timeStr);
         } else {
           reminders = PreferencesUpdate().getBool('push_features', def: true);
           features = PreferencesUpdate().getBool('push_reminders', def: true);
@@ -129,7 +132,8 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
                                           'Set Mute Time',
                                           style: TextStyle(
                                               fontSize: 20,
-                                              fontWeight: FontWeight.w500),
+                                              fontFamily: 'Stark Sans',
+                                              fontWeight: FontWeight.w600),
                                         ),
                                       ),
                                     ),
@@ -254,21 +258,28 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
                                       color: Theme.of(context).cardColor,
                                     ),
                                     SizedBox(height: 10.0),
-                                    FlatButton(
-                                      color: Theme.of(context).cardColor,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      onPressed: () {
-                                        Navigator.of(context)
-                                            .pop(); // To close the dialog
-                                      },
-                                      child: Text(
-                                        'Cancel',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          color:
-                                              Theme.of(context).iconTheme.color,
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 15),
+                                      child: FlatButton(
+                                        minWidth: double.maxFinite,
+                                        color: Theme.of(context).cardColor,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.of(context)
+                                              .pop(); // To close the dialog
+                                        },
+                                        child: Text(
+                                          'Cancel',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            color: Theme.of(context)
+                                                .iconTheme
+                                                .color,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -285,9 +296,16 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
                     highlightColor: Colors.blue,
                     color: Colors.blue,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15)),
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
+                if (allMuteTime != null)
+                  Center(
+                      child: Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Text(
+                        'All Notifications are muted till ${Functions().date(allMuteTime)}, ${DateFormat.jm().format(allMuteTime)}'),
+                  )),
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(

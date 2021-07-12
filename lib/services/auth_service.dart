@@ -47,7 +47,7 @@ class AuthService {
   static final auth.FirebaseAuth firebaseAuth = auth.FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   Stream<auth.User> get onAuthStateChanged => firebaseAuth.authStateChanges();
-
+  final authRef = FirebaseFirestore.instance.collection('auth');
   // GET UID
   getCurrentUID() {
     String uid = firebaseAuth.currentUser.uid;

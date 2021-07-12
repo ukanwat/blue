@@ -16,6 +16,8 @@ class User {
   final int followingCount;
   final Map social;
   final bool profileComplete;
+  final DateTime joined;
+  final bool reviewed;
   User(
       {this.id,
       this.username,
@@ -30,7 +32,9 @@ class User {
       this.followerCount,
       this.followingCount,
       this.social,
-      this.profileComplete});
+      this.profileComplete,
+      this.reviewed,
+      this.joined});
 
   factory User.fromDocument(Map doc) {
     return User(
@@ -47,6 +51,8 @@ class User {
         followingCount: doc['following_count'],
         followerCount: doc['follower_count'],
         social: doc['social'],
+        reviewed: doc['reviewed'],
+        joined: DateTime.parse(doc['joined'] ?? DateTime.now().toString()),
         profileComplete: doc['profile_complete']);
   }
 }

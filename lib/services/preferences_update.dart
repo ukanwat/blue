@@ -13,8 +13,15 @@ class PreferencesUpdate {
     Hasura.updatePreferences(key, value);
   }
 
-  uploadValue(String key, dynamic value, bool str) async {
+  getValue(String key) {
+    return Boxes.preferenceBox.get(key);
+  }
+
+  uploadValue(String key, dynamic value, bool str, {bool update}) async {
     await Hasura.updatePreferences(key, value, string: str);
+    if (update == true) {
+      Boxes.preferenceBox.put(key, value);
+    }
   }
 
   updateString(

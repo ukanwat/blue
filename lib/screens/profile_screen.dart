@@ -2,6 +2,8 @@
 import 'dart:ui';
 
 // Flutter imports:
+import 'package:blue/screens/qr_screen.dart';
+import 'package:blue/widgets/show_dialog.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -217,7 +219,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     return Container(
       margin: EdgeInsets.only(top: 0, left: 5, right: 5, bottom: 0),
       height: 30,
-      width: 124,
+      width: 130,
       child: FlatButton(
         padding: EdgeInsets.all(0),
         onPressed: function,
@@ -344,6 +346,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 //     }
 //     // }
   bool postExists = false;
+  bool rateShown = true;
   buildProfileHeaderTemp() {
     future = futur();
     return Container(
@@ -371,6 +374,10 @@ class _ProfileScreenState extends State<ProfileScreen>
             initialIndex = 1;
           }
           _profileUser = user;
+          if (widget.tabPage == true && rateShown != true) {
+            rateShown = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) => showRate());
+          }
           profileName = user.name;
           return Container(
             color: Theme.of(context).backgroundColor,
@@ -1223,6 +1230,37 @@ class _ProfileScreenState extends State<ProfileScreen>
         ));
   }
 
+  showRate() {
+    if (_profileUser != null) {
+      if (_profileUser.joined.add(Duration(days: 1)).isBefore(DateTime.now()) &&
+          _profileUser.reviewed != true) {
+        showDialog(
+            context: context,
+            builder: (context) {
+              return ShowDialog(
+                description: 'Would you like to give us 5 stars?',
+                title: 'App Review',
+                leftButtonText: "Don't Show Again",
+                rightButtonText: "Yes",
+                leftButtonFunction: () {
+                  Navigator.pop(context);
+                  Hasura.updateUser(reviewed: true);
+                },
+                rightButtonFunction: () {
+                  Navigator.pop(context);
+                  inAppReview.isAvailable().then((value) {
+                    if (value == true) {
+                      inAppReview.requestReview();
+                    }
+                    Hasura.updateUser(reviewed: true);
+                  });
+                },
+              );
+            });
+      }
+    }
+  }
+
   bool get wantKeepAlive => true;
 
   @override
@@ -1233,6 +1271,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     if (_controller == null) {
       _controller = ScrollController();
     }
+
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       appBar:
@@ -1271,7 +1310,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                             child: Row(
                               children: <Widget>[
                                 if (widget.profileId ==
-                                    Boxes.currentUserBox.get('user_id'))
+                                    Boxes.currentUserBox.get('userId'))
                                   Padding(
                                     padding: EdgeInsets.only(right: 36),
                                   ),
@@ -1285,9 +1324,16 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         ), () {
                                         Navigator.pop(context);
                                       })
-                                    : Container(
-                                        width: 30,
-                                      ),
+                                    : headerButton(
+                                        Icon(
+                                          FluentIcons.qr_code_20_filled,
+                                          size: 26,
+                                          color:
+                                              Theme.of(context).iconTheme.color,
+                                        ), () {
+                                        Navigator.of(context)
+                                            .pushNamed(QRScreen.routeName);
+                                      }),
                                 if (!isFollowing &&
                                     Boxes.currentUserBox.get('user_id') !=
                                         widget.profileId)
@@ -1506,29 +1552,37 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           controller: mKController,
                                           menuBuilder: () {
                                             return Container(
-                                              child: Material(
-                                                child: Column(
-                                                  children: [
-                                                    sortTab(Sort.Recent),
-                                                    Divider(
-                                                      indent: 10,
-                                                      endIndent: 10,
-                                                      thickness: 1,
-                                                      height: 1,
-                                                      color: Colors.grey
-                                                          .withOpacity(0.4),
-                                                    ),
-                                                    sortTab(Sort.Best),
-                                                    Divider(
-                                                      indent: 10,
-                                                      endIndent: 10,
-                                                      thickness: 1,
-                                                      height: 1,
-                                                      color: Colors.grey
-                                                          .withOpacity(0.4),
-                                                    ),
-                                                    sortTab(Sort.Oldest),
-                                                  ],
+                                              color: Colors.black12,
+                                              padding: EdgeInsets.all(12),
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(15),
+                                                child: Material(
+                                                  borderRadius:
+                                                      BorderRadius.circular(15),
+                                                  child: Column(
+                                                    children: [
+                                                      sortTab(Sort.Recent),
+                                                      Divider(
+                                                        indent: 10,
+                                                        endIndent: 10,
+                                                        thickness: 1,
+                                                        height: 1,
+                                                        color: Colors.grey
+                                                            .withOpacity(0.4),
+                                                      ),
+                                                      sortTab(Sort.Best),
+                                                      Divider(
+                                                        indent: 10,
+                                                        endIndent: 10,
+                                                        thickness: 1,
+                                                        height: 1,
+                                                        color: Colors.grey
+                                                            .withOpacity(0.4),
+                                                      ),
+                                                      sortTab(Sort.Oldest),
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                               width: MediaQuery.of(context)
@@ -1859,36 +1913,54 @@ class _ProfileScreenState extends State<ProfileScreen>
                                                       controller: mKController,
                                                       menuBuilder: () {
                                                         return Container(
-                                                          child: Material(
-                                                            child: Column(
-                                                              children: [
-                                                                sortTab(Sort
-                                                                    .Recent),
-                                                                Divider(
-                                                                  indent: 10,
-                                                                  endIndent: 10,
-                                                                  thickness: 1,
-                                                                  height: 1,
-                                                                  color: Colors
-                                                                      .grey
-                                                                      .withOpacity(
-                                                                          0.4),
-                                                                ),
-                                                                sortTab(
-                                                                    Sort.Best),
-                                                                Divider(
-                                                                  indent: 10,
-                                                                  endIndent: 10,
-                                                                  thickness: 1,
-                                                                  height: 1,
-                                                                  color: Colors
-                                                                      .grey
-                                                                      .withOpacity(
-                                                                          0.4),
-                                                                ),
-                                                                sortTab(Sort
-                                                                    .Oldest),
-                                                              ],
+                                                          color: Colors.black12,
+                                                          padding:
+                                                              EdgeInsets.all(
+                                                                  12),
+                                                          child: ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        15),
+                                                            child: Material(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          15),
+                                                              child: Column(
+                                                                children: [
+                                                                  sortTab(Sort
+                                                                      .Recent),
+                                                                  Divider(
+                                                                    indent: 10,
+                                                                    endIndent:
+                                                                        10,
+                                                                    thickness:
+                                                                        1,
+                                                                    height: 1,
+                                                                    color: Colors
+                                                                        .grey
+                                                                        .withOpacity(
+                                                                            0.4),
+                                                                  ),
+                                                                  sortTab(Sort
+                                                                      .Best),
+                                                                  Divider(
+                                                                    indent: 10,
+                                                                    endIndent:
+                                                                        10,
+                                                                    thickness:
+                                                                        1,
+                                                                    height: 1,
+                                                                    color: Colors
+                                                                        .grey
+                                                                        .withOpacity(
+                                                                            0.4),
+                                                                  ),
+                                                                  sortTab(Sort
+                                                                      .Oldest),
+                                                                ],
+                                                              ),
                                                             ),
                                                           ),
                                                           width: MediaQuery.of(

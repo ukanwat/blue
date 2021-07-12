@@ -190,7 +190,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     try {
       DateTime dateTime = DateTime.now();
       File image;
-      var pickedFile = await ImagePicker.pickImage(
+      var pickedFile = await ImagePicker().getImage(
         source: ImageSource.gallery,
         maxHeight: 720,
         maxWidth: 720,
@@ -506,7 +506,6 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     if (convId == null) {
       await getConvId();
     }
-    usersRef.snapshots();
     List messages;
     if (convId == null) {
       messages = [];

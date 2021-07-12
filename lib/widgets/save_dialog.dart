@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/screens/settings/general/collection_screens/create_collection_screen.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -147,12 +148,13 @@ class _SaveDialogState extends State<SaveDialog> {
               ),
               onPressed: () {
                 Navigator.of(context).pop(); // To close the dialog
+                Navigator.pushNamed(context, CreateCollectionScreen.routeName);
               },
               child: Text(
                 'Create Collection',
                 style: TextStyle(
                   fontSize: 20,
-                  color: Colors.white,
+                  color: Theme.of(context).iconTheme.color,
                 ),
               ),
             ),

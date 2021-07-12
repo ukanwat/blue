@@ -100,9 +100,8 @@ class Hasura {
   //   await Boxes.currentUserBox
   //       .put('id', data['data']['insert_users']['returning'][0]['user_id']);
   // }
-  static getPost(int postId) async {
-    var doc = await hasuraConnect.query("""query{posts_by_pk(post_id:$postId){
-   contents
+  static getPost(int postId, {bool link}) async {
+    print("""contents
     created_at
     owner_id
     post_id
@@ -113,21 +112,46 @@ class Hasura {
       avatar_url
       username
     }
-     actions_by_user{
+    actions_by_user{
       not_interested
       up
       time
     }
     post_tags{
-      tag{tag}
+      tg{tag}
+    }
+      upvote_count
+      share_count
+      comment_count
+      save_count
+         downvote_count""");
+    var doc = await hasuraConnect.query("""query{posts_by_pk(post_id:$postId){
+ contents
+    created_at
+    owner_id
+    post_id
+    title
+    subtitle
+    comment_count
+    user{
+      avatar_url
+      username
+    }
+    actions_by_user{
+      not_interested
+      up
+      time
+    }
+    post_tags{
+      tg{tag}
     }
       upvote_count
       share_count
       comment_count
       save_count
          downvote_count
-    
 }}""");
+    print(doc);
     return doc['data']['posts_by_pk'];
   }
 
@@ -143,6 +167,7 @@ class Hasura {
       bool deleteToken,
       bool profileComplete,
       String token,
+      bool reviewed,
       Map social}) async {
     int userId = Boxes.currentUserBox.get('user_id');
     if (userId == null) {
@@ -194,6 +219,9 @@ class Hasura {
     if (profileComplete != null) {
       fields = fields + 'profile_complete: $profileComplete,';
     }
+    if (reviewed != null) {
+      fields = fields + 'reviewed: $reviewed,';
+    }
     if (avatarUrl != null) {
       fields = fields + 'avatar_url: "$avatarUrl",';
     }
@@ -228,6 +256,7 @@ class Hasura {
     String _doc = """query{
   users_by_pk(user_id:$id){
     avatar_url
+    reviewed
     about
     email
     header_url
@@ -468,6 +497,9 @@ class Hasura {
     set_private
     following_posts_last_seen
     mute_push_time
+    push_notif_agree
+    deactivation_time
+    tabs
   }
 }""");
 

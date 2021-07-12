@@ -201,9 +201,6 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                   setState(() {
                     serif = false;
                     PreferencesUpdate().updateBool('serif', false);
-                    preferencesRef
-                        .doc(currentUser.id)
-                        .set({'serif': false}, SetOptions(merge: true));
                   });
                 },
                 title: Text('Sans Serif'),
@@ -218,9 +215,6 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                   setState(() {
                     serif = true;
                     PreferencesUpdate().updateBool('serif', true);
-                    preferencesRef
-                        .doc(currentUser.id)
-                        .set({'serif': true}, SetOptions(merge: true));
                   });
                 },
                 title: Text(

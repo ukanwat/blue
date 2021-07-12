@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/widgets/action_button.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -77,6 +78,9 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                               .iconTheme
                               .color
                               .withOpacity(0.8))),
+                  trailing: ActionButton(() {
+                    Functions().handleFollowUser(doc["user_id"]);
+                  }, Colors.blue, 'Follow', true),
                   title: Text(
                     '${doc["username"]}',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),

@@ -247,8 +247,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   updateProfilePicture() async {
     File imageFile;
-    var pickedFile = await ImagePicker.pickImage(
-        source: ImageSource.gallery, maxHeight: 270, maxWidth: 270);
+    var pickedFile = await ImagePicker()
+        .getImage(source: ImageSource.gallery, maxHeight: 270, maxWidth: 270);
     if (pickedFile == null) return;
     imageFile = File(pickedFile.path);
 
@@ -264,7 +264,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   updateHeaderPicture() async {
     File headerFile;
-    var pickedFile = await ImagePicker.pickImage(
+    var pickedFile = await ImagePicker().getImage(
         source: ImageSource.gallery,
         imageQuality: 75,
         maxHeight: 320,

@@ -67,7 +67,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 preferredSize: Size.fromHeight(0),
               )
             : TabBar(
-                indicatorColor: Colors.deepOrange,
+                indicatorColor: Theme.of(context).accentColor,
                 indicatorWeight: 2.0,
                 tabs: [
                   Container(

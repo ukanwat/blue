@@ -83,7 +83,11 @@ class ShowDialog extends StatelessWidget {
                           },
                     child: Text(
                       rightButtonText,
-                      style: TextStyle(color: Colors.white, fontSize: 16),
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'Stark Sans'),
                     ),
                   ),
                   if (noLeft != true)
@@ -108,6 +112,8 @@ class ShowDialog extends StatelessWidget {
                         leftButtonText,
                         style: TextStyle(
                             color: Theme.of(context).iconTheme.color,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: 'Stark Sans',
                             fontSize: 16),
                       ),
                     ),

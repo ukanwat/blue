@@ -3,6 +3,8 @@ import 'dart:io';
 import 'dart:ui';
 
 // Flutter imports:
+import 'package:blue/services/hasura.dart';
+import 'package:blue/widgets/show_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -32,6 +34,9 @@ import 'package:blue/screens/settings/privacy/safety_screen.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/settings_widgets.dart';
+import 'package:in_app_review/in_app_review.dart';
+
+final InAppReview inAppReview = InAppReview.instance;
 
 class SettingsScreen extends StatefulWidget {
   static const routeName = 'settings';
@@ -313,6 +318,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
+                        settingsActionTile(context, 'Rate Our App', () {
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return ShowDialog(
+                                  title: 'App Review',
+                                  description:
+                                      'Would you like to give us 5 stars?',
+                                  leftButtonText: 'No',
+                                  rightButtonText: 'Yes',
+                                  leftButtonFunction: () {
+                                    Navigator.pop(context);
+                                  },
+                                  rightButtonFunction: () async {
+                                    Navigator.pop(context);
+                                    if (await inAppReview.isAvailable()) {
+                                      inAppReview.requestReview();
+                                      Hasura.updateUser(reviewed: true);
+                                    }
+                                  },
+                                );
+                              });
+                        }, FluentIcons.star_24_regular),
                         settingsActionTile(
                           context,
                           'Terms of Use',
@@ -325,7 +353,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         settingsActionTile(context, 'Privacy policy', () {
                           Navigator.of(context)
                               .pushNamed(PrivacyPolicyScreen.routeName);
-                        }, FlutterIcons.lock_mco),
+                        }, FlutterIcons.lock_outline_mco),
                         settingsActionTile(context, 'acknowledgements', () {
                           Navigator.of(context)
                               .pushNamed(LicenseScreen.routeName);

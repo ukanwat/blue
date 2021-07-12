@@ -67,6 +67,13 @@
 		<true/>
 		<key>NSCameraUsageDescription</key>
 		<string>This app requires access to the Camera.</string>
+
+
+
+		
+	<key>NSLocationWhenInUseUsageDescription</key>
+		<string>This app requires access to the Microphone for recordng Videos.</string>
+
 		<key>NSMicrophoneUsageDescription</key>
 		<string>This app requires access to the Microphone for recordng Videos.</string>
 		<key>NSPhotoLibraryAddUsageDescription</key>

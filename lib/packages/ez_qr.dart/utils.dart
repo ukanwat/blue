@@ -1,0 +1,1 @@
+enum ReaderFrom { gallery, camera }

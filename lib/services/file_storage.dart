@@ -1,16 +1,36 @@
 // Dart imports:
 import 'dart:io';
-import 'dart:io';
-
+import 'package:crypto/crypto.dart';
+import 'package:crypto/src/sha256.dart';
 // Package imports:
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_aws_s3_client/flutter_aws_s3_client.dart';
+import 'package:http/http.dart';
 import 'package:image/image.dart' as Im;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:http_client/http_client.dart' as http_client;
 
 class FileStorage {
   static Future<String> upload(String folder, String fileName, File file,
       {String bucket}) async {
+    // s3Upload(
+    //   'key',
+    //   file,
+    //   'image/jpg',
+    // );
+
+    // final AwsS3Client s3client = AwsS3Client(
+    //     region: 'us-east-va',
+    //     host: "https://s3.us-east-va.cloud.ovh.net",
+    //     bucketId: '55335268636d737556564d74525546545643315751513d3d',
+    //     accessKey: "7931b62337ec4f668bf7fd10667797cc",
+    //     secretKey: "89cdff7b09e946e88497e16473d91f5a");
+
+    // final listBucketResult = await s3client.listObjects();
+    // print(listBucketResult.toString());
+
+    print('uploaded');
     Reference ref;
     if (bucket == null) {
       ref = FirebaseStorage.instance.ref().child(folder).child(fileName);
@@ -56,4 +76,32 @@ class FileStorage {
     }
     return successful;
   }
+}
+
+Future<String> s3Upload(
+  String key,
+  File content,
+  String contentType,
+) async {
+  int contentLength = content.readAsBytesSync().lengthInBytes;
+
+  Digest contentSha256 = sha256.convert(content.readAsBytesSync());
+
+  String uriStr = 'https://auth.cloud.ovh.us' + '/' + key;
+  http_client.Request request = http_client.Request('PUT', Uri.parse(uriStr),
+      headers: http_client.Headers(), body: content);
+
+  //   request.headers.add('x-amz-acl', 'public-read');
+  // request.headers.add('Content-Length', contentLength);
+  // request.headers.add('Content-Type', contentType);
+  // signRequest(request, contentSha256: contentSha256);
+  // http_client.Response response = await httpClient.send(request);
+  // BytesBuilder builder = BytesBuilder(copy: false);
+  // await response.body.forEach(builder.add);
+  // String body = utf8.decode(builder.toBytes()); // Should be empty when OK
+  // if (response.statusCode != 200) {
+  //   throw ClientException(response.statusCode, response.reasonPhrase,
+  //       response.headers.toSimpleMap(), body);
+  // }
+  // return response.headers[HttpHeaders.etagHeader].first;
 }

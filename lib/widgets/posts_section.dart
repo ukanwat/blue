@@ -13,6 +13,7 @@ import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import '../constants/app_colors.dart';
 
 class PostsSection extends StatefulWidget {
@@ -88,101 +89,142 @@ class _PostsSectionState extends State<PostsSection>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        color: Theme.of(context).canvasColor,
-        elevation: 0.5,
-        margin: EdgeInsets.symmetric(vertical: 25),
+    return Container(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+              Colors.transparent,
+              Theme.of(context).cardColor.withOpacity(0.5),
+            ])),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              height: 45,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: EdgeInsets.only(left: 15),
-                      child: Row(
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context)
+                    .pushNamed(TagScreen.routeName, arguments: tagMap);
+              },
+              child: Container(
+                height: 46,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 8,
+                    ),
+                    Icon(
+                      FlutterIcons.hashtag_faw5s,
+                      size: 30,
+                    ),
+                    Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          SizedBox(
+                            height: 4,
+                          ),
                           Text(
-                            '#${widget.tag}',
+                            '${widget.sectionLabel.toUpperCase()}',
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                             style: TextStyle(
-                                color: clr,
-                                fontSize: 26,
+                                color: Theme.of(context)
+                                    .iconTheme
+                                    .color
+                                    .withOpacity(0.5),
+                                fontSize: 11,
                                 fontWeight: FontWeight.w800),
                           ),
-                          SizedBox(
-                            width: 5,
+                          Text(
+                            '${widget.tag}',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: TextStyle(
+                                height: 1,
+                                color: clr,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800),
                           ),
-                          Column(
-                            children: [
-                              SizedBox(
-                                height: 19,
+                        ]),
+                    SizedBox(
+                      width: 8,
+                    ),
+                    isFollowing
+                        ? Container()
+                        : Padding(
+                            padding: const EdgeInsets.only(right: 5, top: 10),
+                            child: GestureDetector(
+                              onTap: () async {
+                                setState(() {
+                                  PreferencesUpdate().addToList(
+                                    'followed_tags',
+                                    tagMap,
+                                  );
+                                });
+                                Hasura.followTag(tagMap['tag_id']);
+                                setState(() {
+                                  isFollowing = true;
+                                });
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                        width: 3, color: Colors.blue)),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 0, horizontal: 4),
+                                  child: Text(
+                                    'Follow',
+                                    style: TextStyle(
+                                        color: Colors.blue,
+                                        fontFamily: 'Stark Sans',
+                                        fontWeight: FontWeight.w800),
+                                  ),
+                                ),
                               ),
-                              Text(
-                                '${widget.sectionLabel.toUpperCase()}',
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
+                            ),
+                          ),
+                    Expanded(
+                      child: Container(),
+                    ),
+                    Container(
+                      height: 32,
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Center(
+                              child: Text(
+                                'MORE',
                                 style: TextStyle(
                                     color: Theme.of(context)
                                         .iconTheme
                                         .color
                                         .withOpacity(0.5),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w800),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  isFollowing
-                      ? Container()
-                      : Padding(
-                          padding: const EdgeInsets.only(right: 10),
-                          child: GestureDetector(
-                            onTap: () async {
-                              setState(() {
-                                PreferencesUpdate().addToList(
-                                  'followed_tags',
-                                  tagMap,
-                                );
-                              });
-                              Hasura.followTag(tagMap['tag_id']);
-                              setState(() {
-                                isFollowing = true;
-                              });
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  border:
-                                      Border.all(width: 3, color: Colors.blue)),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 0, horizontal: 4),
-                                child: Text(
-                                  'Follow',
-                                  style: TextStyle(
-                                      color: Colors.blue,
-                                      fontFamily: 'Stark Sans',
-                                      fontWeight: FontWeight.w800),
-                                ),
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700),
                               ),
                             ),
-                          ),
-                        )
-                ],
+                            SizedBox(
+                              width: 5,
+                            ),
+                            Icon(
+                              FluentIcons.arrow_circle_right_24_filled,
+                              color: clr,
+                            ),
+                            SizedBox(
+                              width: 10,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Divider(
-              height: 1,
-              thickness: 1,
-              color: Colors.grey.withOpacity(0.3),
             ),
             if (!loading)
               CarouselSlider(
@@ -212,54 +254,6 @@ class _PostsSectionState extends State<PostsSection>
                 ),
                 height: 190,
               ),
-            GestureDetector(
-              onTap: () {
-                Navigator.of(context)
-                    .pushNamed(TagScreen.routeName, arguments: tagMap);
-              },
-              child: Container(
-                height: 32,
-                child: Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Center(
-                        child: Text(
-                          'MORE FROM',
-                          style: TextStyle(
-                              color: Theme.of(context)
-                                  .iconTheme
-                                  .color
-                                  .withOpacity(0.5),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 5,
-                      ),
-                      Center(
-                        child: Text(
-                          widget.tag,
-                          style: TextStyle(
-                              color: clr,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w800),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 5,
-                      ),
-                      Icon(FluentIcons.arrow_circle_right_24_regular),
-                      SizedBox(
-                        width: 10,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
           ],
         ));
   }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:math';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
+import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share/share.dart';
 import 'package:show_overlay/show_overlay.dart' as ov;
@@ -45,7 +47,7 @@ import '../services/functions.dart';
 import '../services/go_to.dart';
 import '../services/hasura.dart';
 import './custom_image.dart';
-
+import 'package:linkfo/linkfo.dart';
 // import 'package:flick_video_player/flick_video_player.dart';
 
 enum CompactPostThumbnailType {
@@ -87,7 +89,8 @@ class Post extends StatefulWidget {
   // final PostInteractions postInteractions;
 
   Post(
-      {this.postId,
+      {Key key,
+      this.postId,
       this.ownerId,
       this.username,
       this.photoUrl,
@@ -114,7 +117,8 @@ class Post extends StatefulWidget {
       this.postActionExists,
       this.color,
       this.moreCompact,
-      this.radius});
+      this.radius})
+      : super(key: key);
 
   factory Post.fromDocument(Map doc,
       {bool isCompact,
@@ -145,6 +149,7 @@ class Post extends StatefulWidget {
     }
 
     return Post(
+      key: ValueKey("post_${doc['post_id']}"),
       upvoted: doc['actions_by_user']['up'],
       postId: doc['post_id'],
       subtitle: doc['subtitle'],
@@ -221,8 +226,10 @@ class _PostState extends State<Post> {
   final int upvotes;
   final int downvotes;
   final int commentCount;
-  final String thumbUrl;
+  String thumbUrl;
   final String subtitle;
+  bool containsLink;
+  String thumbUrlLink;
   _PostState(
       {this.postId,
       this.ownerId,
@@ -246,7 +253,6 @@ class _PostState extends State<Post> {
   double screenWidth;
   bool tagBarVisible = false;
   bool notInterested = false;
-  var compactPostThumbnailData;
   CompactPostThumbnailType thumbnailType;
   OverlayEntry overlayOptions;
   bool isFollowing = false;
@@ -502,12 +508,11 @@ class _PostState extends State<Post> {
                                 width: 22,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(15),
-                                  color: Colors.blue,
                                 ),
                                 child: Icon(
-                                  FluentIcons.add_16_filled,
-                                  color: Colors.white,
-                                  size: 18,
+                                  FluentIcons.add_circle_16_regular,
+                                  color: Colors.blue,
+                                  size: 22,
                                 )),
                           ),
                         ),
@@ -634,16 +639,15 @@ class _PostState extends State<Post> {
                                 fit: BoxFit.none,
                                 alignment: Alignment.centerRight,
                                 child: Container(
-                                    height: 18,
-                                    width: 18,
+                                    height: 24,
+                                    width: 24,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(15),
-                                      color: Colors.blue,
                                     ),
                                     child: Icon(
-                                      Icons.add,
-                                      color: Colors.white,
-                                      size: 16,
+                                      FluentIcons.add_circle_20_regular,
+                                      color: Colors.blue,
+                                      size: 24,
                                     )),
                               ),
                             ),
@@ -655,7 +659,10 @@ class _PostState extends State<Post> {
                                 left: 10,
                                 right: 10,
                               ),
-                              child: Icon(Icons.more_horiz),
+                              child: Icon(
+                                FluentIcons.more_circle_20_regular,
+                                color: Colors.blue,
+                              ),
                             ),
                             onTap: () {
                               showOptions(context);
@@ -667,11 +674,11 @@ class _PostState extends State<Post> {
                     padding:
                         EdgeInsets.only(left: 12, top: 0, right: 5, bottom: 3),
                     child: Text(
-                      widget.title,
+                      widget.title.toUpperCase(),
                       textAlign: TextAlign.left,
                       style: TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                       ),
                       maxLines: widget.moreCompact == true ? 3 : 4,
                       overflow: TextOverflow.ellipsis,
@@ -698,15 +705,16 @@ class _PostState extends State<Post> {
             ),
             if (thumbUrl != null)
               Container(
-                margin: const EdgeInsets.all(8.0),
-                height: MediaQuery.of(context).size.width * 0.20,
-                width: MediaQuery.of(context).size.width * 0.20,
+                margin: const EdgeInsets.all(5.0),
+                height: 120,
+                width: 120,
                 child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(5),
                     child: Container(
                       child: cachedNetworkImage(context, thumbUrl),
-                      height: MediaQuery.of(context).size.width * 0.20,
-                      width: MediaQuery.of(context).size.width * 0.20,
+                      height:
+                          min(MediaQuery.of(context).size.width * 0.20, 200),
+                      width: min(MediaQuery.of(context).size.width * 0.20, 200),
                     )),
               )
             else
@@ -807,12 +815,10 @@ class _PostState extends State<Post> {
       if (contentsInfo[i]['type'] == 'image') {
         if (thumbnailType != CompactPostThumbnailType.video) {
           thumbnailType = CompactPostThumbnailType.image;
-          compactPostThumbnailData = contents['$i'];
         }
         contentsViewList.add(imageContentContainer(contents['$i'],
             contentsInfo[i]['aspectRatio'], contentsInfo[i]['blurHash']));
       } else if (contentsInfo[i]['type'] == 'video') {
-        compactPostThumbnailData = contentsInfo[i]['thumbUrl'];
         thumbnailType = CompactPostThumbnailType.video;
         var flickManager = FlickManager(
           autoPlay: PreferencesUpdate().getBool('autoplay_videos') ?? true,
@@ -854,6 +860,10 @@ class _PostState extends State<Post> {
               0, contents['$i'].length > 200 ? 200 : contents['$i'].length);
         }
       } else if (contentsInfo[i]['type'] == 'link') {
+        if (containsLink != true) {
+          containsLink = true;
+          thumbUrlLink = contents['$i'];
+        }
         contentsViewList.add(linkContentContainer(contents['$i']));
       } else {
         contentsViewList.add(carouselContentContainer(contents['$i'],
@@ -864,8 +874,22 @@ class _PostState extends State<Post> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (this.mounted) getContentSize();
       });
-
+    if (thumbUrlLink != null && thumbUrl == null) {
+      getThumbFromLink();
+    }
     super.didChangeDependencies();
+  }
+
+  getThumbFromLink() async {
+    Client client = Client();
+    final response = await client.get(Uri.parse(thumbUrlLink));
+    var scrape = TwitterCardsScraper(body: response.body, url: thumbUrlLink);
+    final info = scrape.scrape();
+    print(info.image);
+    setState(() {
+      thumbUrl = info.image ??
+          'https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/link-line-outline-icon-for-website-and-mobile-app-on-grey-background-free-vector.jpg?alt=media&token=3b5d5b34-2828-42c4-969c-86a73c752419';
+    });
   }
 
   Widget imageContentContainer(

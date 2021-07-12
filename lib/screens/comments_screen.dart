@@ -68,6 +68,12 @@ class _CommentsScreenState extends State<CommentsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        brightness: Theme.of(context).brightness,
+        toolbarHeight: 0,
+        backgroundColor: Theme.of(context).canvasColor,
+        elevation: 0,
+      ),
       body: SafeArea(
           child: Stack(children: <Widget>[
         DefaultTabController(

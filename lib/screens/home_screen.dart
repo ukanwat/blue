@@ -161,7 +161,9 @@ class _HomeScreenState extends State<HomeScreen>
             TextButton(
                 child: Text(
                   'INVITE',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).accentColor),
                 ),
                 onPressed: () {
                   showDialog(

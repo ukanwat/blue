@@ -1,8 +1,11 @@
 // Flutter imports:
+import 'package:blue/services/auth_service.dart';
+import 'package:blue/services/go_to.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+import 'package:get/get.dart';
 import 'package:package_info/package_info.dart';
 
 // Project imports:
@@ -20,14 +23,14 @@ class DynamicLinksService {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       //TODO
       uriPrefix: uriPrefix,
-      link: Uri.parse('https://stark.com/$parameter'),
+      link: Uri.parse('https://www.stark.social/$parameter'),
       androidParameters: AndroidParameters(
         packageName: packageInfo.packageName,
       ),
       iosParameters: IosParameters(
         bundleId: packageInfo.packageName,
         minimumVersion: packageInfo.version,
-        appStoreId: '1574720606', //TODO:imp
+        appStoreId: '1574720606',
       ),
       googleAnalyticsParameters: GoogleAnalyticsParameters(
         campaign: 'share',
@@ -69,10 +72,17 @@ class DynamicLinksService {
     }
     if (deepLink.pathSegments.contains('post')) {
       String postId = deepLink.queryParameters['id'];
-
-      var doc = await Hasura.getPost(int.parse(postId));
+      if (Hasura.jwtToken == null) {
+        AuthService.firebaseAuth.authStateChanges().first.then((user) {
+          user.getIdToken(true).then((token) {
+            Hasura.jwtToken = token;
+          });
+        });
+      }
+      var doc = await Hasura.getPost(int.parse(postId), link: true);
       if (postId != null) {
-        Navigator.of(context).pushNamed(CommentsScreen.routeName, arguments: {
+        Navigator.of(Get.context)
+            .pushNamed(CommentsScreen.routeName, arguments: {
           'post': Post.fromDocument(
             doc,
             commentsShown: true,
@@ -84,6 +94,17 @@ class DynamicLinksService {
       // var email = deepLink.queryParameters['email'];   TODO
       // Navigator.of(context).pushNamed(SetNameScreen.routeName,
       //   arguments: {'email': email, 'provider': 'email'});
+    } else if (deepLink.pathSegments.contains('user')) {
+      String userId = deepLink.queryParameters['id'];
+      if (Hasura.jwtToken == null) {
+        AuthService.firebaseAuth.authStateChanges().first.then((user) {
+          user.getIdToken(true).then((token) {
+            Hasura.jwtToken = token;
+          });
+        });
+      }
+
+      GoTo().profileScreen(context, int.parse(userId));
     }
   }
 }

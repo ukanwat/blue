@@ -26,6 +26,7 @@ import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/services/push_notifications.dart';
 import 'package:blue/widgets/progress.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../services/dynamic_links.dart';
 import './explore_screen.dart';
 import './home.dart';
@@ -42,6 +43,7 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
   PageController _pageController;
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   int _page = 0;
+  final GoogleSignIn googleSignIn = GoogleSignIn();
   logout() {
     googleSignIn.signOut();
   }
@@ -135,7 +137,7 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
             setState(() {
               _key = UniqueKey();
             });
-          }, fnLabel: "Refresh App", duration: Duration(seconds: 30));
+          }, fnLabel: "Refresh App", duration: Duration(seconds: 10));
         }
       }
     });
@@ -211,14 +213,19 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
             primaryColor: Theme.of(context).primaryColor.withOpacity(0.8),
           ),
           child: SizedBox(
-            height: Platform.isIOS ? 78 : 50,
+            height: Platform.isIOS ? 84 : 60,
             child: BottomNavigationBar(
               iconSize: 24,
               elevation: 10,
-              selectedFontSize: 0,
+              selectedFontSize: 10,
+              unselectedFontSize: 10,
               type: BottomNavigationBarType.fixed,
-              showSelectedLabels: false,
-              showUnselectedLabels: false,
+              showSelectedLabels: true,
+              showUnselectedLabels: true,
+              unselectedLabelStyle: TextStyle(
+                  fontWeight: FontWeight.bold, fontFamily: 'Stark Sans'),
+              selectedLabelStyle: TextStyle(
+                  fontWeight: FontWeight.bold, fontFamily: 'Stark Sans'),
               unselectedItemColor: Color.fromRGBO(200, 200, 200, 1),
               selectedItemColor: Color.fromRGBO(250, 250, 250, 1),
               items: <BottomNavigationBarItem>[
@@ -257,7 +264,7 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
                           Image.asset("assets/images/stark-bnb-icon-wi.png")),
                 ),
                 BottomNavigationBarItem(
-                  label: 'Notifications',
+                  label: 'Inbox',
                   icon: Icon(
                     FlutterIcons.ios_chatboxes_ion,
                     size: 24,

@@ -13,8 +13,8 @@ circularProgress() {
       alignment: Alignment.center,
       padding: EdgeInsets.only(top: 5, bottom: 5, left: 5, right: 5),
       child: SizedBox(
-        height: 30,
-        width: 30,
+        height: 26,
+        width: 26,
         child: LoadingIndicator(
           color: Colors.grey,
           indicatorType: Indicator.lineSpinFadeLoader,
@@ -73,7 +73,7 @@ snackbar(String text, BuildContext context,
     String fnLabel}) {
   showFlash(
       context: Get.context,
-      duration: Duration(seconds: 3),
+      duration: duration ?? Duration(seconds: 3),
       builder: (_, controller) {
         return Flash(
           controller: controller,
