@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 // Flutter imports:
+import 'package:blue/widgets/field_decoration.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -283,18 +284,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Padding(
-            padding: EdgeInsets.only(top: 12.0),
+            padding: EdgeInsets.only(top: 12.0, left: 5),
             child: Text(
               "Display Name",
               style: TextStyle(color: Colors.grey),
             )),
         TextField(
-          controller: displayNameController,
-          decoration: InputDecoration(
-              hintText: "Update Display Name",
-              errorText:
-                  _displayNameValid ? null : "Display Name is too short"),
-        )
+            controller: displayNameController,
+            decoration: fieldDecoration("Change Display Name",
+                errorText:
+                    _displayNameValid ? null : "Display Name is too short"))
       ],
     );
   }
@@ -305,22 +304,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Padding(
-          padding: EdgeInsets.only(top: 12.0),
+          padding: EdgeInsets.only(top: 12.0, left: 5),
           child: Text(
             "About",
             style: TextStyle(color: Colors.grey),
           ),
         ),
         TextField(
-          controller: aboutController,
-          keyboardType: TextInputType.multiline,
-          maxLength: 300,
-          maxLines: 8,
-          minLines: 1,
-          decoration: InputDecoration(
-              hintText: "Update About",
-              errorText: _aboutValid ? null : "About text is too long"),
-        )
+            controller: aboutController,
+            keyboardType: TextInputType.multiline,
+            maxLength: 300,
+            maxLines: 8,
+            minLines: 1,
+            decoration: fieldDecoration("Write About You",
+                errorText: _aboutValid ? null : "About text is too long"))
       ],
     );
   }
@@ -330,20 +327,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Padding(
-          padding: EdgeInsets.only(top: 12.0),
+          padding: EdgeInsets.only(top: 12.0, left: 5),
           child: Text(
             "Website",
             style: TextStyle(color: Colors.grey),
           ),
         ),
         TextField(
-          controller: websiteController,
-          keyboardType: TextInputType.url,
-          decoration: InputDecoration(
-            hintText: "Web Address",
-            errorText: _websiteValid ? null : "Invalid url",
-          ),
-        )
+            controller: websiteController,
+            keyboardType: TextInputType.url,
+            decoration: fieldDecoration("Web Address",
+                errorText: _websiteValid ? null : "Invalid url"))
       ],
     );
   }
@@ -495,54 +489,35 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 top: 80,
                                 left:
                                     MediaQuery.of(context).size.width / 2 - 60,
-                                child: GestureDetector(
-                                    behavior: HitTestBehavior.translucent,
-                                    onTap: updateProfilePicture,
-                                    child: Container(
-                                      height: 120,
-                                      width: 120,
-                                      child: Center(
-                                          child: Stack(
-                                        alignment: Alignment.topCenter,
-                                        children: <Widget>[
-                                          CircleAvatar(
-                                            radius: 60.0,
-                                            backgroundImage: croppedImage !=
-                                                    null
-                                                ? FileImage(croppedImage)
-                                                : CachedNetworkImageProvider(
-                                                    user.avatarUrl ??
-                                                        "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744",
-                                                  ),
-                                          ),
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 10),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  FluentIcons
-                                                      .camera_add_24_regular,
-                                                  color: Colors.white,
-                                                ),
-                                                Text(
-                                                  'Tap to Change',
-                                                  style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                )
-                                              ],
-                                            ),
-                                          )
-                                        ],
-                                      )),
-                                    ))),
+                                child: Container(
+                                  height: 120,
+                                  width: 120,
+                                  child: Center(
+                                      child: Stack(
+                                    alignment: Alignment.topCenter,
+                                    children: <Widget>[
+                                      CircleAvatar(
+                                        radius: 60.0,
+                                        backgroundImage: croppedImage != null
+                                            ? FileImage(croppedImage)
+                                            : CachedNetworkImageProvider(
+                                                user.avatarUrl ??
+                                                    "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744",
+                                              ),
+                                      ),
+                                    ],
+                                  )),
+                                ))
                           ],
                         ),
                       ),
+                      TextButton(
+                        child: Text('Change Profile Picture'),
+                        onPressed: updateProfilePicture,
+                      ),
                       Padding(
-                        padding: EdgeInsets.all(16.0),
+                        padding:
+                            EdgeInsets.only(left: 16, bottom: 16, right: 16),
                         child: Column(children: <Widget>[
                           buildDisplayNameField(),
                           buildAboutField(),
@@ -552,15 +527,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           ),
                           Row(
                             children: [
-                              Text(
-                                'Social Links',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    color: Theme.of(context)
-                                        .iconTheme
-                                        .color
-                                        .withOpacity(0.46)),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 5),
+                                child: Text(
+                                  'Social Links',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.grey),
+                                ),
                               ),
                               Expanded(
                                 child: Container(),
@@ -659,6 +633,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   ))
                             ],
                           ),
+                          SizedBox(
+                            height: 8,
+                          ),
                           Row(
                             children: [
                               Text('@'),
@@ -667,10 +644,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               ),
                               Expanded(
                                 child: TextField(
-                                  controller: socialField,
-                                  decoration: InputDecoration(
-                                      hintText: '$soci username...'),
-                                ),
+                                    controller: socialField,
+                                    decoration:
+                                        fieldDecoration('$soci username')),
                               ),
                             ],
                           )

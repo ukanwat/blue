@@ -291,7 +291,8 @@ class AuthService {
   }
 
   auth.User _user;
-  signInContinue(BuildContext context, bool exists, var result) async {
+  signInContinue(BuildContext context, bool exists, var result,
+      {bool apple}) async {
     progressOverlay(context: context).show();
 
     auth.User user = _user;
@@ -301,9 +302,13 @@ class AuthService {
       info = await listenCreateUser(user.uid, context);
 
       userSigningUp = true;
-
+      bool _apple = apple == true;
       await createHasuraUser(
-          user.uid, info['user_id'], user.email, user.displayName, result);
+          user.uid,
+          info['user_id'],
+          user.email,
+          _apple ? result['name'] : user.displayName,
+          _apple ? result['username'] : result);
       Hasura.insertPreferences(
         user.uid,
       );

@@ -19,9 +19,11 @@ import 'package:flick_video_player/flick_video_player.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 import 'package:image/image.dart' as Im;
 import 'package:image_downloader/image_downloader.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:linkfo/linkfo.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:path/path.dart' as Path;
 import 'package:path/path.dart' as p;
@@ -435,18 +437,17 @@ class _PostScreenState extends State<PostScreen> {
     } else if (_thumbContent == ThumbContent.image) {
       thumbImg = contentsData[thumbIndex]['content'];
     } else if (_thumbContent == ThumbContent.link) {
-      // String _linkUrl = contentsData[thumbIndex]['content'].text;
-      // if (!_linkUrl.startsWith('http')) {
-      //   _linkUrl = 'https://' + _linkUrl;
-      // }
-      // var c = await MetadataFetch.extract(_linkUrl);
-      // Directory dir = await getApplicationDocumentsDirectory();
-
-      thumbImg = null;
-      // try {
-      //   await Dio().download(c.url, dir.path + '/downloads/' + c.url);
-      //   thumbImg = File(dir.path + '/downloads/' + c.url);
-      // } catch (e) {}
+      Client client = Client();
+      final response =
+          await client.get(Uri.parse(contentsData[thumbIndex]['content'].text));
+      var scrape = TwitterCardsScraper(
+          body: response.body, url: contentsData[thumbIndex]['content'].text);
+      final info = scrape.scrape();
+      Directory dir = await getApplicationDocumentsDirectory();
+      try {
+        await Dio().download(info.image, dir.path + '/downloads/' + info.image);
+        thumbImg = File(dir.path + '/downloads/' + info.image);
+      } catch (e) {}
     } else if (_thumbContent == ThumbContent.text) {
       thumbImg = null;
     } else if (_thumbContent == ThumbContent.video) {
@@ -1047,7 +1048,10 @@ class _PostScreenState extends State<PostScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
                   IconButton(
-                    icon: Icon(FlutterIcons.image_fea),
+                    icon: Icon(
+                      FlutterIcons.image_fea,
+                      color: Theme.of(context).accentColor,
+                    ),
                     onPressed: () {
                       if (cimg >= limg) {
                         showLimits(context);
@@ -1068,6 +1072,7 @@ class _PostScreenState extends State<PostScreen> {
                     icon: Icon(
                       FlutterIcons.video_fea,
                       size: 25.5,
+                      color: Colors.pinkAccent,
                     ),
                     onPressed: () {
                       if (cvid >= lvid) {
@@ -1086,6 +1091,7 @@ class _PostScreenState extends State<PostScreen> {
                   IconButton(
                       icon: Icon(
                         FlutterIcons.text_ent,
+                        color: Colors.blue,
                       ),
                       onPressed: () {
                         TextEditingController textController =
@@ -1112,6 +1118,7 @@ class _PostScreenState extends State<PostScreen> {
                   IconButton(
                       icon: Icon(
                         FlutterIcons.link_fea,
+                        color: Colors.yellow,
                         size: 21,
                       ),
                       onPressed: () {

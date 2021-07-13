@@ -8,7 +8,8 @@ import 'package:flutter/material.dart';
 // Package imports:
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
-PreferredSize settingsHeader(BuildContext context, String title) {
+PreferredSize settingsHeader(BuildContext context, String title,
+    {bool button, Function buttonFn, String buttonText}) {
   return PreferredSize(
     preferredSize: Size.fromHeight(50),
     child: AppBar(
@@ -17,6 +18,19 @@ PreferredSize settingsHeader(BuildContext context, String title) {
       backgroundColor: Theme.of(context).canvasColor,
       centerTitle: false,
       elevation: 0.4, //dd/
+      actions: [
+        if (button == true)
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: TextButton(
+              child: Text(
+                buttonText ?? 'Save',
+                style: TextStyle(fontSize: 17),
+              ),
+              onPressed: buttonFn ?? () {},
+            ),
+          )
+      ],
       title: Text(title,
           style:
               TextStyle(fontFamily: 'Stark Sans', fontWeight: FontWeight.w800)),
@@ -120,10 +134,10 @@ InkWell settingsPageNavigationTile(
       width: double.infinity,
       decoration: BoxDecoration(
           border: Border(
-        bottom: BorderSide(
-            color: Theme.of(context).iconTheme.color.withOpacity(0.16),
-            width: removeBorder ? 0 : 1),
-      )),
+              // bottom: BorderSide(
+              //     color: Theme.of(context).iconTheme.color.withOpacity(0.16),
+              //     width: removeBorder ? 0 : 1),
+              )),
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 13),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -175,10 +189,10 @@ InkWell settingsActionTile(
       ),
       decoration: BoxDecoration(
           border: Border(
-        bottom: BorderSide(
-            color: Theme.of(context).iconTheme.color.withOpacity(0.16),
-            width: removeBorder ? 0 : 1),
-      )),
+              // bottom: BorderSide(
+              //     color: Theme.of(context).iconTheme.color.withOpacity(0.16),
+              //     width: removeBorder ? 0 : 1),
+              )),
     ),
   );
 }

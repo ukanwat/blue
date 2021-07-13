@@ -168,6 +168,7 @@ class Hasura {
       bool profileComplete,
       String token,
       bool reviewed,
+      String dob,
       Map social}) async {
     int userId = Boxes.currentUserBox.get('user_id');
     if (userId == null) {
@@ -213,8 +214,11 @@ class Hasura {
     if (headerUrl != null) {
       fields = fields + 'header_url: "$headerUrl",';
     }
-    if (headerUrl != null) {
+    if (photoUrl != null) {
       fields = fields + 'photo_url: "$photoUrl",';
+    }
+    if (dob != null) {
+      fields = fields + 'dob: "$dob",';
     }
     if (profileComplete != null) {
       fields = fields + 'profile_complete: $profileComplete,';
@@ -270,6 +274,7 @@ class Hasura {
     follower_count
     following_count
     social
+    dob
     $extra
   }
 }""";
@@ -757,6 +762,8 @@ class Hasura {
       args: {search: "$text"}){
     tag_id
     tag
+    post_count
+    follower_count
     label}
 }""");
     return data['data']["search_tags"];

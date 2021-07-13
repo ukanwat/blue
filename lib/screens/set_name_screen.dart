@@ -1,4 +1,6 @@
 // Flutter imports:
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -42,7 +44,8 @@ class _SetNameScreenState extends State<SetNameScreen> {
             children: [
               SizedBox(height: 120, child: Image.asset('assets/logo.png')),
               SizedBox(height: 20),
-              FittedBox(
+              Container(
+                width: min(MediaQuery.of(context).size.width - 20, 500),
                 child: Card(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20)),
@@ -63,7 +66,8 @@ class _SetNameScreenState extends State<SetNameScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                if (data['provider'] == 'email')
+                                if (data['provider'] == 'email' ||
+                                    data['provider'] == 'apple')
                                   Container(
                                     height: 45,
                                     child: TextFormField(
@@ -90,7 +94,8 @@ class _SetNameScreenState extends State<SetNameScreen> {
                                           )),
                                     ),
                                   ),
-                                if (data['provider'] == 'email')
+                                if (data['provider'] == 'email' ||
+                                    data['provider'] == 'apple')
                                   SizedBox(height: 20),
                                 Container(
                                   height: 45,
@@ -148,7 +153,8 @@ class _SetNameScreenState extends State<SetNameScreen> {
                                           color: Colors.white,
                                           fontSize: 18)),
                                   onPressed: () async {
-                                    if (data['provider'] == 'email') {
+                                    if (data['provider'] == 'email' ||
+                                        data['provider'] == 'apple') {
                                       if (nameController.text == "") {
                                         snackbar(
                                             'display name is empty', context,
@@ -179,13 +185,15 @@ class _SetNameScreenState extends State<SetNameScreen> {
 
                                       return;
                                     }
-                                    if (data['provider'] == 'email') {
+                                    if (data['provider'] == 'email' ||
+                                        data['provider'] == 'apple') {
                                       Navigator.of(context).pop();
                                       Navigator.pop(context, {
                                         'name': nameController.text,
                                         'username': usernameController.text
                                       });
-                                    } else if (data['provider'] != 'email') {
+                                    } else if (data['provider'] != 'email' &&
+                                        data['provider'] != 'email') {
                                       Navigator.of(context).pop();
                                       Navigator.pop(
                                           context, usernameController.text);

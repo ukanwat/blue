@@ -71,6 +71,7 @@ import './screens/settings_screen.dart';
 import './screens/verify_email_screen.dart';
 import './services/push_notifications.dart';
 import 'models/user.dart';
+import 'screens/settings/general/account_screens/date_of_birth_screen.dart';
 import 'screens/settings/general/account_screens/email_screen.dart';
 
 void main() async {
@@ -364,6 +365,7 @@ class MyAppState extends State<MyApp> {
                   ShowScreen.routeName: (ctx) => ShowScreen(),
                   FollowsScreen.routeName: (ctx) => FollowsScreen(),
                   QRScreen.routeName: (ctx) => QRScreen(),
+                  DateOfBirthScreen.routeName: (ctx) => DateOfBirthScreen(),
                 }),
           );
         },

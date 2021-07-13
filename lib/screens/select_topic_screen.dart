@@ -213,123 +213,145 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
             SizedBox(
               height: 8,
             ),
-            Row(
-              children: <Widget>[
-                SizedBox(
-                  width: 16,
-                ),
-                Text(
-                  'TAGS',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(
-                  width: 8,
-                ),
-                GestureDetector(
-                  onTap: () {
-                    addTag();
-                  },
-                  child: Container(
-                      height: 26,
-                      width: 86,
-                      decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.circular(5)),
-                      child: Center(
-                        child: Text(
-                          'Add Tag',
-                          style: TextStyle(color: Colors.white, fontSize: 16),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 10),
+              padding: EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Theme.of(context).canvasColor),
+              child: Column(
+                children: [
+                  Row(
+                    children: <Widget>[
+                      SizedBox(
+                        width: 16,
+                      ),
+                      Text(
+                        'TAGS',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(
+                        width: 8,
+                      ),
+                      Expanded(
+                        child: Container(),
+                      ),
+                      Container(
+                        padding: EdgeInsets.only(right: 10),
+                        child: GestureDetector(
+                          onTap: () {
+                            addTag();
+                          },
+                          child: Container(
+                              height: 26,
+                              width: 86,
+                              decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  borderRadius: BorderRadius.circular(8)),
+                              child: Center(
+                                child: Text(
+                                  'Add Tag',
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 16),
+                                ),
+                              )),
                         ),
-                      )),
-                ),
-              ],
-            ),
-            if (tagChips.length > 0)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Wrap(
-                  spacing: 6,
-                  children: tagChips,
-                ),
-              )
-            else
-              Container(
-                height: 120,
-                alignment: Alignment.center,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
+                      ),
+                    ],
+                  ),
+                  if (tagChips.length > 0)
                     Padding(
-                      padding:
-                          const EdgeInsets.only(left: 50, bottom: 5, top: 5),
-                      child: Icon(
-                        FluentIcons.number_symbol_square_20_regular,
-                        size: 55,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Wrap(
+                        spacing: 6,
+                        children: tagChips,
+                      ),
+                    )
+                  else
+                    Container(
+                      height: 120,
+                      alignment: Alignment.center,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 50, bottom: 5, top: 5),
+                            child: Icon(
+                              FluentIcons.number_symbol_square_20_regular,
+                              size: 55,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            SizedBox(
-              height: 10,
-            ),
-            Divider(
-              color: Colors.grey,
-              height: 0.3,
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 16),
-              child: Row(
-                children: [
-                  Text(
-                    'SELECT CATEGORY',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  Icon(
-                    FluentIcons.chevron_right_12_filled,
-                    color: Colors.blue,
-                  )
                 ],
               ),
             ),
             SizedBox(
               height: 10,
             ),
-            isLoading
-                ? circularProgress()
-                : ListView.builder(
-                    shrinkWrap: true,
-                    itemBuilder: (_, i) {
-                      return ListTile(
-                        enabled: true,
-                        dense: true,
-                        title: Text(
-                          topics[i],
-                          style: TextStyle(fontSize: 20),
-                        ),
-                        trailing: selectedTopicTile == topics[i]
-                            ? Icon(
-                                Icons.check,
-                                color: Colors.blue,
-                              )
-                            : null,
-                        onTap: () {
-                          setState(() {
-                            if (selectedTopicTile == topics[i]) {
-                              selectedTopicTile = null;
-                            } else {
-                              selectedTopicTile = topics[i];
-                            }
-                          });
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 10),
+              padding: EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Theme.of(context).canvasColor),
+              child: Column(children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 16),
+                  child: Row(
+                    children: [
+                      Text(
+                        'SELECT CATEGORY',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Icon(
+                        FluentIcons.chevron_right_12_filled,
+                        color: Colors.blue,
+                      )
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                isLoading
+                    ? circularProgress()
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        itemBuilder: (_, i) {
+                          return ListTile(
+                            enabled: true,
+                            dense: true,
+                            title: Text(
+                              topics[i],
+                              style: TextStyle(fontSize: 20),
+                            ),
+                            trailing: selectedTopicTile == topics[i]
+                                ? Icon(
+                                    Icons.check,
+                                    color: Colors.blue,
+                                  )
+                                : null,
+                            onTap: () {
+                              setState(() {
+                                if (selectedTopicTile == topics[i]) {
+                                  selectedTopicTile = null;
+                                } else {
+                                  selectedTopicTile = topics[i];
+                                }
+                              });
+                            },
+                          );
                         },
-                      );
-                    },
-                    itemCount: topics.length,
-                  )
+                        itemCount: topics.length,
+                      )
+              ]),
+            )
           ],
         ),
       ),

@@ -11,6 +11,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gradients/flutter_gradients.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:majascan/majascan.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:share/share.dart';
 

@@ -91,6 +91,7 @@ class _ReportABugScreenState extends State<ReportABugScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).backgroundColor,
       appBar: settingsHeader(context, 'Report Bug'),
       body: Column(
         children: <Widget>[

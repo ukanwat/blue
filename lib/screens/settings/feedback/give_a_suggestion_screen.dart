@@ -92,6 +92,7 @@ class _GiveASuggestionScreenState extends State<GiveASuggestionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).backgroundColor,
       appBar: settingsHeader(context, 'Give Suggestion'),
       body: Column(
         children: <Widget>[

@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/screens/tag_screen.dart';
 import 'package:blue/widgets/action_button.dart';
 import 'package:flutter/material.dart';
 
@@ -34,6 +35,10 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       setState(() {
         widgets = _tags
             .map((doc) => ListTile(
+                  onTap: () {
+                    Navigator.of(context)
+                        .pushNamed(TagScreen.routeName, arguments: doc["tag"]);
+                  },
                   leading: CircleAvatar(
                     child: Icon(FluentIcons.number_symbol_24_filled,
                         color: Theme.of(context).iconTheme.color),
@@ -47,9 +52,23 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                   //             .iconTheme
                   //             .color
                   //             .withOpacity(0.8))),
-                  title: Text(
-                    '${doc["label"]}',
+                  subtitle: Text(
+                    '${doc["tag"]}',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                  ),
+                  title: Row(
+                    children: [
+                      Text(
+                        '${doc["label"]}',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w500),
+                      ),
+                      Expanded(child: Container()),
+                      Text(
+                        '${doc["post_count"]} posts',
+                        style: TextStyle(fontSize: 12),
+                      )
+                    ],
                   ),
                 ))
             .toList();

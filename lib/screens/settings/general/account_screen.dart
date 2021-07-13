@@ -10,6 +10,7 @@ import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:blue/widgets/show_dialog.dart';
 import '../../edit_profile_screen.dart';
+import 'account_screens/date_of_birth_screen.dart';
 import 'account_screens/deactivate_account_screen.dart';
 import 'account_screens/email_screen.dart';
 import 'account_screens/password_screen.dart';
@@ -46,8 +47,8 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
           settingsPageNavigationTile(
               context, 'Edit Profile', EditProfileScreen.routeName),
-          // settingsPageNavigationTile(             TODO
-          //     context, 'Deactivate Account', DeactivateAccountScreen.routeName),
+          settingsPageNavigationTile(
+              context, 'Date Of Birth', DateOfBirthScreen.routeName),
           settingsPageNavigationTile(
               context, 'Deactivate Account', DeactivateAccountScreen.routeName),
           InkWell(

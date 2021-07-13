@@ -63,7 +63,7 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
       result = await navigatorKey.currentState
           .pushNamed(SetNameScreen.routeName, arguments: {"provider": "apple"});
     }
-    await _auth.signInContinue(context, exists, result);
+    await _auth.signInContinue(context, exists, result, apple: true);
   }
 
   facebookSignIn(BuildContext context) async {

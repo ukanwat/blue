@@ -42,15 +42,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
               setPrivate = newValue;
             });
           }),
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-                border: Border(
-              bottom: BorderSide(
-                  color: Theme.of(context).iconTheme.color.withOpacity(0.16),
-                  width: 1),
-            )),
-          ),
           settingsSwitchListTile('Personalised recommendations', trackActivity,
               (newValue) {
             PreferencesUpdate()
