@@ -1,7 +1,6 @@
 import 'dart:io';
+import 'dart:typed_data';
 
-import 'package:blue/packages/ez_qr.dart/scan_view.dart';
-import 'package:blue/packages/ez_qr.dart/utils.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/dynamic_links.dart';
 import 'package:blue/services/functions.dart';
@@ -11,7 +10,8 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gradients/flutter_gradients.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:majascan/majascan.dart';
+import 'package:flutter_qr_reader/flutter_qr_reader.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:share/share.dart';
 
@@ -23,6 +23,10 @@ class QRScreen extends StatefulWidget {
 
 class _QRScreenState extends State<QRScreen> {
   bool scanMode = false;
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,47 +118,51 @@ class _QRScreenState extends State<QRScreen> {
                             children: [
                               GestureDetector(
                                 onTap: () async {
-                                  String results = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ScanView(
-                                        cornerColor: Colors.blue,
-                                        readerFrom: ReaderFrom.camera,
-                                        bottomContent: Text(
-                                          'Scan QR Code',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              fontFamily: 'Stark Sans',
-                                              color:
-                                                  Theme.of(context).accentColor,
-                                              fontSize: 20),
-                                        ),
-                                        scanWidget: Center(
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(15),
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                  // color: Colors.greenAccent
-                                                  //     .withOpacity(0.2),
-                                                  color: Colors.transparent,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          15)),
-                                              height: MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                  0.9,
-                                              width: MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                  0.9,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
+                                  PickedFile file = await ImagePicker()
+                                      .getImage(source: ImageSource.camera);
+                                  final String results =
+                                      await FlutterQrReader.imgScan(file.path);
+                                  // String results = await Navigator.push(
+                                  //   context,
+                                  //   MaterialPageRoute(
+                                  //     builder: (context) => ScanView(
+                                  //       cornerColor: Colors.blue,
+                                  //       readerFrom: ReaderFrom.camera,
+                                  //       bottomContent: Text(
+                                  //         'Scan QR Code',
+                                  //         style: TextStyle(
+                                  //             fontWeight: FontWeight.w600,
+                                  //             fontFamily: 'Stark Sans',
+                                  //             color:
+                                  //                 Theme.of(context).accentColor,
+                                  //             fontSize: 20),
+                                  //       ),
+                                  //       scanWidget: Center(
+                                  //         child: ClipRRect(
+                                  //           borderRadius:
+                                  //               BorderRadius.circular(15),
+                                  //           child: Container(
+                                  //             decoration: BoxDecoration(
+                                  //                 // color: Colors.greenAccent
+                                  //                 //     .withOpacity(0.2),
+                                  //                 color: Colors.transparent,
+                                  //                 borderRadius:
+                                  //                     BorderRadius.circular(
+                                  //                         15)),
+                                  //             height: MediaQuery.of(context)
+                                  //                     .size
+                                  //                     .width *
+                                  //                 0.9,
+                                  //             width: MediaQuery.of(context)
+                                  //                     .size
+                                  //                     .width *
+                                  //                 0.9,
+                                  //           ),
+                                  //         ),
+                                  //       ),
+                                  //     ),
+                                  //   ),
+                                  // );
 
                                   await Functions()
                                       .handleFollowUser(int.parse(results));
@@ -187,15 +195,11 @@ class _QRScreenState extends State<QRScreen> {
                               Container(child: VerticalDivider()),
                               GestureDetector(
                                 onTap: () async {
-                                  String results = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ScanView(
-                                        cornerColor: Colors.blue,
-                                        readerFrom: ReaderFrom.gallery,
-                                      ),
-                                    ),
-                                  );
+                                  PickedFile file = await ImagePicker()
+                                      .getImage(source: ImageSource.gallery);
+                                  final String results =
+                                      await FlutterQrReader.imgScan(file.path);
+
                                   try {
                                     int numb = int.parse(results);
                                   } catch (e) {

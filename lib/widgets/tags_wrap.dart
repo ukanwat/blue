@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 // Flutter imports:
+import 'package:blue/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -59,6 +60,7 @@ class _TagsWrapState extends State<TagsWrap> {
       tagLoading = false;
 
       for (int i = 0; i < tags.length; i++) {
+        Color clr = AppColors().rndColor;
         tagListTiles.add(InkWell(
           onTap: () async {
             Navigator.of(context)
@@ -69,13 +71,15 @@ class _TagsWrapState extends State<TagsWrap> {
             height: 50,
             margin: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
             padding: EdgeInsets.all(12),
-            child: Text(
-              tags[i]['tag'],
-              style: TextStyle(
-                  color: Theme.of(context).iconTheme.color, fontSize: 18),
-            ),
+            child: Text(tags[i]['tag'],
+                style: TextStyle(
+                  color: clr,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'Stark Sans',
+                )),
             decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
+              color: clr.withOpacity(0.3),
               borderRadius: BorderRadius.circular(10),
             ),
           ),

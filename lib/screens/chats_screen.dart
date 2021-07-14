@@ -151,31 +151,32 @@ class _ChatsScreenState extends State<ChatsScreen>
                         subtitle:
                             '${widget.archived ? 'Archived' : 'New'} Chats will appear here'),
                   )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: widget.archived
-                        ? chatUsers.length + 1
-                        : chatUsers.length,
-                    itemBuilder: (context, i) {
-                      if (i == 0 && widget.archived) {
-                        return Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 15, vertical: 10),
-                            child: Text(
-                              'Archived Chats',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).iconTheme.color),
-                            ),
-                            decoration: BoxDecoration(
-                              border: Border(
-                                  bottom: BorderSide(
-                                      width: 1,
-                                      color: Colors.grey.withOpacity(0.3))),
-                            ));
-                      }
-                      return chatUsers[widget.archived ? i - 1 : i];
-                    })
+                : Expanded(
+                    child: ListView.builder(
+                        itemCount: widget.archived
+                            ? chatUsers.length + 1
+                            : chatUsers.length,
+                        itemBuilder: (context, i) {
+                          if (i == 0 && widget.archived) {
+                            return Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 10),
+                                child: Text(
+                                  'Archived Chats',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).iconTheme.color),
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                      bottom: BorderSide(
+                                          width: 1,
+                                          color: Colors.grey.withOpacity(0.3))),
+                                ));
+                          }
+                          return chatUsers[widget.archived ? i - 1 : i];
+                        }),
+                  )
       ],
     );
   }

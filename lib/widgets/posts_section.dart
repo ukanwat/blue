@@ -114,10 +114,6 @@ class _PostsSectionState extends State<PostsSection>
                     SizedBox(
                       width: 8,
                     ),
-                    Icon(
-                      FlutterIcons.hashtag_faw5s,
-                      size: 30,
-                    ),
                     Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

@@ -87,6 +87,9 @@ class _ActivityFeedItemState extends State<ActivityFeedItem> {
           if (widget.action == 'comment_reply') {
             NotifFunctions.goToCommentReply(widget.sourceId, context);
           }
+          if (widget.action == 'upvote') {
+            NotifFunctions.goToPost(widget.sourceId, context);
+          }
         },
         trailing: trailing ??
             Icon(

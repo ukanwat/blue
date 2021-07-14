@@ -2,6 +2,7 @@
 import 'dart:io';
 
 // Flutter imports:
+import 'package:blue/services/notification_functions.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -200,6 +201,22 @@ class PushNotificationsManager {
     //     );
     //   }
     // });
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      String action = message.data['action'];
+      int sourceId = message.data['source_id'];
+      if (action == 'follow') {
+        NotifFunctions.goToProfile(sourceId, Get.context);
+      }
+      if (action == 'comment') {
+        NotifFunctions.goToComment(sourceId, Get.context);
+      }
+      if (action == 'comment_reply') {
+        NotifFunctions.goToCommentReply(sourceId, Get.context);
+      }
+      if (action == 'upvote') {
+        NotifFunctions.goToPost(sourceId, Get.context);
+      }
+    });
     flutterLocalNotificationsPlugin.initialize(initializationSettings);
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       // RemoteNotification notification = message.notification;

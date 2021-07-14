@@ -58,6 +58,10 @@ export const notification = functions.https.onRequest(async (req, resp) => {
             "title": title + '',
             "body": body + '',
         },
+        "data": {
+            "action": messageData.action + '',
+            "source_id": messageData.source_id + 0,
+        },
     };
     const message2 = {
         "token": messageData.token + '',
@@ -75,6 +79,10 @@ export const notification = functions.https.onRequest(async (req, resp) => {
             "fcm_options": {
                 "image": imgUrl + '',
             },
+        },
+        "data": {
+            "action": messageData.action + '',
+            "source_id": messageData.source_id + 0,
         },
 
     };

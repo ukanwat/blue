@@ -910,7 +910,7 @@ class Hasura {
     int userId = await getUserId();
 
     var data = await hasuraConnect.query("""query{
-  notifications(where:{_and:[{user_id:{_eq:$userId}}, {notify:{_eq:true}}]},limit:$limit,offset:$offset){
+  notifications(where:{_and:[{user_id:{_eq:$userId}}, {notify:{_eq:true}}]},limit:$limit,offset:$offset,order_by:{created_at:desc}){
     created_at
     user_id
     notify
