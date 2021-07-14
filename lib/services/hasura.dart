@@ -336,6 +336,27 @@ class Hasura {
 }""");
   }
 
+  static seenConversation(int peerId) async {
+    int userId = await getUserId();
+    String text;
+    int id1, id2;
+    if (peerId > userId) {
+      text = 'user2_seen';
+      id1 = peerId;
+      id2 = userId;
+    } else {
+      text = 'user1_seen';
+      id2 = peerId;
+      id1 = userId;
+    }
+    String doc = """mutation {
+  update_conversations_by_pk(pk_columns: {user1_id: $id1, user2_id: $id2}, _set: {$text: null}) {
+    __typename
+  }
+}""";
+    await hasuraConnect.mutation(doc);
+  }
+
   static insertConversation(int peerId) async {
     int userId = await getUserId();
     int id1, id2;
@@ -813,18 +834,20 @@ class Hasura {
     String doc = """mutation{
   insert_messages_one(object:{data:"$data",sender_id:$userId,conv_id:$convId,type:"$type",sender_name: "${Boxes.currentUserBox.get("name")}" }){created_at}
 }""";
-
+    print(doc);
     await hasuraConnect.mutation(doc);
   }
 
-  static getConversations(bool archived) async {
-    var userId = Boxes.currentUserBox.get('user_id');
-    if (userId == null) {
-      userId = await getUserId();
-    }
+  static getConversations(
+    bool archived,
+  ) async {
+    int userId = await getUserId();
+
     var data = await hasuraConnect.query("""query{
   conversations(where: {_or: [{_and:[{user1_id: {_eq: $userId}},{user1_removed:{_eq:$archived}}]}, {_and:[{user2_id: {_eq: $userId}},{user2_removed:{_eq:$archived}}]}]}) {
     conv_id
+    user1_seen
+    user2_seen
     user1{
       user_id
       name
@@ -1268,11 +1291,7 @@ __typename
     }
     upvotes
     downvotes
-     actions_by_user{
-      not_interested
-      up
-      time
-    }
+   
     comment_replies{
       user{
         avatar_url
@@ -1294,6 +1313,11 @@ __typename
     post_id
     title
     subtitle
+      actions_by_user{
+      not_interested
+      up
+      time
+    }
     user{
       avatar_url
       username

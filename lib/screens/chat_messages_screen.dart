@@ -310,7 +310,10 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
         appBar: header(
           context,
           elevation: 0.5,
-          leadingButton: CupertinoNavigationBarBackButton(),
+          leadingButton: CupertinoNavigationBarBackButton(onPressed: () {
+            Navigator.pop(context);
+            Hasura.seenConversation(widget.peerUser.userId);
+          }),
           actionButton: IconButton(
               icon: Icon(
                 FluentIcons.info_24_regular,
@@ -725,6 +728,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
    }
  }""")),
                   builder: (result) {
+                    print(result);
                     if (result.data == null) return Container();
                     return ListView.builder(
                       physics: NeverScrollableScrollPhysics(),

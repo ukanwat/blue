@@ -96,7 +96,7 @@ class _PostsSectionState extends State<PostsSection>
                 end: Alignment.bottomCenter,
                 colors: [
               Colors.transparent,
-              Theme.of(context).cardColor.withOpacity(0.5),
+              Theme.of(context).cardColor.withOpacity(0.3),
             ])),
         child: Column(
           mainAxisSize: MainAxisSize.min,

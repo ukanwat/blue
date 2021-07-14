@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 
 // Flutter imports:
+import 'package:blue/services/functions.dart';
 import 'package:blue/services/go_to.dart';
 import 'package:blue/widgets/action_button.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 // Project imports:
@@ -62,13 +64,22 @@ class _ChatsScreenState extends State<ChatsScreen>
   getUserTiles() async {
     dynamic data = await Hasura.getConversations(widget.archived);
     int i = 0;
+    List<DateTime> newMessages = [];
     data.forEach((doc) {
+      DateTime newMessage;
       int convId = doc['conv_id'];
 
       if (doc['user1']['user_id'] == Boxes.currentUserBox.get('user_id')) {
+        if (doc['user1_seen'] != null) {
+          newMessage = DateTime.parse(doc['user1_seen']);
+        }
         doc = doc['user2'];
       } else {
+        if (doc['user2_seen'] != null) {
+          newMessage = DateTime.parse(doc['user2_seen']);
+        }
         doc = doc['user1'];
+        print(doc);
       }
       User user = User.fromDocument({
         'avatar_url': doc['avatar_url'],
@@ -79,6 +90,7 @@ class _ChatsScreenState extends State<ChatsScreen>
       Widget userChat = OpenContainer<bool>(
           transitionType: ContainerTransitionType.fadeThrough,
           openBuilder: (BuildContext _, VoidCallback openContainer) {
+            Hasura.seenConversation(doc['user_id']);
             return ChatMessagesScreen(
               peerUser: user,
               convId: convId,
@@ -89,9 +101,25 @@ class _ChatsScreenState extends State<ChatsScreen>
           closedShape: const RoundedRectangleBorder(),
           closedColor: Theme.of(context).backgroundColor,
           closedBuilder: (BuildContext _, VoidCallback openContainer) {
-            return chatUserListTile(user, openContainer, i);
+            return chatUserListTile(user, openContainer, i, newMessage);
           });
-      chatUsers.add(userChat);
+      if (newMessage == null) {
+        chatUsers.add(userChat);
+      } else {
+        int k;
+        int _index;
+        newMessages.forEach((element) {
+          if (element.isBefore(newMessage)) {
+            if (_index == null) {
+              _index = k;
+            }
+          }
+          k++;
+        });
+        chatUsers.insert(_index ?? 0, userChat);
+        newMessages.insert(_index ?? 0, newMessage);
+      }
+
       i++;
     });
     if (chatUsers == null || chatUsers == []) //TODO check
@@ -181,7 +209,8 @@ class _ChatsScreenState extends State<ChatsScreen>
     );
   }
 
-  InkWell chatUserListTile(User user, VoidCallback openContainer, int i) {
+  InkWell chatUserListTile(
+      User user, VoidCallback openContainer, int i, DateTime newMessage) {
     return InkWell(
       onTap: openContainer,
       child: Dismissible(
@@ -238,30 +267,31 @@ class _ChatsScreenState extends State<ChatsScreen>
           Hasura.hideConversation(user.userId, widget.archived);
         },
         child: ListTile(
-          // onLongPress: () {
-          //   showDialog(
-          //       context: context,
-          //       builder: (ctx) {
-          //         return EmptyDialog(Column(
-          //           mainAxisSize: MainAxisSize.min,
-          //           children: [
-          //             InkWell(
-          //               onTap: () {
-          //                 Navigator.of(context).pop();
-          //                 setState(() {
-          //                   chatUsers.removeAt(i - 1);
-          //                 });
-          //                 // Hasura.hideConversation(user.userId);
-          //               },
-          //               child: Container(
-          //                 height: 15,
-          //                 child: Text('Remove from View'),
-          //               ),
-          //             ),
-          //           ],
-          //         ));
-          //       });
-          // },
+          trailing: (newMessage == null)
+              ? Container(
+                  width: 5,
+                  height: 5,
+                )
+              : Container(
+                  width: 100,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${Functions().date(newMessage)}, ${DateFormat.jm().format(newMessage)}',
+                        style: TextStyle(color: Colors.grey, fontSize: 11),
+                      ),
+                      Text(
+                        'NEW MESSAGE',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: Theme.of(context).accentColor),
+                      )
+                    ],
+                  ),
+                ),
           tileColor: Theme.of(context).backgroundColor,
           leading: CircleAvatar(
             backgroundImage: CachedNetworkImageProvider(user.avatarUrl ??
@@ -362,41 +392,43 @@ class _SearchPeopleState extends State<SearchPeople> {
 
     setState(() {
       people = _people
-          .map((doc) => ListTile(
-                onTap: () {
-                  Navigator.pop(context);
-                  GoTo().profileScreen(context, doc["user_id"]);
-                },
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(doc['avatar_url'] ??
-                      "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
-                ),
-                subtitle: Text('${doc["name"]}',
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: Theme.of(context)
-                            .iconTheme
-                            .color
-                            .withOpacity(0.8))),
-                trailing: SizedBox(
-                  width: 80,
-                  child: ActionButton(() {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ChatMessagesScreen(
-                          peerUser: User.fromDocument(doc),
+          .map((doc) => Boxes.currentUserBox.get('user_id') == doc["user_id"]
+              ? Container()
+              : ListTile(
+                  onTap: () {
+                    Navigator.pop(context);
+                    GoTo().profileScreen(context, doc["user_id"]);
+                  },
+                  leading: CircleAvatar(
+                    backgroundImage: NetworkImage(doc['avatar_url'] ??
+                        "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                  ),
+                  subtitle: Text('${doc["name"]}',
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: Theme.of(context)
+                              .iconTheme
+                              .color
+                              .withOpacity(0.8))),
+                  trailing: SizedBox(
+                    width: 80,
+                    child: ActionButton(() {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatMessagesScreen(
+                            peerUser: User.fromDocument(doc),
+                          ),
                         ),
-                      ),
-                    );
-                  }, Colors.blue, 'Message', true),
-                ),
-                title: Text(
-                  '${doc["username"]}',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                ),
-              ))
+                      );
+                    }, Colors.blue, 'Message', true),
+                  ),
+                  title: Text(
+                    '${doc["username"]}',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                  ),
+                ))
           .toList();
     });
   }

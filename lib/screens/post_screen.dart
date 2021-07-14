@@ -65,7 +65,7 @@ class _PostScreenState extends State<PostScreen> {
   //limits
   int lvid = 1;
   int limg = 10;
-  int ltxt = 800;
+  int ltxt = 1000;
   int llnk = 5;
   //count
   int cvid = 0;
