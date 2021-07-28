@@ -127,6 +127,7 @@ InkWell settingsPageNavigationTile(
     {bool removeBorder}) {
   if (removeBorder == null) removeBorder = false;
   return InkWell(
+    borderRadius: BorderRadius.circular(8),
     onTap: () {
       Navigator.pushNamed(context, routeName);
     },
@@ -159,6 +160,7 @@ InkWell settingsActionTile(
   if (isRed == null) isRed = false;
   if (removeBorder == null) removeBorder = false;
   return InkWell(
+    borderRadius: BorderRadius.circular(8),
     onTap: function,
     child: Container(
       alignment: Alignment.centerLeft,

@@ -10,7 +10,7 @@ import 'package:flutter_gradients/flutter_gradients.dart';
 class AppColors {
   static const navBar = Color.fromRGBO(10, 10, 15, 1);
 
-  List<Color> _clrList = [
+  List<Color> clrList = [
     Color(0xFFFFBC42),
     Color(0xFFF55D3E),
     Color(0xFF00CC66),
@@ -23,10 +23,16 @@ class AppColors {
     Colors.blue,
     Colors.blueGrey,
     Colors.cyan,
+    Colors.brown,
+    Colors.yellowAccent,
+    Colors.teal,
+    Colors.tealAccent,
+    Colors.indigo,
+    Colors.indigoAccent
   ];
   Random _random = new Random();
   Color get rndColor {
-    return _clrList[_random.nextInt(_clrList.length)];
+    return clrList[_random.nextInt(clrList.length)];
   }
 
   Gradient get rndGradient {

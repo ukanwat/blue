@@ -292,14 +292,14 @@ class _CommentState extends State<Comment> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: <Widget>[
                                   Icon(
-                                    repliesLoaded == true
+                                    repliesLoaded != true
                                         ? Icons.expand_less
                                         : Icons.expand_more,
                                     color: Colors.blue,
                                     size: 18,
                                   ),
                                   Text(
-                                    repliesLoaded == true
+                                    repliesLoaded != true
                                         ? 'Hide Replies'
                                         : '${widget.replyCount + (value.userCommentReplies[widget.id] == null ? 0 : value.userCommentReplies[widget.id].length)} Replies',
                                     style: TextStyle(

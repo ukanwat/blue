@@ -60,7 +60,7 @@ class _TagsWrapState extends State<TagsWrap> {
       tagLoading = false;
 
       for (int i = 0; i < tags.length; i++) {
-        Color clr = AppColors().rndColor;
+        Color clr = AppColors().clrList[(i % (AppColors().clrList.length - 2))];
         tagListTiles.add(InkWell(
           onTap: () async {
             Navigator.of(context)

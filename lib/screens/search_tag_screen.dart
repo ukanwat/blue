@@ -80,6 +80,7 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
                       .replaceAll(new RegExp(r"\s+"), ""));
                   future.then((value) {
                     setState(() {
+                      print(value);
                       tagResults = value;
                       tagStrings = [];
                       tagResults.forEach((element) {
@@ -149,13 +150,29 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
                       Expanded(
                         child: Padding(
                             padding: EdgeInsets.symmetric(vertical: 5),
-                            child: Text(
-                              searchTerm == null
-                                  ? ''
-                                  : '#${searchTerm.toLowerCase().replaceAll(new RegExp(r"\s+"), "")}',
-                              maxLines: 1,
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.w500),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  searchTerm == null
+                                      ? ''
+                                      : '#${searchTerm.toLowerCase().replaceAll(new RegExp(r"\s+"), "")}',
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                                Text(
+                                  searchTerm == null
+                                      ? ''
+                                      : 'Label: ${searchTerm}',
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.w400),
+                                ),
+                              ],
                             )),
                       ),
                       Padding(
@@ -188,21 +205,29 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
                               {tagResults[i]['tag_id']: tagResults[i]['tag']});
                         },
                         child: Padding(
-                            padding: EdgeInsets.all(8),
-                            child: Column(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 20),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  tagResults[i]['tag'],
-                                  style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w600),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      tagResults[i]['tag'],
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                    Text(
+                                      tagResults[i]['label'],
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          color: Colors.grey,
+                                          fontWeight: FontWeight.w400),
+                                    ),
+                                  ],
                                 ),
-                                // Text(
-                                //   tagResults[i]['label'],
-                                //   style: TextStyle(
-                                //       fontSize: 22,
-                                //       fontWeight: FontWeight.w600),
-                                // ),
                                 Text(
                                   '${tagResults[i]['postCount']} Posts',
                                   style: TextStyle(

@@ -17,7 +17,9 @@ class _ActionButtonState extends State<ActionButton> {
   @override
   Widget build(BuildContext context) {
     return hide == true
-        ? Container()
+        ? Container(
+            width: 0,
+          )
         : GestureDetector(
             onTap: () {
               widget.onTap();

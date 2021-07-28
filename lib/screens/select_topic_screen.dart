@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/widgets/settings_widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -37,6 +38,8 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
     getTopics();
     super.initState();
   }
+
+  bool explicit = false;
 
   addTag() async {
     Navigator.of(context).pushNamed(SearchTagScreen.routeName).then((obj) {
@@ -190,7 +193,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                             ));
                   });
 
-                  postData['post-function'](selectedTopicTile, tags);
+                  postData['post-function'](selectedTopicTile, tags, explicit);
                 }
               },
               child: Text(
@@ -323,6 +326,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                     ? circularProgress()
                     : ListView.builder(
                         shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
                         itemBuilder: (_, i) {
                           return ListTile(
                             enabled: true,
@@ -351,7 +355,22 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                         itemCount: topics.length,
                       )
               ]),
-            )
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            Container(
+                margin: EdgeInsets.symmetric(horizontal: 10),
+                padding: EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Theme.of(context).canvasColor),
+                child: settingsSwitchListTile(
+                    'Contains Explicit Content', explicit, (newValue) {
+                  setState(() {
+                    explicit = newValue;
+                  });
+                }))
           ],
         ),
       ),

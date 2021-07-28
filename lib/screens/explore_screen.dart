@@ -246,14 +246,17 @@ class _ExploreScreenState extends State<ExploreScreen>
                   color: Theme.of(context).iconTheme.color,
                 ))
           ],
-          leading: IconButton(
-              icon: Icon(
-                FlutterIcons.search_oct,
-              ),
-              onPressed: () {
-                Navigator.of(context).pushNamed(SearchScreen.routeName);
-              },
-              color: Theme.of(context).iconTheme.color),
+          leading: Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: IconButton(
+                icon: Icon(
+                  FlutterIcons.search_oct,
+                ),
+                onPressed: () {
+                  Navigator.of(context).pushNamed(SearchScreen.routeName);
+                },
+                color: Theme.of(context).iconTheme.color),
+          ),
         ),
         body: Column(
           children: [

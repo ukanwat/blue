@@ -3,8 +3,13 @@ import 'dart:io';
 import 'dart:ui';
 
 // Flutter imports:
+import 'package:blue/constants/strings.dart';
+import 'package:blue/models/user.dart';
+import 'package:blue/screens/settings/about/community_guidelines.screen.dart';
 import 'package:blue/services/hasura.dart';
+import 'package:blue/widgets/custom_image.dart';
 import 'package:blue/widgets/show_dialog.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -76,6 +81,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     };
   }
 
+  User user;
+  @override
+  void didChangeDependencies() {
+    User _user = ModalRoute.of(context).settings.arguments as User;
+    user = _user;
+    super.didChangeDependencies();
+  }
+
   @override
   void initState() {
     getInfo();
@@ -91,6 +104,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     bool dark = Theme.of(context).iconTheme.color == Colors.white;
+    print(user.avatarUrl);
+    print(user.photoUrl);
     return Scaffold(
       backgroundColor: dark
           ? Theme.of(context).backgroundColor
@@ -126,6 +141,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ],
                   )),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Material(
+                  borderRadius: BorderRadius.circular(8),
+                  color: dark
+                      ? Theme.of(context).canvasColor
+                      : Theme.of(context).backgroundColor,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () {
+                        Navigator.pushNamed(context, AccountScreen.routeName);
+                      },
+                      child: Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: CircleAvatar(
+                              minRadius: 30,
+                              maxRadius: 30,
+                              backgroundImage: CachedNetworkImageProvider(
+                                  user.photoUrl == null
+                                      ? (user.photoUrl)
+                                      : (user.avatarUrl ??
+                                          Strings.emptyAvatarUrl)),
+                            ),
+                          ),
+                          Column(
+                            children: [
+                              Text(
+                                user.name,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 24,
+                                    fontFamily: 'Stark Sans'),
+                              ),
+                              Text(
+                                'Account',
+                                style:
+                                    TextStyle(fontSize: 15, color: Colors.grey),
+                              )
+                            ],
+                          ),
+                          Expanded(
+                            child: Container(),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 20),
+                            child:
+                                Icon(FluentIcons.ios_chevron_right_20_filled),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
               settingsSectionTitle(
                   'General ⚙️',
                   Icon(
@@ -137,17 +211,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Material(
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(8),
                   color: dark
                       ? Theme.of(context).canvasColor
                       : Theme.of(context).backgroundColor,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(5),
+                    borderRadius: BorderRadius.circular(8),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
-                        settingsPageNavigationTile(
-                            context, 'Account', AccountScreen.routeName),
                         settingsPageNavigationTile(
                             context, 'Appearance', AppearanceScreen.routeName),
                         settingsPageNavigationTile(context, 'Collections',
@@ -172,12 +244,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Material(
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(8),
                   color: dark
                       ? Theme.of(context).canvasColor
                       : Theme.of(context).backgroundColor,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(5),
+                    borderRadius: BorderRadius.circular(8),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
@@ -206,12 +278,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Material(
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(8),
                   color: dark
                       ? Theme.of(context).canvasColor
                       : Theme.of(context).backgroundColor,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(5),
+                    borderRadius: BorderRadius.circular(8),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
@@ -240,12 +312,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Material(
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(8),
                   color: dark
                       ? Theme.of(context).canvasColor
                       : Theme.of(context).backgroundColor,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(5),
+                    borderRadius: BorderRadius.circular(8),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
@@ -309,12 +381,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Material(
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(8),
                   color: dark
                       ? Theme.of(context).canvasColor
                       : Theme.of(context).backgroundColor,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(5),
+                    borderRadius: BorderRadius.circular(8),
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: [
@@ -358,6 +430,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Navigator.of(context)
                               .pushNamed(LicenseScreen.routeName);
                         }, FluentIcons.ribbon_24_regular, removeBorder: true),
+                        settingsActionTile(context, 'Community Guidelines', () {
+                          Navigator.of(context)
+                              .pushNamed(CommunityGuidelinesScreen.routeName);
+                        }, FluentIcons.book_open_20_regular,
+                            removeBorder: true),
                       ],
                     ),
                   ),
@@ -381,12 +458,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
               ),
-              Center(
-                  child: Text(
-                'Stark',
-                style:
-                    TextStyle(fontFamily: 'Techna Sans Regular', fontSize: 20),
-              )),
+              Container(
+                color: dark
+                    ? Theme.of(context).backgroundColor
+                    : Theme.of(context).canvasColor,
+                child: Center(
+                    child: Text(
+                  'Stark',
+                  style: TextStyle(
+                      fontFamily: 'Techna Sans Regular', fontSize: 20),
+                )),
+              ),
               SizedBox(
                 height: 10,
               )

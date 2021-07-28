@@ -65,6 +65,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   // final PostInteractions postInteractions;
   // _ProfileScreenState(this.postInteractions);
   User _profileUser;
+  User get _user => _profileUser;
   String profileName = '';
   bool compactPosts = true;
   String username = '';
@@ -1343,7 +1344,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 Expanded(
                                     child: Center(
                                   child: Text(
-                                    profileName,
+                                    _user?.name ?? '',
                                     textAlign: TextAlign.center,
                                     maxLines: 2,
                                     style: TextStyle(
@@ -1364,6 +1365,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           color:
                                               Theme.of(context).iconTheme.color,
                                         ), () async {
+                                      if (_profileUser == null) {
+                                        return;
+                                      }
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -1399,8 +1403,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           color:
                                               Theme.of(context).iconTheme.color,
                                         ), () {
+                                        if (_profileUser == null) {
+                                          return;
+                                        }
                                         Navigator.pushNamed(
-                                            context, SettingsScreen.routeName);
+                                            context, SettingsScreen.routeName,
+                                            arguments: _user);
                                       })
                                     : Transform.scale(
                                         scale: 0.8,

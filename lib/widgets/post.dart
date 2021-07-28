@@ -6,6 +6,7 @@ import 'dart:math' as math;
 import 'dart:math';
 
 // Flutter imports:
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -210,6 +211,7 @@ class _PostState extends State<Post> {
   VideoPlayerController _controller;
   Future<void> _initializeVideoPlayerFuture;
   bool isSaved = false;
+  FlickManager flickManager;
   List<Widget> contentsViewList = [];
   final dynamic currentUserId = currentUser?.id;
   final int postId;
@@ -260,6 +262,7 @@ class _PostState extends State<Post> {
   double contentsHeight;
   bool constraintContent = false;
   String compactPostText;
+
   showOptions(BuildContext context) {
     createOverlayOptions(context);
     // Overlay.of(context).insert(overlayOptions);
@@ -367,7 +370,8 @@ class _PostState extends State<Post> {
                             },
                             title: Text('Unfollow'),
                           ),
-                        if (Boxes.currentUserBox.get('user_id') == ownerId)
+                        if (Boxes.currentUserBox.get('user_id') == ownerId ||
+                            !kReleaseMode)
                           ListTile(
                             dense: true,
                             leading: Icon(
@@ -401,7 +405,11 @@ class _PostState extends State<Post> {
           Container(
             color: Theme.of(context).backgroundColor,
             width: MediaQuery.of(context).size.width,
-            padding: EdgeInsets.only(left: 10, top: 10, right: 10, bottom: 0),
+            padding: EdgeInsets.only(
+                left: widget.commentsShown ? 50 : 10,
+                top: 10,
+                right: 10,
+                bottom: 0),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
@@ -457,7 +465,7 @@ class _PostState extends State<Post> {
                     child: Container(
                       height: 38,
                       width: 55,
-                      padding: const EdgeInsets.only(bottom: 3, top: 6),
+                      padding: const EdgeInsets.only(bottom: 0, top: 0),
                       child: Icon(
                         Icons.more_horiz,
                       ),
@@ -529,7 +537,9 @@ class _PostState extends State<Post> {
                         child: Container(
                           height: 38,
                           padding: const EdgeInsets.only(
-                              bottom: 6, left: 15, right: 15, top: 3),
+                            left: 15,
+                            right: 15,
+                          ),
                           child: Icon(
                             FluentIcons.chevron_up_16_filled,
                             size: 22,
@@ -545,7 +555,9 @@ class _PostState extends State<Post> {
                         child: Container(
                           height: 38,
                           padding: const EdgeInsets.only(
-                              bottom: 6, left: 15, right: 15, top: 3),
+                            left: 15,
+                            right: 15,
+                          ),
                           child: Icon(
                             FluentIcons.chevron_down_16_filled,
                             size: 22,
@@ -583,41 +595,42 @@ class _PostState extends State<Post> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
-                        GestureDetector(
-                          onTap: () {
-                            GoTo().profileScreen(context, widget.ownerId);
-                          },
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 11.5,
-                                backgroundImage: CachedNetworkImageProvider(
-                                    photoUrl ??
-                                        "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
-                                backgroundColor: Colors.grey,
-                              ),
-                              SizedBox(
-                                width: 8,
-                              ),
-                              Container(
-                                height: 24,
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  username,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              GoTo().profileScreen(context, widget.ownerId);
+                            },
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 11.5,
+                                  backgroundImage: CachedNetworkImageProvider(
+                                      photoUrl ??
+                                          "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                                  backgroundColor: Colors.grey,
+                                ),
+                                SizedBox(
+                                  width: 8,
+                                ),
+                                Expanded(
+                                  child: Container(
+                                    height: 24,
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      username,
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                            mainAxisSize: MainAxisSize.min,
+                              ],
+                              mainAxisSize: MainAxisSize.min,
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          child: Container(),
                         ),
                         SizedBox(
                           width: 5,
@@ -655,10 +668,7 @@ class _PostState extends State<Post> {
                         GestureDetector(
                             child: Container(
                               height: 24,
-                              padding: const EdgeInsets.only(
-                                left: 10,
-                                right: 10,
-                              ),
+                              padding: const EdgeInsets.only(right: 5, left: 4),
                               child: Icon(
                                 FluentIcons.more_circle_20_regular,
                                 color: Colors.blue,
@@ -674,7 +684,7 @@ class _PostState extends State<Post> {
                     padding:
                         EdgeInsets.only(left: 12, top: 0, right: 5, bottom: 3),
                     child: Text(
-                      widget.title.toUpperCase(),
+                      widget.title,
                       textAlign: TextAlign.left,
                       style: TextStyle(
                         fontSize: 15,
@@ -820,7 +830,7 @@ class _PostState extends State<Post> {
             contentsInfo[i]['aspectRatio'], contentsInfo[i]['blurHash']));
       } else if (contentsInfo[i]['type'] == 'video') {
         thumbnailType = CompactPostThumbnailType.video;
-        var flickManager = FlickManager(
+        flickManager = FlickManager(
           autoPlay: PreferencesUpdate().getBool('autoplay_videos') ?? true,
           videoPlayerController: VideoPlayerController.network(contents['$i']),
         );
@@ -978,7 +988,7 @@ class _PostState extends State<Post> {
         id: postId,
         builder: (value) {
           return Padding(
-            padding: EdgeInsets.only(top: 5),
+            padding: EdgeInsets.only(top: 2),
             child: Column(
               children: <Widget>[
                 if (showSaveBar)
@@ -1073,7 +1083,7 @@ class _PostState extends State<Post> {
                                     '${Functions.abbreviateNumber(widget.saves, hideLess: true)}',
                                     style: TextStyle(
                                         fontWeight: FontWeight.w500,
-                                        fontSize: 19),
+                                        fontSize: 17),
                                   ),
                                 ),
                               ],
@@ -1111,7 +1121,7 @@ class _PostState extends State<Post> {
                                       '${Functions.abbreviateNumber(value.getSaved(postId) == null ? widget.saves : value.getSaved(postId) ? widget.saves + 1 : widget.saves - 1, hideLess: true)}',
                                       style: TextStyle(
                                           fontWeight: FontWeight.w500,
-                                          fontSize: 19)),
+                                          fontSize: 17)),
                                 ),
                               ],
                             ),
@@ -1177,7 +1187,7 @@ class _PostState extends State<Post> {
                         child: Text(
                           '${Functions.abbreviateNumber(widget.commentCount, hideLess: true)}',
                           style: TextStyle(
-                              fontWeight: FontWeight.w500, fontSize: 19),
+                              fontWeight: FontWeight.w500, fontSize: 17),
                         ),
                       ),
                     // if (!widget.isCompact)
@@ -1287,14 +1297,14 @@ class _PostState extends State<Post> {
                                             : '${Functions.abbreviateNumber(upvotes - 1, hideLess: true)}',
                                     style: TextStyle(
                                         fontWeight: FontWeight.w500,
-                                        fontSize: 19),
+                                        fontSize: 17),
                                   ),
                                 ),
                                 Icon(
                                     vote == Vote.up
                                         ? FluentIcons.keyboard_shift_24_filled
                                         : FluentIcons.keyboard_shift_24_regular,
-                                    size: 24.0,
+                                    size: 22.0,
                                     color: isOwner
                                         ? Colors.blue.withOpacity(0.7)
                                         : Colors.blue),
@@ -1307,7 +1317,7 @@ class _PostState extends State<Post> {
                   ],
                 ),
                 Padding(
-                  padding: EdgeInsets.only(bottom: 7),
+                  padding: EdgeInsets.only(bottom: 4),
                 ),
               ],
             ),
@@ -1318,7 +1328,6 @@ class _PostState extends State<Post> {
   @override
   void dispose() {
     _controller?.dispose();
-
     super.dispose();
   }
 
@@ -1358,7 +1367,7 @@ class _PostState extends State<Post> {
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
     deleted = widget.notInterested == true || deleted;
-    return deleted == true
+    return (deleted == true || widget.notInterested == true)
         ? Container()
         : notInterested == true //can do some other stuff
             ? Container(
@@ -1602,7 +1611,7 @@ class _FooterButtonState extends State<FooterButton> {
             padding: const EdgeInsets.all(6),
             child: Icon(
               widget.iconData,
-              size: 26,
+              size: 22,
             ),
           ),
         ),

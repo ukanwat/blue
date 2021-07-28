@@ -52,7 +52,9 @@ class _TagScreenState extends State<TagScreen> {
     setState(() {
       tag = tagMap['tag'];
     });
-    getThumbnail();
+    try {
+      getThumbnail();
+    } catch (e) {}
     label = tagMap['label'];
     followerCount = tagMap['follower_count'];
     postCount = tagMap['post_count'];
@@ -282,7 +284,7 @@ class _TagScreenState extends State<TagScreen> {
                 SliverPersistentHeader(
                   delegate: _SliverAppBarDelegate(
                     TabBar(
-                      indicatorColor: Colors.deepOrange,
+                      indicatorColor: Theme.of(context).accentColor,
                       tabs: [
                         Tab(
                           child: Row(

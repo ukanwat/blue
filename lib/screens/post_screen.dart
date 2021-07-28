@@ -324,6 +324,7 @@ class _PostScreenState extends State<PostScreen> {
       Map<String, Map> contentsInfo,
       String topicName,
       String topicId,
+      bool explicit,
       Map<int, String> tags}) async {
     List customContents = [];
     contents.forEach((key, value) {
@@ -341,6 +342,7 @@ class _PostScreenState extends State<PostScreen> {
         topicName: topicName,
         thumbUrl: thumbUrl,
         customUserId: customUserIdController.text,
+        explicit: explicit,
         subtitle: subtitleController.text);
   }
 
@@ -349,7 +351,7 @@ class _PostScreenState extends State<PostScreen> {
   String thumbUrl;
   ThumbContent _thumbContent = ThumbContent.none;
   int thumbIndex;
-  handleSubmit(String topicName, Map<int, String> tags) async {
+  handleSubmit(String topicName, Map<int, String> tags, bool explicit) async {
     setState(() {
       isUploading = true;
     });
@@ -475,7 +477,8 @@ class _PostScreenState extends State<PostScreen> {
         title: titleController.text,
         contentsInfo: firestoreContentsInfo,
         topicName: topicName,
-        tags: tags);
+        tags: tags,
+        explicit: explicit);
 
     titleController.clear();
     textControllers = [];
@@ -1047,32 +1050,34 @@ class _PostScreenState extends State<PostScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
-                  IconButton(
-                    icon: Icon(
-                      FlutterIcons.image_fea,
-                      color: Theme.of(context).accentColor,
+                  Container(
+                    child: IconButton(
+                      splashRadius: 22,
+                      icon: Icon(
+                        FlutterIcons.image_fea,
+                      ),
+                      onPressed: () {
+                        if (cimg >= limg) {
+                          showLimits(context);
+                          return;
+                        }
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) => postItemsDialog({
+                            'Camera': handleTakePhoto,
+                            'Device': handleChooseImageFromGallery,
+                            'Multiple': handleCreateCarousel,
+                          }, context),
+                        );
+                      },
                     ),
-                    onPressed: () {
-                      if (cimg >= limg) {
-                        showLimits(context);
-                        return;
-                      }
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) => postItemsDialog({
-                          'Camera': handleTakePhoto,
-                          'Device': handleChooseImageFromGallery,
-                          'Multiple': handleCreateCarousel,
-                        }, context),
-                      );
-                    },
                   ),
                   IconButton(
+                    splashRadius: 22,
                     padding: EdgeInsets.only(top: 2),
                     icon: Icon(
                       FlutterIcons.video_fea,
                       size: 25.5,
-                      color: Colors.pinkAccent,
                     ),
                     onPressed: () {
                       if (cvid >= lvid) {
@@ -1089,9 +1094,9 @@ class _PostScreenState extends State<PostScreen> {
                     },
                   ),
                   IconButton(
+                      splashRadius: 22,
                       icon: Icon(
                         FlutterIcons.text_ent,
-                        color: Colors.blue,
                       ),
                       onPressed: () {
                         TextEditingController textController =
@@ -1116,9 +1121,9 @@ class _PostScreenState extends State<PostScreen> {
                         });
                       }),
                   IconButton(
+                      splashRadius: 22,
                       icon: Icon(
                         FlutterIcons.link_fea,
-                        color: Colors.yellow,
                         size: 21,
                       ),
                       onPressed: () {

@@ -10,6 +10,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 
@@ -86,9 +87,6 @@ class _CommentsScreenState extends State<CommentsScreen>
                     child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      height: 45,
-                    ),
                     data,
                   ],
                 )),
@@ -99,13 +97,10 @@ class _CommentsScreenState extends State<CommentsScreen>
                   automaticallyImplyLeading: false,
                   title: TabBar(
                     controller: _tabController,
-                    indicatorColor: Colors.deepOrange,
+                    indicatorColor: Theme.of(context).accentColor,
+                    indicatorWeight: 2,
+                    indicatorSize: TabBarIndicatorSize.tab,
                     indicatorPadding: EdgeInsets.all(0),
-                    // indicator: PointTabIndicator(
-                    //   position: PointTabIndicatorPosition.bottom,
-                    //   color: Theme.of(context).iconTheme.color,
-                    //   insets: EdgeInsets.only(bottom: 5, top: 3),
-                    // ),
                     tabs: [
                       Tab(
                         child: Column(

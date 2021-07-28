@@ -53,14 +53,16 @@ class Hasura {
   static const String url = 'https://app.stark.social/v1/graphql';
   // static var cacheInterceptor = HiveCacheInterceptor("hasura");
   static int postLimit = 8;
-  static HasuraConnectX hasuraConnect = HasuraConnectX(url,
-      headers: {
-        'Authorization': 'Bearer $jwtToken',
-      },
-      interceptors: [
-        TokenInterceptor(FirebaseAuth.instance),
-      ],
-      onAuthStateChanged: AuthService().onAuthStateChanged);
+  static HasuraConnectX hasuraConnect = HasuraConnectX(
+    url,
+    headers: {
+      'Authorization': 'Bearer $jwtToken',
+    },
+    interceptors: [
+      TokenInterceptor(FirebaseAuth.instance),
+    ],
+    onAuthStateChanged: AuthService().onAuthStateChanged,
+  );
 
   static getUserId({String uid}) async {
     uid = FirebaseAuth.instance.currentUser.uid;
@@ -401,6 +403,7 @@ class Hasura {
       String topicName,
       String thumbUrl,
       String customUserId,
+      bool explicit,
       String subtitle}) async {
     if (jwtToken == null) return;
     var userId = await getUserId();
@@ -425,21 +428,23 @@ class Hasura {
     if (topicName != null) {
       topic = ' category:"$topicName",';
     }
+    title = title.replaceAll('\'', '\\\'')
+            .replaceAll('\"', '\\\"');
     String _doc = tags == null
         ? """mutation insertData  {
-  insert_posts_one(object: {contents: $contents, owner_id: $userId,$subtitleText title: "$title", $topic $thumb}
+  insert_posts_one(object: {contents: $contents,explicit:$explicit, owner_id: $userId,$subtitleText title: "$title", $topic $thumb}
         ) {
     post_id
   }
 }
 """
         : """mutation{
-  insert_posts_one(object: {contents: $contents, owner_id: $userId,$subtitleText title: "$title", $topic post_tags: {data: [$tagsString]}, $thumb}) {
+  insert_posts_one(object: {contents: $contents,explicit:$explicit,  owner_id: $userId,$subtitleText title: "$title", $topic post_tags: {data: [$tagsString]}, $thumb}) {
     post_id
   }
 }
 """;
-
+    print(_doc);
     dynamic _data = await hasuraConnect.mutation(_doc);
   }
 
@@ -651,7 +656,8 @@ class Hasura {
       tags.add({
         "tag": element['tag'],
         'postCount': element['post_count'],
-        'tag_id': element['tag_id']
+        'tag_id': element['tag_id'],
+        'label': element['label'],
       });
     });
     return tags;

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:ui';
 
 // Flutter imports:
+import 'package:blue/screens/search_screen.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -27,6 +28,7 @@ import 'package:blue/services/preferences_update.dart';
 import 'package:blue/services/push_notifications.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:quick_actions/quick_actions.dart';
 import '../services/dynamic_links.dart';
 import './explore_screen.dart';
 import './home.dart';
@@ -97,7 +99,7 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
   }
 
   StreamSubscription<ConnectivityResult> subscription;
-
+  String shortcut = 'no action set';
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
@@ -142,6 +144,42 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
       }
     });
     setLists();
+
+    final QuickActions quickActions = QuickActions();
+    quickActions.initialize((String type) {
+      setState(() {
+        if (type == 'post') {
+          Navigator.pushNamed(context, PostScreen.routeName);
+        } else if (type == 'inbox') {
+          setState(() {
+            navigationTapped(3);
+          });
+        } else if (type == 'explore') {
+          setState(() {
+            navigationTapped(1);
+          });
+        } else if (type == 'search') {
+          Navigator.of(context).pushNamed(SearchScreen.routeName);
+        }
+      });
+    });
+
+    quickActions.setShortcutItems(<ShortcutItem>[
+      // NOTE: This first action icon will only work on iOS.
+      // In a real world project keep the same file name for both platforms.
+      const ShortcutItem(
+        type: 'post',
+        localizedTitle: 'Post',
+        icon: 'post',
+      ),
+      // NOTE: This second action icon will only work on Android.
+      // In a real world project keep the same file name for both platforms.
+      const ShortcutItem(type: 'inbox', localizedTitle: 'Inbox', icon: 'inbox'),
+      const ShortcutItem(
+          type: 'explore', localizedTitle: 'Explore', icon: 'explore'),
+      const ShortcutItem(
+          type: 'search', localizedTitle: 'Search', icon: 'search'),
+    ]).then((value) {});
     super.initState();
   }
 
@@ -213,7 +251,9 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
             primaryColor: Theme.of(context).primaryColor.withOpacity(0.8),
           ),
           child: SizedBox(
-            height: Platform.isIOS ? 84 : 60,
+            height: kBottomNavigationBarHeight -
+                8 +
+                MediaQuery.of(context).padding.bottom,
             child: BottomNavigationBar(
               iconSize: 24,
               elevation: 10,
@@ -233,44 +273,44 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
                   label: 'Home',
                   icon: Icon(
                     FluentIcons.home_24_filled,
-                    size: 24,
+                    size: 23,
                   ),
                   activeIcon: Icon(
                     FluentIcons.home_24_filled,
-                    size: 24,
+                    size: 23,
                   ),
                 ),
                 BottomNavigationBarItem(
                   label: 'Explore',
                   icon: Icon(
-                    FlutterIcons.search_faw,
-                    size: 22,
+                    FlutterIcons.md_planet_ion,
+                    size: 23,
                     // size: 34,
                   ),
                   activeIcon: Icon(
-                    FlutterIcons.search_faw,
-                    size: 22,
+                    FlutterIcons.md_planet_ion,
+                    size: 23,
                   ),
                 ),
                 BottomNavigationBarItem(
                   label: 'Post',
-                  activeIcon: Container(
-                      height: 24,
-                      child:
-                          Image.asset("assets/images/stark-bnb-icon-wa.png")),
-                  icon: Container(
-                      height: 24,
-                      child:
-                          Image.asset("assets/images/stark-bnb-icon-wi.png")),
+                  activeIcon: Icon(
+                    FluentIcons.add_square_multiple_16_filled,
+                    size: 24,
+                  ),
+                  icon: Icon(
+                    FluentIcons.add_square_multiple_16_filled,
+                    size: 24,
+                  ),
                 ),
                 BottomNavigationBarItem(
                   label: 'Inbox',
                   icon: Icon(
-                    FlutterIcons.ios_chatboxes_ion,
+                    FluentIcons.mail_inbox_all_24_filled,
                     size: 24,
                   ),
                   activeIcon: Icon(
-                    FlutterIcons.ios_chatboxes_ion,
+                    FluentIcons.mail_inbox_all_24_filled,
                     size: 24,
                   ),
                 ),

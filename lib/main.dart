@@ -3,6 +3,7 @@ import 'dart:async';
 
 // Flutter imports:
 import 'package:blue/screens/qr_screen.dart';
+import 'package:blue/screens/settings/about/community_guidelines.screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -366,6 +367,8 @@ class MyAppState extends State<MyApp> {
                   FollowsScreen.routeName: (ctx) => FollowsScreen(),
                   QRScreen.routeName: (ctx) => QRScreen(),
                   DateOfBirthScreen.routeName: (ctx) => DateOfBirthScreen(),
+                  CommunityGuidelinesScreen.routeName: (ctx) =>
+                      CommunityGuidelinesScreen(),
                 }),
           );
         },
