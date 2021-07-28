@@ -14,10 +14,10 @@ import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
-import 'package:blue/widgets/empty_dialog.dart';
+import 'package:blue/widgets/dialogs/empty_dialog.dart';
 import 'package:blue/widgets/progress.dart';
-import '../main.dart';
-import './set_name_screen.dart';
+import '../../main.dart';
+import 'set_name_screen.dart';
 
 class EmailSignInScreen extends StatefulWidget {
   static const routeName = 'emai-sign-in';

@@ -7,9 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
-import 'package:blue/screens/home.dart';
 import 'package:blue/services/preferences_update.dart';
-import 'package:blue/widgets/empty_dialog.dart';
+import 'package:blue/widgets/dialogs/empty_dialog.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:intl/intl.dart';

@@ -2,8 +2,8 @@
 import 'dart:ui';
 
 // Flutter imports:
-import 'package:blue/screens/qr_screen.dart';
-import 'package:blue/widgets/show_dialog.dart';
+import 'package:blue/screens/profile/qr_screen.dart';
+import 'package:blue/widgets/dialogs/show_dialog.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -22,24 +22,22 @@ import 'package:url_launcher/url_launcher.dart';
 // Project imports:
 import 'package:blue/constants/strings.dart';
 import 'package:blue/main.dart';
-import 'package:blue/screens/about_screen.dart';
-import 'package:blue/screens/all_saved_posts_screen.dart';
-import 'package:blue/screens/chat_messages_screen.dart';
-import 'package:blue/screens/follows_screen.dart';
-import 'package:blue/screens/post_screen.dart';
+import 'package:blue/screens/profile/all_saved_posts_screen.dart';
+import 'package:blue/screens/inbox/chat_messages_screen.dart';
+import 'package:blue/screens/profile/follows_screen.dart';
+import 'package:blue/screens/post/post_screen.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/empty_state.dart';
 import 'package:blue/widgets/paginated_posts.dart';
 import 'package:blue/widgets/url_bottom_sheet.dart';
-import 'package:blue/widgets/user_report_dialog.dart';
+import 'package:blue/widgets/dialogs/user_report_dialog.dart';
 import '../models/user.dart';
 import '../services/boxes.dart';
 import '../services/functions.dart';
 import '../widgets/post.dart';
 import '../widgets/progress.dart';
-import './edit_profile_screen.dart';
-import './home.dart';
+import 'profile/edit_profile_screen.dart';
 import './settings_screen.dart';
 
 enum Sort { Recent, Oldest, Best }

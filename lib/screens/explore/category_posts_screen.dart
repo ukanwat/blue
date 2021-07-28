@@ -14,7 +14,6 @@ import 'package:blue/widgets/paginated_posts.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/posts_section.dart';
 import 'package:blue/widgets/progress.dart';
-import 'home.dart';
 
 class CategoryPostsScreen extends StatefulWidget {
   final String name;
@@ -145,7 +144,8 @@ class _EverythingPostsScreenState extends State<EverythingPostsScreen>
         popTags != [] &&
         popTags.length != 0 &&
         _items.length != 0) {
-      _items.add(Container(child: PostsSection(popTags[0]['tag'], 'Popular')));
+      _items
+          .add(Container(child: PostsSection(popTags[0]['tag'], 'Popular #')));
       popTags.removeAt(0);
     }
 

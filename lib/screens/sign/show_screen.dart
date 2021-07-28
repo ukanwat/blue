@@ -10,7 +10,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 // Project imports:
 import 'package:blue/services/auth_service.dart';
-import 'package:blue/widgets/email_verify_dialog.dart';
+import 'package:blue/widgets/dialogs/email_verify_dialog.dart';
 
 class ShowScreen extends StatefulWidget {
   static const routeName = 'show';

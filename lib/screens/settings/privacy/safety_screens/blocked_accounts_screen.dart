@@ -7,7 +7,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/models/user.dart';
-import 'package:blue/screens/home.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';

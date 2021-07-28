@@ -13,11 +13,11 @@ circularProgress() {
       alignment: Alignment.center,
       padding: EdgeInsets.only(top: 5, bottom: 5, left: 5, right: 5),
       child: SizedBox(
-        height: 26,
-        width: 26,
+        height: 24,
+        width: 24,
         child: LoadingIndicator(
           color: Colors.grey,
-          indicatorType: Indicator.lineSpinFadeLoader,
+          indicatorType: Indicator.ballRotateChase,
         ),
       )
       // CircularProgressIndicator(

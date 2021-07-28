@@ -12,10 +12,10 @@ import 'package:provider/provider.dart';
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/screens/explore_screen.dart';
-import 'package:blue/screens/search_tag_screen.dart';
+import 'package:blue/screens/post/search_tag_screen.dart';
 import 'package:blue/widgets/progress.dart';
-import 'home.dart';
 
+//TODO:imp always save and set state for new thing/settings on this screen
 class SelectTopicScreen extends StatefulWidget {
   static const routeName = 'select-topic';
 
@@ -33,12 +33,44 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
   List<Widget> tagChips = [];
   Map<int, String> tags = {};
   List topics;
+  Map<String, dynamic> postData;
+  @override
+  void didChangeDependencies() {
+    postData =
+        ModalRoute.of(context).settings.arguments as Map<String, dynamic>;
+    state = postData['state'];
+    tags = state['tags'] ?? {};
+    tags.forEach((key, value) {
+      tagChips.add(Chip(
+        deleteIcon: Icon(
+          FluentIcons.delete_24_regular,
+          size: 16,
+        ),
+        onDeleted: () {
+          tags.remove(key);
+          setState(() {
+            tagChips.removeAt(tagChips.length - 1);
+          });
+        },
+        label: Text(
+          value.toLowerCase().replaceAll(new RegExp(r"\s+"), ""),
+          style: TextStyle(
+              color: Theme.of(context).iconTheme.color.withOpacity(0.8)),
+        ),
+      ));
+    });
+    explicit = state['explicit'] ?? false;
+    selectedTopicTile = state['selectedTopicTile'];
+    super.didChangeDependencies();
+  }
+
   @override
   void initState() {
     getTopics();
     super.initState();
   }
 
+  Map state = {};
   bool explicit = false;
 
   addTag() async {
@@ -93,8 +125,6 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
   String selectedTopicTile;
   @override
   Widget build(BuildContext context) {
-    final postData =
-        ModalRoute.of(context).settings.arguments as Map<String, dynamic>;
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       appBar: PreferredSize(
@@ -111,7 +141,11 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
             icon: Icon(FlutterIcons.ios_arrow_back_ion,
                 size: 30, color: Theme.of(context).primaryColor),
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context, {
+                'selectedTopicTile': selectedTopicTile,
+                'tags': tags,
+                'explicit': explicit
+              });
             },
             color: Colors.grey,
           ),

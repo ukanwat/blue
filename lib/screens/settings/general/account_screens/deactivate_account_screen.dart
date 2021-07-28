@@ -8,7 +8,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/settings_widgets.dart';
-import 'package:blue/widgets/show_dialog.dart';
+import 'package:blue/widgets/dialogs/show_dialog.dart';
 
 class DeactivateAccountScreen extends StatelessWidget {
   static const routeName = 'deactivate-account';
@@ -34,6 +34,15 @@ class DeactivateAccountScreen extends StatelessWidget {
               ),
             );
           }, FluentIcons.delete_24_filled, isRed: true),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+                border: Border(
+              bottom: BorderSide(
+                  color: Theme.of(context).iconTheme.color.withOpacity(0.16),
+                  width: 1),
+            )),
+          ),
           Padding(
             padding: EdgeInsets.all(10),
             child: Text(

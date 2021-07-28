@@ -16,7 +16,6 @@ import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/url_bottom_sheet.dart';
-import '../screens/home.dart';
 import 'boxes.dart';
 
 class Functions {

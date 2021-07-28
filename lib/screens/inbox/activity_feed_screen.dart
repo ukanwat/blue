@@ -10,10 +10,9 @@ import 'package:blue/widgets/empty_state.dart';
 import 'package:blue/widgets/loadmore_widget.dart';
 import 'package:blue/widgets/paginated_posts.dart';
 import 'package:flutter/painting.dart';
-import '../services/hasura.dart';
-import '../widgets/activity_feed_item.dart';
-import '../widgets/progress.dart';
-import './home.dart';
+import '../../services/hasura.dart';
+import '../../widgets/activity_feed_item.dart';
+import '../../widgets/progress.dart';
 
 class ActivityFeedScreen extends StatefulWidget {
   ActivityFeedScreen(Key key) : super(key: key);

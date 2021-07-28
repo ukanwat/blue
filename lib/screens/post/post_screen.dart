@@ -37,18 +37,17 @@ import 'package:video_player/video_player.dart';
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/providers/submit_state.dart';
-import 'package:blue/screens/select_topic_screen.dart';
+import 'package:blue/screens/post/select_topic_screen.dart';
 import 'package:blue/services/link_preview.dart';
 import 'package:blue/services/video_controls.dart';
-import 'package:blue/widgets/banner_dialog.dart';
-import 'package:blue/widgets/empty_dialog.dart';
+import 'package:blue/widgets/dialogs/banner_dialog.dart';
+import 'package:blue/widgets/dialogs/empty_dialog.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:blue/widgets/show_dialog.dart';
-import '../services/boxes.dart';
-import '../services/file_storage.dart';
-import '../services/hasura.dart';
-import '../services/video_processing.dart';
-import './home.dart';
+import 'package:blue/widgets/dialogs/show_dialog.dart';
+import '../../services/boxes.dart';
+import '../../services/file_storage.dart';
+import '../../services/hasura.dart';
+import '../../services/video_processing.dart';
 
 int textLength = 0;
 enum ContentInsertOptions { Device, Camera, Carousel }
@@ -77,6 +76,7 @@ class _PostScreenState extends State<PostScreen> {
     //**choose btween container and widget due to zefyr
     Container(),
   ];
+  dynamic settingsState = {};
   List<File> videos = [];
   List<File> images = [];
   List<String> texts = [];
@@ -91,12 +91,14 @@ class _PostScreenState extends State<PostScreen> {
   List<TextEditingController> textControllers = List();
   bool editingText = false;
   List<FocusNode> textFocusNodes = List();
+
   List<TextEditingController> linkControllers = List();
   Map<int, dynamic> contentsMap = {};
   Map<String, dynamic> firestoreContents = {};
   Map<int, Map> contentsInfo = {};
   Map<String, Map> firestoreContentsInfo = {};
   Map<int, String> videoSources = {};
+
   List contentsData =
       []; //////////////////////////////////////////////////////////////////////////////
   List<String> contentType = [];
@@ -1147,10 +1149,11 @@ class _PostScreenState extends State<PostScreen> {
               )),
           actions: <Widget>[
             IconButton(
-              onPressed: () {
-                Navigator.of(context)
+              onPressed: () async {
+                settingsState = await Navigator.of(context)
                     .pushNamed(SelectTopicScreen.routeName, arguments: {
                   'post-function': handleSubmit,
+                  'state': settingsState
                 });
               },
               icon: Icon(

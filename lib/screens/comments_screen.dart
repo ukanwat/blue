@@ -28,7 +28,6 @@ import 'package:blue/widgets/progress.dart';
 import '../services/boxes.dart';
 import '../services/hasura.dart';
 import '../widgets/comment.dart';
-import './home.dart';
 
 enum CommentSort { best, top, oldest, newest }
 
@@ -98,9 +97,12 @@ class _CommentsScreenState extends State<CommentsScreen>
                   title: TabBar(
                     controller: _tabController,
                     indicatorColor: Theme.of(context).accentColor,
-                    indicatorWeight: 2,
+                    indicatorWeight: 0,
+                    labelPadding: EdgeInsets.only(top: 5),
+                    indicator: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Theme.of(context).cardColor),
                     indicatorSize: TabBarIndicatorSize.tab,
-                    indicatorPadding: EdgeInsets.all(0),
                     tabs: [
                       Tab(
                         child: Column(
@@ -118,7 +120,9 @@ class _CommentsScreenState extends State<CommentsScreen>
                             Text(
                               '@${data.username}',
                               style: TextStyle(
-                                  fontWeight: FontWeight.w500, fontSize: 15),
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 15),
                             )
                           ],
                         ),

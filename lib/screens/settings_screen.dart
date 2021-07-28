@@ -8,7 +8,7 @@ import 'package:blue/models/user.dart';
 import 'package:blue/screens/settings/about/community_guidelines.screen.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/widgets/custom_image.dart';
-import 'package:blue/widgets/show_dialog.dart';
+import 'package:blue/widgets/dialogs/show_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +23,7 @@ import 'package:package_info/package_info.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
-import 'package:blue/screens/license_screen.dart';
+import 'package:blue/screens/settings/about/license_screen.dart';
 import 'package:blue/screens/settings/about/privacy_policy_screen.dart';
 import 'package:blue/screens/settings/about/terms_of_service_screen.dart';
 import 'package:blue/screens/settings/feedback/give_a_suggestion_screen.dart';

@@ -14,8 +14,7 @@ import 'package:blue/widgets/progress.dart';
 import '../services/hasura.dart';
 import '../services/preferences_update.dart';
 import '../widgets/post.dart';
-import './home.dart';
-import './search_results_screen.dart';
+import 'search/search_results_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   static const routeName = '/search';

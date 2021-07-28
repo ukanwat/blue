@@ -6,7 +6,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 
 // Project imports:
-import 'package:blue/screens/home.dart';
 import 'package:blue/widgets/progress.dart';
 
 class ReportDialog extends StatefulWidget {

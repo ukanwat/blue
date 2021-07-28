@@ -1,3 +1,4 @@
+import 'package:blue/constants/doubles.dart';
 import 'package:flutter/material.dart';
 
 class ActionButton extends StatefulWidget {
@@ -30,17 +31,20 @@ class _ActionButtonState extends State<ActionButton> {
               }
             },
             child: Container(
+              height: 26,
+              constraints: BoxConstraints(maxWidth: 70),
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(width: 3.5, color: widget.color)),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 4),
-                child: Text(
-                  widget.text,
-                  style: TextStyle(
-                      color: widget.color,
-                      fontFamily: 'Stark Sans',
-                      fontWeight: FontWeight.w800),
+                  border: Border.all(
+                      width: Doubles.actionButtonBorder, color: widget.color)),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 5, right: 5),
+                  child: Text(
+                    widget.text,
+                    style: TextStyle(
+                        fontFamily: 'Stark Sans', fontWeight: FontWeight.w800),
+                  ),
                 ),
               ),
             ),

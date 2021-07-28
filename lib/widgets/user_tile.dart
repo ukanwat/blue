@@ -1,4 +1,6 @@
 // Flutter imports:
+import 'package:blue/constants/doubles.dart';
+import 'package:blue/widgets/action_button.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -79,69 +81,50 @@ class _UserTileState extends State<UserTile> {
           widget.user.username,
           style: TextStyle(fontSize: 13),
         ),
-        trailing: GestureDetector(
-          child: follow
-              ? Container(
-                  width: 10,
-                )
-              : Container(
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        width: 3.5,
-                        color: (widget.type == Tile.follow)
+        trailing: follow
+            ? Container(
+                width: 10,
+              )
+            : Container(
+                width: 80,
+                child: ActionButton(() {
+                  if (widget.type == Tile.block) {
+                    setState(() {
+                      undo = !undo;
+                    });
+                    if (undo) {
+                      Functions().unblockUser(peer);
+                    } else {
+                      Functions().blockUser(peer);
+                    }
+                  } else if (widget.type == Tile.mute) {
+                    setState(() {
+                      undo = !undo;
+                    });
+                    if (undo) {
+                      Functions().unmuteUser(peer);
+                    } else {
+                      Functions().muteUser(peer);
+                    }
+                  } else if (widget.type == Tile.follow) {
+                    if (follow) {
+                      return;
+                    }
+                    Functions().handleFollowUser(widget.user.userId);
+                    setState(() {
+                      follow = true;
+                    });
+                  }
+                },
+                    (widget.type == Tile.follow)
+                        ? Colors.blue
+                        : undo
                             ? Colors.blue
-                            : undo
-                                ? Colors.blue
-                                : Colors.red,
-                      )),
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 0, horizontal: 4),
-                    child: Text(
-                      (widget.type == Tile.follow)
-                          ? 'Follow'
-                          : '${undo ? '' : 'Un'}${widget.type.toString().substring(5)}',
-                      style: TextStyle(
-                          color: (widget.type == Tile.follow)
-                              ? Colors.blue
-                              : undo
-                                  ? Colors.blue
-                                  : Colors.red,
-                          fontFamily: 'Stark Sans',
-                          fontWeight: FontWeight.w800),
-                    ),
-                  ),
-                ),
-          onTap: () {
-            if (widget.type == Tile.block) {
-              setState(() {
-                undo = !undo;
-              });
-              if (undo) {
-                Functions().unblockUser(peer);
-              } else {
-                Functions().blockUser(peer);
-              }
-            } else if (widget.type == Tile.mute) {
-              setState(() {
-                undo = !undo;
-              });
-              if (undo) {
-                Functions().unmuteUser(peer);
-              } else {
-                Functions().muteUser(peer);
-              }
-            } else if (widget.type == Tile.follow) {
-              if (follow) {
-                return;
-              }
-              Functions().handleFollowUser(widget.user.userId);
-              setState(() {
-                follow = true;
-              });
-            }
-          },
-        ));
+                            : Colors.red,
+                    (widget.type == Tile.follow)
+                        ? 'Follow'
+                        : '${undo ? '' : 'Un'}${widget.type.toString().substring(5)}',
+                    follow == true),
+              ));
   }
 }

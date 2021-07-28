@@ -36,12 +36,11 @@ import 'package:blue/services/link_preview.dart';
 import 'package:blue/services/post_functions.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/services/video_controls.dart';
-import 'package:blue/widgets/report_dialog.dart';
-import 'package:blue/widgets/repost_dialog.dart';
-import 'package:blue/widgets/save_dialog.dart';
-import 'package:blue/widgets/show_dialog.dart';
+import 'package:blue/widgets/dialogs/report_dialog.dart';
+import 'package:blue/widgets/dialogs/repost_dialog.dart';
+import 'package:blue/widgets/dialogs/save_dialog.dart';
+import 'package:blue/widgets/dialogs/show_dialog.dart';
 import '../screens/comments_screen.dart';
-import '../screens/home.dart';
 import '../services/boxes.dart';
 import '../services/functions.dart';
 import '../services/functions.dart';
@@ -832,18 +831,23 @@ class _PostState extends State<Post> {
         thumbnailType = CompactPostThumbnailType.video;
         flickManager = FlickManager(
           autoPlay: PreferencesUpdate().getBool('autoplay_videos') ?? true,
-          videoPlayerController: VideoPlayerController.network(contents['$i']),
+          videoPlayerController: VideoPlayerController.network(
+            contents['$i'],
+          ),
         );
+
         contentsViewList.add(Container(
+            width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.width /
                 contentsInfo[i]['aspectRatio'],
             child: Container(
-                child: VideoDisplay(flickManager, true,
-                    thumbnail: cachedNetworkImage(
-                      context,
-                      contentsInfo[i]['thumbUrl'],
-                      aspectRatio: contentsInfo[i]['aspectRatio'],
-                    )))
+              child: VideoDisplay(flickManager, true,
+                  thumbnail: cachedNetworkImage(
+                    context,
+                    contentsInfo[i]['thumbUrl'],
+                    aspectRatio: contentsInfo[i]['aspectRatio'],
+                  )),
+            )
             // KiddVideoPlayer(
             //   fromUrl: true,
             //   videoUrl: contents['$i'],
@@ -1373,8 +1377,8 @@ class _PostState extends State<Post> {
             ? Container(
                 decoration: BoxDecoration(
                     color: Theme.of(context).backgroundColor,
-                    border: Border.fromBorderSide(
-                        BorderSide(color: Colors.grey, width: 1))),
+                    border: Border.fromBorderSide(BorderSide(
+                        color: Colors.grey.withOpacity(0.4), width: 1))),
                 padding: EdgeInsets.symmetric(horizontal: 15),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1409,6 +1413,7 @@ class _PostState extends State<Post> {
                         ? Theme.of(context).backgroundColor
                         : widget.color,
                     child: InkWell(
+                      borderRadius: BorderRadius.circular(widget.radius ?? 0),
                       onTap: widget.isCompact
                           ? () {
                               showComments(

@@ -23,14 +23,13 @@ import 'package:blue/screens/settings_screen.dart';
 import 'package:blue/services/graphql.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
-import 'package:blue/widgets/empty_dialog.dart';
+import 'package:blue/widgets/dialogs/empty_dialog.dart';
 import 'package:blue/widgets/empty_state.dart';
-import '../main.dart';
-import '../models/user.dart';
-import '../services/boxes.dart';
-import '../widgets/progress.dart';
-import './chat_messages_screen.dart';
-import './home.dart';
+import '../../main.dart';
+import '../../models/user.dart';
+import '../../services/boxes.dart';
+import '../../widgets/progress.dart';
+import 'chat_messages_screen.dart';
 
 class ChatsScreen extends StatefulWidget {
   final bool archived;
@@ -386,7 +385,7 @@ class _SearchPeopleState extends State<SearchPeople> {
   }
 
   bool peopleLoading = false;
-  List<ListTile> people = [];
+  List people = [];
   searchPeople(String _search) async {
     List<dynamic> _people = await Hasura.searchPeople(_search);
 
@@ -422,7 +421,7 @@ class _SearchPeopleState extends State<SearchPeople> {
                           ),
                         ),
                       );
-                    }, Colors.blue, 'Message', true),
+                    }, Theme.of(context).accentColor, 'Message', true),
                   ),
                   title: Text(
                     '${doc["username"]}',
@@ -504,12 +503,14 @@ class _SearchPeopleState extends State<SearchPeople> {
         if (peopleLoading == true)
           circularProgress()
         else
-          ListView.builder(
-            itemBuilder: (_, i) {
-              return people[i];
-            },
-            itemCount: people.length,
-            shrinkWrap: true,
+          Expanded(
+            child: ListView.builder(
+              itemBuilder: (_, i) {
+                return people[i];
+              },
+              itemCount: people.length,
+              shrinkWrap: true,
+            ),
           )
       ],
     );

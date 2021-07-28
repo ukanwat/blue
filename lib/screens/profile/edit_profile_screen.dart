@@ -25,10 +25,9 @@ import 'package:blue/services/boxes.dart';
 import 'package:blue/services/functions.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/widgets/custom_image.dart';
-import '../models/user.dart';
-import '../services/file_storage.dart';
-import '../widgets/progress.dart';
-import './home.dart';
+import '../../models/user.dart';
+import '../../services/file_storage.dart';
+import '../../widgets/progress.dart';
 
 class EditProfileScreen extends StatefulWidget {
   static const routeName = '/edit-profile';

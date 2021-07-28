@@ -28,6 +28,14 @@ class _QRScreenState extends State<QRScreen> {
     super.initState();
   }
 
+  checkSelf(String id) {
+    if (int.parse(id) == Boxes.currentUserBox.get('user_id')) {
+      snackbar("you can't follow yourself", context, color: Colors.red);
+      return true;
+    }
+    false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -163,7 +171,9 @@ class _QRScreenState extends State<QRScreen> {
                                   //     ),
                                   //   ),
                                   // );
-
+                                  if (checkSelf(results)) {
+                                    return;
+                                  }
                                   await Functions()
                                       .handleFollowUser(int.parse(results));
                                   GoTo().profileScreen(
@@ -182,17 +192,23 @@ class _QRScreenState extends State<QRScreen> {
                                             const EdgeInsets.only(left: 20),
                                         child: Center(
                                             child: Icon(
-                                                FluentIcons.camera_16_filled)),
+                                          FluentIcons.camera_16_filled,
+                                          color: Colors.black,
+                                        )),
                                       ),
                                       Text(
                                         'Scan From Camera',
+                                        style: TextStyle(color: Colors.black),
                                         textAlign: TextAlign.center,
                                       ),
                                     ],
                                   ),
                                 ),
                               ),
-                              Container(child: VerticalDivider()),
+                              Container(
+                                  child: VerticalDivider(
+                                color: Colors.grey,
+                              )),
                               GestureDetector(
                                 onTap: () async {
                                   PickedFile file = await ImagePicker()
@@ -205,6 +221,9 @@ class _QRScreenState extends State<QRScreen> {
                                   } catch (e) {
                                     snackbar('QR code not recognised', context,
                                         color: Colors.red);
+                                    return;
+                                  }
+                                  if (checkSelf(results)) {
                                     return;
                                   }
 
@@ -220,11 +239,15 @@ class _QRScreenState extends State<QRScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     children: [
-                                      Icon(FluentIcons
-                                          .content_view_gallery_20_filled),
+                                      Icon(
+                                        FluentIcons
+                                            .content_view_gallery_20_filled,
+                                        color: Colors.black,
+                                      ),
                                       Text(
                                         'Scan From  Gallery',
                                         textAlign: TextAlign.center,
+                                        style: TextStyle(color: Colors.black),
                                       ),
                                     ],
                                   ),

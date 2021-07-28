@@ -13,7 +13,6 @@ import 'package:blue/services/post_service.dart';
 import 'package:blue/widgets/paginated_posts.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
-import '../home.dart';
 
 class TagRecentScreen extends StatefulWidget {
   final String tag;

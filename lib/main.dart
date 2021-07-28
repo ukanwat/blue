@@ -2,7 +2,7 @@
 import 'dart:async';
 
 // Flutter imports:
-import 'package:blue/screens/qr_screen.dart';
+import 'package:blue/screens/profile/qr_screen.dart';
 import 'package:blue/screens/settings/about/community_guidelines.screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -23,19 +23,18 @@ import 'package:blue/constants/app_colors.dart';
 import 'package:blue/models/hive_data_model.dart';
 import 'package:blue/providers/provider_widget.dart' as PW;
 import 'package:blue/providers/theme.dart';
-import 'package:blue/screens/about_screen.dart';
-import 'package:blue/screens/all_saved_posts_screen.dart';
-import 'package:blue/screens/chat_info_screen.dart';
-import 'package:blue/screens/chat_messages_screen.dart';
+import 'package:blue/screens/profile/all_saved_posts_screen.dart';
+import 'package:blue/screens/inbox/chat_info_screen.dart';
+import 'package:blue/screens/inbox/chat_messages_screen.dart';
 import 'package:blue/screens/collection_posts_screen.dart';
-import 'package:blue/screens/email_sign_in_screen.dart';
-import 'package:blue/screens/follows_screen.dart';
-import 'package:blue/screens/gifs_screen.dart';
-import 'package:blue/screens/license_screen.dart';
-import 'package:blue/screens/package_licenses_screen.dart';
+import 'package:blue/screens/sign/email_sign_in_screen.dart';
+import 'package:blue/screens/profile/follows_screen.dart';
+import 'package:blue/screens/inbox/gifs_screen.dart';
+import 'package:blue/screens/settings/about/license_screen.dart';
+import 'package:blue/screens/settings/about/package_licenses_screen.dart';
 import 'package:blue/screens/profile_image_crop_screen.dart';
-import 'package:blue/screens/search_tag_screen.dart';
-import 'package:blue/screens/select_topic_screen.dart';
+import 'package:blue/screens/post/search_tag_screen.dart';
+import 'package:blue/screens/post/select_topic_screen.dart';
 import 'package:blue/screens/settings/about/privacy_policy_screen.dart';
 import 'package:blue/screens/settings/about/terms_of_service_screen.dart';
 import 'package:blue/screens/settings/feedback/give_a_suggestion_screen.dart';
@@ -53,7 +52,7 @@ import 'package:blue/screens/settings/privacy/activity_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screens/blocked_accounts_screen.dart';
 import 'package:blue/screens/settings/privacy/safety_screens/muted_accounts_screen.dart';
-import 'package:blue/screens/show_screen.dart';
+import 'package:blue/screens/sign/show_screen.dart';
 import 'package:blue/screens/sign_in_view_screen.dart';
 import 'package:blue/screens/tabs_screen.dart';
 import 'package:blue/screens/tag_screen.dart';
@@ -64,12 +63,12 @@ import 'package:blue/services/preferences_update.dart';
 import 'package:blue/services/push_notifications.dart';
 import 'package:blue/widgets/progress.dart';
 import './screens/comments_screen.dart';
-import './screens/edit_profile_screen.dart';
-import './screens/post_screen.dart';
+import 'screens/profile/edit_profile_screen.dart';
+import 'screens/post/post_screen.dart';
 import './screens/search_screen.dart';
-import './screens/set_name_screen.dart';
+import 'screens/sign/set_name_screen.dart';
 import './screens/settings_screen.dart';
-import './screens/verify_email_screen.dart';
+import 'screens/sign/verify_email_screen.dart';
 import './services/push_notifications.dart';
 import 'models/user.dart';
 import 'screens/settings/general/account_screens/date_of_birth_screen.dart';
@@ -244,9 +243,6 @@ class MyAppState extends State<MyApp> {
                 // },
                 onGenerateRoute: (settings) {
                   switch (settings.name) {
-                    case AboutScreen.routeName:
-                      return CupertinoPageRoute(
-                          builder: (_) => AboutScreen(), settings: settings);
                     case SettingsScreen.routeName:
                       return PageTransition(
                           child: SettingsScreen(),

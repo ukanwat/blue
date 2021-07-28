@@ -23,8 +23,6 @@ class AppColors {
     Colors.blue,
     Colors.blueGrey,
     Colors.cyan,
-    Colors.brown,
-    Colors.yellowAccent,
     Colors.teal,
     Colors.tealAccent,
     Colors.indigo,

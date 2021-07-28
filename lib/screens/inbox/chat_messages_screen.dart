@@ -21,7 +21,6 @@ import 'package:intl/intl.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
-import 'package:blue/screens/home.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/functions.dart';
 import 'package:blue/services/go_to.dart';
@@ -30,13 +29,13 @@ import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/empty_state.dart';
 import 'package:blue/widgets/progress.dart';
-import '../models/user.dart';
-import '../services/file_storage.dart';
-import '../widgets/header.dart';
-import '../widgets/message.dart';
-import '../widgets/progress.dart';
-import './chat_info_screen.dart';
-import './gifs_screen.dart';
+import '../../models/user.dart';
+import '../../services/file_storage.dart';
+import '../../widgets/header.dart';
+import '../../widgets/message.dart';
+import '../../widgets/progress.dart';
+import 'chat_info_screen.dart';
+import 'gifs_screen.dart';
 
 enum MessageType { image, gif }
 

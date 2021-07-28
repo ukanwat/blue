@@ -1,6 +1,6 @@
 // Flutter imports:
 import 'package:blue/services/preferences_update.dart';
-import 'package:blue/widgets/empty_dialog.dart';
+import 'package:blue/widgets/dialogs/empty_dialog.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -9,13 +9,12 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 // Project imports:
-import 'package:blue/screens/category_posts_screen.dart';
+import 'package:blue/screens/explore/category_posts_screen.dart';
 import 'package:blue/screens/search_screen.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/tags_wrap.dart';
 import 'package:reorderables/reorderables.dart';
-import 'home.dart';
 
 class ExploreScreen extends StatefulWidget {
   @override

@@ -13,7 +13,7 @@ import 'package:widgets_visibility_provider/widgets_visibility_provider.dart';
 
 // Project imports:
 import 'package:blue/constants/app_colors.dart';
-import 'package:blue/screens/following_posts_screen.dart';
+import 'package:blue/screens/home/following_posts_screen.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/post_service.dart';
@@ -21,11 +21,10 @@ import 'package:blue/widgets/bottom_sheet.dart';
 import 'package:blue/widgets/paginated_posts.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
-import 'package:blue/widgets/show_dialog.dart';
+import 'package:blue/widgets/dialogs/show_dialog.dart';
 import 'package:blue/widgets/tags_wrap.dart';
-import '../widgets/banner_dialog.dart';
+import '../widgets/dialogs/banner_dialog.dart';
 import '../widgets/header.dart';
-import './home.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen(Key key) : super(key: key);
@@ -83,7 +82,12 @@ class _HomeScreenState extends State<HomeScreen>
 
   Future refreshPosts() async {
     p = [];
+    pS;
+    loaded = false;
+    pS = PostService('home', fn, transform, false, false);
     addItems();
+    setState(() {});
+    return;
   }
 
   Future fn(int offSet) async {
@@ -187,6 +191,14 @@ class _HomeScreenState extends State<HomeScreen>
                 }),
             IconButton(
                 icon: Icon(
+                  FluentIcons.arrow_clockwise_24_regular,
+                  size: 26,
+                ),
+                onPressed: () {
+                  refreshPosts();
+                }),
+            IconButton(
+                icon: Icon(
                   followingPosts
                       ? FluentIcons.arrow_hook_up_left_24_regular
                       : FluentIcons.new_24_regular,
@@ -211,20 +223,21 @@ class _HomeScreenState extends State<HomeScreen>
         centerTitle: false,
       ),
       body: PageTransitionSwitcher(
-          transitionBuilder: (
-            Widget child,
-            Animation<double> animation,
-            Animation<double> secondaryAnimation,
-          ) {
-            return FadeThroughTransition(
-              animation: animation,
-              secondaryAnimation: secondaryAnimation,
-              child: child,
-            );
-          },
-          child: followingPosts
-              ? FollowingPostsScreen()
-              : Stack(
+        transitionBuilder: (
+          Widget child,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation,
+        ) {
+          return FadeThroughTransition(
+            animation: animation,
+            secondaryAnimation: secondaryAnimation,
+            child: child,
+          );
+        },
+        child: followingPosts
+            ? FollowingPostsScreen()
+            : Container(
+                child: Stack(
                   children: [
                     WidgetsVisibilityProvider(
                       condition: (PositionData positionData) =>
@@ -333,7 +346,9 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                         ))
                   ],
-                )),
+                ),
+              ),
+      ),
     );
   }
 }

@@ -18,8 +18,8 @@ import 'package:uuid/uuid.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
-import 'package:blue/widgets/empty_dialog.dart';
-import 'package:blue/widgets/show_dialog.dart';
+import 'package:blue/widgets/dialogs/empty_dialog.dart';
+import 'package:blue/widgets/dialogs/show_dialog.dart';
 
 String messagToken;
 Future<File> _downloadAndSaveFile(String url, String fileName) async {

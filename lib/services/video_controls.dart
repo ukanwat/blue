@@ -63,6 +63,7 @@ class _VideoDisplayState extends State<VideoDisplay> with RouteAware {
   @override
   void didChangeDependencies() {
     routeObserver.subscribe(this, ModalRoute.of(context));
+
     super.didChangeDependencies();
   }
 

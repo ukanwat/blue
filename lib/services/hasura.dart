@@ -8,7 +8,6 @@ import 'package:hasura_connect/hasura_connect.dart';
 
 // Project imports:
 import 'package:blue/screens/comments_screen.dart';
-import 'package:blue/screens/home.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/preferences_update.dart';
@@ -428,8 +427,7 @@ class Hasura {
     if (topicName != null) {
       topic = ' category:"$topicName",';
     }
-    title = title.replaceAll('\'', '\\\'')
-            .replaceAll('\"', '\\\"');
+    title = title.replaceAll('\"', '\\\"');
     String _doc = tags == null
         ? """mutation insertData  {
   insert_posts_one(object: {contents: $contents,explicit:$explicit, owner_id: $userId,$subtitleText title: "$title", $topic $thumb}

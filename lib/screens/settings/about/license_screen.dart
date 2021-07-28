@@ -12,7 +12,7 @@ import 'package:flutter/widgets.dart' hide Flow;
 import 'package:package_info/package_info.dart';
 
 // Project imports:
-import 'package:blue/screens/package_licenses_screen.dart';
+import 'package:blue/screens/settings/about/package_licenses_screen.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 
 class LicenseScreen extends StatefulWidget {
@@ -132,7 +132,7 @@ class _LicenseScreenState extends State<LicenseScreen> {
       width: 100,
       height: 100,
     );
-    final String applicationLegalese = '© 2020 Stark. All Rights Reserved';
+    final String applicationLegalese = '© 2021 Stark. All Rights Reserved';
 
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,

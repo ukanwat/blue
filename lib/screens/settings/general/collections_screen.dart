@@ -7,11 +7,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
-import 'package:blue/screens/all_saved_posts_screen.dart';
+import 'package:blue/screens/profile/all_saved_posts_screen.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/widgets/progress.dart';
 import '../../collection_posts_screen.dart';
-import '../../home.dart';
 import 'collection_screens/create_collection_screen.dart';
 
 class CollectionsScreen extends StatefulWidget {
@@ -21,28 +20,29 @@ class CollectionsScreen extends StatefulWidget {
 }
 
 class _CollectionsScreenState extends State<CollectionsScreen> {
- dynamic  snapshot ;
-  bool loading  = true;
+  dynamic snapshot;
+  bool loading = true;
   @override
   void initState() {
     getCollections();
     super.initState();
   }
-      getCollections() async {
-        setState(() {
-  loading = true;
-});
-snapshot =await Hasura.getCollections();
-setState(() {
-  loading = false;
-});
-   }
+
+  getCollections() async {
+    setState(() {
+      loading = true;
+    });
+    snapshot = await Hasura.getCollections();
+    setState(() {
+      loading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: 
-      Theme.of(context).backgroundColor,
-      appBar: PreferredSize(
+        backgroundColor: Theme.of(context).backgroundColor,
+        appBar: PreferredSize(
           preferredSize: Size.fromHeight(50),
           child: AppBar(
             backgroundColor: Theme.of(context).canvasColor,
@@ -62,13 +62,15 @@ setState(() {
             actions: <Widget>[
               FlatButton(
                 onPressed: () {
-                  Navigator.of(context).pushNamed(
-                      CreateCollectionScreen.routeName,
-                    ).then((value){
-                      if(value == true){
-                        getCollections();
-                      }
-                    });
+                  Navigator.of(context)
+                      .pushNamed(
+                    CreateCollectionScreen.routeName,
+                  )
+                      .then((value) {
+                    if (value == true) {
+                      getCollections();
+                    }
+                  });
                 },
                 child: Text(
                   'New',
@@ -79,43 +81,48 @@ setState(() {
                 ),
               )
             ],
-          ),),
-      body: loading ? circularProgress(): ListView.builder(
-        padding: EdgeInsets.only(top: 6),
-        itemBuilder: (_,i){
-        i = i-1;
-          return Container(
-              height: 60,
-              padding: EdgeInsets.symmetric(horizontal: 0),
-              margin: EdgeInsets.symmetric(vertical: 6, horizontal: 10),
-
-              decoration: BoxDecoration(
-borderRadius: BorderRadius.circular(15),
-border: Border.all(width: 2,color:  Theme.of(context).cardColor,)
-            
-              ), child:InkWell(
-             onTap: (){
-           if(i== -1){
-              Navigator.of(context).pushNamed( AllSavedPostsScreen.routeName);
-           }else{
-              Navigator.of(context).pushNamed( CollectionPostsScreen.routeName,arguments: snapshot[i]['collection']);
-           }
-             },
-                      child:  Center(
-               child: Text(i== -1? 'All Saved':
-                snapshot[i ]['collection'],maxLines: 1,overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-               
-                  fontSize: 25,
-                  fontWeight: FontWeight.w500,
-                ),
-                )
-             )
-            ),
-          );
-      },
-      itemCount: snapshot.length + 1,
-      )
-    );
+          ),
+        ),
+        body: loading
+            ? circularProgress()
+            : ListView.builder(
+                padding: EdgeInsets.only(top: 6),
+                itemBuilder: (_, i) {
+                  i = i - 1;
+                  return Container(
+                    height: 60,
+                    padding: EdgeInsets.symmetric(horizontal: 0),
+                    margin: EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(
+                          width: 2,
+                          color: Theme.of(context).cardColor,
+                        )),
+                    child: InkWell(
+                        onTap: () {
+                          if (i == -1) {
+                            Navigator.of(context)
+                                .pushNamed(AllSavedPostsScreen.routeName);
+                          } else {
+                            Navigator.of(context).pushNamed(
+                                CollectionPostsScreen.routeName,
+                                arguments: snapshot[i]['collection']);
+                          }
+                        },
+                        child: Center(
+                            child: Text(
+                          i == -1 ? 'All Saved' : snapshot[i]['collection'],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ))),
+                  );
+                },
+                itemCount: snapshot.length + 1,
+              ));
   }
 }

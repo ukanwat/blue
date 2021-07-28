@@ -7,8 +7,8 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
-import 'package:blue/screens/activity_feed_screen.dart';
-import 'package:blue/screens/chats_screen.dart';
+import 'package:blue/screens/inbox/activity_feed_screen.dart';
+import 'package:blue/screens/inbox/chats_screen.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:uuid/uuid.dart';
 

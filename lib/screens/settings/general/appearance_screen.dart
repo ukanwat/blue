@@ -10,7 +10,6 @@ import 'package:provider/provider.dart';
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/providers/theme.dart';
-import 'package:blue/screens/home.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 

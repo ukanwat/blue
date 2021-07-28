@@ -9,10 +9,9 @@ import 'package:get/get.dart';
 import 'package:package_info/package_info.dart';
 
 // Project imports:
-import 'package:blue/screens/set_name_screen.dart';
+import 'package:blue/screens/sign/set_name_screen.dart';
 import 'package:blue/services/hasura.dart';
 import '../screens/comments_screen.dart';
-import '../screens/home.dart';
 import '../widgets/post.dart';
 
 class DynamicLinksService {

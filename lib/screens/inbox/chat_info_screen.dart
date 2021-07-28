@@ -13,9 +13,9 @@ import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/header.dart';
 import 'package:blue/widgets/settings_widgets.dart';
-import 'package:blue/widgets/show_dialog.dart';
-import 'package:blue/widgets/user_report_dialog.dart';
-import '../widgets/progress.dart';
+import 'package:blue/widgets/dialogs/show_dialog.dart';
+import 'package:blue/widgets/dialogs/user_report_dialog.dart';
+import '../../widgets/progress.dart';
 
 class ChatInfoScreen extends StatefulWidget {
   static const routeName = 'chat-info';

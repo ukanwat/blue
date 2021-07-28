@@ -17,8 +17,8 @@ import 'package:flutter_icons/flutter_icons.dart';
 // Project imports:
 import 'package:blue/constants/app_colors.dart';
 import 'package:blue/main.dart';
-import 'package:blue/screens/communication_tabbar_screen.dart';
-import 'package:blue/screens/post_screen.dart';
+import 'package:blue/screens/inbox/communication_tabbar_screen.dart';
+import 'package:blue/screens/post/post_screen.dart';
 import 'package:blue/screens/settings/general/drafts_screen.dart';
 import 'package:blue/services/auth_service.dart';
 import 'package:blue/services/boxes.dart';
@@ -31,7 +31,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:quick_actions/quick_actions.dart';
 import '../services/dynamic_links.dart';
 import './explore_screen.dart';
-import './home.dart';
 import './profile_screen.dart';
 import 'home_screen.dart';
 
@@ -147,21 +146,24 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
 
     final QuickActions quickActions = QuickActions();
     quickActions.initialize((String type) {
-      setState(() {
-        if (type == 'post') {
-          Navigator.pushNamed(context, PostScreen.routeName);
-        } else if (type == 'inbox') {
-          setState(() {
-            navigationTapped(3);
-          });
-        } else if (type == 'explore') {
-          setState(() {
-            navigationTapped(1);
-          });
-        } else if (type == 'search') {
-          Navigator.of(context).pushNamed(SearchScreen.routeName);
-        }
-      });
+      if (this.mounted)
+        setState(() {
+          if (type == 'post') {
+            Navigator.pushNamed(context, PostScreen.routeName);
+          } else if (type == 'inbox') {
+            if (this.mounted)
+              setState(() {
+                navigationTapped(3);
+              });
+          } else if (type == 'explore') {
+            if (this.mounted)
+              setState(() {
+                navigationTapped(1);
+              });
+          } else if (type == 'search') {
+            Navigator.of(context).pushNamed(SearchScreen.routeName);
+          }
+        });
     });
 
     quickActions.setShortcutItems(<ShortcutItem>[
@@ -191,9 +193,10 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
       AuthService.firebaseAuth.authStateChanges().first.then((user) {
         try {
           user.getIdToken(true).then((token) {
-            setState(() {
-              Hasura.jwtToken = token;
-            });
+            if (this.mounted)
+              setState(() {
+                Hasura.jwtToken = token;
+              });
           });
         } catch (e) {}
       });
@@ -344,9 +347,10 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
   int pageIndex = 0;
   void navigationTapped(int page) {
     if (page == 0 && pageIndex == 0) {
-      setState(() {
-        keyIndex = keyIndex + 1;
-      });
+      if (this.mounted)
+        setState(() {
+          keyIndex = keyIndex + 1;
+        });
     }
     if (page == 2) {
       showModalBottomSheet<void>(
@@ -471,8 +475,9 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
   }
 
   void onPageChanged(int page) {
-    setState(() {
-      this._page = page;
-    });
+    if (this.mounted)
+      setState(() {
+        this._page = page;
+      });
   }
 }

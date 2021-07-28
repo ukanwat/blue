@@ -14,7 +14,6 @@ import 'package:flutter_gradients/flutter_gradients.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
-import 'package:blue/screens/home.dart';
 import 'package:blue/screens/tag/tag_popular_screen.dart';
 import 'package:blue/screens/tag/tag_recent_screen.dart';
 import 'package:blue/services/hasura.dart';

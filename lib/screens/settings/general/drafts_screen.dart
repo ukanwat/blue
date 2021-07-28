@@ -12,13 +12,13 @@ import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 
 // Project imports:
-import 'package:blue/screens/post_screen.dart';
+import 'package:blue/screens/post/post_screen.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/link_preview.dart';
 import 'package:blue/services/video_controls.dart';
 import 'package:blue/widgets/empty_state.dart';
 import 'package:blue/widgets/settings_widgets.dart';
-import 'package:blue/widgets/show_dialog.dart';
+import 'package:blue/widgets/dialogs/show_dialog.dart';
 
 class DraftsScreen extends StatefulWidget {
   static const routeName = 'drafts';

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Project imports:
-import 'package:blue/screens/home.dart';
 
 class EmptyDialog extends StatefulWidget {
   final Widget child;

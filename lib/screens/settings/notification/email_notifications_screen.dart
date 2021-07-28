@@ -9,7 +9,6 @@ import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import '../../../main.dart';
-import '../../home.dart';
 
 class EmailNotificationsScreen extends StatefulWidget {
   static const routeName = 'email-notifications';
@@ -68,16 +67,6 @@ class _EmailNotificationsScreenState extends State<EmailNotificationsScreen> {
                     saveNotifPref('email_feedbacks', newValue);
                   },
                   description: 'Give Feedback on app',
-                ),
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      border: Border(
-                    bottom: BorderSide(
-                        color:
-                            Theme.of(context).iconTheme.color.withOpacity(0.16),
-                        width: 1),
-                  )),
                 ),
                 settingsSwitchListTile(
                   'Announcement Emails',
