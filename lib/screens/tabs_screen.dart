@@ -27,6 +27,7 @@ import 'package:blue/services/hasura.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/services/push_notifications.dart';
 import 'package:blue/widgets/progress.dart';
+import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:quick_actions/quick_actions.dart';
 import '../services/dynamic_links.dart';

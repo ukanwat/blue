@@ -78,8 +78,10 @@ snackbar(String text, BuildContext context,
         return Flash(
           controller: controller,
           backgroundColor: color ?? Theme.of(Get.context).cardColor,
-          position: FlashPosition.bottom,
-          style: FlashStyle.grounded,
+          position: FlashPosition.top,
+          style: FlashStyle.floating,
+          borderRadius: BorderRadius.circular(8),
+          margin: EdgeInsets.only(bottom: 10, left: 15, right: 15),
           child: FlashBar(
             icon: leadingIcon ?? Icon(FluentIcons.info_16_regular),
             primaryAction: seeMore == null
