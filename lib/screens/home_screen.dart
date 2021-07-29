@@ -123,9 +123,10 @@ class _HomeScreenState extends State<HomeScreen>
     }
 
     _posts.forEach((element) {});
-    setState(() {
-      p = p + _posts;
-    });
+    if (this.mounted)
+      setState(() {
+        p = p + _posts;
+      });
   }
 
   bool get wantKeepAlive => true;

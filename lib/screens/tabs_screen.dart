@@ -107,6 +107,47 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
     }
   }
 
+  quickActions() async {
+    //TODO:imp bottom tab and page doesn't change on android
+    // await Future.delayed(Duration(seconds: 1));
+    final QuickActions quickActions = QuickActions();
+    quickActions.initialize((String type) {
+      if (this.mounted)
+        setState(() {
+          if (type == 'post') {
+            Navigator.pushNamed(context, PostScreen.routeName);
+          } else if (type == 'inbox') {
+            setState(() {
+              navigationTapped(3, postFrame: true);
+            });
+          } else if (type == 'explore') {
+            setState(() {
+              navigationTapped(1, postFrame: true);
+            });
+          } else if (type == 'search') {
+            Navigator.of(context).pushNamed(SearchScreen.routeName);
+          }
+        });
+    });
+
+    quickActions.setShortcutItems(<ShortcutItem>[
+      // NOTE: This first action icon will only work on iOS.
+      // In a real world project keep the same file name for both platforms.
+      const ShortcutItem(
+        type: 'post',
+        localizedTitle: 'Post',
+        icon: 'post',
+      ),
+      // NOTE: This second action icon will only work on Android.
+      // In a real world project keep the same file name for both platforms.
+      const ShortcutItem(type: 'inbox', localizedTitle: 'Inbox', icon: 'inbox'),
+      const ShortcutItem(
+          type: 'explore', localizedTitle: 'Explore', icon: 'explore'),
+      const ShortcutItem(
+          type: 'search', localizedTitle: 'Search', icon: 'search'),
+    ]).then((value) {});
+  }
+
   @override
   void initState() {
     Boxes.preferenceBox.put('start_time', DateTime.now().toString());
@@ -145,44 +186,6 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
     });
     setLists();
 
-    final QuickActions quickActions = QuickActions();
-    quickActions.initialize((String type) {
-      if (this.mounted)
-        setState(() {
-          if (type == 'post') {
-            Navigator.pushNamed(context, PostScreen.routeName);
-          } else if (type == 'inbox') {
-            if (this.mounted)
-              setState(() {
-                navigationTapped(3);
-              });
-          } else if (type == 'explore') {
-            if (this.mounted)
-              setState(() {
-                navigationTapped(1);
-              });
-          } else if (type == 'search') {
-            Navigator.of(context).pushNamed(SearchScreen.routeName);
-          }
-        });
-    });
-
-    quickActions.setShortcutItems(<ShortcutItem>[
-      // NOTE: This first action icon will only work on iOS.
-      // In a real world project keep the same file name for both platforms.
-      const ShortcutItem(
-        type: 'post',
-        localizedTitle: 'Post',
-        icon: 'post',
-      ),
-      // NOTE: This second action icon will only work on Android.
-      // In a real world project keep the same file name for both platforms.
-      const ShortcutItem(type: 'inbox', localizedTitle: 'Inbox', icon: 'inbox'),
-      const ShortcutItem(
-          type: 'explore', localizedTitle: 'Explore', icon: 'explore'),
-      const ShortcutItem(
-          type: 'search', localizedTitle: 'Search', icon: 'search'),
-    ]).then((value) {});
     super.initState();
   }
 
@@ -214,6 +217,7 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
     _pageController = PageController(initialPage: 0);
     loadCurrentUser();
     handleStartUpLogic(context);
+    quickActions();
     super.didChangeDependencies();
   }
 
@@ -346,7 +350,7 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
   }
 
   int pageIndex = 0;
-  void navigationTapped(int page) {
+  void navigationTapped(int page, {bool postFrame}) {
     if (page == 0 && pageIndex == 0) {
       if (this.mounted)
         setState(() {
@@ -460,8 +464,14 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
                 ));
           });
       // Navigator.pushNamed(context, PostScreen.routeName);
-    } else
-      _pageController.jumpToPage(page);
+    } else {
+      if (postFrame == true) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _pageController.jumpToPage(page);
+        });
+      } else
+        _pageController.jumpToPage(page);
+    }
 
     pageIndex = page;
   }

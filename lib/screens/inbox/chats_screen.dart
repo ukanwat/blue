@@ -437,14 +437,30 @@ class _SearchPeopleState extends State<SearchPeople> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 15, bottom: 7),
-          child: Text(
-            'Search People',
-            style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 20,
-                fontFamily: 'Stark Sans',
-                color: Theme.of(context).iconTheme.color.withOpacity(0.7)),
+          padding:
+              const EdgeInsets.only(top: 15, bottom: 7, left: 30, right: 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Center(
+                  child: Text(
+                    'Search People',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 20,
+                        fontFamily: 'Stark Sans',
+                        color:
+                            Theme.of(context).iconTheme.color.withOpacity(0.7)),
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Icon(Icons.clear),
+              )
+            ],
           ),
         ),
         Padding(

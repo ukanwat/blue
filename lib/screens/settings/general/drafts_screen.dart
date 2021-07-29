@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:carousel_pro/carousel_pro.dart';
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:image_size_getter/file_input.dart';
+import 'package:image_size_getter/image_size_getter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 
@@ -66,23 +68,29 @@ class _DraftsScreenState extends State<DraftsScreen> {
                       widgets.add(Image.file(File(element['content'])));
                       break;
                     case 'carousel':
-                      widgets.add(Carousel(
-                        dotVerticalPadding: 0,
-                        dotSize: 6,
-                        dotIncreaseSize: 1.2,
-                        dotIncreasedColor: Colors.blue.withOpacity(0.7),
-                        dotColor: Colors.white,
-                        showIndicator: true,
-                        dotPosition: DotPosition.bottomCenter,
-                        dotSpacing: 15,
-                        boxFit: BoxFit.fitWidth,
-                        dotBgColor: Colors.transparent,
-                        autoplay: false,
-                        overlayShadow: false,
-                        moveIndicatorFromBottom: 20,
-                        images: List.generate(element['content'].length, (j) {
-                          return FileImage(File(element['content'][j]));
-                        }),
+                      Size _size = ImageSizeGetter.getSize(
+                          FileInput(File(element['content'][0])));
+                      widgets.add(Container(
+                        height: (MediaQuery.of(context).size.width - 20) /
+                            (_size.width / _size.height),
+                        child: Carousel(
+                          dotVerticalPadding: 0,
+                          dotSize: 6,
+                          dotIncreaseSize: 1.2,
+                          dotIncreasedColor: Colors.blue.withOpacity(0.7),
+                          dotColor: Colors.white,
+                          showIndicator: true,
+                          dotPosition: DotPosition.bottomCenter,
+                          dotSpacing: 15,
+                          boxFit: BoxFit.fitWidth,
+                          dotBgColor: Colors.transparent,
+                          autoplay: false,
+                          overlayShadow: false,
+                          moveIndicatorFromBottom: 20,
+                          images: List.generate(element['content'].length, (j) {
+                            return FileImage(File(element['content'][j]));
+                          }),
+                        ),
                       ));
                       break;
                     case 'link':

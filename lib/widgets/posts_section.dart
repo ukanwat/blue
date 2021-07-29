@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/widgets/action_button.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 
@@ -148,40 +149,18 @@ class _PostsSectionState extends State<PostsSection>
                     ),
                     isFollowing
                         ? Container()
-                        : Padding(
-                            padding: const EdgeInsets.only(right: 5, top: 10),
-                            child: GestureDetector(
-                              onTap: () async {
-                                setState(() {
-                                  PreferencesUpdate().addToList(
-                                    'followed_tags',
-                                    tagMap,
-                                  );
-                                });
-                                Hasura.followTag(tagMap['tag_id']);
-                                setState(() {
-                                  isFollowing = true;
-                                });
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                        width: 3, color: Colors.blue)),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 0, horizontal: 4),
-                                  child: Text(
-                                    'Follow',
-                                    style: TextStyle(
-                                        color: Colors.blue,
-                                        fontFamily: 'Stark Sans',
-                                        fontWeight: FontWeight.w800),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                        : ActionButton(() async {
+                            setState(() {
+                              PreferencesUpdate().addToList(
+                                'followed_tags',
+                                tagMap,
+                              );
+                            });
+                            Hasura.followTag(tagMap['tag_id']);
+                            setState(() {
+                              isFollowing = true;
+                            });
+                          }, Colors.blue, 'Follow', true),
                     Expanded(
                       child: Container(),
                     ),
