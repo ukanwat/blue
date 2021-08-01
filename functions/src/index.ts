@@ -6,10 +6,7 @@ import * as graphqlReq from "graphql-request";
 admin.initializeApp(functions.config().firebase);
 import BillingLimiter from "firebase-billing-limiter";
 
-exports.BillingLimiter = BillingLimiter({
-    disableProjectAmount: 5000, // The amount that will trigger the disabling (in your project billing currency).
-    topicId: "billing", // The topicid created on the quotas.
-});
+
 
 const db = admin.firestore();
 
@@ -108,7 +105,7 @@ const client = new graphqlReq.GraphQLClient('https://app.stark.social/v1/graphql
         "content-type": "application/json",
         "x-hasura-admin-secret": "Taylorswift13",
     },
-}) 
+})
 
 exports.PostsCron = functions.pubsub.schedule('*/5 * * * *')
     .timeZone('America/New_York') // Users can choose timezone - default is America/Los_Angeles
