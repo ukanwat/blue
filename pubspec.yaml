@@ -74,65 +74,7 @@ dependencies:
   flash: ^1.3.2
   ars_progress_dialog: ^0.1.2
   flutter_login: ^2.0.0-nullsafety.0
-  argon_buttons_flutter: ^1.0.6
-  graphql_flutter: ^5.0.0-nullsafety.5      #
-  simple_animations: ^3.1.1
-  flutter_offline:      #
-  sliding_sheet: ^0.5.0  
-  flutter_signin_button:
-  auth_buttons: 
-  mk_drop_down_menu: ^1.1.0    #
-  flutter_gradients: ^1.0.0+3    
-  shimmer: ^2.0.0
-  webview_flutter_plus:           ##
-  dio: ^4.0.0
-  image_gallery_saver: ^1.6.9        #
-  get: ^4.1.4
-  flutter_sticky_header: ^0.6.0
-  html: ^0.15.0
-  gbk2utf8: ^1.0.1
-  firebase_crashlytics: ^2.0.4     #
-  image_crop: ^0.4.0                 #
-  scrollable_positioned_list: ^0.2.0-nullsafety.0
-  widgets_visibility_provider: ^3.0.1
-  visibility_aware_state: ^1.0.3
-  youtube_player_flutter: ^8.0.0       ##
-  show_overlay: ^1.0.8
-  sign_in_with_apple: ^3.0.0     #
-  crypto: ^3.0.1         
-  carousel_slider: ^4.0.0
-  pretty_qr_code: ^2.0.2
-  http_client: ^1.5.1
-  flutter_aws_s3_client: ^0.6.0
-  reorderables: ^0.4.1
-  flutter_login_facebook: ^1.0.1     #
-  permission_handler: ^8.1.2
-  flutter_qr_reader: ^1.0.5
-  image_size_getter: ^1.0.0
-  extended_image: ^4.1.0
-  # google_mobile_ads: ^0.12.1+1
-  connectivity: ^3.0.6
-  lazy_load_scrollview: ^1.3.0
-  linkfo: ^0.0.3+2
-  in_app_review: ^2.0.2
-  date_field: ^2.0.1
-  quick_actions: ^0.6.0+3
-  flutter_intro: ^2.3.1
-  geocoding: ^2.0.0
-  customizable_space_bar: ^0.2.0
-  video_viewer: ^1.2.6
-  scroll_app_bar: ^2.0.0
-  clipboard: ^0.1.3
-  any_base: ^2.0.0
-  pull_to_refresh_notification: ^2.2.0
-  animated_text_kit: ^4.2.1
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^0.1.2
-  http: ^0.13.3
-  flutter_launcher_icons: ^0.9.0
-  sleek_circular_slider: ^2.0.1
-  geolocator: ^7.4.0
+
   
 
 dev_dependencies:
