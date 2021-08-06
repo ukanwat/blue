@@ -155,5 +155,6 @@ exports.TagsCron = functions.pubsub.schedule('5 11 * * *')
         await client.request(mutation);
 
 
+        console.log('This will be run everydat at 5:11 AM!');
         return null;
     });
