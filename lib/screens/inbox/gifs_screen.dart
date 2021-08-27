@@ -1,7 +1,7 @@
 // Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'package:blue/constants/app_colors.dart';
 // Package imports:
 import 'package:flutter_clipboard_manager/flutter_clipboard_manager.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -206,7 +206,7 @@ class _GIFsScreenState extends State<GIFsScreen> {
                                                         '@${gifCollection.data[i].username}',
                                                         style: TextStyle(
                                                           fontSize: 18,
-                                                          color: Colors.blue,
+                                                          color: AppColors.blue,
                                                         ),
                                                       ),
                                                     ),

@@ -140,7 +140,8 @@ class PushNotificationsManager {
     getToken();
     bool ret;
     bool agree =
-        await PreferencesUpdate().getFuture('push_notif_agree', online: true);
+        await PreferencesUpdate().getFuture('push_notif_agree', online: true) ??
+            true;
 
     if (!agree) {
       await showDialog(
@@ -149,13 +150,13 @@ class PushNotificationsManager {
             return ShowDialog(
               description: 'Would you like to receive push notifications?',
               title: 'Push Notifications',
-              leftButtonText: 'No',
-              rightButtonText: 'Yes',
-              leftButtonFunction: () {
+              middleButtonText: 'No',
+              topButtonText: 'Yes',
+              middleButtonFunction: () {
                 Navigator.pop(context);
                 ret = true;
               },
-              rightButtonFunction: () {
+              topButtonFunction: () {
                 Navigator.pop(context);
                 PreferencesUpdate()
                     .uploadValue('push_notif_agree', true, false);

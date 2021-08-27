@@ -2,14 +2,18 @@
 import 'dart:math';
 
 // Flutter imports:
+import 'package:blue/env.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:flutter_gradients/flutter_gradients.dart';
+import 'package:get/get.dart';
 
 class AppColors {
-  static const navBar = Color.fromRGBO(10, 10, 15, 1);
-
+  static Color navBar = Color.fromRGBO(10, 10, 15, 1);
+  static Color blue = Color.fromRGBO(20, 90, 190, 1);
+  static const Color blueDark = Color.fromRGBO(1, 190, 255, 1);
+  static const Color blueLight = Color.fromRGBO(20, 90, 190, 1);
   List<Color> clrList = [
     Color(0xFFFFBC42),
     Color(0xFFF55D3E),

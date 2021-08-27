@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:blue/main.dart';
 import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/settings_widgets.dart';
+import 'package:blue/constants/app_colors.dart';
 
 class RepostDialog extends StatefulWidget {
   final Post post;
@@ -156,7 +157,7 @@ class _RepostDialogState extends State<RepostDialog> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  color: Colors.blue,
+                  color: AppColors.blue,
                   onPressed: sharePost,
                   child: Text(
                     'Share',

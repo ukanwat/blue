@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
 import 'package:widgets_visibility_provider/widgets_visibility_provider.dart';

@@ -34,7 +34,7 @@ class _ActionButtonState extends State<ActionButton> {
               height: 26,
               constraints: BoxConstraints(maxWidth: 70),
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                       width: Doubles.actionButtonBorder, color: widget.color)),
               child: Center(
@@ -49,5 +49,29 @@ class _ActionButtonState extends State<ActionButton> {
               ),
             ),
           );
+  }
+}
+
+class BoxButton extends StatelessWidget {
+  final Widget child;
+  final Color color;
+  final Function fn;
+  final double radius;
+  BoxButton(this.child, this.fn, {this.color, this.radius});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: fn,
+      borderRadius: BorderRadius.circular(radius ?? 10),
+      child: Material(
+        color: color ?? Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(radius ?? 10),
+        child: Padding(
+          child: child,
+          padding: EdgeInsets.all(5),
+        ),
+      ),
+    );
   }
 }

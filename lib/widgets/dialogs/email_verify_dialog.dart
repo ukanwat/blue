@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -22,7 +23,7 @@ class EmailVerifyDialog extends StatelessWidget {
             child: Icon(
               Icons.email_rounded,
               size: 40,
-              color: Colors.blue,
+              color: AppColors.blue,
             ),
           ),
           Text(

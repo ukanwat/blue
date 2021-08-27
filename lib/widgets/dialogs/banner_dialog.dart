@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -68,7 +69,7 @@ class BannerDialog extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
-            color: Colors.blue,
+            color: AppColors.blue,
             onPressed: () {
               Navigator.of(context).pop(); // To close the dialog
             },

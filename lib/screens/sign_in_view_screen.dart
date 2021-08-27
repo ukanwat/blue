@@ -1,9 +1,10 @@
 // Flutter imports:
 
 // Dart imports:
-import 'dart:io';
+import 'package:universal_platform/universal_platform.dart';
 
 // Flutter imports:
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -16,8 +17,8 @@ import 'package:flutter_signin_button/flutter_signin_button.dart';
 // Project imports:
 import 'package:blue/main.dart';
 import 'package:blue/main.dart';
-import 'package:blue/providers/provider_widget.dart';
-import 'package:blue/providers/verify_email.dart';
+import 'package:blue/state_management/provider_widget.dart';
+import 'package:blue/state_management/verify_email.dart';
 import 'package:blue/screens/sign/email_sign_in_screen.dart';
 import 'package:blue/screens/post/post_screen.dart';
 import 'package:blue/screens/sign/set_name_screen.dart';
@@ -89,6 +90,14 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
       child: new Scaffold(
         backgroundColor: Colors.white,
         resizeToAvoidBottomInset: false,
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(0),
+          child: AppBar(
+            brightness: Brightness.light,
+            backgroundColor: Colors.white,
+            elevation: 0,
+          ),
+        ),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
@@ -106,32 +115,34 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
                       child: Container(
                           height: 100, child: Image.asset('assets/logo.png'))),
                   Container(
-                    padding: EdgeInsets.only(left: 30),
+                    padding: EdgeInsets.only(left: 0),
                     width: double.maxFinite,
                     child: Center(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Container(
-                            padding: EdgeInsets.only(top: 50),
-                            width: double.infinity,
-                            child: Text(
-                              'Welcome To',
-                              style: TextStyle(
-                                  fontFamily: 'Techna Sans Regular',
-                                  fontSize: 35 * scale,
-                                  color: Colors.black),
+                          Center(
+                            child: Container(
+                              padding: EdgeInsets.only(top: 50),
+                              child: Text(
+                                'Welcome To',
+                                style: TextStyle(
+                                    fontFamily: 'Techna Sans Regular',
+                                    fontSize: 30 * scale,
+                                    color: Colors.black),
+                              ),
                             ),
                           ),
-                          Container(
-                            width: double.infinity,
-                            child: Text(
-                              'Stark',
-                              style: TextStyle(
-                                fontFamily: 'Techna Sans Regular',
-                                fontSize: 55 * scale,
-                                color: Theme.of(context).accentColor,
+                          Center(
+                            child: Container(
+                              child: Text(
+                                'Stark',
+                                style: TextStyle(
+                                  fontFamily: 'Techna Sans Regular',
+                                  fontSize: 60 * scale,
+                                  color: Theme.of(context).accentColor,
+                                ),
                               ),
                             ),
                           ),
@@ -162,7 +173,7 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
                     SizedBox(
                       height: 10,
                     ),
-                    if (Platform.isIOS)
+                    if (UniversalPlatform.isIOS)
                       SignInButton(
                         Buttons.Apple,
                         shape: RoundedRectangleBorder(
@@ -179,6 +190,10 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
                         facebookSignIn(context);
                       },
                     ),
+                    if (UniversalPlatform.isWeb)
+                      SizedBox(
+                        height: 10,
+                      ),
                     SignInButton(
                       Buttons.Google,
                       shape: RoundedRectangleBorder(
@@ -187,6 +202,10 @@ class _SignInViewScreenState extends State<SignInViewScreen> {
                         googleSignIn(context);
                       },
                     ),
+                    if (UniversalPlatform.isWeb)
+                      SizedBox(
+                        height: 10,
+                      ),
                     SignInButton(
                       Buttons.Email,
                       shape: RoundedRectangleBorder(

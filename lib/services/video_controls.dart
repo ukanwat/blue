@@ -7,7 +7,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
-
+import 'package:blue/constants/app_colors.dart';
 // Project imports:
 import 'package:blue/services/preferences_update.dart';
 import '../main.dart';
@@ -67,13 +67,34 @@ class _VideoDisplayState extends State<VideoDisplay> with RouteAware {
     super.didChangeDependencies();
   }
 
+  pause() {
+    if (!paused) {
+      paused = true;
+      print('pausing');
+      widget.flickManager.flickControlManager.autoPause();
+    }
+  }
+
+  resume() {
+    if (paused) {
+      bool autoplay = PreferencesUpdate().getBool('autoplay_videos');
+      if (autoplay == true) {
+        paused = false;
+        print('resuming');
+        widget.flickManager.flickControlManager.autoResume();
+      } else {}
+    }
+  }
+
+  bool paused = true;
   @override
   Widget build(BuildContext context) {
     return VisibilityDetector(
       key: ObjectKey(widget.flickManager),
       onVisibilityChanged: (visibility) {
         if (widget.autoplay) {
-          if (visibility.visibleFraction == 0 && this.mounted) {
+          if (visibility.visibleFraction == Icons.signal_wifi_0_bar &&
+              this.mounted) {
             widget.flickManager.flickControlManager.autoPause();
           } else if (visibility.visibleFraction == 1) {
             bool autoplay = PreferencesUpdate().getBool('autoplay_videos');
@@ -118,7 +139,7 @@ class _VideoDisplayState extends State<VideoDisplay> with RouteAware {
             ),
           ),
           flickVideoWithControlsFullscreen: FlickVideoWithControls(
-            videoFit: BoxFit.contain,
+            videoFit: BoxFit.fitWidth,
             playerLoadingFallback: Center(child: Icon(Icons.warning)),
             controls: LandscapeVideoControls(),
             iconThemeData: IconThemeData(
@@ -206,8 +227,8 @@ class LandscapeVideoControls extends StatelessWidget {
                                   width}) {
                                 return Paint()
                                   ..shader = LinearGradient(colors: [
-                                    Colors.blue.withOpacity(0.6),
-                                    Colors.blue
+                                    AppColors.blue.withOpacity(0.6),
+                                    AppColors.blue
                                   ], stops: [
                                     0.0,
                                     0.5

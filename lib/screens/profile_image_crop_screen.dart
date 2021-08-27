@@ -3,7 +3,7 @@ import 'dart:io';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
-
+import 'package:blue/constants/app_colors.dart';
 // Package imports:
 import 'package:image_crop/image_crop.dart';
 
@@ -56,7 +56,7 @@ class _ProfileImageCropScreenState extends State<ProfileImageCropScreen> {
                 },
                 child: Text(
                   'Done',
-                  style: TextStyle(fontSize: 18, color: Colors.blue),
+                  style: TextStyle(fontSize: 18, color: AppColors.blue),
                 )),
             title: Text(
               'Crop',

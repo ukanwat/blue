@@ -1,5 +1,7 @@
 // Dart imports:
 import 'dart:convert';
+import 'package:blue/constants/app_colors.dart';
+import 'package:universal_platform/universal_platform.dart';
 import 'dart:io';
 import 'dart:ui';
 
@@ -9,7 +11,7 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -259,7 +261,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     return Container(
       margin: EdgeInsets.only(right: 4, left: 0),
       height: 41,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.blue),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.blue),
       child: IconButton(
         icon: Icon(
           FlutterIcons.send_fea,
@@ -353,7 +355,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
           ),
         ),
         body: Container(
-          padding: EdgeInsets.only(bottom: Platform.isIOS ? 20 : 0),
+          padding: EdgeInsets.only(bottom: UniversalPlatform.isIOS ? 20 : 0),
           color: Theme.of(context).backgroundColor,
           child: Stack(
             alignment: Alignment.bottomCenter,
@@ -491,7 +493,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                                             AlwaysStoppedAnimation<Color>(
                                                 Color(0xFFFFFFFF))),
                                     decoration: BoxDecoration(
-                                        color: Colors.blue,
+                                        color: AppColors.blue,
                                         shape: BoxShape.circle))
                                 : sendButton(sendFunction: sendMessage)
                           ],
@@ -511,8 +513,11 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
     List messages;
     if (convId == null) {
       messages = [];
-    } else
-      messages = await Hasura.getMessages(convId);
+    } else {
+      DateTime time = await Hasura.getConvDeletedAt(widget.peerUser.userId);
+      messages = await Hasura.getMessages(convId, time: time);
+    }
+
     if (messages.length == 0) {
       first = true;
     }
@@ -546,7 +551,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 20),
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
-                color: Colors.blue.withOpacity(0.24)),
+                color: AppColors.blue.withOpacity(0.24)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -598,7 +603,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                     padding: const EdgeInsets.all(3.0),
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(Colors.blue),
+                      valueColor: AlwaysStoppedAnimation(AppColors.blue),
                     ),
                   ),
                 if (sendingStateMap['state'] == 'Sent')
@@ -607,7 +612,7 @@ class _ChatMessagesScreenState extends State<ChatMessagesScreen> {
                     width: 20,
                     child: Icon(
                       Icons.check,
-                      color: Colors.blue,
+                      color: AppColors.blue,
                       size: 20,
                     ),
                   ),

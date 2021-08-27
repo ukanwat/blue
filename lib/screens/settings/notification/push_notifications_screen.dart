@@ -1,9 +1,8 @@
 // Flutter imports:
 import 'package:blue/services/functions.dart';
 import 'package:flutter/material.dart';
-
+import 'package:blue/constants/app_colors.dart';
 // Package imports:
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
@@ -291,9 +290,9 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
                       'Mute All Notifications', //TODO
                       style: TextStyle(color: Colors.white),
                     ),
-                    disabledColor: Colors.blue,
-                    highlightColor: Colors.blue,
-                    color: Colors.blue,
+                    disabledColor: AppColors.blue,
+                    highlightColor: AppColors.blue,
+                    color: AppColors.blue,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
                   ),

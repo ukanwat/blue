@@ -6,14 +6,14 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
-
+import 'package:blue/constants/app_colors.dart';
 // Project imports:
-import 'package:blue/providers/comment.dart';
+import 'package:blue/state_management/comment.dart';
 import 'package:blue/services/functions.dart';
 import 'package:blue/services/go_to.dart';
 import 'package:blue/services/hasura.dart';
@@ -294,7 +294,7 @@ class _CommentState extends State<Comment> {
                                     repliesLoaded != true
                                         ? Icons.expand_less
                                         : Icons.expand_more,
-                                    color: Colors.blue,
+                                    color: AppColors.blue,
                                     size: 18,
                                   ),
                                   Text(
@@ -302,7 +302,7 @@ class _CommentState extends State<Comment> {
                                         ? 'Hide Replies'
                                         : '${widget.replyCount + (value.userCommentReplies[widget.id] == null ? 0 : value.userCommentReplies[widget.id].length)} Replies',
                                     style: TextStyle(
-                                        color: Colors.blue, fontSize: 16),
+                                        color: AppColors.blue, fontSize: 16),
                                   ),
                                 ],
                               ),
@@ -327,7 +327,7 @@ class _CommentState extends State<Comment> {
                               children: <Widget>[
                                 Icon(
                                   FluentIcons.arrow_reply_16_filled,
-                                  color: Colors.blue,
+                                  color: AppColors.blue,
                                   size: 25,
                                 ),
                               ],
@@ -378,7 +378,7 @@ class _CommentState extends State<Comment> {
                                         : FluentIcons.keyboard_shift_20_regular,
                                     size: 24,
                                     color: vote == CommentVote.downvote
-                                        ? Colors.blue
+                                        ? AppColors.blue
                                         : Colors.grey,
                                   )),
                             )),
@@ -418,7 +418,7 @@ class _CommentState extends State<Comment> {
                                     : FluentIcons.keyboard_shift_20_regular,
                                 size: 24,
                                 color: vote == CommentVote.upvote
-                                    ? Colors.blue
+                                    ? AppColors.blue
                                     : Colors.grey,
                               ),
                             )),

@@ -2,21 +2,20 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
+import 'package:blue/constants/app_colors.dart';
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
-import 'package:loading_indicator/loading_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
-import 'package:blue/providers/comment.dart';
+import 'package:blue/state_management/comment.dart';
 import 'package:blue/services/functions.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/comment_reply.dart';
@@ -90,65 +89,57 @@ class _CommentsScreenState extends State<CommentsScreen>
                   ],
                 )),
                 SliverAppBar(
-                  elevation: 2.5,
+                  toolbarHeight: 44,
+                  elevation: 2,
                   backgroundColor: Theme.of(context).canvasColor,
                   pinned: true,
                   automaticallyImplyLeading: false,
-                  title: TabBar(
-                    controller: _tabController,
-                    indicatorColor: Theme.of(context).accentColor,
-                    indicatorWeight: 0,
-                    labelPadding: EdgeInsets.only(top: 5),
-                    indicator: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: Theme.of(context).cardColor),
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    tabs: [
-                      Tab(
-                        child: Column(
-                          children: [
-                            Text(
-                              'More From',
-                              style: TextStyle(
-                                  color: Theme.of(context)
-                                      .iconTheme
-                                      .color
-                                      .withOpacity(0.7),
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 14),
-                            ),
-                            Text(
-                              '@${data.username}',
-                              style: TextStyle(
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 15),
-                            )
-                          ],
-                        ),
-                      ),
-                      Tab(
-                        child: Column(
-                          children: [
-                            Text(
-                              '${Functions.abbreviateNumber(data.commentCount)}',
-                              style: TextStyle(
-                                  color: Theme.of(context)
-                                      .iconTheme
-                                      .color
-                                      .withOpacity(0.7),
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 15),
-                            ),
-                            Text(
-                              'Comments',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500, fontSize: 15),
-                            )
-                          ],
-                        ),
-                      )
-                    ],
+                  title: Container(
+                    height: 34,
+                    child: TabBar(
+                      controller: _tabController,
+                      indicatorColor: Theme.of(context).accentColor,
+                      indicatorWeight: 0,
+                      labelPadding: EdgeInsets.only(top: 0),
+                      indicator: BoxDecoration(
+                          borderRadius: BorderRadius.circular(100),
+                          color: Theme.of(context).cardColor),
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      tabs: [
+                        Tab(
+                            child: Padding(
+                          padding: const EdgeInsets.only(
+                            left: 5,
+                          ),
+                          child: Text(
+                            'More like this',
+                            // 'More From @${data.username}',
+                            overflow: TextOverflow.fade,
+                            style: TextStyle(
+                                color: Theme.of(context)
+                                    .iconTheme
+                                    .color
+                                    .withOpacity(0.7),
+                                fontWeight: FontWeight.w600,
+                                fontFamily: 'Stark Sans',
+                                fontSize: 15),
+                          ),
+                        )),
+                        Tab(
+                          child: Text(
+                            '${Functions.abbreviateNumber(data.commentCount)} comments',
+                            style: TextStyle(
+                                color: Theme.of(context)
+                                    .iconTheme
+                                    .color
+                                    .withOpacity(0.7),
+                                fontFamily: 'Stark Sans',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 15),
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ];
@@ -289,83 +280,103 @@ class _CommentsState extends State<Comments>
                                   horizontal: BorderSide(
                                       color: Theme.of(context).cardColor,
                                       width: 1))),
-                          padding: const EdgeInsets.symmetric(vertical: 0.0),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 5.0, horizontal: 10),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              SizedBox(
-                                width: 20,
-                              ),
-                              PopupMenuButton(
-                                elevation: 2,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      sort.toString().substring(12),
-                                      style: TextStyle(fontSize: 20),
+                              Container(
+                                decoration: BoxDecoration(
+                                    color: Theme.of(context).cardColor,
+                                    borderRadius: BorderRadius.circular(100)),
+                                child: PopupMenuButton(
+                                  elevation: 2,
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 5, horizontal: 8),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          sort.toString().substring(12),
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                        SizedBox(
+                                          width: 2,
+                                        ),
+                                        Icon(
+                                          FluentIcons.chevron_down_24_filled,
+                                          size: 17,
+                                        ),
+                                      ],
                                     ),
-                                    Icon(
-                                      FluentIcons.chevron_down_24_filled,
-                                      size: 19,
-                                    ),
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  color: Theme.of(context).canvasColor,
+                                  // iconSize: 20,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  itemBuilder: (_) => [
+                                    PopupMenuItem(
+                                        child: Text('Best'), value: 'Best'),
+                                    PopupMenuItem(
+                                        child: Text('Top'), value: 'Top'),
+                                    PopupMenuItem(
+                                        child: Text('Older'), value: 'Oldest'),
+                                    PopupMenuItem(
+                                        child: Text('Recent'), value: 'Newest'),
                                   ],
+                                  // icon:
+                                  onSelected: (selectedValue) async {
+                                    switch (selectedValue) {
+                                      case 'Best':
+                                        sort = CommentSort.best;
+
+                                        break;
+                                      case 'Top':
+                                        sort = CommentSort.top;
+
+                                        break;
+                                      case 'Oldest':
+                                        sort = CommentSort.oldest;
+
+                                        break;
+                                      case 'Newest':
+                                        sort = CommentSort.newest;
+
+                                        break;
+                                    }
+
+                                    setState(() {
+                                      comments = [];
+                                      loaded = false;
+                                      count = 0;
+                                    });
+                                  },
                                 ),
-                                padding: EdgeInsets.zero,
-                                color: Theme.of(context).backgroundColor,
-                                // iconSize: 20,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                itemBuilder: (_) => [
-                                  PopupMenuItem(
-                                      child: Text('Best'), value: 'Best'),
-                                  PopupMenuItem(
-                                      child: Text('Top'), value: 'Top'),
-                                  PopupMenuItem(
-                                      child: Text('Older'), value: 'Oldest'),
-                                  PopupMenuItem(
-                                      child: Text('Recent'), value: 'Newest'),
-                                ],
-                                // icon:
-                                onSelected: (selectedValue) async {
-                                  switch (selectedValue) {
-                                    case 'Best':
-                                      sort = CommentSort.best;
-
-                                      break;
-                                    case 'Top':
-                                      sort = CommentSort.top;
-
-                                      break;
-                                    case 'Oldest':
-                                      sort = CommentSort.oldest;
-
-                                      break;
-                                    case 'Newest':
-                                      sort = CommentSort.newest;
-
-                                      break;
-                                  }
-
-                                  setState(() {
-                                    comments = [];
-                                    loaded = false;
-                                    count = 0;
-                                  });
-                                },
                               ),
                               Expanded(child: Container()),
-                              IconButton(
-                                icon: Icon(
-                                    FluentIcons.arrow_clockwise_24_regular),
-                                onPressed: () {
-                                  setState(() {
-                                    loaded = false;
-                                    comments = [];
-                                    count = 0;
-                                  });
-                                },
+                              Container(
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Theme.of(context).cardColor),
+                                child: GestureDetector(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: Icon(
+                                      FluentIcons.arrow_clockwise_24_regular,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  onTap: () {
+                                    setState(() {
+                                      loaded = false;
+                                      comments = [];
+                                      count = 0;
+                                    });
+                                  },
+                                ),
                               ),
                             ],
                           )),
@@ -432,7 +443,7 @@ class _CommentsState extends State<Comments>
                                   Text(
                                     '@${value.commentState['referName']}',
                                     style: TextStyle(
-                                        color: Colors.blue, fontSize: 16),
+                                        color: AppColors.blue, fontSize: 16),
                                   ),
                                 ],
                               ),

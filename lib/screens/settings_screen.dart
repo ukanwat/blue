@@ -1,11 +1,13 @@
 // Dart imports:
-import 'dart:io';
+import 'package:blue/screens/rewards_screen.dart';
+import 'package:universal_platform/universal_platform.dart';
 import 'dart:ui';
-
+import 'package:blue/constants/app_colors.dart';
 // Flutter imports:
 import 'package:blue/constants/strings.dart';
 import 'package:blue/models/user.dart';
 import 'package:blue/screens/settings/about/community_guidelines.screen.dart';
+import 'package:blue/screens/settings/about/faqs.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/widgets/custom_image.dart';
 import 'package:blue/widgets/dialogs/show_dialog.dart';
@@ -109,7 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: dark
           ? Theme.of(context).backgroundColor
-          : Color.fromRGBO(245, 245, 245, 1),
+          : Theme.of(context).canvasColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -204,7 +206,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   'General ⚙️',
                   Icon(
                     FluentIcons.content_settings_20_regular,
-                    color: Colors.blueAccent,
+                    color: AppColors.blue,
                   ),
                   context),
 
@@ -227,6 +229,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         settingsPageNavigationTile(
                             context, 'Drafts', DraftsScreen.routeName,
                             removeBorder: true),
+                        settingsPageNavigationTile(
+                            context, 'Rewards', RewardsScreen.routeName),
                       ],
                     ),
                   ),
@@ -237,7 +241,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   'Notifications 🔔',
                   Icon(
                     FluentIcons.alert_20_regular,
-                    color: Colors.blueAccent,
+                    color: AppColors.blue,
                   ),
                   context),
 
@@ -272,7 +276,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   'Privacy 👮‍♀️',
                   Icon(
                     FluentIcons.person_20_regular,
-                    color: Colors.blueAccent,
+                    color: AppColors.blue,
                   ),
                   context),
               Padding(
@@ -306,7 +310,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               settingsSectionTitle(
                   'Support & Feedback 📞',
                   Icon(FluentIcons.person_support_20_regular,
-                      color: Colors.blueAccent),
+                      color: AppColors.blue),
                   context),
 
               Padding(
@@ -329,13 +333,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Navigator.of(context)
                               .pushNamed(ReportABugScreen.routeName);
                         }, FluentIcons.bug_24_regular),
+                        settingsActionTile(context, 'FAQ', () {
+                          Navigator.of(context).pushNamed(FAQScreen.routeName);
+                        }, FluentIcons.chat_bubbles_question_24_regular),
                         settingsActionTile(context, 'Get Help', () async {
                           Map<String, dynamic> deviceData;
                           try {
-                            if (Platform.isAndroid) {
+                            if (UniversalPlatform.isAndroid) {
                               deviceData = _readAndroidBuildData(
                                   await deviceInfoPlugin.androidInfo);
-                            } else if (Platform.isIOS) {
+                            } else if (UniversalPlatform.isIOS) {
                               deviceData = _readIosDeviceInfo(
                                   await deviceInfoPlugin.iosInfo);
                             }
@@ -349,7 +356,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           _deviceData = deviceData;
 
                           final Email email = Email(
-                            body: Platform.isIOS
+                            body: UniversalPlatform.isIOS
                                 ? '...\n\nStark User ID: ${Boxes.currentUserBox.get('user_id')}\nApp version: ${_deviceData['version']}\nDevice: ${_deviceData['name']}\nModel: ${_deviceData['model']}\nManufacturer: ${[
                                     'manufacturer'
                                   ]}\nOS Version: ${_deviceData['utsname.version']}'
@@ -375,7 +382,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   'About ℹ️',
                   Icon(
                     FluentIcons.info_24_regular,
-                    color: Colors.blueAccent,
+                    color: AppColors.blue,
                   ),
                   context),
               Padding(
@@ -398,12 +405,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   title: 'App Review',
                                   description:
                                       'Would you like to give us 5 stars?',
-                                  leftButtonText: 'No',
-                                  rightButtonText: 'Yes',
-                                  leftButtonFunction: () {
+                                  middleButtonText: 'No',
+                                  topButtonText: 'Yes',
+                                  middleButtonFunction: () {
                                     Navigator.pop(context);
                                   },
-                                  rightButtonFunction: () async {
+                                  topButtonFunction: () async {
                                     Navigator.pop(context);
                                     if (await inAppReview.isAvailable()) {
                                       inAppReview.requestReview();
@@ -426,15 +433,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Navigator.of(context)
                               .pushNamed(PrivacyPolicyScreen.routeName);
                         }, FlutterIcons.lock_outline_mco),
-                        settingsActionTile(context, 'acknowledgements', () {
-                          Navigator.of(context)
-                              .pushNamed(LicenseScreen.routeName);
-                        }, FluentIcons.ribbon_24_regular, removeBorder: true),
                         settingsActionTile(context, 'Community Guidelines', () {
                           Navigator.of(context)
                               .pushNamed(CommunityGuidelinesScreen.routeName);
                         }, FluentIcons.book_open_20_regular,
                             removeBorder: true),
+                        settingsActionTile(context, 'Acknowledgements', () {
+                          Navigator.of(context)
+                              .pushNamed(LicenseScreen.routeName);
+                        }, FluentIcons.ribbon_24_regular, removeBorder: true),
                       ],
                     ),
                   ),
@@ -469,7 +476,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       fontFamily: 'Techna Sans Regular', fontSize: 20),
                 )),
               ),
-              SizedBox(
+              Container(
+                color: dark
+                    ? Theme.of(context).backgroundColor
+                    : Theme.of(context).canvasColor,
                 height: 10,
               )
             ],

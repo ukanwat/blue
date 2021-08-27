@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/screens/settings/general/account_screens/gender_screen.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -49,6 +50,7 @@ class _AccountScreenState extends State<AccountScreen> {
               context, 'Edit Profile', EditProfileScreen.routeName),
           settingsPageNavigationTile(
               context, 'Date Of Birth', DateOfBirthScreen.routeName),
+          settingsPageNavigationTile(context, 'Gender', GenderScreen.routeName),
           settingsPageNavigationTile(
               context, 'Deactivate Account', DeactivateAccountScreen.routeName),
           InkWell(
@@ -56,13 +58,13 @@ class _AccountScreenState extends State<AccountScreen> {
               showDialog(
                 context: context,
                 builder: (BuildContext context) => ShowDialog(
-                  leftButtonFunction: () {
+                  middleButtonFunction: () {
                     AuthService.logout(context);
                   },
                   title: "Sign Out?",
                   description: "Are you sure you want to sign out of stark?",
-                  leftButtonText: "Sign Out",
-                  rightButtonText: "Cancel",
+                  middleButtonText: "Sign Out",
+                  topButtonText: "Cancel",
                 ),
               );
             },
@@ -87,6 +89,15 @@ class _AccountScreenState extends State<AccountScreen> {
                 ],
               ),
             ),
+          ),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+                border: Border(
+              bottom: BorderSide(
+                  color: Theme.of(context).iconTheme.color.withOpacity(0.16),
+                  width: 1),
+            )),
           ),
         ],
       ),

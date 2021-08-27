@@ -145,9 +145,9 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                           title: 'Block',
                           description:
                               'You will no longer receive messages and notifications from ${peer['peerUsername']}?',
-                          leftButtonText: 'Cancel',
-                          rightButtonText: 'Block',
-                          rightButtonFunction: () async {
+                          middleButtonText: 'Cancel',
+                          topButtonText: 'Block',
+                          topButtonFunction: () async {
                             Navigator.pop(context);
                             setState(() {
                               isBlocked = true;
@@ -164,10 +164,16 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
                           title: 'Delete Messages',
                           description:
                               'This will permanently delete your messages',
-                          leftButtonText: 'Cancel',
-                          rightButtonText: 'Delete',
-                          rightButtonFunction: () async {
+                          middleButtonText: 'Cancel',
+                          topButtonText: 'Delete',
+                          topButtonFunction: () async {
+                            Hasura.deleteConversation(peer['peerId']);
                             Navigator.pop(context);
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                            snackbar(
+                                'Messages Have been deleted from your side',
+                                context);
                           }));
                 }, FluentIcons.delete_24_regular, isRed: true),
                 Container(

@@ -3,15 +3,18 @@ import 'dart:convert';
 import 'dart:io';
 
 // Flutter imports:
+import 'package:blue/constants/app_colors.dart';
+import 'package:blue/services/geo.dart';
 import 'package:blue/widgets/field_decoration.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image/image.dart' as Im;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -41,6 +44,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   TextEditingController displayNameController = TextEditingController();
   TextEditingController aboutController = TextEditingController();
   TextEditingController websiteController = TextEditingController();
+  TextEditingController geoController = TextEditingController();
   bool isLoading = false;
   User user;
   bool _displayNameValid = true;
@@ -52,6 +56,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   File headerImage;
   bool _websiteValid = true;
   Map social = {};
+
   getUser() async {
     setState(() {
       isLoading = true;
@@ -62,6 +67,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     displayNameController.text = user.name;
     aboutController.text = user.about;
     websiteController.text = user.website;
+    geoController.text = user.place;
     socialField = TextEditingController(
         text: user.social['instagram'] == '_'
             ? ''
@@ -90,7 +96,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void didChangeDependencies() {
     if (!userLoaded) {
       getUser();
-
       userLoaded = true;
     }
     super.didChangeDependencies();
@@ -172,6 +177,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             website: websiteController.text.trim(),
             photoUrl: profilePictureUrl,
             avatarUrl: avatarUrl,
+            place: geoController.text,
             social: social);
       } else {
         await Hasura.updateUser(
@@ -181,6 +187,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             photoUrl: profilePictureUrl,
             avatarUrl: avatarUrl,
             headerUrl: headerUrl,
+            place: geoController.text,
             social: social);
       }
 
@@ -206,6 +213,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             name: displayNameController.text,
             about: aboutController.text,
             website: websiteController.text.trim(),
+            place: geoController.text,
             social: social);
       } else {
         await Hasura.updateUser(
@@ -213,6 +221,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             about: aboutController.text,
             website: websiteController.text.trim(),
             headerUrl: headerUrl,
+            place: geoController.text,
             social: social);
       }
 
@@ -522,6 +531,77 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           buildAboutField(),
                           buildWebsiteField(),
                           SizedBox(
+                            height: 15,
+                          ),
+                          Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left: 5),
+                                child: Text(
+                                  'Place',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.grey),
+                                ),
+                              ),
+                              Expanded(
+                                child: Container(),
+                              )
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                    readOnly: true,
+                                    controller: geoController,
+                                    keyboardType: TextInputType.url,
+                                    decoration: fieldDecoration(
+                                      "Location",
+                                    )),
+                              ),
+                              if (geoController.text != '' &&
+                                  geoController.text != null)
+                                IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        geoController.text = '';
+                                      });
+                                    },
+                                    icon: Icon(FluentIcons.delete_24_filled))
+                              else
+                                Container(
+                                  height: 50,
+                                  padding: const EdgeInsets.only(left: 4),
+                                  child: TextButton(
+                                      style: TextButton.styleFrom(
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10)),
+                                        backgroundColor: AppColors.blue,
+                                      ),
+                                      onPressed: () async {
+                                        Position pos =
+                                            await Geo().getPosition();
+                                        String address =
+                                            await Geo().getAddress(pos);
+
+                                        Hasura.updateUser(
+                                            location:
+                                                '(${pos.latitude},${pos.longitude})');
+                                        setState(() {
+                                          geoController.text = address;
+                                        });
+                                      },
+                                      child: Text(
+                                        'Get',
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 18),
+                                      )),
+                                ),
+                            ],
+                          ),
+                          SizedBox(
                             height: 20,
                           ),
                           Row(
@@ -626,7 +706,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     },
                                     icon: Icon(
                                       FlutterIcons.twitter_faw,
-                                      color: Colors.blue,
+                                      color: AppColors.blue,
                                       size: 28,
                                     ),
                                   ))
@@ -689,7 +769,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 //                                 padding: const EdgeInsets.all(8.0),
 //                                 child: Icon(
 //                                   FlutterIcons.facebook_faw,
-//                                   color: Colors.blue[700],
+//                                   color: AppColors.blue[700],
 //                                   size: 28,
 //                                 ),
 //                               ),
@@ -705,7 +785,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 //                                 padding: const EdgeInsets.all(8.0),
 //                                 child: Icon(
 //                                   FlutterIcons.twitter_faw,
-//                                   color: Colors.blue,
+//                                   color: AppColors.blue,
 //                                   size: 28,
 //                                 ),
 //                               )

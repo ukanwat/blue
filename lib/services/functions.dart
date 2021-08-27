@@ -196,4 +196,6 @@ class Functions {
     }
     return "";
   }
+
+  getDirectory() {}
 }

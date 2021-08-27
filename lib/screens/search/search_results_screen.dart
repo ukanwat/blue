@@ -1,8 +1,8 @@
 // Flutter imports:
 import 'package:blue/screens/tag_screen.dart';
-import 'package:blue/widgets/action_button.dart';
+import 'package:blue/widgets/button.dart';
 import 'package:flutter/material.dart';
-
+import 'package:blue/constants/app_colors.dart';
 // Package imports:
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
@@ -99,7 +99,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                               .withOpacity(0.8))),
                   trailing: ActionButton(() {
                     Functions().handleFollowUser(doc["user_id"]);
-                  }, Colors.blue, 'Follow', true),
+                  }, AppColors.blue, 'Follow', true),
                   title: Text(
                     '${doc["username"]}',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),

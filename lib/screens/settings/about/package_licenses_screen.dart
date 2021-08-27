@@ -2,7 +2,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
+import 'package:blue/constants/app_colors.dart';
 // Project imports:
 import 'package:blue/widgets/progress.dart';
 
@@ -83,7 +83,7 @@ class _PackageLicensesScreenState extends State<PackageLicensesScreen> {
           ),
           automaticallyImplyLeading: false,
           leading: CupertinoNavigationBarBackButton(
-            color: Colors.blue,
+            color: AppColors.blue,
             onPressed: () {
               Navigator.pop(context);
             },

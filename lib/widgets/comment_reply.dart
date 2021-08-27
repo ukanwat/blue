@@ -6,13 +6,13 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
-
+import 'package:blue/constants/app_colors.dart';
 // Project imports:
-import 'package:blue/providers/comment.dart';
+import 'package:blue/state_management/comment.dart';
 import 'package:blue/services/functions.dart';
 import 'package:blue/services/go_to.dart';
 import 'package:blue/services/hasura.dart';
@@ -64,7 +64,7 @@ class _CommentReplyState extends State<CommentReply> {
                 child: Icon(
                   FluentIcons.keyboard_shift_16_filled,
                   size: 24,
-                  color: change ? Colors.blue : Colors.grey,
+                  color: change ? AppColors.blue : Colors.grey,
                 ))
             : Padding(
                 padding: EdgeInsets.only(right: 10),
@@ -73,7 +73,7 @@ class _CommentReplyState extends State<CommentReply> {
                     child: Icon(
                       FluentIcons.keyboard_shift_16_filled,
                       size: 24,
-                      color: change ? Colors.blue : Colors.grey,
+                      color: change ? AppColors.blue : Colors.grey,
                     )),
               ));
   }
@@ -286,7 +286,7 @@ class _CommentReplyState extends State<CommentReply> {
                                   : FluentIcons.keyboard_shift_20_regular,
                               size: 24,
                               color: vote == CommentVote.downvote
-                                  ? Colors.blue
+                                  ? AppColors.blue
                                   : Colors.grey,
                             )),
                       )),
@@ -324,7 +324,7 @@ class _CommentReplyState extends State<CommentReply> {
                               : FluentIcons.keyboard_shift_20_regular,
                           size: 24,
                           color: vote == CommentVote.upvote
-                              ? Colors.blue
+                              ? AppColors.blue
                               : Colors.grey,
                         ),
                       )),

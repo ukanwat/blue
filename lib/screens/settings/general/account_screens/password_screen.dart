@@ -1,12 +1,12 @@
 // Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'package:blue/constants/app_colors.dart';
 // Package imports:
 import 'package:flutter_icons/flutter_icons.dart';
 
 // Project imports:
-import 'package:blue/providers/provider_widget.dart';
+import 'package:blue/state_management/provider_widget.dart';
 import 'package:blue/widgets/progress.dart';
 
 class PasswordScreen extends StatefulWidget {
@@ -82,7 +82,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
             ),
             automaticallyImplyLeading: false,
             leading: CupertinoNavigationBarBackButton(
-              color: Colors.blue,
+              color: AppColors.blue,
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -94,7 +94,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                     'Done',
                     style: TextStyle(
                       fontSize: 18,
-                      color: Colors.blue,
+                      color: AppColors.blue,
                     ),
                   ))
             ],

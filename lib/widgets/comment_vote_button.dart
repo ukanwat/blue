@@ -3,7 +3,7 @@
 // import 'package:flutter/material.dart';
 
 // // Package imports:
-// import 'package:cloud_firestore/cloud_firestore.dart';
+//  
 // import 'package:flutter_icons/flutter_icons.dart';
 
 // // Project imports:
@@ -62,7 +62,7 @@
 //                     child: Icon(
 //                       FluentIcons.keyboard_shift_16_filled,
 //                       size: 24,
-//                       color: change ? Colors.blue : Colors.grey,
+//                       color: change ? AppColors.blue : Colors.grey,
 //                     ))
 //                 : Padding(
 //                     padding: EdgeInsets.only(right: 10),
@@ -71,7 +71,7 @@
 //                         child: Icon(
 //                           FluentIcons.keyboard_shift_16_filled,
 //                           size: 24,
-//                           color: change ? Colors.blue : Colors.grey,
+//                           color: change ? AppColors.blue : Colors.grey,
 //                         )),
 //                   )));
 //   }

@@ -6,16 +6,22 @@ import 'dart:math' as math;
 import 'dart:math';
 
 // Flutter imports:
+import 'package:blue/widgets/progress.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_blurhash/flutter_blurhash.dart';
+import 'package:timeago/timeago.dart';
+import 'package:blue/constants/app_colors.dart';
 // Package imports:
+import 'package:uuid/uuid.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_pro/carousel_pro.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:full_screen_image/full_screen_image.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
@@ -28,7 +34,8 @@ import 'package:video_thumbnail/video_thumbnail.dart';
 // Project imports:
 import 'package:blue/constants/strings.dart';
 import 'package:blue/main.dart';
-import 'package:blue/providers/posts_tracker.dart';
+import '../services/video.dart';
+import 'package:blue/state_management/posts_tracker.dart';
 import 'package:blue/screens/profile_screen.dart';
 import 'package:blue/screens/tag_screen.dart';
 import 'package:blue/services/dynamic_links.dart';
@@ -40,6 +47,7 @@ import 'package:blue/widgets/dialogs/report_dialog.dart';
 import 'package:blue/widgets/dialogs/repost_dialog.dart';
 import 'package:blue/widgets/dialogs/save_dialog.dart';
 import 'package:blue/widgets/dialogs/show_dialog.dart';
+import 'package:video_viewer/video_viewer.dart';
 import '../screens/comments_screen.dart';
 import '../services/boxes.dart';
 import '../services/functions.dart';
@@ -270,6 +278,7 @@ class _PostState extends State<Post> {
   Function createOverlayOptions(BuildContext context) {
     RenderBox getBox = context.findRenderObject();
     Offset position = getBox.localToGlobal(Offset.zero);
+
     return ov.showOverlay(
         context: context,
         // animationDuration: Duration(milliseconds: 200),
@@ -286,8 +295,16 @@ class _PostState extends State<Post> {
                 ),
               )),
               Positioned(
-                left: position.dx + 10,
-                top: position.dy + 10,
+                left: widget.isCompact == true ? null : position.dx + 10,
+                top: widget.isCompact == true ? null : position.dy + 10,
+                bottom: widget.isCompact == true
+                    ? MediaQuery.of(context).size.height -
+                        position.dy -
+                        MediaQuery.of(context).padding.vertical -
+                        getBox.size.height +
+                        10
+                    : null,
+                right: widget.isCompact == true ? 10 : null,
                 width: 220,
                 child: Material(
                   borderRadius: BorderRadius.circular(15),
@@ -406,7 +423,7 @@ class _PostState extends State<Post> {
             width: MediaQuery.of(context).size.width,
             padding: EdgeInsets.only(
                 left: widget.commentsShown ? 50 : 10,
-                top: 10,
+                top: 8,
                 right: 10,
                 bottom: 0),
             child: Row(
@@ -478,51 +495,80 @@ class _PostState extends State<Post> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Expanded(
-                        child: Text(
-                            '${widget.username}'
-                            // · ${_date(DateTime.parse(widget.time).toLocal())}'
-                            ,
-                            maxLines: 1,
-                            overflow: TextOverflow.fade,
-                            softWrap: false,
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w500,
-                              color: Theme.of(context)
-                                  .iconTheme
-                                  .color
-                                  .withOpacity(0.9),
-                            )),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                                '${widget.username}'
+                                // · ${_date(DateTime.parse(widget.time).toLocal())}'
+                                ,
+                                maxLines: 1,
+                                overflow: TextOverflow.fade,
+                                softWrap: false,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: Theme.of(context).iconTheme.color,
+                                )),
+                            SizedBox(
+                              width: 3,
+                            ),
+                            Text('•'),
+                            SizedBox(
+                              width: 3,
+                            ),
+                            Text(
+                              format(DateTime.parse(widget.time),
+                                  locale: 'en_short'),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.grey),
+                            ),
+                            SizedBox(
+                              width: 3,
+                            ),
+                            if (!isFollowing &&
+                                !(widget.ownerId ==
+                                    Boxes.currentUserBox.get('user_id')))
+                              Text('•'),
+                            if (!isFollowing &&
+                                !(widget.ownerId ==
+                                    Boxes.currentUserBox.get('user_id')))
+                              SizedBox(
+                                width: 3,
+                              ),
+                            if (!isFollowing &&
+                                !(widget.ownerId ==
+                                    Boxes.currentUserBox.get('user_id')))
+                              Container(
+                                  height: 14,
+                                  child: GestureDetector(
+                                    onTap: () async {
+                                      Functions().handleFollowUser(widget
+                                          .ownerId); // TODO wait for future
+                                      setState(() {
+                                        isFollowing = true;
+                                      });
+                                    },
+                                    child: Text(
+                                      'Follow',
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                          color: AppColors.blue),
+                                    ),
+                                  ))
+                          ],
+                        ),
                       ),
                       SizedBox(
                         width: 10,
                       ),
-                      if (!isFollowing &&
-                          !(widget.ownerId ==
-                              Boxes.currentUserBox.get('user_id')))
-                        Container(
-                          height: 22,
-                          child: GestureDetector(
-                            onTap: () async {
-                              Functions().handleFollowUser(
-                                  widget.ownerId); // TODO wait for future
-                              setState(() {
-                                isFollowing = true;
-                              });
-                            },
-                            child: Container(
-                                height: 22,
-                                width: 22,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: Icon(
-                                  FluentIcons.add_circle_16_regular,
-                                  color: Colors.blue,
-                                  size: 22,
-                                )),
-                          ),
-                        ),
                     ],
                   ),
                 ),
@@ -589,105 +635,22 @@ class _PostState extends State<Post> {
                 children: <Widget>[
                   Padding(
                     padding:
-                        EdgeInsets.only(left: 10, top: 5, bottom: 8, right: 0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              GoTo().profileScreen(context, widget.ownerId);
-                            },
-                            child: Row(
-                              children: [
-                                CircleAvatar(
-                                  radius: 11.5,
-                                  backgroundImage: CachedNetworkImageProvider(
-                                      photoUrl ??
-                                          "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
-                                  backgroundColor: Colors.grey,
-                                ),
-                                SizedBox(
-                                  width: 8,
-                                ),
-                                Expanded(
-                                  child: Container(
-                                    height: 24,
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      username,
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              mainAxisSize: MainAxisSize.min,
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 5,
-                        ),
-                        if (!isFollowing &&
-                            !(widget.ownerId ==
-                                Boxes.currentUserBox.get('user_id')))
-                          GestureDetector(
-                            onTap: () {
-                              Functions().handleFollowUser(
-                                  widget.ownerId); // TODO wait for future
-                              setState(() {
-                                isFollowing = true;
-                              });
-                            },
-                            child: Container(
-                              height: 24,
-                              child: FittedBox(
-                                fit: BoxFit.none,
-                                alignment: Alignment.centerRight,
-                                child: Container(
-                                    height: 24,
-                                    width: 24,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(15),
-                                    ),
-                                    child: Icon(
-                                      FluentIcons.add_circle_20_regular,
-                                      color: Colors.blue,
-                                      size: 24,
-                                    )),
-                              ),
-                            ),
-                          ),
-                        GestureDetector(
-                            child: Container(
-                              height: 24,
-                              padding: const EdgeInsets.only(right: 5, left: 4),
-                              child: Icon(
-                                FluentIcons.more_circle_20_regular,
-                                color: Colors.blue,
-                              ),
-                            ),
-                            onTap: () {
-                              showOptions(context);
-                            }),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding:
-                        EdgeInsets.only(left: 12, top: 0, right: 5, bottom: 3),
+                        EdgeInsets.only(left: 12, top: 8, right: 5, bottom: 3),
                     child: Text(
                       widget.title,
                       textAlign: TextAlign.left,
                       style: TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w600,
+                        fontFamily:
+                            PreferencesUpdate().getBool('serif', def: false) ==
+                                    true
+                                ? 'Georgia'
+                                : 'Stark Sans',
+                        fontWeight:
+                            PreferencesUpdate().getBool('serif', def: false) ==
+                                    true
+                                ? FontWeight.w400
+                                : FontWeight.w600,
                       ),
                       maxLines: widget.moreCompact == true ? 3 : 4,
                       overflow: TextOverflow.ellipsis,
@@ -743,12 +706,12 @@ class _PostState extends State<Post> {
         builder: (context) => ShowDialog(
               title: 'Delete Post',
               description: 'Are you sure you want to delete this Post?',
-              leftButtonText: 'Cancel',
-              rightButtonText: 'Delete',
-              leftButtonFunction: () {
+              middleButtonText: 'Cancel',
+              topButtonText: 'Delete',
+              middleButtonFunction: () {
                 Navigator.pop(context);
               },
-              rightButtonFunction: () async {
+              topButtonFunction: () async {
                 Hasura.deletePost(postId);
                 Navigator.of(context).pop();
                 setState(() {
@@ -829,43 +792,16 @@ class _PostState extends State<Post> {
             contentsInfo[i]['aspectRatio'], contentsInfo[i]['blurHash']));
       } else if (contentsInfo[i]['type'] == 'video') {
         thumbnailType = CompactPostThumbnailType.video;
-        flickManager = FlickManager(
-          autoPlay: PreferencesUpdate().getBool('autoplay_videos') ?? true,
-          videoPlayerController: VideoPlayerController.network(
-            contents['$i'],
-          ),
-        );
+        // VideoPlayerController vC = VideoPlayerController.network(
+        //   contents['$i'],
+        // );
+        // flickManager = FlickManager(
+        //   autoPlay: PreferencesUpdate().getBool('autoplay_videos') ?? true,
+        //   videoPlayerController: vC,
+        // );
 
-        contentsViewList.add(Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.width /
-                contentsInfo[i]['aspectRatio'],
-            child: Container(
-              child: VideoDisplay(flickManager, true,
-                  thumbnail: cachedNetworkImage(
-                    context,
-                    contentsInfo[i]['thumbUrl'],
-                    aspectRatio: contentsInfo[i]['aspectRatio'],
-                  )),
-            )
-            // KiddVideoPlayer(
-            //   fromUrl: true,
-            //   videoUrl: contents['$i'],
-            //   layoutConfigs: KiddLayoutConfigs(
-            //     backgroundColor: Colors.black,
-            //     backgroundSliderColor: Colors.grey.withOpacity(0.5),
-            //     iconsColor: Colors.white,
-            //     inLoop: false,
-            //     loaderColor: Theme.of(context).accentColor,
-            //     pauseIcon: Icons.pause_circle_outline,
-            //     playIcon: Icons.play_circle_outline,
-            //     showFullScreenButton: true,
-            //     showVideoControl: true,
-            //     showVolumeControl: false,
-            //     sliderColor: Colors.white,
-            //   ),
-            // ),
-            ));
+        contentsViewList.add(Video(contents['$i'],
+            contentsInfo[i]['aspectRatio'], contentsInfo[i]['thumbUrl']));
       } else if (contentsInfo[i]['type'] == 'text') {
         contentsViewList.add(textContentContainer(contents['$i']));
         if (compactPostText == null) {
@@ -911,8 +847,13 @@ class _PostState extends State<Post> {
     return Stack(
       alignment: Alignment.center,
       children: <Widget>[
-        (cachedNetworkImage(context, url,
-            aspectRatio: aspectRatio, blurHash: blurHash)),
+        FullScreenWidget(
+          child: Center(
+            child: Hero(
+                tag: '${Uuid().v4()}',
+                child: PostImage(url, aspectRatio, blurHash)),
+          ),
+        ),
       ],
     );
   }
@@ -937,8 +878,15 @@ class _PostState extends State<Post> {
           overlayShadow: false,
           moveIndicatorFromBottom: 20,
           images: List.generate(urls.length, (i) {
-            return cachedNetworkImage(context, urls[i],
-                aspectRatio: aspectRatio, blurHash: blurHashes[i]);
+            return FullScreenWidget(
+                child: Center(
+              child: Hero(
+                  tag: '${Uuid().v4()}',
+                  child: PostImage(urls[i], aspectRatio, blurHashes[i])
+                  // cachedNetworkImage(context, urls[i],
+                  //     aspectRatio: aspectRatio, blurHash: blurHashes[i])
+                  ),
+            ));
           }),
         ));
   }
@@ -991,8 +939,8 @@ class _PostState extends State<Post> {
         init: PostGet(),
         id: postId,
         builder: (value) {
-          return Padding(
-            padding: EdgeInsets.only(top: 2),
+          return Container(
+            padding: EdgeInsets.only(top: 0),
             child: Column(
               children: <Widget>[
                 if (showSaveBar)
@@ -1004,7 +952,7 @@ class _PostState extends State<Post> {
                             EdgeInsets.symmetric(vertical: 0, horizontal: 8),
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(15),
-                            color: Colors.blue.withOpacity(0.15)),
+                            color: AppColors.blue.withOpacity(0.15)),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: <Widget>[
@@ -1028,217 +976,106 @@ class _PostState extends State<Post> {
                                 child: Text(
                                   'Save to Collection',
                                   style: TextStyle(
-                                      color: Colors.blue,
+                                      color: AppColors.blue,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 18),
                                 ))
                           ],
                         ),
                       )),
-                if (widget.isCompact)
-                  if (tagBarVisible) tagBar(),
                 Row(
-                  mainAxisAlignment: widget.isCompact
-                      ? MainAxisAlignment.spaceAround
-                      : MainAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   mainAxisSize: MainAxisSize.max,
                   children: <Widget>[
                     if (widget.isCompact)
                       SizedBox(
                         width: 6,
                       ),
-                    if (widget.isCompact)
-                      tagBarVisible
-                          ? FooterButton(FlutterIcons.ios_arrow_up_ion, () {
-                              setState(() {
-                                tagBarVisible = false;
-                              });
-                            })
-                          : FooterButton(FlutterIcons.ios_arrow_down_ion,
-                              () async {
-                              setState(() {
-                                tagBarVisible = true;
-                              });
-                            }),
-                    if (widget.isCompact)
-                      SizedBox(
-                        width: 14,
-                      ),
                     isSaved
-                        ? Container(
-                            width: 70,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                FooterButton(FluentIcons.bookmark_24_filled,
-                                    () async {
-                                  value.setSaved(false, postId);
-                                  setState(() {
-                                    isSaved = false;
-                                    showSaveBar = false;
-                                  });
-                                  Boxes.saveBox.delete(postId);
-                                  await Hasura.deleteSavedPost(postId);
-                                }),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.only(right: 0, left: 0),
-                                  child: Text(
-                                    '${Functions.abbreviateNumber(widget.saves, hideLess: true)}',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 17),
-                                  ),
-                                ),
-                              ],
-                            ),
+                        ? FooterButton(
+                            FluentIcons.bookmark_24_filled,
+                            () async {
+                              value.setSaved(false, postId);
+                              setState(() {
+                                isSaved = false;
+                                showSaveBar = false;
+                              });
+                              Boxes.saveBox.delete(postId);
+                              await Hasura.deleteSavedPost(postId);
+                            },
+                            count: widget.saves,
                           )
-                        : Container(
-                            width: 70,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                FooterButton(FluentIcons.bookmark_24_regular,
-                                    () async {
-                                  value.setSaved(true, postId);
-                                  setState(() {
-                                    isSaved = true;
-                                  });
+                        : FooterButton(
+                            FluentIcons.bookmark_24_regular,
+                            () async {
+                              value.setSaved(true, postId);
+                              setState(() {
+                                isSaved = true;
+                              });
 
-                                  await Hasura.insertSavedPost(postId);
-                                  Boxes.saveBox.put(postId, true);
+                              await Hasura.insertSavedPost(postId);
+                              Boxes.saveBox.put(postId, true);
 
-                                  setState(() {
-                                    showSaveBar = true;
-                                  });
-                                  Future.delayed(
-                                      const Duration(milliseconds: 4000), () {
-                                    setState(() {
-                                      showSaveBar = false;
-                                    });
-                                  });
-                                }),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.only(right: 0, left: 0),
-                                  child: Text(
-                                      '${Functions.abbreviateNumber(value.getSaved(postId) == null ? widget.saves : value.getSaved(postId) ? widget.saves + 1 : widget.saves - 1, hideLess: true)}',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 17)),
-                                ),
-                              ],
+                              setState(() {
+                                showSaveBar = true;
+                              });
+                              Future.delayed(const Duration(milliseconds: 4000),
+                                  () {
+                                setState(() {
+                                  showSaveBar = false;
+                                });
+                              });
+                            },
+                            count: value.getSaved(postId) == null
+                                ? widget.saves
+                                : value.getSaved(postId)
+                                    ? widget.saves + 1
+                                    : widget.saves - 1,
+                          ),
+                    FooterButton(FluentIcons.share_24_regular, () async {
+                      String _link =
+                          await DynamicLinksService.createDynamicLink(
+                              'post?id=$postId');
+                      Share.share(_link, subject: 'Sharing this Post');
+
+                      await Hasura.postShareAction(postId, actionExists);
+                      actionExists = true;
+                    }, count: widget.shares),
+                    if (!(widget.commentsShown || widget.isCompact))
+                      FooterButton(FluentIcons.comment_24_regular, () {
+                        showComments(context,
+                            post: Post(
+                              commentsShown: true,
+                              contents: this.widget.contents,
+                              contentsInfo: this.widget.contentsInfo,
+                              isCompact: false,
+                              ownerId: this.widget.ownerId,
+                              photoUrl: this.widget.photoUrl,
+                              postId: this.widget.postId,
+                              tags: this.widget.tags,
+                              title: this.widget.title,
+                              topicId: this.widget.topicId,
+                              topicName: this.widget.topicName,
+                              upvotes: this.widget.upvotes,
+                              username: this.widget.username,
+                              comments: this.widget.comments,
+                              downvotes: this.widget.downvotes,
+                              saves: this.widget.saves,
+                              shares: this.widget.shares,
+                              commentCount: this.commentCount,
+                              time: widget.time,
+                              votes: widget.votes,
+                              notInterested: widget.notInterested,
+                              postActionExists: widget.postActionExists,
+                              thumbUrl: widget.thumbUrl,
+                              upvoted: widget.upvoted,
                             ),
-                          ),
-                    Container(
-                      width: 70,
-                      child: Row(
-                        children: [
-                          FooterButton(FluentIcons.share_24_regular, () async {
-                            String _link =
-                                await DynamicLinksService.createDynamicLink(
-                                    'post?id=$postId');
-                            Share.share(_link, subject: 'Sharing this Post');
-
-                            await Hasura.postShareAction(postId, actionExists);
-                            actionExists = true;
-                          }),
-                          Text(
-                            '${Functions.abbreviateNumber(widget.shares, hideLess: true)}',
-                            style: TextStyle(
-                                fontWeight: FontWeight.w500, fontSize: 19),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (!(widget.commentsShown || widget.isCompact))
-                      Container(
-                        width: 40,
-                        child: FooterButton(FluentIcons.comment_24_regular, () {
-                          showComments(context,
-                              post: Post(
-                                commentsShown: true,
-                                contents: this.widget.contents,
-                                contentsInfo: this.widget.contentsInfo,
-                                isCompact: false,
-                                ownerId: this.widget.ownerId,
-                                photoUrl: this.widget.photoUrl,
-                                postId: this.widget.postId,
-                                tags: this.widget.tags,
-                                title: this.widget.title,
-                                topicId: this.widget.topicId,
-                                topicName: this.widget.topicName,
-                                upvotes: this.widget.upvotes,
-                                username: this.widget.username,
-                                comments: this.widget.comments,
-                                downvotes: this.widget.downvotes,
-                                saves: this.widget.saves,
-                                shares: this.widget.shares,
-                                commentCount: this.commentCount,
-                                time: widget.time,
-                                votes: widget.votes,
-                                notInterested: widget.notInterested,
-                                postActionExists: widget.postActionExists,
-                                thumbUrl: widget.thumbUrl,
-                                upvoted: widget.upvoted,
-                              ),
-                              index: 1);
-                        }),
-                      ),
-                    if (!(widget.commentsShown || widget.isCompact))
-                      Container(
-                        width: 40,
-                        child: Text(
-                          '${Functions.abbreviateNumber(widget.commentCount, hideLess: true)}',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w500, fontSize: 17),
-                        ),
-                      ),
-                    // if (!widget.isCompact)
-                    Expanded(
-                        child:
-                            //  (contentsHeight != null) &&
-                            //         (contentsHeight ==
-                            //                 MediaQuery.of(context).size.height * 0.8 ||
-                            //             contentsHeight >
-                            //                 MediaQuery.of(context).size.height * 0.8)
-                            //     ?
-                            // Center(
-                            //     child: SizedBox(
-                            //       height: 28,
-                            //       width: 30,
-                            //       child: GestureDetector(
-                            //         onTap: () {
-                            //           if (!constraintContent) {
-                            //             setState(() {
-                            //               constraintContent = true;
-                            //               getContentSize();
-                            //             });
-                            //           } else {
-                            //             setState(() {
-                            //               constraintContent = false;
-                            //               getContentSize();
-                            //             });
-                            //           }
-                            //         },
-                            //         child: Padding(
-                            //           padding: EdgeInsets.only(left: 0),
-                            //           child: CustomPaint(
-                            //             //                       <-- CustomPaint widget
-                            //             size: Size(30, 30),
-                            //             painter: ExpandIconPainter(
-                            //                 constraintContent ? false : true,
-                            //                 context),
-                            //           ),
-                            //         ),
-                            //       ),
-                            //     ),
-                            //   )
-
-                            // :
-                            Container()),
+                            index: 1);
+                      }, count: widget.commentCount),
+                    if (widget.isCompact != true) Expanded(child: Container()),
                     Padding(
-                      padding: const EdgeInsets.only(right: 5),
+                      padding: EdgeInsets.only(
+                          right: widget.isCompact == true ? 0 : 5),
                       child: Material(
                         borderRadius: BorderRadius.circular(20),
                         color: Colors.transparent,
@@ -1282,36 +1119,37 @@ class _PostState extends State<Post> {
                             }
                           },
                           customBorder: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
-                            child: Row(
+                            padding: const EdgeInsets.only(
+                                bottom: 0, left: 6, right: 6, top: 6),
+                            child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.only(right: 3, left: 6),
-                                  child: Text(
-                                    increment == null
-                                        ? '${Functions.abbreviateNumber(upvotes, hideLess: true)}'
-                                        : increment
-                                            ? '${Functions.abbreviateNumber(upvotes + 1, hideLess: true)}'
-                                            : '${Functions.abbreviateNumber(upvotes - 1, hideLess: true)}',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 17),
-                                  ),
-                                ),
                                 Icon(
                                     vote == Vote.up
-                                        ? FluentIcons.keyboard_shift_24_filled
-                                        : FluentIcons.keyboard_shift_24_regular,
-                                    size: 22.0,
+                                        ? FluentIcons.star_24_filled
+                                        : FluentIcons.star_24_regular,
+                                    // vote == Vote.up
+                                    //     ? FluentIcons.keyboard_shift_24_filled
+                                    //     : FluentIcons.keyboard_shift_24_regular,
+                                    size: 25.0,
                                     color: isOwner
-                                        ? Colors.blue.withOpacity(0.7)
-                                        : Colors.blue),
+                                        ? AppColors.blue.withOpacity(0.7)
+                                        : AppColors.blue),
+                                Text(
+                                  increment == null
+                                      ? '${Functions.abbreviateNumber(upvotes, hideLess: true)}'
+                                      : increment
+                                          ? '${Functions.abbreviateNumber(upvotes + 1, hideLess: true)}'
+                                          : '${Functions.abbreviateNumber(upvotes - 1, hideLess: true)}',
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      height: 1,
+                                      fontWeight: FontWeight.w800,
+                                      fontFamily: 'Stark Sans'),
+                                ),
                               ],
                             ),
                           ),
@@ -1321,7 +1159,7 @@ class _PostState extends State<Post> {
                   ],
                 ),
                 Padding(
-                  padding: EdgeInsets.only(bottom: 4),
+                  padding: EdgeInsets.only(bottom: 2),
                 ),
               ],
             ),
@@ -1330,8 +1168,9 @@ class _PostState extends State<Post> {
   }
 
   @override
-  void dispose() {
-    _controller?.dispose();
+  void dispose() async {
+    // _controller?.dispose();
+
     super.dispose();
   }
 
@@ -1398,7 +1237,7 @@ class _PostState extends State<Post> {
                       child: Text(
                         'Undo',
                         style: TextStyle(
-                          color: Colors.blue,
+                          color: AppColors.blue,
                         ),
                       ),
                     ),
@@ -1413,6 +1252,11 @@ class _PostState extends State<Post> {
                         ? Theme.of(context).backgroundColor
                         : widget.color,
                     child: InkWell(
+                      onLongPress: widget.isCompact
+                          ? () {
+                              showOptions(context);
+                            }
+                          : null,
                       borderRadius: BorderRadius.circular(widget.radius ?? 0),
                       onTap: widget.isCompact
                           ? () {
@@ -1480,7 +1324,224 @@ class _PostState extends State<Post> {
                                 ],
                               ),
                             ),
-                          buildPostFooter(),
+                          if (widget.isCompact)
+                            if (tagBarVisible) tagBar(),
+                          (widget.isCompact != true)
+                              ? buildPostFooter()
+                              : Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  child: Row(
+                                      mainAxisSize: MainAxisSize.max,
+                                      children: [
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            GoTo().profileScreen(
+                                                context, widget.ownerId);
+                                          },
+                                          child: Container(
+                                            constraints: BoxConstraints(
+                                                maxWidth: 500, minWidth: 0),
+                                            child: Row(
+                                              children: [
+                                                CircleAvatar(
+                                                  radius: 14,
+                                                  backgroundImage:
+                                                      CachedNetworkImageProvider(
+                                                          photoUrl ??
+                                                              "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                                                  backgroundColor: Colors.grey,
+                                                ),
+                                                SizedBox(
+                                                  width: 8,
+                                                ),
+                                                Container(
+                                                  height: 32,
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        username,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        maxLines: 1,
+                                                        style: TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
+                                                      ),
+                                                      Container(
+                                                        height: 14,
+                                                        child: Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            Text(
+                                                              format(
+                                                                  DateTime.parse(
+                                                                      widget
+                                                                          .time),
+                                                                  locale:
+                                                                      'en_short'),
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                              maxLines: 1,
+                                                              style: TextStyle(
+                                                                  fontSize: 11,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400,
+                                                                  color: Colors
+                                                                      .grey),
+                                                            ),
+                                                            SizedBox(
+                                                              width: 3,
+                                                            ),
+                                                            if (!isFollowing &&
+                                                                !(widget.ownerId ==
+                                                                    Boxes
+                                                                        .currentUserBox
+                                                                        .get(
+                                                                            'user_id')))
+                                                              Text(
+                                                                '•',
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        13),
+                                                              ),
+                                                            if (!isFollowing &&
+                                                                !(widget.ownerId ==
+                                                                    Boxes
+                                                                        .currentUserBox
+                                                                        .get(
+                                                                            'user_id')))
+                                                              SizedBox(
+                                                                width: 3,
+                                                              ),
+                                                            if (!isFollowing &&
+                                                                !(widget.ownerId ==
+                                                                    Boxes
+                                                                        .currentUserBox
+                                                                        .get(
+                                                                            'user_id')))
+                                                              Container(
+                                                                  height: 14,
+                                                                  child:
+                                                                      GestureDetector(
+                                                                    onTap:
+                                                                        () async {
+                                                                      Functions()
+                                                                          .handleFollowUser(
+                                                                              widget.ownerId); // TODO wait for future
+                                                                      setState(
+                                                                          () {
+                                                                        isFollowing =
+                                                                            true;
+                                                                      });
+                                                                    },
+                                                                    child: Text(
+                                                                      'Follow',
+                                                                      overflow:
+                                                                          TextOverflow
+                                                                              .ellipsis,
+                                                                      maxLines:
+                                                                          1,
+                                                                      style: TextStyle(
+                                                                          fontSize:
+                                                                              12,
+                                                                          fontWeight: FontWeight
+                                                                              .w500,
+                                                                          color:
+                                                                              AppColors.blue),
+                                                                    ),
+                                                                  ))
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                              mainAxisSize: MainAxisSize.min,
+                                            ),
+                                          ),
+                                        ),
+                                        // if (widget.isCompact)
+                                        //   tagBarVisible
+                                        //       ? FooterButton(
+                                        //           FluentIcons
+                                        //               .chevron_up_24_filled,
+                                        //           () {
+                                        //           setState(() {
+                                        //             tagBarVisible = false;
+                                        //           });
+                                        //         })
+                                        //       : FooterButton(
+                                        //           FluentIcons
+                                        //               .chevron_down_24_filled,
+                                        //           () async {
+                                        //           setState(() {
+                                        //             tagBarVisible = true;
+                                        //           });
+                                        //         }),
+
+                                        Expanded(
+                                          child: Container(),
+                                        ),
+                                        Padding(
+                                          child: buildPostFooter(),
+                                          padding:
+                                              EdgeInsets.only(top: 4, right: 0),
+                                        ),
+                                        // Padding(
+                                        //   padding: const EdgeInsets.only(
+                                        //       right: 0, left: 0),
+                                        //   child: Material(
+                                        //     color: Colors.transparent,
+                                        //     child: InkWell(
+                                        //       customBorder: new CircleBorder(),
+                                        //       onTap: () {
+                                        //         showOptions(context);
+                                        //       },
+                                        //       child: Padding(
+                                        //         padding: const EdgeInsets.only(
+                                        //             top: 6, right: 2, left: 3),
+                                        //         child: Column(
+                                        //           children: [
+                                        //             Icon(
+                                        //               FluentIcons
+                                        //                   .more_vertical_24_filled,
+                                        //               size: 22,
+                                        //             ),
+                                        //             Text(
+                                        //               '',
+                                        //               maxLines: 1,
+                                        //               style: TextStyle(
+                                        //                   fontSize: 11,
+                                        //                   height: 1,
+                                        //                   fontWeight:
+                                        //                       FontWeight.w800,
+                                        //                   fontFamily:
+                                        //                       'Stark Sans'),
+                                        //             )
+                                        //           ],
+                                        //         ),
+                                        //       ),
+                                        //     ),
+                                        //   ),
+                                        //   // if (widget.count != null)
+                                        // ),
+                                      ]),
+                                ),
                         ],
                       ),
                     ),
@@ -1490,8 +1551,8 @@ class _PostState extends State<Post> {
                         thickness: 1,
                         indent: 10,
                         endIndent: 10,
-                        color: Theme.of(context).cardColor,
-                        height: 1),
+                        color: Colors.grey.withOpacity(0.1),
+                        height: 2),
                 ],
               );
   }
@@ -1524,18 +1585,23 @@ class DownvoteTileState extends State<DownvoteTile> {
   Widget build(BuildContext context) {
     return ListTile(
       dense: true,
-      leading: Transform.rotate(
-        angle: 59.7,
-        child: Icon(
-            vote == Vote.down
-                ? FluentIcons.keyboard_shift_24_filled
-                : FluentIcons.keyboard_shift_24_regular,
-            size: 24.0,
-            color: vote == Vote.down
-                ? Colors.red
-                : Theme.of(context).iconTheme.color),
-      ),
-      title: Text('Downvote'),
+      leading:
+          //  Transform.rotate(
+          //   angle: 59.7,
+          // child:
+          Icon(
+              vote == Vote.down
+                  ? FluentIcons.star_off_24_filled
+                  : FluentIcons.star_off_24_regular,
+              // vote == Vote.down
+              //     ? FluentIcons.keyboard_shift_24_filled
+              //     : FluentIcons.keyboard_shift_24_regular,
+              size: 24.0,
+              color: vote == Vote.down
+                  ? Colors.red
+                  : Theme.of(context).iconTheme.color),
+      // ),
+      title: Text('Unstar'),
       onTap: () {
         PostFunctions()
             .handleDownvoteButton(widget.postId, vote, widget.postActionExists);
@@ -1595,8 +1661,10 @@ class ExpandIconPainter extends CustomPainter {
 class FooterButton extends StatefulWidget {
   final Function function;
   final IconData iconData;
+  final int count;
+  final Color color;
 
-  const FooterButton(this.iconData, this.function);
+  const FooterButton(this.iconData, this.function, {this.count, this.color});
 
   @override
   _FooterButtonState createState() => _FooterButtonState();
@@ -1610,17 +1678,33 @@ class _FooterButtonState extends State<FooterButton> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          customBorder: new CircleBorder(),
+          customBorder: new RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4)),
           onTap: widget.function,
-          child: Padding(
-            padding: const EdgeInsets.all(6),
-            child: Icon(
-              widget.iconData,
-              size: 22,
-            ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 6, right: 6, top: 6),
+                child: Icon(
+                  widget.iconData,
+                  size: 25,
+                  color: widget.color ?? Theme.of(context).iconTheme.color,
+                ),
+              ),
+              Text(
+                Functions.abbreviateNumber(widget.count ?? 0, hideLess: true),
+                maxLines: 1,
+                style: TextStyle(
+                    fontSize: 11,
+                    height: 1,
+                    fontWeight: FontWeight.w800,
+                    fontFamily: 'Stark Sans'),
+              )
+            ],
           ),
         ),
       ),
+      // if (widget.count != null)
     );
   }
 }

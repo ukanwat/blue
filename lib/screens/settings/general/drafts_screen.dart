@@ -1,6 +1,6 @@
 // Dart imports:
 import 'dart:io';
-
+import 'package:blue/constants/app_colors.dart';
 // Flutter imports:
 import 'package:flutter/material.dart';
 
@@ -52,6 +52,8 @@ class _DraftsScreenState extends State<DraftsScreen> {
               itemBuilder: (_, i) {
                 List post = contentsData[i]['contentsData'];
                 List<Widget> widgets = [];
+
+                //TODO:imp dont show when a content fails to open
                 post.forEach((element) {
                   switch (element['info']['type']) {
                     case 'text':
@@ -77,7 +79,7 @@ class _DraftsScreenState extends State<DraftsScreen> {
                           dotVerticalPadding: 0,
                           dotSize: 6,
                           dotIncreaseSize: 1.2,
-                          dotIncreasedColor: Colors.blue.withOpacity(0.7),
+                          dotIncreasedColor: AppColors.blue.withOpacity(0.7),
                           dotColor: Colors.white,
                           showIndicator: true,
                           dotPosition: DotPosition.bottomCenter,
@@ -163,9 +165,9 @@ class _DraftsScreenState extends State<DraftsScreen> {
                                           title: 'Delete Draft',
                                           description:
                                               'Are you sure you want to delete this draft?',
-                                          leftButtonText: 'Cancel',
-                                          rightButtonText: 'Delete',
-                                          rightButtonFunction: () async {
+                                          middleButtonText: 'Cancel',
+                                          topButtonText: 'Delete',
+                                          topButtonFunction: () async {
                                             setState(() {
                                               Boxes.draftBox.deleteAt(i);
                                               contentsData.removeAt(i);

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:dio/dio.dart';
 import 'package:full_screen_image/full_screen_image.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
@@ -16,6 +16,7 @@ import 'package:blue/main.dart';
 import 'package:blue/services/boxes.dart';
 import 'package:blue/services/hasura.dart';
 import 'package:blue/widgets/progress.dart';
+import 'package:blue/constants/app_colors.dart';
 
 class Message extends StatelessWidget {
   final int id;
@@ -169,10 +170,10 @@ class Message extends StatelessWidget {
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(14),
                             color: myText
-                                ? Colors.blue
+                                ? AppColors.blue
                                 : Theme.of(context).backgroundColor,
                             border: Border.all(
-                                color: myText ? Colors.blue : Colors.grey,
+                                color: myText ? AppColors.blue : Colors.grey,
                                 width: 0.6)),
                         child: Text(
                           message,

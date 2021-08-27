@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/env.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -28,12 +29,15 @@ class ThemeNotifier extends ChangeNotifier {
             (SchedulerBinding.instance.window.platformBrightness ==
                 Brightness.dark)) ||
         (value == true);
+    AppColors.blue = dark ? AppColors.blueDark : AppColors.blueLight;
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
         statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
         statusBarBrightness: Brightness.light,
         statusBarColor: Colors.transparent,
-        systemNavigationBarColor: AppColors.navBar,
-        systemNavigationBarDividerColor: Colors.grey[900],
+        systemNavigationBarColor:
+            dark ? Color.fromRGBO(25, 25, 25, 1) : Colors.black,
+        systemNavigationBarDividerColor:
+            dark ? Color.fromRGBO(25, 25, 25, 1) : Colors.black,
         systemNavigationBarIconBrightness: Brightness.light));
     _saveToPrefs();
     notifyListeners();
@@ -43,9 +47,24 @@ class ThemeNotifier extends ChangeNotifier {
     if (Boxes.preferenceBox == null) {
       _darkTheme = false;
     } else {
-      _darkTheme = PreferencesUpdate().getBool(key, def: null) ?? true;
+      _darkTheme = PreferencesUpdate().getBool(key, def: null) ??
+          (SchedulerBinding.instance.window.platformBrightness ==
+              Brightness.dark);
     }
 
+    AppColors.blue = _darkTheme ? AppColors.blueDark : AppColors.blueLight;
+    AppColors.navBar =
+        _darkTheme ? Color.fromRGBO(25, 25, 25, 1) : Colors.black;
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+        statusBarIconBrightness:
+            _darkTheme ? Brightness.light : Brightness.dark,
+        statusBarBrightness: Brightness.light,
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor:
+            _darkTheme ? Color.fromRGBO(25, 25, 25, 1) : Colors.black,
+        systemNavigationBarDividerColor:
+            _darkTheme ? Color.fromRGBO(25, 25, 25, 1) : Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light));
     notifyListeners();
   }
 

@@ -3,8 +3,12 @@ import 'dart:async';
 
 // Flutter imports:
 import 'package:blue/screens/profile/qr_screen.dart';
+import 'package:blue/screens/rewards_screen.dart';
 import 'package:blue/screens/settings/about/community_guidelines.screen.dart';
+import 'package:blue/screens/settings/about/faqs.dart';
+import 'package:blue/screens/settings/general/account_screens/gender_screen.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -21,8 +25,8 @@ import 'package:provider/provider.dart';
 // Project imports:
 import 'package:blue/constants/app_colors.dart';
 import 'package:blue/models/hive_data_model.dart';
-import 'package:blue/providers/provider_widget.dart' as PW;
-import 'package:blue/providers/theme.dart';
+import 'package:blue/state_management/provider_widget.dart' as PW;
+import 'package:blue/state_management/theme.dart';
 import 'package:blue/screens/profile/all_saved_posts_screen.dart';
 import 'package:blue/screens/inbox/chat_info_screen.dart';
 import 'package:blue/screens/inbox/chat_messages_screen.dart';
@@ -73,6 +77,7 @@ import './services/push_notifications.dart';
 import 'models/user.dart';
 import 'screens/settings/general/account_screens/date_of_birth_screen.dart';
 import 'screens/settings/general/account_screens/email_screen.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,8 +88,13 @@ void main() async {
   // await FirebaseAppCheck.instance.activate();
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
   //await PushNotificationsManager().initNotif();
-  var dir = await getApplicationDocumentsDirectory();
-  Hive.init(dir.path);
+  var dir;
+  if (kIsWeb) {
+    Hive.initFlutter();
+  } else {
+    dir = await getApplicationDocumentsDirectory();
+    Hive.init(dir.path);
+  }
 
   await getCurrentUser();
 
@@ -169,21 +179,33 @@ class MyAppState extends State<MyApp> {
                         textSelectionColor: Color.fromRGBO(245, 245, 245, 1),
                         cardColor: Color.fromRGBO(50, 50, 50, 1),
                         canvasColor: Color.fromRGBO(32, 32, 32, 1),
-                        primaryColor: Colors.blue,
+                        primaryColor: AppColors.blue,
                         backgroundColor: Color.fromRGBO(10, 10, 10, 1),
                         textTheme: Typography.whiteMountainView,
+                        primaryTextTheme: Typography.whiteMountainView,
+                        accentTextTheme: Typography.whiteMountainView,
                         iconTheme: IconThemeData(
                           color: Colors.white,
                         ),
+                        primaryIconTheme: IconThemeData(
+                          color: Colors.white,
+                        ),
+                        dividerColor: Colors.grey,
                         unselectedWidgetColor: Colors.white,
+                        textButtonTheme: TextButtonThemeData(
+                            style:
+                                TextButton.styleFrom(primary: AppColors.blue)),
                       )
                     : ThemeData(
                         brightness: Brightness.light,
+                        textButtonTheme: TextButtonThemeData(
+                            style:
+                                TextButton.styleFrom(primary: AppColors.blue)),
                         textSelectionColor: Color.fromRGBO(51, 51, 51, 1),
                         accentColor: Color(0xD11ee682),
                         cardColor: Color.fromRGBO(238, 238, 238, 1),
                         canvasColor: Color.fromRGBO(250, 250, 250, 1),
-                        primaryColor: Colors.blue,
+                        primaryColor: AppColors.blue,
                         backgroundColor: Color.fromRGBO(255, 255, 255, 1),
                         textTheme: Typography.blackMountainView,
                         accentTextTheme: Typography.blackMountainView,
@@ -193,41 +215,54 @@ class MyAppState extends State<MyApp> {
                         primaryIconTheme: IconThemeData(
                           color: Colors.black,
                         ),
+                        dividerColor: Colors.grey,
                         primaryTextTheme: Typography.blackMountainView,
                         unselectedWidgetColor: Colors.grey[700],
                       ),
                 darkTheme: notifier.darkTheme == false
                     ? ThemeData(
+                        textButtonTheme: TextButtonThemeData(
+                            style:
+                                TextButton.styleFrom(primary: AppColors.blue)),
                         brightness: Brightness.light,
                         accentColor: Color(0xD11ee682),
                         textSelectionColor: Color.fromRGBO(24, 24, 24, 1),
                         cardColor: Color.fromRGBO(238, 238, 238, 1),
                         canvasColor: Color.fromRGBO(250, 250, 250, 1),
-                        primaryColor: Colors.blue,
+                        primaryColor: AppColors.blue,
                         backgroundColor: Color.fromRGBO(255, 255, 255, 1),
                         textTheme: Typography.blackMountainView,
+                        accentTextTheme: Typography.blackMountainView,
                         iconTheme: IconThemeData(
                           color: Colors.black,
                         ),
                         primaryIconTheme: IconThemeData(
                           color: Colors.black,
                         ),
+                        dividerColor: Colors.grey,
                         primaryTextTheme: Typography.blackMountainView,
                         unselectedWidgetColor: Colors.grey[700],
                       )
                     : ThemeData(
+                        textButtonTheme: TextButtonThemeData(
+                            style:
+                                TextButton.styleFrom(primary: AppColors.blue)),
                         brightness: Brightness.dark,
                         dividerColor: Colors.grey,
                         textSelectionColor: Color.fromRGBO(245, 245, 245, 1),
                         accentColor: Color(0xD11ee682),
                         accentTextTheme: Typography.whiteMountainView, //
                         primaryTextTheme: Typography.whiteMountainView, //
+
                         cardColor: Color.fromRGBO(50, 50, 50, 1),
                         canvasColor: Color.fromRGBO(26, 26, 26, 1),
-                        primaryColor: Colors.blue,
+                        primaryColor: AppColors.blue,
                         backgroundColor: Color.fromRGBO(12, 12, 12, 1),
                         textTheme: Typography.whiteMountainView,
                         iconTheme: IconThemeData(
+                          color: Colors.white,
+                        ),
+                        primaryIconTheme: IconThemeData(
                           color: Colors.white,
                         ),
                         unselectedWidgetColor: Colors.white,
@@ -314,6 +349,11 @@ class MyAppState extends State<MyApp> {
                           child: ShowScreen(),
                           type: PageTransitionType.scale,
                           settings: settings);
+                    case SearchScreen.routeName:
+                      return PageTransition(
+                          child: SearchScreen(),
+                          type: PageTransitionType.fade,
+                          settings: settings);
                     case SetNameScreen.routeName:
                       return PageTransition(
                           child: SetNameScreen(),
@@ -328,7 +368,6 @@ class MyAppState extends State<MyApp> {
                 },
                 routes: {
                   TabsScreen.routeName: (ctx) => TabsScreen(),
-                  SearchScreen.routeName: (ctx) => SearchScreen(),
                   EditProfileScreen.routeName: (ctx) => EditProfileScreen(),
                   PostScreen.routeName: (ctx) => PostScreen(),
                   VerifyEmailScreen.routeName: (ctx) => VerifyEmailScreen(),
@@ -365,6 +404,9 @@ class MyAppState extends State<MyApp> {
                   DateOfBirthScreen.routeName: (ctx) => DateOfBirthScreen(),
                   CommunityGuidelinesScreen.routeName: (ctx) =>
                       CommunityGuidelinesScreen(),
+                  FAQScreen.routeName: (ctx) => FAQScreen(),
+                  RewardsScreen.routeName: (ctx) => RewardsScreen(),
+                  GenderScreen.routeName: (ctx) => GenderScreen(),
                 }),
           );
         },

@@ -5,15 +5,16 @@ import 'dart:convert';
 // Flutter imports:
 import 'package:blue/services/functions.dart';
 import 'package:blue/services/go_to.dart';
-import 'package:blue/widgets/action_button.dart';
+import 'package:blue/widgets/button.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:animations/animations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -86,22 +87,29 @@ class _ChatsScreenState extends State<ChatsScreen>
         'username': doc['username'],
         'name': doc['name']
       });
-      Widget userChat = OpenContainer<bool>(
-          transitionType: ContainerTransitionType.fadeThrough,
-          openBuilder: (BuildContext _, VoidCallback openContainer) {
-            Hasura.seenConversation(doc['user_id']);
-            return ChatMessagesScreen(
-              peerUser: user,
-              convId: convId,
-            );
-          },
-          onClosed: null,
-          tappable: true,
-          closedShape: const RoundedRectangleBorder(),
-          closedColor: Theme.of(context).backgroundColor,
-          closedBuilder: (BuildContext _, VoidCallback openContainer) {
-            return chatUserListTile(user, openContainer, i, newMessage);
-          });
+      Widget userChat = ChatTile(user, doc['user_id'], convId, i, directMap,
+          widget.archived, newMessage);
+
+      // OpenContainer<bool>(
+      //     transitionType: ContainerTransitionType.fadeThrough,
+      //     openBuilder: (BuildContext _, VoidCallback openContainer) {
+      //       Hasura.seenConversation(doc['user_id']);
+      //       return ChatMessagesScreen(
+      //         peerUser: user,
+      //         convId: convId,
+      //       );
+      //     },
+      //     onClosed: null,
+      //     tappable: true,
+      //     closedShape: const RoundedRectangleBorder(),
+      //     closedColor: Theme.of(context).backgroundColor,
+      //     closedBuilder: (BuildContext _, VoidCallback openContainer) {
+      //       // return chatUserListTile(user, openContainer, i, newMessage);
+      //       return ChatTile(
+      //         user,
+      //       );
+      //     });
+
       if (newMessage == null) {
         chatUsers.add(userChat);
       } else {
@@ -166,7 +174,7 @@ class _ChatsScreenState extends State<ChatsScreen>
             margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
             decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(10)),
           ),
         ),
         loading
@@ -260,9 +268,6 @@ class _ChatsScreenState extends State<ChatsScreen>
           ),
         ),
         onDismissed: (DismissDirection d) {
-          setState(() {
-            chatUsers.removeAt(i - 1);
-          });
           Hasura.hideConversation(user.userId, widget.archived);
         },
         child: ListTile(
@@ -375,7 +380,7 @@ class _SearchPeopleState extends State<SearchPeople> {
   }
 
   TextEditingController searchController = TextEditingController();
-  Future<QuerySnapshot> peopleResultsFuture;
+
   bool searching = false;
   String search;
 
@@ -449,8 +454,7 @@ class _SearchPeopleState extends State<SearchPeople> {
                         fontWeight: FontWeight.w600,
                         fontSize: 20,
                         fontFamily: 'Stark Sans',
-                        color:
-                            Theme.of(context).iconTheme.color.withOpacity(0.7)),
+                        color: Theme.of(context).iconTheme.color),
                   ),
                 ),
               ),
@@ -467,7 +471,7 @@ class _SearchPeopleState extends State<SearchPeople> {
           padding:
               const EdgeInsets.only(right: 10.0, left: 10, bottom: 8, top: 8),
           child: Container(
-            height: 38,
+            height: 37,
             alignment: Alignment.center,
             child: TextFormField(
               maxLength: 100,
@@ -530,5 +534,187 @@ class _SearchPeopleState extends State<SearchPeople> {
           )
       ],
     );
+  }
+}
+
+class ChatTile extends StatefulWidget {
+  final User user;
+  final int peerId;
+  final int convId;
+  final int i;
+  final Map directMap;
+  final bool archived;
+  final DateTime newMessage;
+
+  ChatTile(this.user, this.peerId, this.convId, this.i, this.directMap,
+      this.archived, this.newMessage);
+
+  @override
+  _ChatTileState createState() => _ChatTileState();
+}
+
+class _ChatTileState extends State<ChatTile> {
+  InkWell chatUserListTile(
+      User user, VoidCallback openContainer, int i, DateTime newMessage) {
+    return InkWell(
+      onTap: openContainer,
+      child: Dismissible(
+        key: UniqueKey(),
+        direction: DismissDirection.horizontal,
+        secondaryBackground: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text(
+                widget.archived ? 'Unarchive chat' : 'Archive chat',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 10),
+                padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: widget.archived ? Colors.greenAccent : Colors.red),
+                child: Icon(
+                  FluentIcons.archive_24_filled,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+        background: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 10),
+                padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: widget.archived ? Colors.greenAccent : Colors.red),
+                child: Icon(
+                  FluentIcons.archive_24_filled,
+                  color: Colors.white,
+                ),
+              ),
+              Text(
+                widget.archived ? 'Unarchive chat' : 'Archive chat',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              )
+            ],
+          ),
+        ),
+        onDismissed: (DismissDirection d) {
+          Hasura.hideConversation(user.userId, widget.archived);
+        },
+        child: ListTile(
+          trailing: (newMessage == null)
+              ? Container(
+                  width: 5,
+                  height: 5,
+                )
+              : Container(
+                  width: 100,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${Functions().date(newMessage)}, ${DateFormat.jm().format(newMessage)}',
+                        style: TextStyle(color: Colors.grey, fontSize: 11),
+                      ),
+                      Text(
+                        'NEW MESSAGE',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: Theme.of(Get.context).accentColor),
+                      )
+                    ],
+                  ),
+                ),
+          tileColor: Theme.of(Get.context).backgroundColor,
+          leading: CircleAvatar(
+            backgroundImage: CachedNetworkImageProvider(user.avatarUrl ??
+                "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+          ),
+          title: Text(
+            user.name,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          subtitle: Row(
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  child: widget.directMap.containsKey(user.id)
+                      ? (widget.directMap[user.id]['message'] ==
+                              '${MessageType.gif}'
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Icon(
+                                  FlutterIcons.play_box_outline_mco,
+                                  size: 16,
+                                  color: Colors.grey,
+                                ),
+                                Text(' GIF')
+                              ],
+                            )
+                          : (widget.directMap[user.id]['message'] ==
+                                  '${MessageType.image}'
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    Icon(
+                                      FlutterIcons.image_fea,
+                                      size: 15,
+                                      color: Colors.grey,
+                                    ),
+                                    Text(' Image')
+                                  ],
+                                )
+                              : Text(
+                                  widget.directMap[user.id]['message'],
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                )))
+                      : Text(
+                          user.username,
+                          maxLines: 1,
+                        ),
+                ),
+              ),
+              Text(widget.directMap.containsKey(user.id)
+                  ? '${timeago.format(DateTime.parse(widget.directMap[user.id]['time']))}'
+                  : ''),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return OpenContainer<bool>(
+        transitionType: ContainerTransitionType.fadeThrough,
+        openBuilder: (BuildContext _, VoidCallback openContainer) {
+          Hasura.seenConversation(widget.peerId);
+          return ChatMessagesScreen(
+            peerUser: widget.user,
+            convId: widget.convId,
+          );
+        },
+        onClosed: null,
+        tappable: true,
+        closedShape: const RoundedRectangleBorder(),
+        closedColor: Theme.of(context).backgroundColor,
+        closedBuilder: (BuildContext _, VoidCallback openContainer) {
+          return chatUserListTile(
+              widget.user, openContainer, widget.i, widget.newMessage);
+        });
   }
 }

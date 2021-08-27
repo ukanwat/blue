@@ -1,5 +1,4 @@
 // Package imports:
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class User {
   final dynamic id;
@@ -18,6 +17,7 @@ class User {
   final bool profileComplete;
   final DateTime joined;
   final bool reviewed;
+  final String place;
   User(
       {this.id,
       this.username,
@@ -34,6 +34,7 @@ class User {
       this.social,
       this.profileComplete,
       this.reviewed,
+      this.place,
       this.joined});
 
   factory User.fromDocument(Map doc) {
@@ -52,6 +53,7 @@ class User {
         followerCount: doc['follower_count'],
         social: doc['social'],
         reviewed: doc['reviewed'],
+        place: doc['place'],
         joined: DateTime.parse(doc['joined'] ?? DateTime.now().toString()),
         profileComplete: doc['profile_complete']);
   }

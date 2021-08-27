@@ -1,15 +1,16 @@
 // Flutter imports:
+import 'package:blue/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:provider/provider.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
-import 'package:blue/providers/theme.dart';
+import 'package:blue/state_management/theme.dart';
 import 'package:blue/services/preferences_update.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 
@@ -98,8 +99,8 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                 title: Text('System Default'),
                 trailing: Visibility(
                   visible: themeMode == AppTheme.sysDefault,
-                  child:
-                      Icon(FlutterIcons.check_circle_faw5s, color: Colors.blue),
+                  child: Icon(FlutterIcons.check_circle_faw5s,
+                      color: AppColors.blue),
                 ),
               ),
               ListTile(
@@ -112,8 +113,8 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                 title: Text('Light Mode'),
                 trailing: Visibility(
                   visible: themeMode == AppTheme.light,
-                  child:
-                      Icon(FlutterIcons.check_circle_faw5s, color: Colors.blue),
+                  child: Icon(FlutterIcons.check_circle_faw5s,
+                      color: AppColors.blue),
                 ),
               ),
               ListTile(
@@ -126,8 +127,8 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                 title: Text('Dark Mode'),
                 trailing: Visibility(
                   visible: themeMode == AppTheme.dark,
-                  child:
-                      Icon(FlutterIcons.check_circle_faw5s, color: Colors.blue),
+                  child: Icon(FlutterIcons.check_circle_faw5s,
+                      color: AppColors.blue),
                 ),
               ),
               Container(
@@ -205,8 +206,8 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                 title: Text('Sans Serif'),
                 trailing: Visibility(
                   visible: serif == false,
-                  child:
-                      Icon(FlutterIcons.check_circle_faw5s, color: Colors.blue),
+                  child: Icon(FlutterIcons.check_circle_faw5s,
+                      color: AppColors.blue),
                 ),
               ),
               ListTile(
@@ -222,8 +223,8 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                 ),
                 trailing: Visibility(
                   visible: serif == true,
-                  child:
-                      Icon(FlutterIcons.check_circle_faw5s, color: Colors.blue),
+                  child: Icon(FlutterIcons.check_circle_faw5s,
+                      color: AppColors.blue),
                 ),
               ),
               Container(

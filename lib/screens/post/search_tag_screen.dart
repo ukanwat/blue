@@ -2,7 +2,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:blue/constants/app_colors.dart';
 // Package imports:
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -180,7 +180,7 @@ class _SearchTagScreenState extends State<SearchTagScreen> {
                         child: Text(
                           '+Create',
                           style: TextStyle(
-                              color: Colors.blue,
+                              color: AppColors.blue,
                               fontSize: 20,
                               fontWeight: FontWeight.w500),
                         ),

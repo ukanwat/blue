@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -71,6 +72,14 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Color.fromRGBO(240, 240, 240, 1),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(0),
+        child: AppBar(
+          brightness: Brightness.light,
+          backgroundColor: Colors.white,
+          elevation: 0,
+        ),
+      ),
       body: Stack(
         alignment: Alignment.bottomCenter,
         children: [
@@ -175,13 +184,13 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                 children: [
                   Icon(
                     FluentIcons.chevron_left_24_filled,
-                    color: Colors.blue,
+                    color: AppColors.blue,
                   ),
                   Text(
                     'Back',
                     style: TextStyle(
                         fontSize: 18,
-                        color: Colors.blue,
+                        color: AppColors.blue,
                         fontWeight: FontWeight.w500),
                   )
                 ],

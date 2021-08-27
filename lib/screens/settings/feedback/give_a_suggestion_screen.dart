@@ -1,5 +1,5 @@
-// Dart imports:
-import 'dart:io';
+import 'package:blue/constants/app_colors.dart';
+import 'package:universal_platform/universal_platform.dart';
 import 'dart:ui';
 
 // Flutter imports:
@@ -35,9 +35,9 @@ class _GiveASuggestionScreenState extends State<GiveASuggestionScreen> {
     Map<String, dynamic> deviceData;
 
     try {
-      if (Platform.isAndroid) {
+      if (UniversalPlatform.isAndroid) {
         deviceData = _readAndroidBuildData(await deviceInfoPlugin.androidInfo);
-      } else if (Platform.isIOS) {
+      } else if (UniversalPlatform.isIOS) {
         deviceData = _readIosDeviceInfo(await deviceInfoPlugin.iosInfo);
       }
     } on PlatformException {
@@ -140,7 +140,8 @@ class _GiveASuggestionScreenState extends State<GiveASuggestionScreen> {
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                  color: Colors.blue, borderRadius: BorderRadius.circular(10)),
+                  color: AppColors.blue,
+                  borderRadius: BorderRadius.circular(10)),
               padding: EdgeInsets.symmetric(
                 vertical: 15,
               ),

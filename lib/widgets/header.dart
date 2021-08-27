@@ -19,10 +19,10 @@ PreferredSize header(context,
     preferredSize: Size.fromHeight(50.0),
     child: AppBar(
       bottom: PreferredSize(
-          preferredSize: Size.fromHeight(1),
+          preferredSize: Size.fromHeight(0.5),
           child: Divider(
-            height: 1,
-            thickness: 1,
+            height: 0.5,
+            thickness: 0.5,
             color: Theme.of(context).iconTheme.color.withOpacity(0.1),
           )),
       brightness: Theme.of(context).brightness,
@@ -35,12 +35,7 @@ PreferredSize header(context,
               : <Widget>[actionButton])
           : null,
       backgroundColor: Theme.of(context).backgroundColor,
-      title: textTitleExists
-          ? title
-          : Image.asset(
-              'assets/icons/appbar_appicon_inverted.png',
-              height: MediaQuery.of(context).viewPadding.top,
-            ),
+      title: textTitleExists ? title : Text(''),
       elevation: elevation == null ? 1 : elevation,
       centerTitle: centerTitleExists ? centerTitle : true,
       automaticallyImplyLeading: implyLeadingExists ? implyLeading : true,

@@ -1,6 +1,6 @@
 // Flutter imports:
 import 'package:blue/constants/doubles.dart';
-import 'package:blue/widgets/action_button.dart';
+import 'package:blue/widgets/button.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -117,9 +117,9 @@ class _UserTileState extends State<UserTile> {
                   }
                 },
                     (widget.type == Tile.follow)
-                        ? Colors.blue
+                        ? AppColors.blue
                         : undo
-                            ? Colors.blue
+                            ? AppColors.blue
                             : Colors.red,
                     (widget.type == Tile.follow)
                         ? 'Follow'

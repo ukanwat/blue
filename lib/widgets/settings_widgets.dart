@@ -1,10 +1,10 @@
 // Dart imports:
-import 'dart:io';
+import 'package:universal_platform/universal_platform.dart';
 
 // Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'package:blue/constants/app_colors.dart';
 // Package imports:
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
@@ -40,7 +40,7 @@ PreferredSize settingsHeader(BuildContext context, String title,
           FluentIcons.chevron_left_24_filled,
           size: 30,
         ),
-        color: Colors.blue,
+        color: AppColors.blue,
         iconSize: 28,
         onPressed: () {
           Navigator.pop(context);
@@ -78,7 +78,7 @@ Container settingsSectionTitle(
         // Icon(
         //   icon.icon,
         //   size: 18,
-        //   color: Colors.blue,
+        //   color: AppColors.blue,
         // ),
       ],
     ),
@@ -89,19 +89,19 @@ Container settingsSwitchListTile(
     String title, bool currentValue, Function updateValue,
     {String description}) {
   return Container(
-    child: Platform.isIOS
+    child: UniversalPlatform.isIOS
         ? CupertinoFormRow(
             child: CupertinoSwitch(
               value: currentValue,
               onChanged: updateValue,
               trackColor: Colors.grey,
-              activeColor: Colors.blue,
+              activeColor: AppColors.blue,
             ),
             prefix: TileText(title),
             helper: description == null ? null : TileText(description),
           )
         : SwitchListTile(
-            activeColor: Colors.blue,
+            activeColor: AppColors.blue,
             value: currentValue,
             onChanged: updateValue,
             title: Text(title),

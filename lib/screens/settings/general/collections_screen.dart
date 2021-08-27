@@ -1,9 +1,8 @@
 // Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'package:blue/constants/app_colors.dart';
 // Package imports:
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
@@ -54,7 +53,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
             ),
             automaticallyImplyLeading: false,
             leading: CupertinoNavigationBarBackButton(
-              color: Colors.blue,
+              color: AppColors.blue,
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -76,7 +75,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
                   'New',
                   style: TextStyle(
                     fontSize: 20,
-                    color: Colors.blue,
+                    color: AppColors.blue,
                   ),
                 ),
               )

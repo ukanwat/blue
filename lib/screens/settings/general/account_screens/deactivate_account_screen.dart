@@ -26,9 +26,9 @@ class DeactivateAccountScreen extends StatelessWidget {
                 title: "Come Back Anytime!",
                 description:
                     "People will not be able to see your Profile after account deactivation but they will still see private messages sent by you. Your profile data will be deleted forever after 30 days unless you sign in again.",
-                leftButtonText: "Deactivate",
-                rightButtonText: "Cancel",
-                leftButtonFunction: () {
+                middleButtonText: "Deactivate",
+                topButtonText: "Cancel",
+                middleButtonFunction: () {
                   AuthService.logout(context);
                 },
               ),

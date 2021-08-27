@@ -3,6 +3,8 @@ import 'dart:async';
 import 'dart:developer' show Timeline, Flow;
 
 // Flutter imports:
+import 'package:blue/constants/app_colors.dart';
+import 'package:blue/widgets/progress.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Flow;
 import 'package:flutter/scheduler.dart';
@@ -128,7 +130,7 @@ class _LicenseScreenState extends State<LicenseScreen> {
     final String version =
         'Build Version  v${packageInfo == null ? ' ' : '${packageInfo.version}' + '+' + '${packageInfo.buildNumber}'}';
     final Widget icon = Container(
-      color: Colors.blue,
+      color: AppColors.blue,
       width: 100,
       height: 100,
     );
@@ -172,13 +174,7 @@ class _LicenseScreenState extends State<LicenseScreen> {
                   if (!_loaded)
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 24.0),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.blue),
-                        ),
-                      ),
+                      child: Center(child: CircularProgressIndicator()),
                     ),
                 ],
               ),

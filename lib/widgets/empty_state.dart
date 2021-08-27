@@ -20,12 +20,12 @@ Widget emptyState(
           children: [
             Container(
               color: Colors.transparent,
-              height: MediaQuery.of(context).size.width * 0.4,
+              height: MediaQuery.of(context).size.width * 0.3,
               padding: EdgeInsets.all(15),
               child: svgName == 'none'
                   ? Container(
-                      height: MediaQuery.of(context).size.width * 0.4,
-                      width: MediaQuery.of(context).size.width * 0.4,
+                      height: MediaQuery.of(context).size.width * 0.3,
+                      width: MediaQuery.of(context).size.width * 0.3,
                       child: Center(
                         child: Stack(
                           children: <Widget>[

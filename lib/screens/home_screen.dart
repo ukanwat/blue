@@ -2,12 +2,19 @@
 import 'dart:io';
 
 // Flutter imports:
+import 'package:blue/env.dart';
+import 'package:blue/screens/rewards_screen.dart';
+import 'package:blue/services/scroll_direction.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:animations/animations.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_intro/flutter_intro.dart';
+import 'package:get/get.dart';
 import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
+import 'package:scroll_app_bar/scroll_app_bar.dart';
 import 'package:share/share.dart';
 import 'package:widgets_visibility_provider/widgets_visibility_provider.dart';
 
@@ -41,7 +48,9 @@ class _HomeScreenState extends State<HomeScreen>
   bool followingPosts = false;
   int length = 100;
   bool loaded = false;
-
+  GlobalKey _one = GlobalKey();
+  GlobalKey _two = GlobalKey();
+  GlobalKey _three = GlobalKey();
   double pos = 0;
   ScrollController _scrollController = ScrollController();
   double currOff = 0;
@@ -104,10 +113,22 @@ class _HomeScreenState extends State<HomeScreen>
     return doc;
   }
 
+  // Scroll sc;
   @override
   void didChangeDependencies() {
     pS = PostService('home', fn, transform, false, false);
+    // sc = Get.put(Scroll(_scrollController));
+    // sc.init();
+
     addItems();
+    if (!Env.introShown && (Env.newUser == true)) {
+      WidgetsBinding.instance.addPostFrameCallback(
+          (_) => Future.delayed(Duration(milliseconds: 500), () {
+                Env.intro.start(context);
+                Env.introShown = true;
+              }));
+    }
+
     super.didChangeDependencies();
   }
 
@@ -129,99 +150,133 @@ class _HomeScreenState extends State<HomeScreen>
       });
   }
 
+  BuildContext myContext;
+
   bool get wantKeepAlive => true;
   @override
   Widget build(context) {
     super.build(context);
+
     return Scaffold(
       backgroundColor: Theme.of(context).canvasColor,
-      appBar: header(
-        context,
-        implyLeading: false,
-        title: Row(
-          children: [
-            Text(
-              'Stark',
-              style: TextStyle(
-                fontSize: 26,
-                fontFamily: 'Techna Sans Regular',
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(50),
+        child: AppBar(
+          title: Row(
+            children: [
+              Text(
+                'Stark',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontFamily: 'Techna Sans Regular',
+                ),
               ),
-            ),
-            followingPosts
-                ? Padding(
-                    padding: const EdgeInsets.only(left: 10, top: 8),
-                    child: Text('FOLLOWING',
-                        style: TextStyle(
-                          fontFamily: 'Stark Sans',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.grey.withOpacity(0.7),
-                        )),
-                  )
-                : Container(),
-          ],
-        ),
-        actionButton2: Row(
-          children: [
-            TextButton(
-                child: Text(
-                  'INVITE',
-                  style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: Theme.of(context).accentColor),
-                ),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return ShowDialog(
-                        noLeft: true,
-                        description: 'Invite your friends to Stark',
-                        rightButtonText: 'Invite',
-                        leftButtonText: 'Cancel',
-                        rightButtonFunction: () {
-                          Navigator.pop(context);
-                          Share.share(
-                              "I'm inviting you to Stark https://starkinvite.page.link/i",
-                              subject: 'App Invitation');
-                        },
-                        title: 'App Invitation',
-                      );
-                    },
-                  );
-                }),
-            IconButton(
-                icon: Icon(
-                  FluentIcons.arrow_clockwise_24_regular,
-                  size: 26,
-                ),
-                onPressed: () {
-                  refreshPosts();
-                }),
-            IconButton(
-                icon: Icon(
-                  followingPosts
-                      ? FluentIcons.arrow_hook_up_left_24_regular
-                      : FluentIcons.new_24_regular,
-                  size: 26,
-                ),
-                onPressed: () {
+              GestureDetector(
+                key: Env.intro.keys[0],
+                onTap: () {
                   setState(() {
                     followingPosts = !followingPosts;
                   });
-                }),
-          ],
-        ),
-        actionButton: IconButton(
-          icon: Icon(
-            FluentIcons.add_24_regular,
-            size: 27,
+                },
+                child: Row(
+                  children: [
+                    Container(
+                      height: 20,
+                      child: Padding(
+                        padding:
+                            const EdgeInsets.only(left: 5, top: 0, right: 0),
+                        child: Center(
+                          child: Text(followingPosts ? 'FOLLOWING' : 'FOR YOU',
+                              style: TextStyle(
+                                fontFamily: 'Stark Sans',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.grey.withOpacity(0.7),
+                              )),
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      FluentIcons.arrow_sync_circle_24_regular,
+                      color: Colors.grey.withOpacity(0.7),
+                      size: 18,
+                    )
+                  ],
+                ),
+              ),
+            ],
           ),
-          onPressed: () {
-            showTagsSheet();
-          },
+          actions: [
+            Row(
+              children: [
+                GestureDetector(
+                    key: Env.intro.keys[1],
+                    child: Container(
+                        padding: EdgeInsets.all(5),
+                        child: Icon(
+                          FluentIcons.gift_24_regular,
+                          color: Theme.of(context).accentColor,
+                          size: 26,
+                        )),
+                    onTap: () {
+                      Navigator.pushNamed(context, RewardsScreen.routeName);
+                      // showDialog(
+                      //   context: context,
+                      //   builder: (context) {
+                      //     return
+                      //     ShowDialog(
+                      //       noLeft: true,
+                      //       description: 'Invite your friends to Stark',
+                      //       rightButtonText: 'Invite',
+                      //       leftButtonText: 'Cancel',
+                      //       rightButtonFunction: () {
+                      //         Navigator.pop(context);
+                      //         Share.share(
+                      //             "I'm inviting you to Stark https://starkinvite.page.link/i",
+                      //             subject: 'App Invitation');
+                      //       },
+                      //       title: 'App Invitation',
+                      //     );
+                      //   },
+                      // );
+                    }),
+                if (!followingPosts)
+                  IconButton(
+                      icon: Icon(
+                        FluentIcons.arrow_clockwise_24_regular,
+                        size: 26,
+                      ),
+                      onPressed: () {
+                        refreshPosts();
+                      }),
+              ],
+            ),
+            IconButton(
+              icon: Icon(
+                FluentIcons.add_24_regular,
+                size: 27,
+              ),
+              onPressed: () {
+                showTagsSheet();
+              },
+            ),
+          ],
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          brightness: Theme.of(context).brightness,
+          bottom: PreferredSize(
+              preferredSize: Size.fromHeight(0.5),
+              child: Column(
+                children: [
+                  Divider(
+                    height: 0.5,
+                    thickness: 0.5,
+                    color: Theme.of(context).iconTheme.color.withOpacity(0.1),
+                  ),
+                ],
+              )),
+          backgroundColor: Theme.of(context).backgroundColor,
         ),
-        centerTitle: false,
       ),
       body: PageTransitionSwitcher(
         transitionBuilder: (

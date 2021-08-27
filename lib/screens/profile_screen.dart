@@ -5,12 +5,12 @@ import 'dart:ui';
 import 'package:blue/screens/profile/qr_screen.dart';
 import 'package:blue/widgets/dialogs/show_dialog.dart';
 import 'package:flutter/material.dart';
-
+import 'package:blue/constants/app_colors.dart';
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_pro/carousel_pro.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
@@ -572,7 +572,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                               text: user.website,
                               linkStyle: TextStyle(
                                 fontSize: 18,
-                                color: Colors.blue,
+                                color: AppColors.blue,
+                                decoration: TextDecoration.none,
+                              ),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: AppColors.blue,
                                 decoration: TextDecoration.none,
                               ),
                               onOpen: (link) {},
@@ -596,7 +601,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         user.social['twitter'] != '' &&
                         user.social['twitter'] != '_'))
                   Padding(
-                    padding: const EdgeInsets.only(left: 15),
+                    padding: const EdgeInsets.only(left: 20, top: 5, bottom: 5),
                     child: Row(
                       children: [
                         if (user.social['instagram'] != null &&
@@ -657,6 +662,33 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 FlutterIcons.twitter_faw,
                                 size: 22,
                               ))
+                      ],
+                    ),
+                  ),
+                if (user.place != null && user.place != '')
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 20,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                            padding: EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Theme.of(context).cardColor),
+                            child: Icon(
+                              FluentIcons.location_24_filled,
+                              size: 18,
+                            )),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          user.place,
+                          style: TextStyle(fontSize: 16),
+                        )
                       ],
                     ),
                   ),
@@ -730,7 +762,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         child: Container(
                                           height: 14,
                                           decoration: BoxDecoration(
-                                              color: Colors.blue,
+                                              color: AppColors.blue,
                                               borderRadius: BorderRadius.only(
                                                   bottomLeft:
                                                       Radius.circular(10),
@@ -746,7 +778,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           height: 14,
                                           color: user.avatarUrl == null
                                               ? Colors.grey.withOpacity(0.3)
-                                              : Colors.blue,
+                                              : AppColors.blue,
                                         ),
                                       ),
                                       SizedBox(
@@ -757,7 +789,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           height: 14,
                                           color: user.headerUrl == null
                                               ? Colors.grey.withOpacity(0.3)
-                                              : Colors.blue,
+                                              : AppColors.blue,
                                         ),
                                       ),
                                       SizedBox(
@@ -768,7 +800,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           height: 14,
                                           color: user.about != null &&
                                                   user.about != ''
-                                              ? Colors.blue
+                                              ? AppColors.blue
                                               : Colors.grey.withOpacity(0.3),
                                         ),
                                       ),
@@ -780,7 +812,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           height: 14,
                                           decoration: BoxDecoration(
                                               color: postExists
-                                                  ? Colors.blue
+                                                  ? AppColors.blue
                                                   : Colors.grey
                                                       .withOpacity(0.3),
                                               borderRadius: BorderRadius.only(
@@ -1119,7 +1151,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       child: TextButton(
                                         style: TextButton.styleFrom(
                                           primary: Colors.white,
-                                          backgroundColor: Colors.blue,
+                                          backgroundColor: AppColors.blue,
                                           shape: const RoundedRectangleBorder(
                                               borderRadius: BorderRadius.all(
                                                   Radius.circular(10))),
@@ -1129,7 +1161,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                           await Hasura.updateUser(
                                               profileComplete: true);
                                           user = User.fromDocument(
-                                              await Hasura.getUser(self: true));
+                                              (await Hasura.getUser(
+                                                      self: true))['data']
+                                                  ['users_by_pk']);
 
                                           setState(() {});
                                         },
@@ -1155,22 +1189,21 @@ class _ProfileScreenState extends State<ProfileScreen>
           //  Material(elevation: 0,
           //   child:
           InkWell(
-        onTap: fn,
-        child:
-            // child: new BackdropFilter(
-            // filter: new ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-            Container(
-                color: Colors.black38,
-                child: Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: Icon(
-                    icon.icon,
-                    color: Colors.white,
+              onTap: fn,
+              // child:
+              child: new BackdropFilter(
+                filter: new ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                child: Container(
+                  color: Colors.black12,
+                  child: Padding(
+                    padding: const EdgeInsets.all(6.0),
+                    child: Icon(
+                      icon.icon,
+                      color: Colors.white,
+                    ),
                   ),
-                  // ),
-                  // ),
-                )),
-      ),
+                ),
+              )),
     );
   }
 
@@ -1221,7 +1254,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: sort == value
-                        ? Colors.blue
+                        ? AppColors.blue
                         : Theme.of(context).iconTheme.color,
                   ),
                 )),
@@ -1239,13 +1272,13 @@ class _ProfileScreenState extends State<ProfileScreen>
               return ShowDialog(
                 description: 'Would you like to give us 5 stars?',
                 title: 'App Review',
-                leftButtonText: "Don't Show Again",
-                rightButtonText: "Yes",
-                leftButtonFunction: () {
+                middleButtonText: "Don't Show Again",
+                topButtonText: "Yes",
+                middleButtonFunction: () {
                   Navigator.pop(context);
                   Hasura.updateUser(reviewed: true);
                 },
-                rightButtonFunction: () {
+                topButtonFunction: () {
                   Navigator.pop(context);
                   inAppReview.isAvailable().then((value) {
                     if (value == true) {
@@ -1316,7 +1349,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 widget.tabPage != true
                                     ? headerButton(
                                         Icon(
-                                          FluentIcons.arrow_left_24_filled,
+                                          FluentIcons.chevron_left_20_filled,
                                           size: 26,
                                           color:
                                               Theme.of(context).iconTheme.color,
@@ -1413,100 +1446,115 @@ class _ProfileScreenState extends State<ProfileScreen>
                                         child: Container(
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
-                                            color:
-                                                Colors.black.withOpacity(0.32),
+                                            color: Colors.black12,
                                           ),
                                           margin: EdgeInsets.symmetric(
                                               horizontal: 3, vertical: 3),
-                                          child: PopupMenuButton(
-                                            padding: EdgeInsets.zero,
-                                            color:
-                                                Theme.of(context).canvasColor,
-                                            iconSize: 20,
-                                            shape: RoundedRectangleBorder(
+                                          child: ClipRRect(
                                               borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            itemBuilder: (_) => [
-                                              if (isFollowing)
-                                                PopupMenuItem(
-                                                    child: Text(
-                                                        'Unfollow $profileName'),
-                                                    value: 'Unfollow'),
-                                              PopupMenuItem(
-                                                  child: Text(
-                                                      'Report $profileName'),
-                                                  value: 'Report'),
-                                              PopupMenuItem(
-                                                  child: Text(
-                                                      '${PreferencesUpdate().containsInList('blocked_accounts', widget.profileId) ? "Unblock" : "Block"} $profileName'),
-                                                  value: PreferencesUpdate()
-                                                          .containsInList(
-                                                              'blocked_accounts',
-                                                              _profileUser
-                                                                  .userId)
-                                                      ? "Unblock"
-                                                      : "Block"),
-                                              PopupMenuItem(
-                                                  child: Text(
-                                                      '${PreferencesUpdate().containsInList('muted_messages', _profileUser.userId) ? "Unmute" : "Mute"} $profileName'),
-                                                  value: PreferencesUpdate()
-                                                          .containsInList(
-                                                              'muted_messages',
-                                                              _profileUser
-                                                                  .userId)
-                                                      ? "Unmute"
-                                                      : "Mute"),
-                                            ],
-                                            icon: Icon(
-                                              Icons.more_horiz_outlined,
-                                              size: 24,
-                                              color: Colors.white,
-                                            ),
-                                            onSelected: (selectedValue) async {
-                                              Map peer = {
-                                                'peerId': widget.profileId,
-                                                'peerUsername':
-                                                    _profileUser.username,
-                                                'peerImageUrl':
-                                                    _profileUser.photoUrl,
-                                                'peerName': _profileUser.name
-                                              };
-                                              switch (selectedValue) {
-                                                case 'Unfollow':
-                                                  Functions()
-                                                      .handleUnfollowUser(
-                                                          _profileUser.userId);
-                                                  setState(() {
-                                                    justFollowed = false;
-                                                    isFollowing = false;
-                                                  });
-                                                  break;
-                                                case 'Report':
-                                                  showDialog(
-                                                    context: context,
-                                                    builder: (context) {
-                                                      return UserReportDialog(
-                                                          peer: peer);
-                                                    },
-                                                  );
-                                                  break;
-                                                case 'Block':
-                                                  Functions().blockUser(peer);
-                                                  break;
-                                                case 'Unblock':
-                                                  Functions().unblockUser(peer);
-                                                  break;
-                                                case 'Mute':
-                                                  Functions().muteUser(peer);
-                                                  break;
-                                                case 'Unmute':
-                                                  Functions().unmuteUser(peer);
-                                                  break;
-                                              }
-                                            },
-                                          ),
-                                        )),
+                                                  BorderRadius.circular(50),
+                                              child: BackdropFilter(
+                                                filter: new ImageFilter.blur(
+                                                    sigmaX: 10.0, sigmaY: 10.0),
+                                                child: PopupMenuButton(
+                                                  padding: EdgeInsets.zero,
+                                                  color: Theme.of(context)
+                                                      .canvasColor,
+                                                  iconSize: 20,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                  ),
+                                                  itemBuilder: (_) => [
+                                                    if (isFollowing)
+                                                      PopupMenuItem(
+                                                          child: Text(
+                                                              'Unfollow $profileName'),
+                                                          value: 'Unfollow'),
+                                                    PopupMenuItem(
+                                                        child: Text(
+                                                            'Report $profileName'),
+                                                        value: 'Report'),
+                                                    PopupMenuItem(
+                                                        child: Text(
+                                                            '${PreferencesUpdate().containsInList('blocked_accounts', widget.profileId) ? "Unblock" : "Block"} $profileName'),
+                                                        value: PreferencesUpdate()
+                                                                .containsInList(
+                                                                    'blocked_accounts',
+                                                                    _profileUser
+                                                                        .userId)
+                                                            ? "Unblock"
+                                                            : "Block"),
+                                                    PopupMenuItem(
+                                                        child: Text(
+                                                            '${PreferencesUpdate().containsInList('muted_messages', _profileUser.userId) ? "Unmute" : "Mute"} $profileName'),
+                                                        value: PreferencesUpdate()
+                                                                .containsInList(
+                                                                    'muted_messages',
+                                                                    _profileUser
+                                                                        .userId)
+                                                            ? "Unmute"
+                                                            : "Mute"),
+                                                  ],
+                                                  icon: Icon(
+                                                    Icons.more_horiz_outlined,
+                                                    size: 24,
+                                                    color: Colors.white,
+                                                  ),
+                                                  onSelected:
+                                                      (selectedValue) async {
+                                                    Map peer = {
+                                                      'peerId':
+                                                          widget.profileId,
+                                                      'peerUsername':
+                                                          _profileUser.username,
+                                                      'peerImageUrl':
+                                                          _profileUser.photoUrl,
+                                                      'peerName':
+                                                          _profileUser.name
+                                                    };
+                                                    switch (selectedValue) {
+                                                      case 'Unfollow':
+                                                        Functions()
+                                                            .handleUnfollowUser(
+                                                                _profileUser
+                                                                    .userId);
+                                                        setState(() {
+                                                          justFollowed = false;
+                                                          isFollowing = false;
+                                                        });
+                                                        break;
+                                                      case 'Report':
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (context) {
+                                                            return UserReportDialog(
+                                                                peer: peer);
+                                                          },
+                                                        );
+                                                        break;
+                                                      case 'Block':
+                                                        Functions()
+                                                            .blockUser(peer);
+                                                        break;
+                                                      case 'Unblock':
+                                                        Functions()
+                                                            .unblockUser(peer);
+                                                        break;
+                                                      case 'Mute':
+                                                        Functions()
+                                                            .muteUser(peer);
+                                                        break;
+                                                      case 'Unmute':
+                                                        Functions()
+                                                            .unmuteUser(peer);
+                                                        break;
+                                                    }
+                                                  },
+                                                ),
+                                              )),
+                                        ))
                               ],
                             ),
                           );
@@ -1872,7 +1920,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                               FluentIcons
                                                   .chevron_left_24_filled,
                                               size: 26,
-                                              color: Colors.blue,
+                                              color: AppColors.blue,
                                             ),
                                           )
                                         else

@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
@@ -24,15 +24,14 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  QuerySnapshot searches;
   TextEditingController searchController = TextEditingController();
-  Future<QuerySnapshot> peopleResultsFuture;
-  Future<QuerySnapshot> postsResultsFuture;
+
   bool recentSearchesLoading = false;
   Widget recentSearchesWidget;
   bool searching = false;
   bool resultsLoading = true;
   String search;
+
   handleSearch(String query) async {
     setState(() {
       if (!searching) {
@@ -50,133 +49,35 @@ class _SearchScreenState extends State<SearchScreen> {
   bool loading = true;
 
   clearSearch() {
+    setState(() {
+      textfieldEmpty = true;
+    });
     WidgetsBinding.instance
         .addPostFrameCallback((_) => searchController.clear());
-  }
-
-  PreferredSize buildSearchField(context) {
-    return PreferredSize(
-      preferredSize: Size.fromHeight(searching ? 90.0 : 50),
-      child: AppBar(
-        titleSpacing: 0,
-        automaticallyImplyLeading: false,
-        bottom: !searching
-            ? PreferredSize(
-                child: Container(),
-                preferredSize: Size.fromHeight(0),
-              )
-            : TabBar(
-                indicatorColor: Theme.of(context).accentColor,
-                indicatorWeight: 2.0,
-                tabs: [
-                  Container(
-                    height: 40,
-                    child: Center(
-                        child: Text(
-                      'Top',
-                      style: TextStyle(
-                        fontFamily: "Stark Sans",
-                        fontWeight: FontWeight.w800,
-                        fontSize: 18,
-                      ),
-                    )),
-                  ),
-                  Container(
-                      height: 40,
-                      child: Center(
-                          child: Text(
-                        'People',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontFamily: "Stark Sans",
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ))),
-                  Container(
-                      height: 40,
-                      child: Center(
-                        child: Text(
-                          'Tags',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontFamily: "Stark Sans",
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ))
-                ],
-              ),
-        leading: GestureDetector(
-            child: Icon(
-              FluentIcons.chevron_left_16_filled,
-              color: Colors.blue,
-              size: 30,
-            ),
-            onTap: () {
-              Navigator.pop(context);
-            }),
-        leadingWidth: 30,
-        elevation: 1,
-        backgroundColor: Theme.of(context).canvasColor,
-        title: Padding(
-          padding: const EdgeInsets.only(right: 10.0, left: 1),
-          child: Container(
-            height: 38,
-            alignment: Alignment.center,
-            child: TextFormField(
-              maxLength: 100,
-              textAlignVertical: TextAlignVertical.bottom,
-              style: TextStyle(fontSize: 18),
-              controller: searchController,
-              decoration: InputDecoration(
-                hintText: 'Search',
-                counterText: '',
-                hintStyle: TextStyle(
-                  color: Theme.of(context).iconTheme.color.withOpacity(0.8),
-                ),
-                fillColor: Theme.of(context).cardColor,
-                filled: true,
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide(
-                    width: 0,
-                    color: Theme.of(context).cardColor,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide(
-                    width: 0,
-                    color: Theme.of(context).cardColor,
-                  ),
-                ),
-                prefixIcon: Icon(
-                  FlutterIcons.search_oct,
-                  size: 22,
-                  color: Colors.grey,
-                ),
-                suffixIcon: IconButton(
-                  padding: EdgeInsets.all(0),
-                  onPressed: clearSearch,
-                  icon: Icon(
-                    Icons.cancel,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-              onFieldSubmitted: (search) async {
-                await handleSearch(search);
-              },
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   onSearch(String term) {
     searchController.text = term;
     handleSearch(term);
+  }
+
+  bool textfieldEmpty = true;
+  @override
+  void didChangeDependencies() {
+    searchController.addListener(() {
+      setState(() {
+        if (0 == searchController.text.length) {
+          setState(() {
+            textfieldEmpty = true;
+          });
+        } else if (textfieldEmpty == true) {
+          setState(() {
+            textfieldEmpty = false;
+          });
+        }
+      });
+    });
+    super.didChangeDependencies();
   }
 
   @override
@@ -186,7 +87,135 @@ class _SearchScreenState extends State<SearchScreen> {
       initialIndex: 0,
       child: Scaffold(
         backgroundColor: Theme.of(context).backgroundColor,
-        appBar: buildSearchField(context),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(searching ? 90.0 : 50),
+          child: AppBar(
+            titleSpacing: 0,
+            automaticallyImplyLeading: false,
+            bottom: !searching
+                ? PreferredSize(
+                    child: Container(),
+                    preferredSize: Size.fromHeight(0),
+                  )
+                : TabBar(
+                    indicatorColor: Theme.of(context).iconTheme.color,
+                    indicatorWeight: 2.0,
+                    tabs: [
+                      Container(
+                        height: 40,
+                        child: Center(
+                            child: Text(
+                          'Top',
+                          style: TextStyle(
+                            fontFamily: "Stark Sans",
+                            fontWeight: FontWeight.w800,
+                            fontSize: 18,
+                          ),
+                        )),
+                      ),
+                      Container(
+                          height: 40,
+                          child: Center(
+                              child: Text(
+                            'People',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontFamily: "Stark Sans",
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ))),
+                      Container(
+                          height: 40,
+                          child: Center(
+                            child: Text(
+                              'Tags',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontFamily: "Stark Sans",
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ))
+                    ],
+                  ),
+            leading: GestureDetector(
+                child: Icon(
+                  FluentIcons.chevron_left_16_filled,
+                  color: AppColors.blue,
+                  size: 30,
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                }),
+            leadingWidth: 30,
+            elevation: 0.5,
+            backgroundColor: Theme.of(context).backgroundColor,
+            title: Padding(
+              padding: const EdgeInsets.only(right: 10.0, left: 1),
+              child: Hero(
+                tag: 'search_bar',
+                child: Material(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    height: 36,
+                    alignment: Alignment.center,
+                    child: TextFormField(
+                      autofocus: true,
+                      maxLength: 100,
+                      textAlignVertical: TextAlignVertical.bottom,
+                      style: TextStyle(fontSize: 18),
+                      controller: searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Search',
+                        counterText: '',
+                        hintStyle: TextStyle(
+                          color: Theme.of(context)
+                              .iconTheme
+                              .color
+                              .withOpacity(0.8),
+                        ),
+                        fillColor: Theme.of(context).cardColor,
+                        filled: true,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            width: 0,
+                            color: Theme.of(context).cardColor,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            width: 0,
+                            color: Theme.of(context).cardColor,
+                          ),
+                        ),
+                        prefixIcon: Icon(
+                          FlutterIcons.search_oct,
+                          size: 22,
+                          color: Colors.grey,
+                        ),
+                        suffixIcon: textfieldEmpty == true
+                            ? Container(width: 0)
+                            : IconButton(
+                                padding: EdgeInsets.all(0),
+                                onPressed: clearSearch,
+                                icon: Icon(
+                                  Icons.cancel,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                      ),
+                      onFieldSubmitted: (search) async {
+                        await handleSearch(search);
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
         body: !searching
             ? RecentSearches(onSearch)
             : TabBarView(

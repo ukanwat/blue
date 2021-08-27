@@ -66,7 +66,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>This is used to capture photos for your Posts.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>This app requires access to your Location for a better user experience.</string>
+	<string>This app requires access to your Location to update your profile information.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app requires access to the Microphone for recording video which will be used in your posts.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

@@ -1,13 +1,13 @@
 // Flutter imports:
 import 'package:blue/services/functions.dart';
-import 'package:blue/widgets/action_button.dart';
+import 'package:blue/widgets/button.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:blue/constants/app_colors.dart';
 // Project imports:
 import 'package:blue/constants/strings.dart';
 import 'package:blue/main.dart';
@@ -72,7 +72,7 @@ class _ActivityFeedItemState extends State<ActivityFeedItem> {
     if (widget.action == 'follow') {
       trailing = ActionButton(() {
         Functions().handleFollowUser(widget.sourceId);
-      }, Colors.blue, 'Follow', true);
+      }, AppColors.blue, 'Follow', true);
     }
 
     return ListTile(
@@ -93,7 +93,7 @@ class _ActivityFeedItemState extends State<ActivityFeedItem> {
         trailing: trailing ??
             Icon(
               FluentIcons.arrow_right_16_filled,
-              color: Colors.blue,
+              color: AppColors.blue,
             ),
         title: Text(
           widget.title ?? '',
@@ -216,7 +216,7 @@ class _ActivityFeedItemState extends State<ActivityFeedItem> {
     //                       child: IconButton(
     //                     icon: Icon(
     //                       FluentIcons.open_24_regular,
-    //                       color: Colors.blue.withOpacity(0.8),
+    //                       color: AppColors.blue.withOpacity(0.8),
     //                     ),
     //                     onPressed: () {GoTo().showPost(context,widget.postId,);},
     //                     iconSize: 24,

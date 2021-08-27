@@ -9,21 +9,31 @@ class VerifyEmailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          circularProgress(),
-          Center(
-            child: Container(
-                width: MediaQuery.of(context).size.width * 0.6,
-                child: Text(
-                  'We just sent you an email\nClick on verification link to Sign up',
-                  textAlign: TextAlign.center,
-                  maxLines: 3,
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-                )),
-          ),
-        ],
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(0),
+        child: AppBar(
+          brightness: Brightness.dark,
+          backgroundColor: Colors.white,
+          elevation: 0,
+        ),
+      ),
+      body: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            circularProgress(),
+            Center(
+              child: Container(
+                  width: MediaQuery.of(context).size.width * 0.6,
+                  child: Text(
+                    'We just sent you an email\nClick on verification link to Sign up',
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                  )),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -3,7 +3,6 @@ import 'package:blue/screens/settings/general/collection_screens/create_collecti
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
@@ -11,6 +10,7 @@ import 'package:blue/widgets/post.dart';
 import 'package:blue/widgets/progress.dart';
 import '../../services/boxes.dart';
 import '../../services/hasura.dart';
+import 'package:blue/constants/app_colors.dart';
 
 class SaveDialog extends StatefulWidget {
   final Post post;
@@ -139,8 +139,8 @@ class _SaveDialogState extends State<SaveDialog> {
             SizedBox(height: 20.0),
             FlatButton(
               minWidth: 200,
-              highlightColor: Colors.blue,
-              hoverColor: Colors.blue,
+              highlightColor: AppColors.blue,
+              hoverColor: AppColors.blue,
               color: Theme.of(context).cardColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),

@@ -3,11 +3,12 @@ import 'dart:convert';
 import 'dart:math';
 
 // Flutter imports:
+import 'package:blue/env.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:argon_buttons_flutter/argon_buttons_flutter.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter_login/flutter_login.dart';
@@ -20,8 +21,8 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 // Project imports:
 import 'package:blue/models/user.dart';
-import 'package:blue/providers/provider_widget.dart';
-import 'package:blue/providers/verify_email.dart';
+import 'package:blue/state_management/provider_widget.dart';
+import 'package:blue/state_management/verify_email.dart';
 import 'package:blue/screens/sign/set_name_screen.dart';
 import 'package:blue/screens/settings/notification/push_notifications_screen.dart';
 import 'package:blue/screens/settings/notification/push_notifications_screen.dart';
@@ -38,7 +39,7 @@ import 'package:blue/widgets/progress.dart';
 import '../main.dart';
 import 'boxes.dart';
 import 'push_notifications.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 class AuthService {
@@ -46,7 +47,7 @@ class AuthService {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   Stream<auth.User> get onAuthStateChanged => firebaseAuth.authStateChanges();
   final authRef = FirebaseFirestore.instance.collection('auth');
-  // GET UID
+
   getCurrentUID() {
     String uid = firebaseAuth.currentUser.uid;
     return uid;
@@ -59,6 +60,7 @@ class AuthService {
     userSignedIn = false;
     await auth.signOut(context);
     await Boxes.clearBoxes();
+    Env.reset();
   }
 
   /// Generates a cryptographically secure random nonce, to be included in a
@@ -310,6 +312,7 @@ class AuthService {
       Hasura.insertPreferences(
         user.uid,
       );
+      Env.newUser = true;
     } else {
       var _doc = await authRef.where('uid', isEqualTo: user.uid).get();
       info['user_id'] = _doc.docs.first.data()['user_id'];
@@ -328,10 +331,16 @@ class AuthService {
   }
 
   setPreferences() async {
-    // dynamic data = await Hasura.getAllPreferences();
-    // data.forEach((key, value) {
-    //   PreferencesUpdate().updateString(key, value);
-    // });
+    try {
+      dynamic data = await Hasura.getAllPreferences();
+      data.forEach((key, value) {
+        if (value.runtimeType == bool) {
+          PreferencesUpdate().updateBool(key, value);
+        } else if (value.runtimeType == String) {
+          PreferencesUpdate().updateString(key, value);
+        }
+      });
+    } catch (e) {}
   }
 
   setCustomClaimToken(auth.User _user) async {
@@ -339,7 +348,7 @@ class AuthService {
   }
 
   listenCreateUser(String uid, BuildContext context) async {
-    //TODO subscription
+    // TODO subscription
     var doc = await authRef.where('uid', isEqualTo: uid).get();
     int i = 0;
     if (doc.docs.length == 0) {
@@ -404,6 +413,7 @@ class AuthService {
       Navigator.pushReplacementNamed(context, TabsScreen.routeName);
       userSignedIn = true;
       _user.reload();
+      Env.newUser = true;
     } else {
       Hasura.jwtToken = await _user.getIdToken(true);
       int _userId = await Hasura.getUserId(uid: _user.uid);

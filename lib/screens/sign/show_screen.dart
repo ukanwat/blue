@@ -3,7 +3,7 @@ import 'dart:async';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
-
+import 'package:blue/constants/app_colors.dart';
 // Package imports:
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -75,13 +75,13 @@ class _ShowScreenState extends State<ShowScreen> {
                 children: [
                   Icon(
                     FluentIcons.chevron_left_24_filled,
-                    color: Colors.blue,
+                    color: AppColors.blue,
                   ),
                   Text(
                     'Go Back',
                     style: TextStyle(
                         fontSize: 18,
-                        color: Colors.blue,
+                        color: AppColors.blue,
                         fontWeight: FontWeight.w500),
                   )
                 ],

@@ -1,9 +1,9 @@
 // Flutter imports:
+import 'package:blue/constants/app_colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
@@ -72,7 +72,7 @@ class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
                   fontSize: 20,
                   color: collectionNameController.text.isEmpty == null
                       ? Colors.grey
-                      : Colors.blue,
+                      : AppColors.blue,
                 ),
               ),
             )

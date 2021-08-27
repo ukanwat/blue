@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
-
+import 'package:blue/constants/app_colors.dart';
 // Flutter imports:
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -14,7 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:blurhash_dart/blurhash_dart.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_pro/carousel_pro.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -36,7 +36,7 @@ import 'package:video_player/video_player.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
-import 'package:blue/providers/submit_state.dart';
+import 'package:blue/state_management/submit_state.dart';
 import 'package:blue/screens/post/select_topic_screen.dart';
 import 'package:blue/services/link_preview.dart';
 import 'package:blue/services/video_controls.dart';
@@ -555,7 +555,7 @@ class _PostScreenState extends State<PostScreen> {
                   height: 22,
                   child: CircularProgressIndicator(
                     strokeWidth: 3,
-                    valueColor: AlwaysStoppedAnimation(Colors.blue),
+                    valueColor: AlwaysStoppedAnimation(AppColors.blue),
                   ),
                 )
               : Container(
@@ -569,7 +569,7 @@ class _PostScreenState extends State<PostScreen> {
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide(
-              color: Colors.blue,
+              color: AppColors.blue,
               width: 3,
             ),
           ),
@@ -743,7 +743,7 @@ class _PostScreenState extends State<PostScreen> {
               dotVerticalPadding: 0,
               dotSize: 6,
               dotIncreaseSize: 1.2,
-              dotIncreasedColor: Colors.blue.withOpacity(0.7),
+              dotIncreasedColor: AppColors.blue.withOpacity(0.7),
               dotColor: Colors.white,
               showIndicator: true,
               dotPosition: DotPosition.bottomCenter,
@@ -958,9 +958,9 @@ class _PostScreenState extends State<PostScreen> {
                       description: containsVideo
                           ? "Drafts currently do not support video content. Do you want to save your work as Draft without the video?"
                           : "Do you want to save your work as Draft?",
-                      rightButtonText: "Save Draft",
-                      leftButtonText: "Cancel",
-                      rightButtonFunction: () async {
+                      topButtonText: "Save Draft",
+                      middleButtonText: "Cancel",
+                      topButtonFunction: () async {
                         List<dynamic> _modifiedContentsData = contentsData;
                         int _i = 0;
                         _modifiedContentsData.forEach((d) {
@@ -1033,7 +1033,7 @@ class _PostScreenState extends State<PostScreen> {
                         Navigator.of(context).pop();
                         Navigator.of(context).pop();
                       },
-                      leftButtonFunction: () {
+                      middleButtonFunction: () {
                         Navigator.of(context).pop();
                         Navigator.of(context).pop();
                       },
@@ -1158,7 +1158,7 @@ class _PostScreenState extends State<PostScreen> {
               },
               icon: Icon(
                 FlutterIcons.ios_arrow_forward_ion,
-                color: Colors.blue,
+                color: AppColors.blue,
                 size: 30,
               ),
             )
@@ -1413,7 +1413,7 @@ Repeatedly posting the same content, posting something incomprehensible (like ju
                           'Read Community Guidelines',
                           style: TextStyle(
                               fontFamily: 'Stark Sans',
-                              color: Colors.blue,
+                              color: AppColors.blue,
                               fontWeight: FontWeight.w300,
                               fontSize: 11),
                         ),

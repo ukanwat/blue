@@ -1,9 +1,8 @@
 // Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'package:blue/constants/app_colors.dart';
 // Package imports:
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Project imports:
 import 'package:blue/main.dart';
@@ -64,7 +63,8 @@ class _CollectionPostsScreenState extends State<CollectionPostsScreen> {
           title: Text(collectionName),
           centerTitle: true,
           elevation: 1,
-          leadingButton: CupertinoNavigationBarBackButton(color: Colors.blue),
+          leadingButton:
+              CupertinoNavigationBarBackButton(color: AppColors.blue),
         ),
         body: Container(
             color: Theme.of(context).backgroundColor,

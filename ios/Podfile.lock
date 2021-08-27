@@ -404,6 +404,10 @@ PODS:
   - FMDB (2.7.5):
     - FMDB/standard (= 2.7.5)
   - FMDB/standard (2.7.5)
+  - geocoding (1.0.5):
+    - Flutter
+  - geolocator_apple (1.0.0):
+    - Flutter
   - google_sign_in (0.0.1):
     - Flutter
     - GoogleSignIn (~> 5.0)
@@ -544,6 +548,8 @@ PODS:
   - video_thumbnail (0.0.1):
     - Flutter
     - libwebp
+  - volume_watcher (0.0.1):
+    - Flutter
   - wakelock (0.0.1):
     - Flutter
   - webview_flutter (0.0.1):
@@ -574,6 +580,8 @@ DEPENDENCIES:
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - flutter_login_facebook (from `.symlinks/plugins/flutter_login_facebook/ios`)
   - flutter_qr_reader (from `.symlinks/plugins/flutter_qr_reader/ios`)
+  - geocoding (from `.symlinks/plugins/geocoding/ios`)
+  - geolocator_apple (from `.symlinks/plugins/geolocator_apple/ios`)
   - google_sign_in (from `.symlinks/plugins/google_sign_in/ios`)
   - GoogleUtilities
   - image_crop (from `.symlinks/plugins/image_crop/ios`)
@@ -593,6 +601,7 @@ DEPENDENCIES:
   - video_compress (from `.symlinks/plugins/video_compress/ios`)
   - video_player (from `.symlinks/plugins/video_player/ios`)
   - video_thumbnail (from `.symlinks/plugins/video_thumbnail/ios`)
+  - volume_watcher (from `.symlinks/plugins/volume_watcher/ios`)
   - wakelock (from `.symlinks/plugins/wakelock/ios`)
   - webview_flutter (from `.symlinks/plugins/webview_flutter/ios`)
   - wifi_info_flutter (from `.symlinks/plugins/wifi_info_flutter/ios`)
@@ -672,6 +681,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_login_facebook/ios"
   flutter_qr_reader:
     :path: ".symlinks/plugins/flutter_qr_reader/ios"
+  geocoding:
+    :path: ".symlinks/plugins/geocoding/ios"
+  geolocator_apple:
+    :path: ".symlinks/plugins/geolocator_apple/ios"
   google_sign_in:
     :path: ".symlinks/plugins/google_sign_in/ios"
   image_crop:
@@ -708,6 +721,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/video_player/ios"
   video_thumbnail:
     :path: ".symlinks/plugins/video_thumbnail/ios"
+  volume_watcher:
+    :path: ".symlinks/plugins/volume_watcher/ios"
   wakelock:
     :path: ".symlinks/plugins/wakelock/ios"
   webview_flutter:
@@ -755,6 +770,8 @@ SPEC CHECKSUMS:
   flutter_login_facebook: 41fcf15687d2ce7a75bb89aa3476df54a00845a3
   flutter_qr_reader: d930dde3b2cfe2b3d0bb7d66e5ff3e514300a5e5
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
+  geocoding: 32cfcdb16d38d907caaba65e2e42ad10d38bee58
+  geolocator_apple: 60a1c3f5930c090d2f5164ba8bf25f4f89121e3c
   google_sign_in: 6bd214b9c154f881422f5fe27b66aaa7bbd580cc
   GoogleAppMeasurement: c6bbc9753d046b5456dd4f940057fbad2c28419e
   GoogleDataTransport: 04c3e9a480bbcaa2ec3f5d27f1cdeb6a92f20c8d
@@ -787,6 +804,7 @@ SPEC CHECKSUMS:
   video_compress: fce97e4fb1dfd88175aa07d2ffc8a2f297f87fbe
   video_player: 9cc823b1d9da7e8427ee591e8438bfbcde500e6e
   video_thumbnail: c4e2a3c539e247d4de13cd545344fd2d26ffafd1
+  volume_watcher: 6271ae8f78dfafa401c8dac4d117c35576568693
   wakelock: d0fc7c864128eac40eba1617cb5264d9c940b46f
   webview_flutter: 3603125dfd3bcbc9d8d418c3f80aeecf331c068b
   wifi_info_flutter: 55d4c2469034f5b5c38063ccefa62f708a503a2b

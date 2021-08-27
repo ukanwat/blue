@@ -2,9 +2,9 @@
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
+import 'package:blue/constants/app_colors.dart';
 // Package imports:
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:provider/provider.dart';
@@ -209,7 +209,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                                         child: LinearProgressIndicator(
                                           valueColor:
                                               AlwaysStoppedAnimation<Color>(
-                                                  Colors.blue),
+                                                  AppColors.blue),
                                           backgroundColor: Colors.transparent,
                                         ),
                                       ),
@@ -284,7 +284,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                               height: 26,
                               width: 86,
                               decoration: BoxDecoration(
-                                  color: Colors.blue,
+                                  color: AppColors.blue,
                                   borderRadius: BorderRadius.circular(8)),
                               child: Center(
                                 child: Text(
@@ -348,7 +348,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                       ),
                       Icon(
                         FluentIcons.chevron_right_12_filled,
-                        color: Colors.blue,
+                        color: AppColors.blue,
                       )
                     ],
                   ),
@@ -372,7 +372,7 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                             trailing: selectedTopicTile == topics[i]
                                 ? Icon(
                                     Icons.check,
-                                    color: Colors.blue,
+                                    color: AppColors.blue,
                                   )
                                 : null,
                             onTap: () {

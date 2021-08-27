@@ -1,5 +1,5 @@
 // Flutter imports:
-import 'package:blue/widgets/action_button.dart';
+import 'package:blue/widgets/button.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 
@@ -39,13 +39,25 @@ class _PostsSectionState extends State<PostsSection>
   getPosts() async {
     List<dynamic> data =
         await Hasura.getTagPosts(3, 0, '{score:desc}', tag: widget.tag);
+    int i = 0;
     data.forEach((element) {
-      posts.add(Post.fromDocument(element,
-          isCompact: true,
-          commentsShown: false,
-          color: Theme.of(context).backgroundColor,
-          moreCompact: true,
-          radius: 10));
+      i == 2
+          ? posts.add(Post.fromDocument(
+              element,
+              isCompact: true,
+              commentsShown: false,
+              color: Theme.of(context).canvasColor,
+              moreCompact: true,
+              radius: 0,
+            ))
+          : posts.add(Post.fromDocument(
+              element,
+              isCompact: true,
+              commentsShown: false,
+              color: Theme.of(context).canvasColor,
+              moreCompact: true,
+            ));
+      i++;
     });
     setState(() {
       loading = false;
@@ -97,7 +109,7 @@ class _PostsSectionState extends State<PostsSection>
                 end: Alignment.bottomCenter,
                 colors: [
               Colors.transparent,
-              Theme.of(context).cardColor.withOpacity(0.3),
+              Colors.transparent,
             ])),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -109,6 +121,7 @@ class _PostsSectionState extends State<PostsSection>
               },
               child: Container(
                 height: 46,
+                padding: EdgeInsets.symmetric(horizontal: 4),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -160,7 +173,7 @@ class _PostsSectionState extends State<PostsSection>
                             setState(() {
                               isFollowing = true;
                             });
-                          }, Colors.blue, 'Follow', true),
+                          }, AppColors.blue, 'Follow', true),
                     Expanded(
                       child: Container(),
                     ),
@@ -202,24 +215,36 @@ class _PostsSectionState extends State<PostsSection>
               ),
             ),
             if (!loading)
-              CarouselSlider(
-                  items: posts
-                      .map(
-                        (e) => Container(
-                          margin:
-                              EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10)),
-                          child: Center(child: e),
-                        ),
-                      )
-                      .toList(),
-                  options: CarouselOptions(
-                    initialPage: 0,
-                    height: 200,
-                    pageSnapping: true,
-                    enableInfiniteScroll: false,
-                  ))
+              Card(
+                margin: EdgeInsets.only(bottom: 10, left: 10, right: 10),
+                elevation: 0.5,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Column(
+                    children: posts,
+                  ),
+                ),
+              )
+            // CarouselSlider(
+            //     items: posts
+            //         .map(
+            //           (e) => Container(
+            //             margin:
+            //                 EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+            //             decoration: BoxDecoration(
+            //                 borderRadius: BorderRadius.circular(10)),
+            //             child: Center(child: e),
+            //           ),
+            //         )
+            //         .toList(),
+            //     options: CarouselOptions(
+            //       initialPage: 0,
+            //       height: 200,
+            //       pageSnapping: true,
+            //       enableInfiniteScroll: false,
+            //     ))
             // if (!loading)
             //   ...posts
             else

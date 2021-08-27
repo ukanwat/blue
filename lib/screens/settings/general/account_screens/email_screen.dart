@@ -1,12 +1,12 @@
 // Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'package:blue/constants/app_colors.dart';
 // Package imports:
 import 'package:flutter_icons/flutter_icons.dart';
 
 // Project imports:
-import 'package:blue/providers/provider_widget.dart';
+import 'package:blue/state_management/provider_widget.dart';
 
 class EmailScreen extends StatefulWidget {
   static const routeName = 'email';
@@ -33,7 +33,7 @@ class _EmailScreenState extends State<EmailScreen> {
             ),
             automaticallyImplyLeading: false,
             leading: CupertinoNavigationBarBackButton(
-              color: Colors.blue,
+              color: AppColors.blue,
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -49,7 +49,7 @@ class _EmailScreenState extends State<EmailScreen> {
                   },
                   child: Text(
                     'Done',
-                    style: TextStyle(color: Colors.blue, fontSize: 18),
+                    style: TextStyle(color: AppColors.blue, fontSize: 18),
                   ))
             ],
           )),

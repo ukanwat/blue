@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
 import 'package:hasura_connect/hasura_connect.dart';
 
 // Project imports:
@@ -170,6 +171,9 @@ class Hasura {
       String token,
       bool reviewed,
       String dob,
+      String location,
+      String place,
+      String gender,
       Map social}) async {
     int userId = Boxes.currentUserBox.get('user_id');
     if (userId == null) {
@@ -197,11 +201,20 @@ class Hasura {
     if (name != null) {
       fields = fields + 'name: "$name",';
     }
+    if (gender != null) {
+      fields = fields + 'gender: "$gender",';
+    }
     if (email != null) {
       fields = fields + 'email: "$email",';
     }
     if (social != null) {
       fields = fields + 'social: $social,';
+    }
+    if (location != null) {
+      fields = fields + 'location: "$location",';
+    }
+    if (place != null) {
+      fields = fields + 'place: "$place",';
     }
     if (username != null) {
       fields = fields + 'username: "$username",';
@@ -276,6 +289,9 @@ class Hasura {
     following_count
     social
     dob
+    location
+    place
+    gender
     $extra
   }
 }""";
@@ -391,6 +407,27 @@ class Hasura {
     }
     await hasuraConnect.mutation("""mutation {
   update_conversations_by_pk(pk_columns: {user1_id: $id1, user2_id: $id2}, _set: {user${id1 == userId ? '1' : '2'}_removed: ${archived ? false : true}}) {
+    __typename
+  }
+}
+""");
+  }
+
+  static deleteConversation(
+    int peerId,
+  ) async {
+    int userId = await getUserId();
+    int id1, id2;
+    if (peerId > userId) {
+      id1 = peerId;
+      id2 = userId;
+    } else {
+      id2 = peerId;
+      id1 = userId;
+    }
+
+    await hasuraConnect.mutation("""mutation {
+  update_conversations_by_pk(pk_columns: {user1_id: $id1, user2_id: $id2}, _set: {user${id1 == userId ? '1' : '2'}_deleted_at: "${DateTime.now().toUtc().toString()}"}) {
     __typename
   }
 }
@@ -521,7 +558,6 @@ class Hasura {
     autoplay_videos
     dark_mode
     theme
-    thumbnail
     searches_last_cleared
     set_private
     following_posts_last_seen
@@ -575,7 +611,7 @@ class Hasura {
 
   static getTagPosts(int limit, int offset, String orderby,
       {String tag}) async {
-    String param = 'limit:10,offset:$offset,order_by:$orderby';
+    String param = 'limit:$limit,offset:$offset,order_by:$orderby';
     if (tag != null) {
       param = param + ',where:{post_tags:{tag:{_eq:"$tag"}}}';
     }
@@ -892,11 +928,34 @@ class Hasura {
     return doc['data']['conversations'][0]['conv_id'];
   }
 
-  static getMessages(
-    int convId,
-  ) async {
+  static getConvDeletedAt(int peerId) async {
+    int userId = await getUserId();
+    int user1, user2;
+    if (userId > peerId) {
+      user1 = userId;
+      user2 = peerId;
+    } else {
+      user2 = userId;
+      user1 = peerId;
+    }
+
+    dynamic doc = await hasuraConnect.query("""query{
+  conversations_by_pk(user1_id:$user1,user2_id:$user2){
+    user${userId == user1 ? '1' : '2'}_deleted_at
+  }
+}""");
+
+    return DateTime.parse(doc['data']['conversations_by_pk']
+            ['user${userId == user1 ? '1' : '2'}_deleted_at'] ??
+        '2020-07-31 22:56:08.031553');
+  }
+
+  static getMessages(int convId, {DateTime time}) async {
+    if (time == null) {
+      time = DateTime(2020);
+    }
     String doc = """query{
-  messages(where: {conv_id: {_eq: $convId}}, limit:100) {
+  messages(where:{_and:[{conv_id: {_eq: ${convId}}},{created_at:{_gt:"${time.toString()}"}}],}, limit:100, ) {
     created_at
     data
     msg_id
@@ -905,6 +964,7 @@ class Hasura {
     deleted_by_sender
   }
 }
+
 
 """;
     print(doc);
@@ -1515,7 +1575,7 @@ __typename
     String params = 'limit:$limit,offset:$offset';
 
     dynamic doc = await hasuraConnect.query("""query{
-  following_feed($params,where:{user_id:{_eq:$userId}}){
+  following_feed($params,where:{user_id:{_eq:$userId}},order_by:{created_at:desc}){
      post{
        contents
     created_at
@@ -1721,6 +1781,36 @@ __typename
 }""");
 
     return data['data']['follows'];
+  }
+
+  static referrals(bool invitee) async {
+    int id = await getUserId();
+    return await hasuraConnect.query("""query{
+  referral(where:{invite${invitee ? 'e' : 'r'}:{_eq:$id}}){
+    __typename
+    
+  }
+}""");
+  }
+
+  static redeemCode(String peerId) async {
+    int id = await getUserId();
+    try {
+      await hasuraConnect.mutation("""
+     
+mutation{
+  insert_referral_one(object:{amount:10,invitee:$id,inviter:$peerId}){
+    __typename
+  }
+}
+
+    """);
+      snackbar('Code Redeemed Successfully', Get.context);
+      return true;
+    } catch (e) {
+      snackbar('An Error Occurred', Get.context);
+      return false;
+    }
   }
 
   static postShareAction(

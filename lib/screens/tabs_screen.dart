@@ -148,44 +148,49 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
     ]).then((value) {});
   }
 
+  bool refresh = false;
   @override
   void initState() {
-    Boxes.preferenceBox.put('start_time', DateTime.now().toString());
-    WidgetsBinding.instance.addObserver(this);
-    Functions().updateEmail();
-    PushNotificationsManager().initMessage();
-    if (Boxes.followingBox.isEmpty) {
-      PreferencesUpdate().setFollowings();
-    }
-    if (Boxes.saveBox.isEmpty) {
-      PreferencesUpdate().setSaves();
-    }
-
-    subscription = Connectivity()
-        .onConnectivityChanged
-        .listen((ConnectivityResult result) {
-      if (ConnectivityResult.none == result) {
-        snackbar('You are offline.', context,
-            leadingIcon: Icon(FluentIcons.cloud_offline_24_regular));
-      } else {
-        String time = Boxes.preferenceBox.get('start_time');
-        if (time != null) if (DateTime.parse(time)
-            .add(Duration(seconds: 60))
-            .isBefore(DateTime.now())) {
-          snackbar("You're back online.", context,
-              leadingIcon: Icon(
-                FluentIcons.cloud_24_regular,
-                color: Colors.greenAccent,
-              ), seeMore: () {
-            setState(() {
-              _key = UniqueKey();
-            });
-          }, fnLabel: "Refresh App", duration: Duration(seconds: 10));
-        }
+    try {
+      Boxes.preferenceBox.put('start_time', DateTime.now().toString());
+      WidgetsBinding.instance.addObserver(this);
+      Functions().updateEmail();
+      PushNotificationsManager().initMessage();
+      if (Boxes.followingBox.isEmpty) {
+        PreferencesUpdate().setFollowings();
       }
-    });
-    setLists();
+      if (Boxes.saveBox.isEmpty) {
+        PreferencesUpdate().setSaves();
+      }
 
+      subscription = Connectivity()
+          .onConnectivityChanged
+          .listen((ConnectivityResult result) {
+        if (ConnectivityResult.none == result) {
+          snackbar('You are offline.', context,
+              leadingIcon: Icon(FluentIcons.cloud_offline_24_regular));
+        } else {
+          String time = Boxes.preferenceBox.get('start_time');
+          if (time != null) if (DateTime.parse(time)
+              .add(Duration(seconds: 60))
+              .isBefore(DateTime.now())) {
+            snackbar("You're back online.", context,
+                leadingIcon: Icon(
+                  FluentIcons.cloud_24_regular,
+                  color: Colors.greenAccent,
+                ), seeMore: () {
+              setState(() {
+                _key = UniqueKey();
+              });
+            }, fnLabel: "Refresh App", duration: Duration(seconds: 10));
+          }
+        }
+      });
+      setLists();
+    } catch (e) {
+      refresh = true;
+      print('awds');
+    }
     super.initState();
   }
 
@@ -193,31 +198,37 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeDependencies() {
-    if (Hasura.jwtToken == null) {
-      AuthService.firebaseAuth.authStateChanges().first.then((user) {
-        try {
-          user.getIdToken(true).then((token) {
-            if (this.mounted)
-              setState(() {
-                Hasura.jwtToken = token;
-              });
-          });
-        } catch (e) {}
-      });
-    }
+    try {
+      if (Hasura.jwtToken == null) {
+        AuthService.firebaseAuth.authStateChanges().first.then((user) {
+          try {
+            user.getIdToken(true).then((token) {
+              if (this.mounted)
+                setState(() {
+                  Hasura.jwtToken = token;
+                });
+            });
+          } catch (e) {
+            refresh = true;
+          }
+        });
+      }
 
-    Timer.periodic(Duration(minutes: 29), (Timer t) {
-      AuthService.firebaseAuth.authStateChanges().first.then((user) {
-        if (user != null)
-          user.getIdToken(true).then((token) {
-            Hasura.jwtToken = token;
-          });
+      Timer.periodic(Duration(minutes: 29), (Timer t) {
+        AuthService.firebaseAuth.authStateChanges().first.then((user) {
+          if (user != null)
+            user.getIdToken(true).then((token) {
+              Hasura.jwtToken = token;
+            });
+        });
       });
-    });
-    _pageController = PageController(initialPage: 0);
-    loadCurrentUser();
-    handleStartUpLogic(context);
-    quickActions();
+      _pageController = PageController(initialPage: 0);
+      loadCurrentUser();
+      handleStartUpLogic(context);
+      quickActions();
+    } catch (e) {
+      refresh = true;
+    }
     super.didChangeDependencies();
   }
 
@@ -271,16 +282,19 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
               showSelectedLabels: true,
               showUnselectedLabels: true,
               unselectedLabelStyle: TextStyle(
-                  fontWeight: FontWeight.bold, fontFamily: 'Stark Sans'),
+                  fontWeight: FontWeight.w500, fontFamily: 'Stark Sans'),
               selectedLabelStyle: TextStyle(
-                  fontWeight: FontWeight.bold, fontFamily: 'Stark Sans'),
-              unselectedItemColor: Color.fromRGBO(200, 200, 200, 1),
+                  fontWeight: FontWeight.w500, fontFamily: 'Stark Sans'),
+              unselectedItemColor: Color.fromRGBO(250, 250, 250, 1),
               selectedItemColor: Color.fromRGBO(250, 250, 250, 1),
+              backgroundColor: Theme.of(context).iconTheme.color == Colors.white
+                  ? Theme.of(context).canvasColor
+                  : Colors.black,
               items: <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
                   label: 'Home',
                   icon: Icon(
-                    FluentIcons.home_24_filled,
+                    FluentIcons.home_24_regular,
                     size: 23,
                   ),
                   activeIcon: Icon(
@@ -290,53 +304,69 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
                 ),
                 BottomNavigationBarItem(
                   label: 'Explore',
-                  icon: Icon(
-                    FlutterIcons.md_planet_ion,
-                    size: 23,
-                    // size: 34,
+                  icon: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Icon(
+                      FlutterIcons.search_oct,
+                      size: 19,
+                      // size: 34,
+                    ),
                   ),
                   activeIcon: Icon(
-                    FlutterIcons.md_planet_ion,
-                    size: 23,
+                    // FlutterIcons.md_planet_ion,
+                    FlutterIcons.magnifying_glass_ent,
+                    size: 24,
                   ),
                 ),
                 BottomNavigationBarItem(
                   label: 'Post',
-                  activeIcon: Icon(
-                    FluentIcons.add_square_multiple_16_filled,
-                    size: 24,
-                  ),
-                  icon: Icon(
-                    FluentIcons.add_square_multiple_16_filled,
-                    size: 24,
+                  icon: Center(
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Center(
+                          child: Icon(
+                            FlutterIcons.pen_square_faw5s,
+                            size: 24,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 BottomNavigationBarItem(
                   label: 'Inbox',
                   icon: Icon(
-                    FluentIcons.mail_inbox_all_24_filled,
+                    FluentIcons.mail_inbox_24_regular,
                     size: 24,
                   ),
                   activeIcon: Icon(
-                    FluentIcons.mail_inbox_all_24_filled,
+                    FluentIcons.mail_inbox_24_filled,
                     size: 24,
                   ),
                 ),
                 BottomNavigationBarItem(
                   label: 'Profile',
-                  icon: CircleAvatar(
-                    maxRadius: 12,
-                    backgroundImage: CachedNetworkImageProvider(Boxes
-                            .currentUserBox
-                            .get("avatar_url") ??
-                        "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                  icon: Container(
+                    child: CircleAvatar(
+                      maxRadius: 12,
+                      backgroundImage: CachedNetworkImageProvider(Boxes
+                              .currentUserBox
+                              .get("avatar_url") ??
+                          "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                    ),
                   ),
-                  activeIcon: CircleAvatar(
-                    maxRadius: 12,
-                    backgroundImage: CachedNetworkImageProvider(Boxes
-                            .currentUserBox
-                            .get("avatar_url") ??
-                        "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                  activeIcon: Container(
+                    decoration: BoxDecoration(
+                        color: Colors.white, shape: BoxShape.circle),
+                    padding: EdgeInsets.all(1),
+                    child: CircleAvatar(
+                      maxRadius: 11,
+                      backgroundImage: CachedNetworkImageProvider(Boxes
+                              .currentUserBox
+                              .get("avatar_url") ??
+                          "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                    ),
                   ),
                 ),
               ],

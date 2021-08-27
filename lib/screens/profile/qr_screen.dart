@@ -134,7 +134,7 @@ class _QRScreenState extends State<QRScreen> {
                                   //   context,
                                   //   MaterialPageRoute(
                                   //     builder: (context) => ScanView(
-                                  //       cornerColor: Colors.blue,
+                                  //       cornerColor: AppColors.blue,
                                   //       readerFrom: ReaderFrom.camera,
                                   //       bottomContent: Text(
                                   //         'Scan QR Code',

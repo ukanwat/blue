@@ -33,23 +33,25 @@
   <link rel="stylesheet" type="text/css" href="splash/style.css">
 </head>
 <body>
-  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-analytics.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-analytics.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-storage.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-messaging.js"></script>
   <script>
-      var firebaseConfig = {
-        apiKey: "AIzaSyDqqAummsGmbcDJObcrM5ubAraH7c348sI",
-        authDomain: "blue-cabf5.firebaseapp.com",
-        databaseURL: "https://blue-cabf5.firebaseio.com",
-        projectId: "blue-cabf5",
-        storageBucket: "blue-cabf5.appspot.com",
-        messagingSenderId: "875602571063",
-        appId: "1:875602571063:web:27b06367dca01ea86b74b2",
-        measurementId: "G-18167LD116"
-      };
+       var firebaseConfig = {
+    apiKey: "AIzaSyDqqAummsGmbcDJObcrM5ubAraH7c348sI",
+    authDomain: "blue-cabf5.firebaseapp.com",
+    databaseURL: "https://blue-cabf5.firebaseio.com",
+    projectId: "blue-cabf5",
+    storageBucket: "blue-cabf5.appspot.com",
+    messagingSenderId: "875602571063",
+    appId: "1:875602571063:web:27b06367dca01ea86b74b2",
+    measurementId: "G-18167LD116"
+  };
 
       // Initialize Firebase
       firebase.initializeApp(firebaseConfig);
