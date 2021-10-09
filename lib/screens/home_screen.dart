@@ -52,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen>
   GlobalKey _two = GlobalKey();
   GlobalKey _three = GlobalKey();
   double pos = 0;
+  TabController tabController;
   ScrollController _scrollController = ScrollController();
   double currOff = 0;
   showTagsSheet() {
@@ -129,6 +130,26 @@ class _HomeScreenState extends State<HomeScreen>
               }));
     }
 
+    _scrollController.addListener(() {
+      if (_scrollController.position.userScrollDirection ==
+              ScrollDirection.reverse &&
+          !down) {
+        print('User is going down');
+        setState(() {
+          down = true;
+        });
+      } else {
+        if (_scrollController.position.userScrollDirection ==
+                ScrollDirection.forward &&
+            down) {
+          print('User is going up');
+          setState(() {
+            down = false;
+          });
+        }
+      }
+    });
+
     super.didChangeDependencies();
   }
 
@@ -154,13 +175,20 @@ class _HomeScreenState extends State<HomeScreen>
 
   bool get wantKeepAlive => true;
   @override
+  void initState() {
+    tabController = TabController(length: 2, vsync: this);
+    super.initState();
+  }
+
+  bool down = true;
+  @override
   Widget build(context) {
     super.build(context);
 
     return Scaffold(
       backgroundColor: Theme.of(context).canvasColor,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(50),
+        preferredSize: Size.fromHeight(down ? 50 : 80),
         child: AppBar(
           title: Row(
             children: [
@@ -171,46 +199,13 @@ class _HomeScreenState extends State<HomeScreen>
                   fontFamily: 'Techna Sans Regular',
                 ),
               ),
-              GestureDetector(
-                key: Env.intro.keys[0],
-                onTap: () {
-                  setState(() {
-                    followingPosts = !followingPosts;
-                  });
-                },
-                child: Row(
-                  children: [
-                    Container(
-                      height: 20,
-                      child: Padding(
-                        padding:
-                            const EdgeInsets.only(left: 5, top: 0, right: 0),
-                        child: Center(
-                          child: Text(followingPosts ? 'FOLLOWING' : 'FOR YOU',
-                              style: TextStyle(
-                                fontFamily: 'Stark Sans',
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.grey.withOpacity(0.7),
-                              )),
-                        ),
-                      ),
-                    ),
-                    Icon(
-                      FluentIcons.arrow_sync_circle_24_regular,
-                      color: Colors.grey.withOpacity(0.7),
-                      size: 18,
-                    )
-                  ],
-                ),
-              ),
             ],
           ),
           actions: [
             Row(
               children: [
                 GestureDetector(
-                    key: Env.intro.keys[1],
+                    key: Env.intro.keys[0],
                     child: Container(
                         padding: EdgeInsets.all(5),
                         child: Icon(
@@ -249,29 +244,69 @@ class _HomeScreenState extends State<HomeScreen>
                       onPressed: () {
                         refreshPosts();
                       }),
+                SizedBox(
+                  width: 10,
+                )
               ],
-            ),
-            IconButton(
-              icon: Icon(
-                FluentIcons.add_24_regular,
-                size: 27,
-              ),
-              onPressed: () {
-                showTagsSheet();
-              },
             ),
           ],
           elevation: 0,
           automaticallyImplyLeading: false,
           brightness: Theme.of(context).brightness,
           bottom: PreferredSize(
-              preferredSize: Size.fromHeight(0.5),
+              preferredSize: Size.fromHeight(down ? 0.5 : 30.5),
               child: Column(
                 children: [
+                  if (!down)
+                    Container(
+                      height: 30,
+                      child: TabBar(
+                          controller: tabController,
+                          onTap: (i) {
+                            if (i == 0) {
+                              setState(() {
+                                followingPosts = false;
+                              });
+                            } else if (i == 1) {
+                              setState(() {
+                                followingPosts = true;
+                              });
+                            }
+                          },
+                          indicatorColor: Theme.of(context).iconTheme.color,
+                          indicatorWeight: 2,
+                          isScrollable: true,
+                          labelPadding: EdgeInsets.only(
+                              left: 5, right: 5, bottom: 0, top: 0),
+                          indicatorSize: TabBarIndicatorSize.label,
+                          labelColor: Theme.of(context).iconTheme.color,
+                          unselectedLabelColor: Theme.of(context)
+                              .iconTheme
+                              .color
+                              .withOpacity(0.5),
+                          tabs: [
+                            Tab(
+                                child: Padding(
+                                    padding: const EdgeInsets.only(right: 10),
+                                    child: Text(
+                                      'FOR YOU',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w700),
+                                    ))),
+                            Tab(
+                                child: Padding(
+                                    padding: const EdgeInsets.only(right: 10),
+                                    child: Text(
+                                      'FOLLOWING',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w700),
+                                    ))),
+                          ]),
+                    ),
                   Divider(
                     height: 0.5,
                     thickness: 0.5,
-                    color: Theme.of(context).iconTheme.color.withOpacity(0.1),
+                    color: Theme.of(context).iconTheme.color.withOpacity(0.2),
                   ),
                 ],
               )),
@@ -301,64 +336,64 @@ class _HomeScreenState extends State<HomeScreen>
                           positionData.startPosition <=
                               positionData.viewportSize,
                       child: Container(
-                        color: Theme.of(context).backgroundColor,
-                        child: RefreshIndicator(
-                          onRefresh: () => refreshPosts(),
-                          child: LazyLoadScrollView(
-                            isLoading: loaded,
-                            onEndOfPage: () {
-                              addItems();
-                            },
-                            child: ListView.builder(
-                                controller: _scrollController,
-                                itemCount: p.length + 1,
-                                itemBuilder: (context, i) {
-                                  if (i == p.length) {
-                                    return Container(
-                                      color: Theme.of(context).canvasColor,
-                                      height: 120,
-                                      width: MediaQuery.of(context).size.width,
-                                      child: loaded
-                                          ? Container()
-                                          : Container(
-                                              color: Theme.of(context)
-                                                  .backgroundColor,
-                                              child: Center(
-                                                  child: circularProgress()),
-                                            ),
+                          color: Theme.of(context).backgroundColor,
+                          child: RefreshIndicator(
+                            onRefresh: () => refreshPosts(),
+                            child: LazyLoadScrollView(
+                              isLoading: loaded,
+                              onEndOfPage: () {
+                                addItems();
+                              },
+                              child: ListView.builder(
+                                  controller: _scrollController,
+                                  itemCount: p.length + 1,
+                                  itemBuilder: (context, i) {
+                                    if (i == p.length) {
+                                      return Container(
+                                        color: Theme.of(context).canvasColor,
+                                        height: 120,
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        child: loaded
+                                            ? Container()
+                                            : Container(
+                                                color: Theme.of(context)
+                                                    .backgroundColor,
+                                                child: Center(
+                                                    child: circularProgress()),
+                                              ),
+                                      );
+                                    }
+                                    return VisibleNotifierWidget(
+                                      data: i,
+                                      listener: (context, notification,
+                                          positionData) {
+                                        if (positionData != null) {
+                                          if (positionData.endPosition > 0 &&
+                                              positionData.startPosition <= 0) {
+                                            currOff = positionData.endPosition;
+                                          } else {}
+                                        }
+                                      },
+                                      child: p.elementAt(i),
+                                      condition: (
+                                        previousNotification,
+                                        previousPositionData,
+                                        currentNotification,
+                                        currentPositionData,
+                                      ) {
+                                        if (previousPositionData !=
+                                            currentPositionData) return true;
+                                        if (previousPositionData != null &&
+                                            currentPositionData != null)
+                                          return previousNotification !=
+                                              currentNotification;
+                                        return false;
+                                      },
                                     );
-                                  }
-                                  return VisibleNotifierWidget(
-                                    data: i,
-                                    listener:
-                                        (context, notification, positionData) {
-                                      if (positionData != null) {
-                                        if (positionData.endPosition > 0 &&
-                                            positionData.startPosition <= 0) {
-                                          currOff = positionData.endPosition;
-                                        } else {}
-                                      }
-                                    },
-                                    child: p.elementAt(i),
-                                    condition: (
-                                      previousNotification,
-                                      previousPositionData,
-                                      currentNotification,
-                                      currentPositionData,
-                                    ) {
-                                      if (previousPositionData !=
-                                          currentPositionData) return true;
-                                      if (previousPositionData != null &&
-                                          currentPositionData != null)
-                                        return previousNotification !=
-                                            currentNotification;
-                                      return false;
-                                    },
-                                  );
-                                }),
-                          ),
-                        ),
-                      ),
+                                  }),
+                            ),
+                          )),
                     ),
                     Positioned(
                         bottom: 6,

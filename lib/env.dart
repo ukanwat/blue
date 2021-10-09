@@ -13,7 +13,7 @@ class Env {
     maskColor: Theme.of(Get.context).iconTheme.color == Colors.black
         ? Colors.black.withOpacity(0.6)
         : Colors.white.withOpacity(0.3),
-    stepCount: 2,
+    stepCount: 1,
     maskClosable: true,
 
     /// When highlight widget is tapped.
@@ -28,10 +28,7 @@ class Env {
     borderRadius: BorderRadius.all(Radius.circular(4)),
     widgetBuilder: StepWidgetBuilder.useDefaultTheme(
       /// Guide page text
-      texts: [
-        'Tap this to toggle between For You and Following posts',
-        'Get \$15 for every person you invite to stark'
-      ],
+      texts: ['Get \$15 for every person you invite to stark'],
 
       /// Button text
       buttonTextBuilder: (curr, total) {
@@ -50,7 +47,7 @@ class Env {
       maskColor: Theme.of(Get.context).iconTheme.color == Colors.black
           ? Colors.black.withOpacity(0.6)
           : Colors.white.withOpacity(0.3),
-      stepCount: 2,
+      stepCount: 1,
       maskClosable: true,
 
       /// When highlight widget is tapped.
@@ -65,10 +62,7 @@ class Env {
       borderRadius: BorderRadius.all(Radius.circular(4)),
       widgetBuilder: StepWidgetBuilder.useDefaultTheme(
         /// Guide page text
-        texts: [
-          'Tap this to toggle between For You and Following posts',
-          'Get \$15 for every person you invite to stark'
-        ],
+        texts: ['Get \$15 for every person you invite to stark'],
 
         /// Button text
         buttonTextBuilder: (curr, total) {

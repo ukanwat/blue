@@ -57,19 +57,23 @@ class BoxButton extends StatelessWidget {
   final Color color;
   final Function fn;
   final double radius;
-  BoxButton(this.child, this.fn, {this.color, this.radius});
+  final double margin;
+  BoxButton(this.child, this.fn, {this.color, this.radius, this.margin});
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: fn,
-      borderRadius: BorderRadius.circular(radius ?? 10),
-      child: Material(
-        color: color ?? Theme.of(context).cardColor,
+    return Padding(
+      padding: EdgeInsets.all(margin ?? 0),
+      child: InkWell(
+        onTap: fn,
         borderRadius: BorderRadius.circular(radius ?? 10),
-        child: Padding(
-          child: child,
-          padding: EdgeInsets.all(5),
+        child: Material(
+          color: color ?? Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(radius ?? 10),
+          child: Padding(
+            child: child,
+            padding: EdgeInsets.all(5),
+          ),
         ),
       ),
     );

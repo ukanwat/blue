@@ -74,7 +74,7 @@ class _ActivityFeedItemState extends State<ActivityFeedItem> {
         Functions().handleFollowUser(widget.sourceId);
       }, AppColors.blue, 'Follow', true);
     }
-
+    print(widget.sourceId);
     return ListTile(
         onTap: () {
           if (widget.action == 'follow') {
@@ -87,6 +87,9 @@ class _ActivityFeedItemState extends State<ActivityFeedItem> {
             NotifFunctions.goToCommentReply(widget.sourceId, context);
           }
           if (widget.action == 'upvote') {
+            NotifFunctions.goToPost(widget.sourceId, context);
+          }
+          if (widget.action == 'share') {
             NotifFunctions.goToPost(widget.sourceId, context);
           }
         },

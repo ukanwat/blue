@@ -269,7 +269,11 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
             // sets the active color of the `BottomNavigationBar` if `Brightness` is light
             primaryColor: Theme.of(context).primaryColor.withOpacity(0.8),
           ),
-          child: SizedBox(
+          child: Container(
+            decoration: BoxDecoration(
+                border: Border(
+                    top: BorderSide(
+                        color: Colors.grey.withOpacity(0.5), width: 0.5))),
             height: kBottomNavigationBarHeight -
                 8 +
                 MediaQuery.of(context).padding.bottom,
@@ -285,11 +289,17 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
                   fontWeight: FontWeight.w500, fontFamily: 'Stark Sans'),
               selectedLabelStyle: TextStyle(
                   fontWeight: FontWeight.w500, fontFamily: 'Stark Sans'),
-              unselectedItemColor: Color.fromRGBO(250, 250, 250, 1),
-              selectedItemColor: Color.fromRGBO(250, 250, 250, 1),
+              unselectedItemColor:
+                  Theme.of(context).iconTheme.color == Colors.white
+                      ? AppColors.navBarLight
+                      : AppColors.navBarDark,
+              selectedItemColor:
+                  Theme.of(context).iconTheme.color == Colors.white
+                      ? AppColors.navBarLight
+                      : AppColors.navBarDark,
               backgroundColor: Theme.of(context).iconTheme.color == Colors.white
-                  ? Theme.of(context).canvasColor
-                  : Colors.black,
+                  ? AppColors.navBarDark
+                  : AppColors.navBarLight,
               items: <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
                   label: 'Home',
@@ -358,7 +368,10 @@ class _TabsScreenState extends State<TabsScreen> with WidgetsBindingObserver {
                   ),
                   activeIcon: Container(
                     decoration: BoxDecoration(
-                        color: Colors.white, shape: BoxShape.circle),
+                        color: Theme.of(context).iconTheme.color == Colors.white
+                            ? AppColors.navBarLight
+                            : AppColors.navBarDark,
+                        shape: BoxShape.circle),
                     padding: EdgeInsets.all(1),
                     child: CircleAvatar(
                       maxRadius: 11,

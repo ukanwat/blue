@@ -15,7 +15,6 @@
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
-		AAD7D8B0269E01B800C8124B /* Generated.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = AAD7D8AF269E01B800C8124B /* Generated.xcconfig */; };
 		AAF1CC6A268F3C02002D7E08 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AAF1CC69268F3C02002D7E08 /* GoogleService-Info.plist */; };
 		AAF1CC72268F41D9002D7E08 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF1CC71268F41D9002D7E08 /* NotificationService.swift */; };
 		AAF1CC76268F41D9002D7E08 /* ImageNotification.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AAF1CC6F268F41D9002D7E08 /* ImageNotification.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -288,7 +287,6 @@
 			files = (
 				97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */,
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
-				AAD7D8B0269E01B800C8124B /* Generated.xcconfig in Resources */,
 				AAF1CC6A268F3C02002D7E08 /* GoogleService-Info.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,

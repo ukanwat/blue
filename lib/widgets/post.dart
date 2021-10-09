@@ -6,6 +6,7 @@ import 'dart:math' as math;
 import 'dart:math';
 
 // Flutter imports:
+import 'package:flutter/rendering.dart';
 import 'package:blue/widgets/progress.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/foundation.dart';
@@ -267,7 +268,6 @@ class _PostState extends State<Post> {
   bool isFollowing = false;
   GlobalKey _contentsKey = GlobalKey();
   double contentsHeight;
-  bool constraintContent = false;
   String compactPostText;
 
   showOptions(BuildContext context) {
@@ -465,7 +465,7 @@ class _PostState extends State<Post> {
                                     wordSpacing: 0,
                                     height: 1.25,
                                   ),
-                        maxLines: tagBarVisible ? 5 : 2,
+                        maxLines: 6,
                         overflow: TextOverflow.ellipsis),
                   ),
                 ),
@@ -518,8 +518,7 @@ class _PostState extends State<Post> {
                               width: 3,
                             ),
                             Text(
-                              format(DateTime.parse(widget.time),
-                                  locale: 'en_short'),
+                              format(DateTime.parse(widget.time), locale: 'en'),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                               style: TextStyle(
@@ -530,39 +529,6 @@ class _PostState extends State<Post> {
                             SizedBox(
                               width: 3,
                             ),
-                            if (!isFollowing &&
-                                !(widget.ownerId ==
-                                    Boxes.currentUserBox.get('user_id')))
-                              Text('•'),
-                            if (!isFollowing &&
-                                !(widget.ownerId ==
-                                    Boxes.currentUserBox.get('user_id')))
-                              SizedBox(
-                                width: 3,
-                              ),
-                            if (!isFollowing &&
-                                !(widget.ownerId ==
-                                    Boxes.currentUserBox.get('user_id')))
-                              Container(
-                                  height: 14,
-                                  child: GestureDetector(
-                                    onTap: () async {
-                                      Functions().handleFollowUser(widget
-                                          .ownerId); // TODO wait for future
-                                      setState(() {
-                                        isFollowing = true;
-                                      });
-                                    },
-                                    child: Text(
-                                      'Follow',
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w500,
-                                          color: AppColors.blue),
-                                    ),
-                                  ))
                           ],
                         ),
                       ),
@@ -572,43 +538,68 @@ class _PostState extends State<Post> {
                     ],
                   ),
                 ),
-                tagBarVisible
-                    ? GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            tagBarVisible = false;
-                          });
-                        },
-                        child: Container(
-                          height: 38,
-                          padding: const EdgeInsets.only(
-                            left: 15,
-                            right: 15,
-                          ),
-                          child: Icon(
-                            FluentIcons.chevron_up_16_filled,
-                            size: 22,
-                          ),
-                        ),
-                      )
-                    : GestureDetector(
+                if (!isFollowing &&
+                    !(widget.ownerId == Boxes.currentUserBox.get('user_id')))
+                  Container(
+                      height: 16,
+                      child: GestureDetector(
                         onTap: () async {
+                          Functions().handleFollowUser(
+                              widget.ownerId); // TODO wait for future
                           setState(() {
-                            tagBarVisible = true;
+                            isFollowing = true;
                           });
                         },
-                        child: Container(
-                          height: 38,
-                          padding: const EdgeInsets.only(
-                            left: 15,
-                            right: 15,
-                          ),
-                          child: Icon(
-                            FluentIcons.chevron_down_16_filled,
-                            size: 22,
-                          ),
+                        child: Text(
+                          'Follow',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.blue),
                         ),
-                      ),
+                      )),
+                SizedBox(
+                  width: 12,
+                )
+                // tagBarVisible
+                //     ? GestureDetector(
+                //         onTap: () {
+                //           setState(() {
+                //             tagBarVisible = false;
+                //           });
+                //         },
+                //         child: Container(
+                //           height: 38,
+                //           padding: const EdgeInsets.only(
+                //             left: 15,
+                //             right: 15,
+                //           ),
+                //           child: Icon(
+                //             FluentIcons.chevron_up_16_filled,
+                //             size: 22,
+                //           ),
+                //         ),
+                //       )
+                //     : GestureDetector(
+                //         onTap: () async {
+                //           setState(() {
+                //             tagBarVisible = true;
+                //           });
+                //         },
+                //         child: Container(
+                //           height: 38,
+                //           padding: const EdgeInsets.only(
+                //             left: 15,
+                //             right: 15,
+                //           ),
+                //           child: Icon(
+                //             FluentIcons.chevron_down_16_filled,
+                //             size: 22,
+                //           ),
+                //         ),
+                //       ),
               ],
             ),
           ),
@@ -827,8 +818,29 @@ class _PostState extends State<Post> {
     if (thumbUrlLink != null && thumbUrl == null) {
       getThumbFromLink();
     }
+    tags.forEach((element) {
+      hashtags.add(Container(
+        child: InkWell(
+          onTap: () async {
+            Navigator.of(context)
+                .pushNamed(TagScreen.routeName, arguments: element);
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+            child: Text(
+              '#$element',
+              style: TextStyle(fontSize: 15, color: AppColors.blue),
+            ),
+          ),
+        ),
+      ));
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => getContentSize);
     super.didChangeDependencies();
   }
+
+  List<Widget> hashtags = [];
 
   getThumbFromLink() async {
     Client client = Client();
@@ -934,6 +946,48 @@ class _PostState extends State<Post> {
   }
 
   bool increment;
+
+  Widget saveBar() {
+    return Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 5, horizontal: 6),
+        child: Container(
+          margin: EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              color: AppColors.blue.withOpacity(0.15)),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              Text(
+                'Saved!',
+                style: TextStyle(fontSize: 18),
+              ),
+              FlatButton(
+                  onPressed: () {
+                    setState(() {
+                      showSaveBar = false;
+                    });
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) =>
+                          SaveDialog(this.widget),
+                    );
+                  },
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  child: Text(
+                    'Save to Collection',
+                    style: TextStyle(
+                        color: AppColors.blue,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18),
+                  ))
+            ],
+          ),
+        ));
+  }
+
   buildPostFooter() {
     return GetBuilder<PostGet>(
         init: PostGet(),
@@ -943,48 +997,9 @@ class _PostState extends State<Post> {
             padding: EdgeInsets.only(top: 0),
             child: Column(
               children: <Widget>[
-                if (showSaveBar)
-                  Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 6),
-                      child: Container(
-                        margin:
-                            EdgeInsets.symmetric(vertical: 0, horizontal: 8),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
-                            color: AppColors.blue.withOpacity(0.15)),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: <Widget>[
-                            Text(
-                              'Saved!',
-                              style: TextStyle(fontSize: 18),
-                            ),
-                            FlatButton(
-                                onPressed: () {
-                                  setState(() {
-                                    showSaveBar = false;
-                                  });
-                                  showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) =>
-                                        SaveDialog(this.widget),
-                                  );
-                                },
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10)),
-                                child: Text(
-                                  'Save to Collection',
-                                  style: TextStyle(
-                                      color: AppColors.blue,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 18),
-                                ))
-                          ],
-                        ),
-                      )),
+                if (showSaveBar && widget.isCompact != true) saveBar(),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   mainAxisSize: MainAxisSize.max,
                   children: <Widget>[
                     if (widget.isCompact)
@@ -1072,7 +1087,6 @@ class _PostState extends State<Post> {
                             ),
                             index: 1);
                       }, count: widget.commentCount),
-                    if (widget.isCompact != true) Expanded(child: Container()),
                     Padding(
                       padding: EdgeInsets.only(
                           right: widget.isCompact == true ? 0 : 5),
@@ -1123,9 +1137,10 @@ class _PostState extends State<Post> {
                           ),
                           child: Padding(
                             padding: const EdgeInsets.only(
-                                bottom: 0, left: 6, right: 6, top: 6),
-                            child: Column(
+                                bottom: 6, left: 6, right: 6, top: 6),
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Icon(
                                     vote == Vote.up
@@ -1138,17 +1153,23 @@ class _PostState extends State<Post> {
                                     color: isOwner
                                         ? AppColors.blue.withOpacity(0.7)
                                         : AppColors.blue),
-                                Text(
-                                  increment == null
-                                      ? '${Functions.abbreviateNumber(upvotes, hideLess: true)}'
-                                      : increment
-                                          ? '${Functions.abbreviateNumber(upvotes + 1, hideLess: true)}'
-                                          : '${Functions.abbreviateNumber(upvotes - 1, hideLess: true)}',
-                                  style: TextStyle(
-                                      fontSize: 11,
-                                      height: 1,
-                                      fontWeight: FontWeight.w800,
-                                      fontFamily: 'Stark Sans'),
+                                SizedBox(
+                                  width: 5,
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    increment == null
+                                        ? '${Functions.abbreviateNumber(upvotes, hideLess: true)}'
+                                        : increment
+                                            ? '${Functions.abbreviateNumber(upvotes + 1, hideLess: true)}'
+                                            : '${Functions.abbreviateNumber(upvotes - 1, hideLess: true)}',
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        height: 1,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: 'Stark Sans'),
+                                  ),
                                 ),
                               ],
                             ),
@@ -1200,11 +1221,16 @@ class _PostState extends State<Post> {
   }
 
   getContentSize() {
-    RenderBox _contentsBox = _contentsKey.currentContext.findRenderObject();
-    setState(() {
-      contentsHeight = _contentsBox.size.height;
-    });
+    // RenderBox _contentsBox = _contentsKey.currentContext.findRenderObject();
+    // setState(() {
+    //   contentsHeight = _contentsBox.size.height;
+    //   if (contentsHeight > MediaQuery.of(context).size.height) {
+    //     expanded = false;
+    //   }
+    // });
   }
+  bool showExpand = false;
+  bool expanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -1300,259 +1326,350 @@ class _PostState extends State<Post> {
                               ? buildCompactPostHeader()
                               : buildPostHeader(),
                           if (!widget.isCompact)
-                            ConstrainedBox(
-                              constraints: constraintContent
-                                  ? BoxConstraints(
-                                      maxHeight:
-                                          MediaQuery.of(context).size.height *
-                                              0.8)
-                                  : BoxConstraints(),
-                              child: Stack(
-                                clipBehavior: Clip.antiAlias,
-                                alignment: AlignmentDirectional.topStart,
+                            LayoutBuilder(builder: (BuildContext context,
+                                BoxConstraints constraints) {
+                              return Stack(
                                 children: [
-                                  ListView.builder(
-                                    key: _contentsKey,
-                                    padding: EdgeInsets.all(0),
-                                    shrinkWrap: true,
-                                    physics: NeverScrollableScrollPhysics(),
-                                    itemBuilder: (_, i) {
-                                      return contentsViewList[i];
+                                  MeasureSize(
+                                    onChange: (size) {
+                                      setState(() {
+                                        if (size.height ==
+                                                MediaQuery.of(context)
+                                                        .size
+                                                        .height *
+                                                    0.8 &&
+                                            !showExpand) {
+                                          setState(() {
+                                            showExpand = true;
+                                          });
+                                        }
+                                      });
                                     },
-                                    itemCount: contents.length,
+                                    child: ConstrainedBox(
+                                        constraints: expanded
+                                            ? BoxConstraints()
+                                            : BoxConstraints(
+                                                maxHeight:
+                                                    MediaQuery.of(context)
+                                                            .size
+                                                            .height *
+                                                        0.8),
+                                        child: ListView.builder(
+                                          key: _contentsKey,
+                                          padding: EdgeInsets.all(0),
+                                          shrinkWrap: true,
+                                          physics:
+                                              NeverScrollableScrollPhysics(),
+                                          itemBuilder: (_, i) {
+                                            return contentsViewList[i];
+                                          },
+                                          itemCount: contents.length,
+                                        )),
                                   ),
+                                  if (showExpand)
+                                    Positioned(
+                                      bottom: 0,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            expanded = true;
+                                            showExpand = false;
+                                          });
+                                        },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                  begin: Alignment.topCenter,
+                                                  end: Alignment.bottomCenter,
+                                                  colors: [
+                                                Theme.of(context)
+                                                    .backgroundColor
+                                                    .withOpacity(0.5),
+                                                Theme.of(context)
+                                                    .backgroundColor,
+                                              ],
+                                                  stops: [
+                                                0,
+                                                1,
+                                              ])),
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          height: 30,
+                                          child: Center(
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  'Expand',
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 18),
+                                                ),
+                                                Icon(
+                                                  FluentIcons
+                                                      .chevron_down_12_filled,
+                                                  size: 20,
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    )
                                 ],
+                              );
+                            }),
+                          if (widget.isCompact != true && hashtags.length > 0)
+                            Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: Wrap(
+                                spacing: 1.0, // gap between adjacent chips
+                                runSpacing: 1.0, // gap between lines
+                                children: hashtags,
                               ),
                             ),
                           if (widget.isCompact)
                             if (tagBarVisible) tagBar(),
                           (widget.isCompact != true)
                               ? buildPostFooter()
-                              : Container(
-                                  width: MediaQuery.of(context).size.width,
-                                  child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: [
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        GestureDetector(
-                                          onTap: () {
-                                            GoTo().profileScreen(
-                                                context, widget.ownerId);
-                                          },
-                                          child: Container(
-                                            constraints: BoxConstraints(
-                                                maxWidth: 500, minWidth: 0),
-                                            child: Row(
-                                              children: [
-                                                CircleAvatar(
-                                                  radius: 14,
-                                                  backgroundImage:
-                                                      CachedNetworkImageProvider(
-                                                          photoUrl ??
-                                                              "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
-                                                  backgroundColor: Colors.grey,
-                                                ),
-                                                SizedBox(
-                                                  width: 8,
-                                                ),
-                                                Container(
-                                                  height: 32,
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        username,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        maxLines: 1,
-                                                        style: TextStyle(
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                      Container(
-                                                        height: 14,
-                                                        child: Row(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Text(
-                                                              format(
-                                                                  DateTime.parse(
-                                                                      widget
-                                                                          .time),
-                                                                  locale:
-                                                                      'en_short'),
-                                                              overflow:
-                                                                  TextOverflow
-                                                                      .ellipsis,
-                                                              maxLines: 1,
-                                                              style: TextStyle(
-                                                                  fontSize: 11,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w400,
-                                                                  color: Colors
-                                                                      .grey),
-                                                            ),
-                                                            SizedBox(
-                                                              width: 3,
-                                                            ),
-                                                            if (!isFollowing &&
-                                                                !(widget.ownerId ==
-                                                                    Boxes
-                                                                        .currentUserBox
-                                                                        .get(
-                                                                            'user_id')))
-                                                              Text(
-                                                                '•',
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        13),
-                                                              ),
-                                                            if (!isFollowing &&
-                                                                !(widget.ownerId ==
-                                                                    Boxes
-                                                                        .currentUserBox
-                                                                        .get(
-                                                                            'user_id')))
-                                                              SizedBox(
-                                                                width: 3,
-                                                              ),
-                                                            if (!isFollowing &&
-                                                                !(widget.ownerId ==
-                                                                    Boxes
-                                                                        .currentUserBox
-                                                                        .get(
-                                                                            'user_id')))
-                                                              Container(
-                                                                  height: 14,
-                                                                  child:
-                                                                      GestureDetector(
-                                                                    onTap:
-                                                                        () async {
-                                                                      Functions()
-                                                                          .handleFollowUser(
-                                                                              widget.ownerId); // TODO wait for future
-                                                                      setState(
-                                                                          () {
-                                                                        isFollowing =
-                                                                            true;
-                                                                      });
-                                                                    },
-                                                                    child: Text(
-                                                                      'Follow',
-                                                                      overflow:
-                                                                          TextOverflow
-                                                                              .ellipsis,
-                                                                      maxLines:
-                                                                          1,
-                                                                      style: TextStyle(
-                                                                          fontSize:
-                                                                              12,
-                                                                          fontWeight: FontWeight
-                                                                              .w500,
-                                                                          color:
-                                                                              AppColors.blue),
-                                                                    ),
-                                                                  ))
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                              mainAxisSize: MainAxisSize.min,
+                              : Column(
+                                  children: [
+                                    if (showSaveBar) saveBar(),
+                                    Container(
+                                      width: MediaQuery.of(context).size.width,
+                                      child: Row(
+                                          mainAxisSize: MainAxisSize.max,
+                                          children: [
+                                            SizedBox(
+                                              width: 10,
                                             ),
-                                          ),
-                                        ),
-                                        // if (widget.isCompact)
-                                        //   tagBarVisible
-                                        //       ? FooterButton(
-                                        //           FluentIcons
-                                        //               .chevron_up_24_filled,
-                                        //           () {
-                                        //           setState(() {
-                                        //             tagBarVisible = false;
-                                        //           });
-                                        //         })
-                                        //       : FooterButton(
-                                        //           FluentIcons
-                                        //               .chevron_down_24_filled,
-                                        //           () async {
-                                        //           setState(() {
-                                        //             tagBarVisible = true;
-                                        //           });
-                                        //         }),
+                                            GestureDetector(
+                                              onTap: () {
+                                                GoTo().profileScreen(
+                                                    context, widget.ownerId);
+                                              },
+                                              child: Container(
+                                                constraints: BoxConstraints(
+                                                    maxWidth: 500, minWidth: 0),
+                                                child: Row(
+                                                  children: [
+                                                    CircleAvatar(
+                                                      radius: 14,
+                                                      backgroundImage:
+                                                          CachedNetworkImageProvider(
+                                                              photoUrl ??
+                                                                  "https://firebasestorage.googleapis.com/v0/b/blue-cabf5.appspot.com/o/placeholder_avatar.jpg?alt=media&token=cab69e87-94a0-4f72-bafa-0cd5a0124744"),
+                                                      backgroundColor:
+                                                          Colors.grey,
+                                                    ),
+                                                    SizedBox(
+                                                      width: 8,
+                                                    ),
+                                                    Container(
+                                                      height: 32,
+                                                      alignment:
+                                                          Alignment.centerLeft,
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            username,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            maxLines: 1,
+                                                            style: TextStyle(
+                                                              fontSize: 14,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
+                                                          ),
+                                                          Container(
+                                                            height: 14,
+                                                            child: Row(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                Text(
+                                                                  format(
+                                                                      DateTime.parse(
+                                                                          widget
+                                                                              .time),
+                                                                      locale:
+                                                                          'en_short'),
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+                                                                  maxLines: 1,
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          11,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w400,
+                                                                      color: Colors
+                                                                          .grey),
+                                                                ),
+                                                                SizedBox(
+                                                                  width: 3,
+                                                                ),
+                                                                if (!isFollowing &&
+                                                                    !(widget.ownerId ==
+                                                                        Boxes
+                                                                            .currentUserBox
+                                                                            .get('user_id')))
+                                                                  Text(
+                                                                    '•',
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            13),
+                                                                  ),
+                                                                if (!isFollowing &&
+                                                                    !(widget.ownerId ==
+                                                                        Boxes
+                                                                            .currentUserBox
+                                                                            .get('user_id')))
+                                                                  SizedBox(
+                                                                    width: 3,
+                                                                  ),
+                                                                if (!isFollowing &&
+                                                                    !(widget.ownerId ==
+                                                                        Boxes
+                                                                            .currentUserBox
+                                                                            .get(
+                                                                                'user_id')))
+                                                                  Container(
+                                                                      height:
+                                                                          14,
+                                                                      child:
+                                                                          GestureDetector(
+                                                                        onTap:
+                                                                            () async {
+                                                                          Functions()
+                                                                              .handleFollowUser(widget.ownerId); // TODO wait for future
+                                                                          setState(
+                                                                              () {
+                                                                            isFollowing =
+                                                                                true;
+                                                                          });
+                                                                        },
+                                                                        child:
+                                                                            Text(
+                                                                          'Follow',
+                                                                          overflow:
+                                                                              TextOverflow.ellipsis,
+                                                                          maxLines:
+                                                                              1,
+                                                                          style: TextStyle(
+                                                                              fontSize: 12,
+                                                                              fontWeight: FontWeight.w500,
+                                                                              color: AppColors.blue),
+                                                                        ),
+                                                                      )),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                ),
+                                              ),
+                                            ),
+                                            // if (widget.isCompact)
+                                            //   tagBarVisible
+                                            //       ? FooterButton(
+                                            //           FluentIcons
+                                            //               .chevron_up_24_filled,
+                                            //           () {
+                                            //           setState(() {
+                                            //             tagBarVisible = false;
+                                            //           });
+                                            //         })
+                                            //       : FooterButton(
+                                            //           FluentIcons
+                                            //               .chevron_down_24_filled,
+                                            //           () async {
+                                            //           setState(() {
+                                            //             tagBarVisible = true;
+                                            //           });
+                                            //         }),
 
-                                        Expanded(
-                                          child: Container(),
-                                        ),
-                                        Padding(
-                                          child: buildPostFooter(),
-                                          padding:
-                                              EdgeInsets.only(top: 4, right: 0),
-                                        ),
-                                        // Padding(
-                                        //   padding: const EdgeInsets.only(
-                                        //       right: 0, left: 0),
-                                        //   child: Material(
-                                        //     color: Colors.transparent,
-                                        //     child: InkWell(
-                                        //       customBorder: new CircleBorder(),
-                                        //       onTap: () {
-                                        //         showOptions(context);
-                                        //       },
-                                        //       child: Padding(
-                                        //         padding: const EdgeInsets.only(
-                                        //             top: 6, right: 2, left: 3),
-                                        //         child: Column(
-                                        //           children: [
-                                        //             Icon(
-                                        //               FluentIcons
-                                        //                   .more_vertical_24_filled,
-                                        //               size: 22,
-                                        //             ),
-                                        //             Text(
-                                        //               '',
-                                        //               maxLines: 1,
-                                        //               style: TextStyle(
-                                        //                   fontSize: 11,
-                                        //                   height: 1,
-                                        //                   fontWeight:
-                                        //                       FontWeight.w800,
-                                        //                   fontFamily:
-                                        //                       'Stark Sans'),
-                                        //             )
-                                        //           ],
-                                        //         ),
-                                        //       ),
-                                        //     ),
-                                        //   ),
-                                        //   // if (widget.count != null)
-                                        // ),
-                                      ]),
+                                            Expanded(
+                                              child: Container(),
+                                            ),
+                                            Padding(
+                                              child: buildPostFooter(),
+                                              padding: EdgeInsets.only(
+                                                  top: 4, right: 0),
+                                            ),
+                                            // Padding(
+                                            //   padding: const EdgeInsets.only(
+                                            //       right: 0, left: 0),
+                                            //   child: Material(
+                                            //     color: Colors.transparent,
+                                            //     child: InkWell(
+                                            //       customBorder: new CircleBorder(),
+                                            //       onTap: () {
+                                            //         showOptions(context);
+                                            //       },
+                                            //       child: Padding(
+                                            //         padding: const EdgeInsets.only(
+                                            //             top: 6, right: 2, left: 3),
+                                            //         child: Column(
+                                            //           children: [
+                                            //             Icon(
+                                            //               FluentIcons
+                                            //                   .more_vertical_24_filled,
+                                            //               size: 22,
+                                            //             ),
+                                            //             Text(
+                                            //               '',
+                                            //               maxLines: 1,
+                                            //               style: TextStyle(
+                                            //                   fontSize: 11,
+                                            //                   height: 1,
+                                            //                   fontWeight:
+                                            //                       FontWeight.w800,
+                                            //                   fontFamily:
+                                            //                       'Stark Sans'),
+                                            //             )
+                                            //           ],
+                                            //         ),
+                                            //       ),
+                                            //     ),
+                                            //   ),
+                                            //   // if (widget.count != null)
+                                            // ),
+                                          ]),
+                                    ),
+                                  ],
                                 ),
+                          SizedBox(
+                            height: 5,
+                          )
                         ],
                       ),
                     ),
                   ),
                   if (widget.radius == null)
-                    Divider(
-                        thickness: 1,
-                        indent: 10,
-                        endIndent: 10,
-                        color: Colors.grey.withOpacity(0.1),
-                        height: 2),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 0),
+                      child: Divider(
+                        thickness: widget.isCompact ? 2 : 8,
+                        indent: 0,
+                        endIndent: 0,
+                        color: Colors.grey.withOpacity(0.2),
+                        height: widget.isCompact ? 2 : 8,
+                      ),
+                    ),
                 ],
               );
   }
@@ -1678,33 +1795,81 @@ class _FooterButtonState extends State<FooterButton> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          customBorder: new RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4)),
-          onTap: widget.function,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 6, right: 6, top: 6),
-                child: Icon(
-                  widget.iconData,
-                  size: 25,
-                  color: widget.color ?? Theme.of(context).iconTheme.color,
-                ),
+            customBorder: new RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4)),
+            onTap: widget.function,
+            child: Padding(
+              padding:
+                  const EdgeInsets.only(left: 6, right: 6, top: 6, bottom: 6),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(),
+                    child: Icon(
+                      widget.iconData,
+                      size: 25,
+                      color: widget.color ?? Theme.of(context).iconTheme.color,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 5,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 4),
+                    child: Text(
+                      Functions.abbreviateNumber(widget.count ?? 0,
+                          hideLess: true),
+                      maxLines: 1,
+                      style: TextStyle(
+                          fontSize: 18,
+                          height: 1,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Stark Sans'),
+                    ),
+                  )
+                ],
               ),
-              Text(
-                Functions.abbreviateNumber(widget.count ?? 0, hideLess: true),
-                maxLines: 1,
-                style: TextStyle(
-                    fontSize: 11,
-                    height: 1,
-                    fontWeight: FontWeight.w800,
-                    fontFamily: 'Stark Sans'),
-              )
-            ],
-          ),
-        ),
+            )),
       ),
       // if (widget.count != null)
     );
+  }
+}
+
+typedef void OnWidgetSizeChange(Size size);
+
+class MeasureSizeRenderObject extends RenderProxyBox {
+  Size oldSize;
+  final OnWidgetSizeChange onChange;
+
+  MeasureSizeRenderObject(this.onChange);
+
+  @override
+  void performLayout() {
+    super.performLayout();
+
+    Size newSize = child.size;
+    if (oldSize == newSize) return;
+
+    oldSize = newSize;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      onChange(newSize);
+    });
+  }
+}
+
+class MeasureSize extends SingleChildRenderObjectWidget {
+  final OnWidgetSizeChange onChange;
+
+  const MeasureSize({
+    Key key,
+    @required this.onChange,
+    @required Widget child,
+  }) : super(key: key, child: child);
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return MeasureSizeRenderObject(onChange);
   }
 }

@@ -1,5 +1,6 @@
 // Flutter imports:
 import 'package:blue/services/preferences_update.dart';
+import 'package:blue/widgets/bottom_sheet.dart';
 import 'package:blue/widgets/dialogs/empty_dialog.dart';
 import 'package:flutter/material.dart';
 
@@ -27,6 +28,40 @@ class _ExploreScreenState extends State<ExploreScreen>
         AutomaticKeepAliveClientMixin<ExploreScreen>,
         TickerProviderStateMixin {
   List<Post> posts = [];
+  showTagsSheet() {
+    showSheet(
+      context,
+      TagsWrap(),
+      Material(
+        child: Container(
+          height: 54,
+          width: MediaQuery.of(context).size.width,
+          child: Row(
+            children: <Widget>[
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                child: Text('Tags You Follow',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    )),
+              ),
+              Expanded(
+                child: Container(),
+              ),
+              IconButton(
+                  icon: Icon(Icons.keyboard_arrow_down,
+                      size: 28, color: Theme.of(context).iconTheme.color),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  })
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget tabView;
   List<Tab> topicTabs = [
@@ -176,15 +211,6 @@ class _ExploreScreenState extends State<ExploreScreen>
     super.initState();
   }
 
-  showTagsSheet() {
-    showModalBottomSheet(
-        context: context,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
-        ),
-        builder: (context) => TagsWrap());
-  }
-
   List _rows = [];
 
   getTopics() async {
@@ -243,7 +269,7 @@ class _ExploreScreenState extends State<ExploreScreen>
             title: Padding(
               padding: const EdgeInsets.only(left: 10),
               child: Text(
-                'Explore',
+                'EXPLORE',
                 style: TextStyle(
                     fontSize: 24,
                     fontFamily: 'Techna Sans Regular',
@@ -251,14 +277,18 @@ class _ExploreScreenState extends State<ExploreScreen>
               ),
             ),
             actions: [
-              // IconButton(
-              //     icon: Icon(
-              //       FlutterIcons.search_oct,
-              //     ),
-              //     onPressed: () {
-              //       Navigator.of(context).pushNamed(SearchScreen.routeName);
-              //     },
-              //     color: Theme.of(context).iconTheme.color),
+              Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: IconButton(
+                  icon: Icon(
+                    FluentIcons.add_24_regular,
+                    size: 27,
+                  ),
+                  onPressed: () {
+                    showTagsSheet();
+                  },
+                ),
+              ),
             ],
           ),
         ),
@@ -352,16 +382,16 @@ class _ExploreScreenState extends State<ExploreScreen>
             ),
             loading
                 ? Container(
-                    height: 0,
+                    height: 35,
                     color: Theme.of(context).backgroundColor,
                   )
                 : Container(
-                    height: 35,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: Theme.of(context).backgroundColor,
                     ),
                     padding:
-                        EdgeInsets.only(left: 8, right: 8, bottom: 4, top: 2),
+                        EdgeInsets.only(left: 8, right: 8, bottom: 0, top: 2),
                     child: TabBar(
                         onTap: (i) {
                           if (i != t.length + 1) {
@@ -372,13 +402,11 @@ class _ExploreScreenState extends State<ExploreScreen>
                             reorder(_onReorder);
                           }
                         },
-                        indicatorColor: Theme.of(context).accentColor,
-                        indicatorWeight: 0,
+                        indicatorColor: Theme.of(context).iconTheme.color,
+                        indicatorWeight: 2,
                         isScrollable: true,
-                        labelPadding: EdgeInsets.only(left: 5, right: 5),
-                        indicator: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: Theme.of(context).backgroundColor),
+                        labelPadding: EdgeInsets.only(
+                            left: 5, right: 5, bottom: 0, top: 0),
                         indicatorSize: TabBarIndicatorSize.label,
                         controller: tabController,
                         labelColor: Theme.of(context).iconTheme.color,

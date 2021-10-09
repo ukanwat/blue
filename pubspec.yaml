@@ -11,7 +11,7 @@ description: A new Flutter project.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.1.13+35
+version: 1.1.15+37
 
 environment:
   sdk: ">=2.9.0 <3.0.0"
@@ -124,6 +124,8 @@ dependencies:
   scroll_app_bar: ^2.0.0
   clipboard: ^0.1.3
   any_base: ^2.0.0
+  pull_to_refresh_notification: ^2.2.0
+  animated_text_kit: ^4.2.1
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
@@ -168,7 +170,6 @@ flutter:
    - assets/images/GIPHY_light.png
    - assets/images/GIPHY_dark.png
    - assets/images/Earth and Moon.svg
-   - assets/images/Bad Gateway.svg
    - assets/images/No messages.svg
    - assets/images/Welcome.svg
    - assets/images/Message Sent.svg
@@ -181,6 +182,11 @@ flutter:
    - assets/images/present.png
    - assets/logo.png
    - assets/stark-wg.png
+   - assets/gifs/1.gif
+   - assets/gifs/2.gif
+   - assets/gifs/3.gif
+   - assets/gifs/4.gif
+   - assets/gifs/5.gif
   #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

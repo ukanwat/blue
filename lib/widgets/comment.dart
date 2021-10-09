@@ -436,20 +436,11 @@ class _CommentState extends State<Comment> {
                   ),
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(8),
-                      ),
+                      border: Border(
+                          left: BorderSide(
+                              width: 2,
+                              color: Theme.of(context).iconTheme.color)),
                       color: Theme.of(context).canvasColor,
-                      boxShadow: [
-                        BoxShadow(
-                          color:
-                              Theme.of(context).iconTheme.color == Colors.white
-                                  ? Colors.black
-                                  : Colors.grey[400],
-                          offset: Offset(0.0, 1.0), //(x,y)
-                          blurRadius: 2,
-                        ),
-                      ],
                     ),
 
                     margin: EdgeInsets.only(left: 14, top: 3),

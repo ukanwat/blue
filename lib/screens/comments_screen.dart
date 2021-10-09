@@ -581,16 +581,26 @@ class _CommentsState extends State<Comments>
                                           });
                                         } else if (value.commentState['type'] ==
                                             'reply') {
+                                          int commenterId =
+                                              await Hasura.getUserId();
+                                          if (!kReleaseMode) {
+                                            if (fakeId.text != '' &&
+                                                fakeId.text != null) {
+                                              commenterId =
+                                                  int.parse(fakeId.text);
+                                            }
+                                          }
                                           if (value.commentState['referName'] !=
                                               null) {
                                             val =
                                                 await Hasura.insertCommentReply(
-                                              widget.post.postId,
-                                              value.commentState['commentId'],
-                                              commentsController.text,
-                                              value.commentState['createdAt'],
-                                              value.commentState['commenterId'],
-                                            );
+                                                    widget.post.postId,
+                                                    value.commentState[
+                                                        'commentId'],
+                                                    commentsController.text,
+                                                    value.commentState[
+                                                        'createdAt'],
+                                                    commenterId);
                                           } else {
                                             setState(() {
                                               commenting = false;

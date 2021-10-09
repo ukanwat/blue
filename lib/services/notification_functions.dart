@@ -27,8 +27,12 @@ class NotifFunctions {
 
   static goToPost(int postId, BuildContext context) async {
     dynamic doc = await Hasura.getPost(postId);
-    Navigator.pushNamed(context, CommentsScreen.routeName,
-        arguments: {'post': Post.fromDocument(doc)});
+    Navigator.pushNamed(context, CommentsScreen.routeName, arguments: {
+      'post': Post.fromDocument(
+        doc,
+        commentsShown: true,
+      )
+    });
   }
 
   static goToCommentReply(int commentReplyId, BuildContext context) async {

@@ -355,6 +355,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       child: FutureBuilder(
         future: futur(),
         builder: (context, snapshot) {
+          print(snapshot.data);
           if (!snapshot.hasData) {
             return Container(height: 200, child: circularProgress());
           }
@@ -1568,6 +1569,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             },
             body: RefreshIndicator(
               color: Theme.of(context).accentColor,
+              edgeOffset: 74,
               onRefresh: () async {
                 setState(() {
                   posts = [];

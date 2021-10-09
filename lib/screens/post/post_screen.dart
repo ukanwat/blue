@@ -4,6 +4,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:blue/constants/app_colors.dart';
+import 'package:blue/constants/ints.dart';
+import 'package:blue/widgets/button.dart';
 // Flutter imports:
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -64,7 +66,7 @@ class _PostScreenState extends State<PostScreen> {
   //limits
   int lvid = 1;
   int limg = 10;
-  int ltxt = 1000;
+  int ltxt = Ints.maxChar;
   int llnk = 5;
   //count
   int cvid = 0;
@@ -373,13 +375,12 @@ class _PostScreenState extends State<PostScreen> {
           thumbIndex = i;
           _thumbContent = ThumbContent.text;
         }
-        firestoreContents['$x'] =
-            contentsData[i]['content'].text.replaceAll('\n', "\\n");
+        firestoreContents['$x'] = contentsData[i]['content']
+            .text
+            .replaceAll("\n", "\\n")
+            .replaceAll('\"', '\\\"')
+            .replaceAll('"', "'");
 
-        firestoreContents['$x'] = firestoreContents['$x']
-            .replaceAll('\'', '\\\'')
-            .replaceAll('\"', '\\\"');
-        print(firestoreContents['$x']);
         firestoreContentsInfo['$x'] = contentsData[i]['info'];
         x++;
       } else if (contentsData[i]['info']['type'] == 'image') {
@@ -442,8 +443,16 @@ class _PostScreenState extends State<PostScreen> {
       thumbImg = contentsData[thumbIndex]['content'];
     } else if (_thumbContent == ThumbContent.link) {
       Client client = Client();
-      final response =
-          await client.get(Uri.parse(contentsData[thumbIndex]['content'].text));
+      var response;
+      try {
+        response = await client
+            .get(Uri.parse(contentsData[thumbIndex]['content'].text));
+      } catch (e) {
+        snackbar('Invalid Link Url. Please check your post again', context);
+
+        Navigator.pop(context);
+        return;
+      }
       var scrape = TwitterCardsScraper(
           body: response.body, url: contentsData[thumbIndex]['content'].text);
       final info = scrape.scrape();
@@ -871,7 +880,7 @@ class _PostScreenState extends State<PostScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         child: Icon(
-                          FluentIcons.settings_16_filled,
+                          FluentIcons.re_order_16_filled,
                           size: 18,
                           color: Colors.grey,
                         ))),
@@ -891,13 +900,34 @@ class _PostScreenState extends State<PostScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 6),
                       child: Icon(
-                        FluentIcons.settings_16_filled,
+                        FluentIcons.re_order_16_filled,
                         size: 18,
                         color: Colors.grey,
                       ))),
             ],
           ));
         }
+      } else if (contentsData[i]['info']['type'] == 'link') {
+        _contents.add(Stack(
+          alignment: Alignment.topRight,
+          children: [
+            Padding(
+              child: contentsData[i]['widget'],
+              padding: EdgeInsets.only(top: 6),
+            ),
+            GestureDetector(
+                onTap: () {
+                  showContentSettingsSheet(i + 1);
+                },
+                child: Padding(
+                    padding: const EdgeInsets.only(right: 14, bottom: 12),
+                    child: Icon(
+                      FluentIcons.re_order_16_filled,
+                      size: 18,
+                      color: Colors.grey,
+                    ))),
+          ],
+        ));
       } else {
         _contents.add(GestureDetector(
             onLongPress: () {
@@ -935,120 +965,119 @@ class _PostScreenState extends State<PostScreen> {
       backgroundColor: Theme.of(context).backgroundColor,
       appBar: AppBar(
           elevation: 0.5,
-          leading: IconButton(
-              icon: Icon(
-                Icons.clear,
-              ),
-              onPressed: () {
-                if (isDrafted || contentsData.length == 0) {
-                  Navigator.pop(context);
-                } else {
-                  List<dynamic> _checkContentsData = contentsData;
-                  bool containsVideo = false;
-                  _checkContentsData.forEach((d) {
-                    if (d['info']['type'] == 'video') {
-                      containsVideo = true;
-                    }
-                  });
+          leading: BoxButton(
+            Icon(
+              Icons.clear,
+            ),
+            () {
+              if (isDrafted || contentsData.length == 0) {
+                Navigator.pop(context);
+              } else {
+                List<dynamic> _checkContentsData = contentsData;
+                bool containsVideo = false;
+                _checkContentsData.forEach((d) {
+                  if (d['info']['type'] == 'video') {
+                    containsVideo = true;
+                  }
+                });
 
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) => ShowDialog(
-                      title: "Save as Draft",
-                      description: containsVideo
-                          ? "Drafts currently do not support video content. Do you want to save your work as Draft without the video?"
-                          : "Do you want to save your work as Draft?",
-                      topButtonText: "Save Draft",
-                      middleButtonText: "Cancel",
-                      topButtonFunction: () async {
-                        List<dynamic> _modifiedContentsData = contentsData;
-                        int _i = 0;
-                        _modifiedContentsData.forEach((d) {
-                          if (d['info']['type'] == 'video') {
-                            _modifiedContentsData.removeAt(_i);
-                          } else
-                            _i++;
-                        });
-                        Directory appDocDir;
-                        appDocDir = await getApplicationDocumentsDirectory();
-                        await Directory(appDocDir.path + '/posts/$postId')
-                            .create(recursive: true);
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) => ShowDialog(
+                    title: "Save as Draft",
+                    description: containsVideo
+                        ? "Drafts currently do not support video content. Do you want to save your work as Draft without the video?"
+                        : "Do you want to save your work as Draft?",
+                    topButtonText: "Save Draft",
+                    middleButtonText: "Cancel",
+                    topButtonFunction: () async {
+                      List<dynamic> _modifiedContentsData = contentsData;
+                      int _i = 0;
+                      _modifiedContentsData.forEach((d) {
+                        if (d['info']['type'] == 'video') {
+                          _modifiedContentsData.removeAt(_i);
+                        } else
+                          _i++;
+                      });
+                      Directory appDocDir;
+                      appDocDir = await getApplicationDocumentsDirectory();
+                      await Directory(appDocDir.path + '/posts/$postId')
+                          .create(recursive: true);
 
-                        // Directory(_storageInfo[0].rootDir + '/MyCreatedFolder').create();
-                        for (int i = 0; i < _modifiedContentsData.length; i++) {
-                          _modifiedContentsData[i].remove('widget');
-                          switch (_modifiedContentsData[i]['info']['type']) {
-                            case 'image':
-                              final _fileName = Path.basename(
-                                  _modifiedContentsData[i]['content'].path);
-                              String _path =
-                                  appDocDir.path + '/posts/$postId/$_fileName';
-                              await _modifiedContentsData[i]['content']
-                                  .copy(_path);
-                              _modifiedContentsData[i]['content'] = _path;
-                              break;
-                            // case 'video':
-                            //   // final _fileName = Path.basename(
-                            //   //     _modifiedContentsData[i]['content'].path);
-                            //   // String _path =
-                            //   //     appDocDir.path + '/posts/$postId/$_fileName';
-                            //   // await _modifiedContentsData[i]['content']
-                            //   //     .copy(_path);
-                            //   // _modifiedContentsData[i]['content'] = _path;
-                            //   break;
-                            case 'carousel':
-                              String _path = appDocDir.path + '/posts/$postId';
-                              List _paths = [];
-                              for (int f = 0;
-                                  f <
-                                      _modifiedContentsData[i]['content']
-                                          .length;
-                                  f++) {
-                                var _fileName = Path.basename(
-                                    _modifiedContentsData[i]['content'][f]
-                                        .path);
-                                await _modifiedContentsData[i]['content'][f]
-                                    .copy(_path + '/$_fileName');
-                                _paths.add(_path + '/$_fileName');
-                              }
-                              _modifiedContentsData[i]['content'] = _paths;
-                              break;
-                            case 'text':
-                              _modifiedContentsData[i]['content'] =
-                                  contentsData[i]['content'].text;
-                              break;
-                            case 'link':
-                              _modifiedContentsData[i]['content'] =
-                                  contentsData[i]['content'].text;
-                              break;
-                            default:
-                          }
+                      // Directory(_storageInfo[0].rootDir + '/MyCreatedFolder').create();
+                      for (int i = 0; i < _modifiedContentsData.length; i++) {
+                        _modifiedContentsData[i].remove('widget');
+                        switch (_modifiedContentsData[i]['info']['type']) {
+                          case 'image':
+                            final _fileName = Path.basename(
+                                _modifiedContentsData[i]['content'].path);
+                            String _path =
+                                appDocDir.path + '/posts/$postId/$_fileName';
+                            await _modifiedContentsData[i]['content']
+                                .copy(_path);
+                            _modifiedContentsData[i]['content'] = _path;
+                            break;
+                          // case 'video':
+                          //   // final _fileName = Path.basename(
+                          //   //     _modifiedContentsData[i]['content'].path);
+                          //   // String _path =
+                          //   //     appDocDir.path + '/posts/$postId/$_fileName';
+                          //   // await _modifiedContentsData[i]['content']
+                          //   //     .copy(_path);
+                          //   // _modifiedContentsData[i]['content'] = _path;
+                          //   break;
+                          case 'carousel':
+                            String _path = appDocDir.path + '/posts/$postId';
+                            List _paths = [];
+                            for (int f = 0;
+                                f < _modifiedContentsData[i]['content'].length;
+                                f++) {
+                              var _fileName = Path.basename(
+                                  _modifiedContentsData[i]['content'][f].path);
+                              await _modifiedContentsData[i]['content'][f]
+                                  .copy(_path + '/$_fileName');
+                              _paths.add(_path + '/$_fileName');
+                            }
+                            _modifiedContentsData[i]['content'] = _paths;
+                            break;
+                          case 'text':
+                            _modifiedContentsData[i]['content'] =
+                                contentsData[i]['content'].text;
+                            break;
+                          case 'link':
+                            _modifiedContentsData[i]['content'] =
+                                contentsData[i]['content'].text;
+                            break;
+                          default:
                         }
+                      }
 
-                        Boxes.draftBox.add({
-                          'title': titleController.text,
-                          'contentsData': _modifiedContentsData,
-                          'postId': postId
-                        });
-                        Navigator.of(context).pop();
-                        Navigator.of(context).pop();
-                      },
-                      middleButtonFunction: () {
-                        Navigator.of(context).pop();
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  );
-                }
-              }),
+                      Boxes.draftBox.add({
+                        'title': titleController.text,
+                        'contentsData': _modifiedContentsData,
+                        'postId': postId
+                      });
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pop();
+                    },
+                    middleButtonFunction: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                );
+              }
+            },
+            margin: 8,
+          ),
           centerTitle: true,
           title: Card(
               margin: EdgeInsets.symmetric(vertical: 10),
-              elevation: 1,
+              elevation: 0,
               semanticContainer: false,
-              color: Theme.of(context).backgroundColor,
+              color: Theme.of(context).cardColor,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25)),
+                  borderRadius: BorderRadius.circular(10)),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
@@ -1056,7 +1085,7 @@ class _PostScreenState extends State<PostScreen> {
                     child: IconButton(
                       splashRadius: 22,
                       icon: Icon(
-                        FlutterIcons.image_fea,
+                        FluentIcons.image_24_filled,
                       ),
                       onPressed: () {
                         if (cimg >= limg) {
@@ -1078,7 +1107,7 @@ class _PostScreenState extends State<PostScreen> {
                     splashRadius: 22,
                     padding: EdgeInsets.only(top: 2),
                     icon: Icon(
-                      FlutterIcons.video_fea,
+                      FluentIcons.video_24_filled,
                       size: 25.5,
                     ),
                     onPressed: () {
@@ -1097,9 +1126,7 @@ class _PostScreenState extends State<PostScreen> {
                   ),
                   IconButton(
                       splashRadius: 22,
-                      icon: Icon(
-                        FlutterIcons.text_ent,
-                      ),
+                      icon: Icon(FluentIcons.text_24_filled),
                       onPressed: () {
                         TextEditingController textController =
                             TextEditingController();
@@ -1125,8 +1152,8 @@ class _PostScreenState extends State<PostScreen> {
                   IconButton(
                       splashRadius: 22,
                       icon: Icon(
-                        FlutterIcons.link_fea,
-                        size: 21,
+                        FluentIcons.link_square_24_filled,
+                        size: 24,
                       ),
                       onPressed: () {
                         if (clnk >= llnk) {
@@ -1148,23 +1175,37 @@ class _PostScreenState extends State<PostScreen> {
                 ],
               )),
           actions: <Widget>[
-            IconButton(
-              onPressed: () async {
+            BoxButton(
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 3),
+                child: Icon(FluentIcons.chevron_right_12_filled,
+                    color: AppColors.blue, size: 24),
+              ),
+              () async {
                 settingsState = await Navigator.of(context)
                     .pushNamed(SelectTopicScreen.routeName, arguments: {
                   'post-function': handleSubmit,
                   'state': settingsState
                 });
               },
-              icon: Icon(
-                FlutterIcons.ios_arrow_forward_ion,
-                color: AppColors.blue,
-                size: 30,
-              ),
-            )
+              margin: 8,
+            ),
+            // IconButton(
+            //   onPressed: () async {
+            //     settingsState = await Navigator.of(context)
+            //         .pushNamed(SelectTopicScreen.routeName, arguments: {
+            //       'post-function': handleSubmit,
+            //       'state': settingsState
+            //     });
+            //   },
+            //   icon: Icon(
+            //     FlutterIcons.ios_arrow_forward_ion,
+            //     color: AppColors.blue,
+            //     size: 30,
+            //   ),
+            // )
           ],
-          backgroundColor: Theme.of(context).canvasColor //TODO blue gradient
-          ),
+          backgroundColor: Theme.of(context).backgroundColor),
       body: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1231,9 +1272,13 @@ class _PostScreenState extends State<PostScreen> {
                                     fontSize: 18, fontWeight: FontWeight.w500),
                                 maxLines: 1,
                                 minLines: 1,
+                                maxLength: 200,
                                 controller: titleController,
                                 decoration: InputDecoration(
-                                  hintText: "Some Title...",
+                                  counter: Container(
+                                    height: 0,
+                                  ),
+                                  hintText: "(Limited to 200 characters)",
                                   hintStyle: TextStyle(
                                       color: Theme.of(context)
                                           .iconTheme
@@ -1528,6 +1573,21 @@ Repeatedly posting the same content, posting something incomprehensible (like ju
           physics: NeverScrollableScrollPhysics(),
           shrinkWrap: true,
           itemBuilder: (_, i) {
+            Icon icon;
+            switch (functions.keys.elementAt(i)) {
+              case 'Camera':
+                icon = Icon(FluentIcons.camera_24_regular);
+                break;
+              case 'Device':
+                icon = Icon(FluentIcons.storage_24_regular);
+                break;
+              case 'Multiple':
+                icon = Icon(FluentIcons.image_multiple_24_regular);
+                break;
+              default:
+                icon = Icon(FluentIcons.add_24_regular);
+                break;
+            }
             return InkWell(
               onTap: () {
                 Navigator.of(context).pop();
@@ -1541,9 +1601,20 @@ Repeatedly posting the same content, posting something incomprehensible (like ju
                         : Border(
                             bottom:
                                 BorderSide(width: 0.3, color: Colors.grey))),
-                child: Text(
-                  functions.keys.elementAt(i),
-                  style: TextStyle(fontSize: 18),
+                child: Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      icon,
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Text(
+                        functions.keys.elementAt(i),
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ],
+                  ),
                 ),
                 padding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
               ),
@@ -1682,7 +1753,8 @@ class _TextDisplayWidgetState extends State<TextDisplayWidget> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          limitIconBox(Icons.text_fields, '1000\nchars'),
+                          limitIconBox(
+                              Icons.text_fields, '${Ints.maxChar}\nchars'),
                           SizedBox(
                             width: 10,
                           ),
@@ -1713,7 +1785,7 @@ class _TextDisplayWidgetState extends State<TextDisplayWidget> {
   @override
   Widget build(BuildContext context) {
     widget.onTextSelect();
-    if ((500 + widget.textController.text.length - textLength) < 0 &&
+    if ((Ints.maxChar + widget.textController.text.length - textLength) < 0 &&
         widget.textController.text.length == 0) {
       showLimits(context);
       return Container();
@@ -1724,14 +1796,16 @@ class _TextDisplayWidgetState extends State<TextDisplayWidget> {
           controller: widget.textController,
           focusNode: widget.textFocusNode,
           keyboardType: TextInputType.multiline,
-          maxLength: 500 + widget.textController.text.length - textLength,
+          maxLength:
+              Ints.maxChar + widget.textController.text.length - textLength,
           decoration: InputDecoration(
               counter: Container(),
               hintText: 'Something...',
               border: InputBorder.none),
           maxLines: null,
           onChanged: (c) {
-            if (500 + widget.textController.text.length - textLength == 0) {}
+            if (Ints.maxChar + widget.textController.text.length - textLength ==
+                0) {}
           },
           onTap: () {
             setState(() {

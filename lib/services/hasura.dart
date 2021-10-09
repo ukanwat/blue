@@ -1146,6 +1146,10 @@ __typename
         userId = fakeId;
       }
     }
+    comment = comment
+        .replaceAll("\n", "\\n")
+        .replaceAll('\'', '\\\'')
+        .replaceAll('\"', '\\\"');
 
     String doc = """mutation{
   insert_comments_one(object:{data:"$comment",post_id:$postId,user_id:$userId,}){
@@ -1187,9 +1191,8 @@ __typename
 
   static insertCommentReply(dynamic postId, int commentId, String text,
       String createdAt, int commenterId) async {
-    int userId = await getUserId();
     String doc = """mutation{
-  insert_comment_replies_one(object:{comment_id:$commentId,user_id:$userId,data:"$text", }){                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+  insert_comment_replies_one(object:{comment_id:$commentId,user_id:$commenterId,data:"$text", }){                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
     user{
         avatar_url
         username
@@ -1227,7 +1230,7 @@ __typename
       dynamic postId, int offset, int limit, CommentSort sort) async {
     String sortString;
     if (sort == CommentSort.best) {
-      sortString = "upvotes:desc";
+      sortString = "score:desc";
     } else if (sort == CommentSort.top) {
       sortString = "upvotes:desc";
     } else if (sort == CommentSort.oldest) {

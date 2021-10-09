@@ -104,10 +104,15 @@ void main() async {
   Hive.registerAdapter<HivePost>(HivePostAdapter());
   bool dark = PreferencesUpdate().getBool('theme') == true;
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.black.withOpacity(0),
-      systemNavigationBarDividerColor: Colors.black,
-      systemNavigationBarColor: AppColors.navBar,
-      systemNavigationBarIconBrightness: Brightness.light));
+      statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: Brightness.light,
+      statusBarColor: Colors.transparent,
+      systemNavigationBarColor:
+          dark ? AppColors.navBarDark : AppColors.navBarLight,
+      systemNavigationBarDividerColor:
+          dark ? AppColors.navBarDark : AppColors.navBarLight,
+      systemNavigationBarIconBrightness:
+          dark ? Brightness.light : Brightness.dark));
   runApp(MyApp());
 }
 

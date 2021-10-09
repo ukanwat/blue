@@ -30,15 +30,18 @@ class ThemeNotifier extends ChangeNotifier {
                 Brightness.dark)) ||
         (value == true);
     AppColors.blue = dark ? AppColors.blueDark : AppColors.blueLight;
+    AppColors.navBar =
+        _darkTheme ? AppColors.navBarDark : AppColors.navBarLight;
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
         statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
         statusBarBrightness: Brightness.light,
         statusBarColor: Colors.transparent,
         systemNavigationBarColor:
-            dark ? Color.fromRGBO(25, 25, 25, 1) : Colors.black,
+            dark ? AppColors.navBarDark : AppColors.navBarLight,
         systemNavigationBarDividerColor:
-            dark ? Color.fromRGBO(25, 25, 25, 1) : Colors.black,
-        systemNavigationBarIconBrightness: Brightness.light));
+            dark ? AppColors.navBarDark : AppColors.navBarLight,
+        systemNavigationBarIconBrightness:
+            dark ? Brightness.light : Brightness.dark));
     _saveToPrefs();
     notifyListeners();
   }
@@ -54,16 +57,16 @@ class ThemeNotifier extends ChangeNotifier {
 
     AppColors.blue = _darkTheme ? AppColors.blueDark : AppColors.blueLight;
     AppColors.navBar =
-        _darkTheme ? Color.fromRGBO(25, 25, 25, 1) : Colors.black;
+        _darkTheme ? AppColors.navBarDark : AppColors.navBarLight;
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
         statusBarIconBrightness:
             _darkTheme ? Brightness.light : Brightness.dark,
         statusBarBrightness: Brightness.light,
         statusBarColor: Colors.transparent,
         systemNavigationBarColor:
-            _darkTheme ? Color.fromRGBO(25, 25, 25, 1) : Colors.black,
+            _darkTheme ? AppColors.navBarDark : AppColors.navBarLight,
         systemNavigationBarDividerColor:
-            _darkTheme ? Color.fromRGBO(25, 25, 25, 1) : Colors.black,
+            _darkTheme ? AppColors.navBarDark : AppColors.navBarLight,
         systemNavigationBarIconBrightness: Brightness.light));
     notifyListeners();
   }

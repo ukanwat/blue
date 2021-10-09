@@ -158,10 +158,24 @@ class _RewardsScreenState extends State<RewardsScreen> {
                       ),
                       amount == 0
                           ? Container(height: 60, child: circularProgress())
-                          : Text(
-                              '\$${amount > 75 ? '75' : amount.toString()}',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 50),
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '${amount > 75 ? '75' : amount.toString()}' +
+                                      '.00',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 50),
+                                ),
+                                Text(
+                                  'USD',
+                                  style: TextStyle(
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 30),
+                                ),
+                              ],
                             ),
                       TextButton(
                         style: TextButton.styleFrom(
@@ -173,7 +187,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
                                 borderRadius: BorderRadius.circular(20))),
                         onPressed: () {
                           snackbar(
-                              'Your Account Balance must be atleast \$80 to withdraw.',
+                              'Your Account Balance must be atleast \$100 to withdraw.',
                               context);
                         },
                         child: Text(
@@ -191,7 +205,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  'You received \$5 as a signup reward',
+                  'You have received \$5 as a signup reward',
                   style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
                 ),
               ),

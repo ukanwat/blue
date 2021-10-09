@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:blue/widgets/button.dart';
 import 'package:blue/widgets/settings_widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -128,30 +129,61 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(50),
+        preferredSize: Size.fromHeight(55),
         child: AppBar(
-          elevation: 0,
+          elevation: 0.5,
           centerTitle: true,
-          backgroundColor: Theme.of(context).canvasColor,
+          backgroundColor: Theme.of(context).backgroundColor,
           title: Text(
             'Post Settings',
-            style: TextStyle(),
+            style: TextStyle(
+                fontWeight: FontWeight.w600, fontFamily: 'Stark Sans'),
           ),
-          leading: IconButton(
-            icon: Icon(FlutterIcons.ios_arrow_back_ion,
-                size: 30, color: Theme.of(context).primaryColor),
-            onPressed: () {
+          leading: BoxButton(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+              child: Icon(FluentIcons.chevron_left_12_filled,
+                  size: 24, color: Theme.of(context).primaryColor),
+            ),
+            () {
               Navigator.pop(context, {
                 'selectedTopicTile': selectedTopicTile,
                 'tags': tags,
                 'explicit': explicit
               });
             },
-            color: Colors.grey,
+            margin: 8,
           ),
+
+          // IconButton(
+          //   icon: Icon(FlutterIcons.ios_arrow_back_ion,
+          //       size: 30, color: Theme.of(context).primaryColor),
+          //   onPressed: () {
+          //     Navigator.pop(context, {
+          //       'selectedTopicTile': selectedTopicTile,
+          //       'tags': tags,
+          //       'explicit': explicit
+          //     });
+          //   },
+          //   color: Colors.grey,
+          // ),
           actions: <Widget>[
-            FlatButton(
-              onPressed: () {
+            BoxButton(
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    'Post',
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: selectedTopicTile == null
+                            ? Colors.grey
+                            : Theme.of(context).primaryColor),
+                  ),
+                ),
+              ),
+              () {
                 if (selectedTopicTile != null) {
                   setState(() {
                     showDialog(
@@ -228,18 +260,101 @@ class _SelectTopicScreenState extends State<SelectTopicScreen> {
                   });
 
                   postData['post-function'](selectedTopicTile, tags, explicit);
-                }
+                } else
+                  snackbar('Select a category', context);
               },
-              child: Text(
-                'Post',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: selectedTopicTile == null
-                        ? Colors.grey
-                        : Theme.of(context).primaryColor),
-              ),
-            ),
+              margin: 8,
+            )
+            // FlatButton(
+            //   onPressed: () {
+            //     if (selectedTopicTile != null) {
+            //       setState(() {
+            //         showDialog(
+            //             barrierDismissible: !kReleaseMode,
+            //             // useRootNavigator: false,
+            //             context: context,
+            //             builder: (BuildContext context) => WillPopScope(
+            //                   onWillPop: () async {
+            //                     return !kReleaseMode;
+            //                   },
+            //                   child: Dialog(
+            //                     insetPadding: EdgeInsets.symmetric(
+            //                         horizontal:
+            //                             MediaQuery.of(context).size.width / 2 -
+            //                                 64),
+            //                     shape: RoundedRectangleBorder(
+            //                       borderRadius: BorderRadius.circular(15),
+            //                     ),
+            //                     elevation: 0.0,
+            //                     backgroundColor: Colors.transparent,
+            //                     child: Container(
+            //                       padding: EdgeInsets.symmetric(
+            //                           vertical: 18, horizontal: 12),
+            //                       decoration: new BoxDecoration(
+            //                         color: Theme.of(context).canvasColor,
+            //                         shape: BoxShape.rectangle,
+            //                         borderRadius: BorderRadius.circular(15),
+            //                         boxShadow: [
+            //                           BoxShadow(
+            //                             color: Colors.black26,
+            //                             blurRadius: 10.0,
+            //                             offset: const Offset(0.0, 10.0),
+            //                           ),
+            //                         ],
+            //                       ),
+            //                       child: Column(
+            //                         mainAxisSize: MainAxisSize.min,
+            //                         children: <Widget>[
+            //                           Padding(
+            //                             padding:
+            //                                 const EdgeInsets.only(bottom: 16),
+            //                             child: Icon(
+            //                               FluentIcons.arrow_circle_up_24_filled,
+            //                               size: 40,
+            //                             ),
+            //                           ),
+            //                           Container(
+            //                             height: 4,
+            //                             width:
+            //                                 MediaQuery.of(context).size.width -
+            //                                     140,
+            //                             decoration: BoxDecoration(
+            //                                 borderRadius:
+            //                                     BorderRadius.circular(10)),
+            //                             child: LinearProgressIndicator(
+            //                               valueColor:
+            //                                   AlwaysStoppedAnimation<Color>(
+            //                                       AppColors.blue),
+            //                               backgroundColor: Colors.transparent,
+            //                             ),
+            //                           ),
+            //                           SizedBox(height: 10),
+            //                           Text(
+            //                             'Submitting',
+            //                             style: TextStyle(
+            //                                 fontWeight: FontWeight.w600,
+            //                                 fontSize: 13),
+            //                           ),
+            //                         ],
+            //                       ),
+            //                     ),
+            //                   ),
+            //                 ));
+            //       });
+
+            //       postData['post-function'](selectedTopicTile, tags, explicit);
+            //     }
+            //   },
+            //   child: Text(
+            //     'Post',
+            //     style: TextStyle(
+            //         fontSize: 20,
+            //         fontWeight: FontWeight.w600,
+            //         color: selectedTopicTile == null
+            //             ? Colors.grey
+            //             : Theme.of(context).primaryColor),
+            //   ),
+            // ),
           ],
         ),
       ),
