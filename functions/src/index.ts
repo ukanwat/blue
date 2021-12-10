@@ -106,9 +106,9 @@ export const notification = functions.https.onRequest(async (req, resp) => {
 const client = new graphqlReq.GraphQLClient('https://app.stark.social/v1/graphql', {
     headers: {
         "content-type": "application/json",
-        "x-hasura-admin-secret": "Tay13Utk12",
+        "x-hasura-admin-secret": "Taylorswift13",
     },
-})
+}) 
 
 exports.PostsCron = functions.pubsub.schedule('*/5 * * * *')
     .timeZone('America/New_York') // Users can choose timezone - default is America/Los_Angeles

@@ -57,8 +57,9 @@ import '../services/go_to.dart';
 import '../services/hasura.dart';
 import './custom_image.dart';
 import 'package:linkfo/linkfo.dart';
-// import 'package:flick_video_player/flick_video_player.dart';
 
+// import 'package:flick_video_player/flick_video_player.dart';
+List<int> expandedPosts = [];
 enum CompactPostThumbnailType {
   video,
   image,
@@ -140,11 +141,16 @@ class Post extends StatefulWidget {
     Map data = {};
     List _tags = [];
     var list = doc['contents'];
+    if (list.runtimeType == String) {
+      list = json.decode(list);
+    }
+
     int i = 0;
     list.forEach((element) {
       data['$i'] = element['data'];
       i++;
     });
+    print(data);
     var tagDataList = doc['post_tags'];
     if (tagDataList != null) {
       tagDataList.forEach((element) {
@@ -170,7 +176,7 @@ class Post extends StatefulWidget {
       topicId: null,
       thumbUrl: doc['thumbnail'],
       contents: data,
-      contentsInfo: doc['contents'],
+      contentsInfo: list,
       upvotes: doc['upvote_count'],
       downvotes: doc['downvote_count'],
       votes: 0,
@@ -1206,7 +1212,11 @@ class _PostState extends State<Post> {
       isFollowing = true;
     }
     voteSet();
+    if (expandedPosts.contains(widget.postId)) {
+      showExpand = false;
+    }
 
+    expanded = false || expandedPosts.contains(widget.postId);
     super.initState();
   }
 
@@ -1371,6 +1381,7 @@ class _PostState extends State<Post> {
                                       bottom: 0,
                                       child: GestureDetector(
                                         onTap: () {
+                                          expandedPosts.add(postId);
                                           setState(() {
                                             expanded = true;
                                             showExpand = false;
@@ -1384,7 +1395,7 @@ class _PostState extends State<Post> {
                                                   colors: [
                                                 Theme.of(context)
                                                     .backgroundColor
-                                                    .withOpacity(0.5),
+                                                    .withOpacity(0.7),
                                                 Theme.of(context)
                                                     .backgroundColor,
                                               ],

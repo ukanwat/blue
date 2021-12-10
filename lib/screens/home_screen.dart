@@ -328,117 +328,35 @@ class _HomeScreenState extends State<HomeScreen>
         child: followingPosts
             ? FollowingPostsScreen()
             : Container(
-                child: Stack(
-                  children: [
-                    WidgetsVisibilityProvider(
-                      condition: (PositionData positionData) =>
-                          positionData.endPosition >= 0 &&
-                          positionData.startPosition <=
-                              positionData.viewportSize,
-                      child: Container(
-                          color: Theme.of(context).backgroundColor,
-                          child: RefreshIndicator(
-                            onRefresh: () => refreshPosts(),
-                            child: LazyLoadScrollView(
-                              isLoading: loaded,
-                              onEndOfPage: () {
-                                addItems();
-                              },
-                              child: ListView.builder(
-                                  controller: _scrollController,
-                                  itemCount: p.length + 1,
-                                  itemBuilder: (context, i) {
-                                    if (i == p.length) {
-                                      return Container(
-                                        color: Theme.of(context).canvasColor,
-                                        height: 120,
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                        child: loaded
-                                            ? Container()
-                                            : Container(
-                                                color: Theme.of(context)
-                                                    .backgroundColor,
-                                                child: Center(
-                                                    child: circularProgress()),
-                                              ),
-                                      );
-                                    }
-                                    return VisibleNotifierWidget(
-                                      data: i,
-                                      listener: (context, notification,
-                                          positionData) {
-                                        if (positionData != null) {
-                                          if (positionData.endPosition > 0 &&
-                                              positionData.startPosition <= 0) {
-                                            currOff = positionData.endPosition;
-                                          } else {}
-                                        }
-                                      },
-                                      child: p.elementAt(i),
-                                      condition: (
-                                        previousNotification,
-                                        previousPositionData,
-                                        currentNotification,
-                                        currentPositionData,
-                                      ) {
-                                        if (previousPositionData !=
-                                            currentPositionData) return true;
-                                        if (previousPositionData != null &&
-                                            currentPositionData != null)
-                                          return previousNotification !=
-                                              currentNotification;
-                                        return false;
-                                      },
-                                    );
-                                  }),
-                            ),
-                          )),
-                    ),
-                    Positioned(
-                        bottom: 6,
-                        left: 6,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: GestureDetector(
-                            onTap: () {
-                              double viewPort =
-                                  MediaQuery.of(context).size.height -
-                                      MediaQuery.of(context).padding.vertical;
-                              double initialOff = _scrollController.offset;
-                              _scrollController.animateTo(
-                                  currOff + 5 + initialOff,
-                                  duration: Duration(
-                                      milliseconds:
-                                          (300 * (currOff / viewPort).ceil()) <
-                                                  100
-                                              ? 100
-                                              : (300 *
-                                                  (currOff / viewPort).ceil())),
-                                  curve: Curves.easeInOut);
-                            },
-                            child: Container(
-                              height: 24,
-                              width: 24,
-                              decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Theme.of(context)
-                                      .backgroundColor
-                                      .withOpacity(0.5)),
-                              child: Icon(
-                                FluentIcons.chevron_down_16_filled,
-                                color: Theme.of(context)
-                                    .iconTheme
-                                    .color
-                                    .withOpacity(0.6),
-                                size: 24,
-                              ),
-                            ),
-                          ),
-                        ))
-                  ],
-                ),
-              ),
+                color: Theme.of(context).backgroundColor,
+                child: RefreshIndicator(
+                  onRefresh: () => refreshPosts(),
+                  child: LazyLoadScrollView(
+                    isLoading: loaded,
+                    onEndOfPage: () {
+                      addItems();
+                    },
+                    child: ListView.builder(
+                        controller: _scrollController,
+                        itemCount: p.length + 1,
+                        itemBuilder: (context, i) {
+                          if (i == p.length) {
+                            return Container(
+                              color: Theme.of(context).canvasColor,
+                              height: 120,
+                              width: MediaQuery.of(context).size.width,
+                              child: loaded
+                                  ? Container()
+                                  : Container(
+                                      color: Theme.of(context).backgroundColor,
+                                      child: Center(child: circularProgress()),
+                                    ),
+                            );
+                          }
+                          return p.elementAt(i);
+                        }),
+                  ),
+                )),
       ),
     );
   }

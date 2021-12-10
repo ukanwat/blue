@@ -1,4 +1,6 @@
 // Flutter imports:
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -444,7 +446,7 @@ class Hasura {
     if (jwtToken == null) return;
     var userId = await getUserId();
 
-    String subtitleText = subtitle == '' ? '' : 'subtitle:"$subtitle",';
+    String subtitleText = subtitle == '' ? '' : 'subtitle:$subtitle,';
     if (!kReleaseMode) {
       if (customUserId != null && customUserId != '') {
         try {
@@ -466,21 +468,22 @@ class Hasura {
     }
     title = title.replaceAll('\"', '\\\"');
     String _doc = tags == null
-        ? """mutation insertData  {
-  insert_posts_one(object: {contents: $contents,explicit:$explicit, owner_id: $userId,$subtitleText title: "$title", $topic $thumb}
+        ? """mutation insertData(\$content: jsonb!)  {
+  insert_posts_one(object: {contents: \$content,explicit:$explicit, owner_id: $userId,$subtitleText title: "$title", $topic $thumb}
         ) {
     post_id
   }
 }
 """
-        : """mutation{
-  insert_posts_one(object: {contents: $contents,explicit:$explicit,  owner_id: $userId,$subtitleText title: "$title", $topic post_tags: {data: [$tagsString]}, $thumb}) {
+        : """mutation insertData(\$content: jsonb!)  {
+  insert_posts_one(object: {contents: \$content,explicit:$explicit,  owner_id: $userId,$subtitleText title: "$title", $topic post_tags: {data: [$tagsString]}, $thumb}) {
     post_id
   }
 }
 """;
     print(_doc);
-    dynamic _data = await hasuraConnect.mutation(_doc);
+    dynamic _data = await hasuraConnect
+        .mutation(_doc, variables: {"content": json.encode(contents)});
   }
 
   static deletePost(int postId) async {

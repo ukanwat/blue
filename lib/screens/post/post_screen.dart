@@ -118,7 +118,7 @@ class _PostScreenState extends State<PostScreen> {
       img.width,
       img.height,
     );
-    return "\"$blurHash\"";
+    return blurHash;
   }
 
   handleTakePhoto() async {
@@ -309,7 +309,7 @@ class _PostScreenState extends State<PostScreen> {
       String _url = await FileStorage.upload(
           '$postId', 'carousel_$_imageId', file,
           bucket: 'user-posts');
-      downloadUrls.add("\"$_url\"");
+      downloadUrls.add(_url);
     }
     return downloadUrls;
   }
@@ -333,10 +333,7 @@ class _PostScreenState extends State<PostScreen> {
     List customContents = [];
     contents.forEach((key, value) {
       customContents.add(contentsInfo[key]);
-      customContents[int.parse(key)]['data'] =
-          contentsInfo[key]['type'] == 'carousel'
-              ? "$value"
-              : """\"$value\""""; //TODO
+      customContents[int.parse(key)]['data'] = value; //TODO
     });
     if (tags == {}) {
       tags = null;
@@ -375,11 +372,7 @@ class _PostScreenState extends State<PostScreen> {
           thumbIndex = i;
           _thumbContent = ThumbContent.text;
         }
-        firestoreContents['$x'] = contentsData[i]['content']
-            .text
-            .replaceAll("\n", "\\n")
-            .replaceAll('\"', '\\\"')
-            .replaceAll('"', "'");
+        firestoreContents['$x'] = contentsData[i]['content'].text;
 
         firestoreContentsInfo['$x'] = contentsData[i]['info'];
         x++;
@@ -416,10 +409,10 @@ class _PostScreenState extends State<PostScreen> {
             position: -1);
         String tUrl = await FileStorage.uploadImage('post', thumbnail,
             fileName: 'thumb_$videoId');
-        Map _videoData = {'thumbUrl': tUrl, 'videoUrl': vUrl};
+        Map vidData = {'thumbUrl': tUrl, 'videoUrl': vUrl};
         // Map _videoData = await VideoProcessing().processVideo(contentsData[i]['content'],postId);
-        firestoreContents['$x'] = _videoData['videoUrl'];
-        contentsData[i]['info']['thumbUrl'] = "\"${_videoData['thumbUrl']}\"";
+        firestoreContents['$x'] = vidData['videoUrl'];
+        contentsData[i]['info']['thumbUrl'] = vidData['thumbUrl'];
         firestoreContentsInfo['$x'] = contentsData[i]['info'];
         x++;
       } else if (contentsData[i]['info']['type'] == 'carousel') {
