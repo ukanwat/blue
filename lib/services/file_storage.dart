@@ -14,21 +14,7 @@ import 'package:http_client/http_client.dart' as http_client;
 class FileStorage {
   static Future<String> upload(String folder, String fileName, File file,
       {String bucket}) async {
-    // s3Upload(
-    //   'key',
-    //   file,
-    //   'image/jpg',
-    // );
-
-    // final AwsS3Client s3client = AwsS3Client(
-    //     region: 'us-east-va',
-    //     host: "https://s3.us-east-va.cloud.ovh.net",
-    //     bucketId: '55335268636d737556564d74525546545643315751513d3d',
-    //     accessKey: "7931b62337ec4f668bf7fd10667797cc",
-    //     secretKey: "89cdff7b09e946e88497e16473d91f5a");
-
-    // final listBucketResult = await s3client.listObjects();
-    // print(listBucketResult.toString());
+  
 
     print('uploaded');
     Reference ref;
