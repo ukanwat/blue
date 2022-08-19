@@ -1,0 +1,96 @@
+{
+  "project_info": {
+    "project_number": "875602571063",
+    "firebase_url": "https://blue-cabf5.firebaseio.com",
+    "project_id": "blue-cabf5",
+    "storage_bucket": "blue-cabf5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:875602571063:android:df2b3bfd8f126ca86b74b2",
+        "android_client_info": {
+          "package_name": "com.stark.android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "875602571063-16vqcvnc4g59epui4lql1l1uha1efcrm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.stark.android",
+            "certificate_hash": "f3a94b12291e143a476e75d6575bf88d85f1af80"
+          }
+        },
+        {
+          "client_id": "875602571063-82cmd4l08mjva5o61gipi05959rl2g8v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.stark.android",
+            "certificate_hash": "cc7bfee4c01211f06e2c7fd1432733f988ed2bbf"
+          }
+        },
+        {
+          "client_id": "875602571063-j683ldse1f2u0oc32p7ubop7t0maddoa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.stark.android",
+            "certificate_hash": "e4417e53c94eaa41cf7c21c10ca06b2bdf5ff8a8"
+          }
+        },
+        {
+          "client_id": "875602571063-r05evoub6cs9l1besp2i18t0ht5bg8jo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.stark.android",
+            "certificate_hash": "d74203eae56c5d48a504d703ce5a73343bceda0d"
+          }
+        },
+        {
+          "client_id": "875602571063-s6pkirtk8m48rufv1llaoc2bg4id74qu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.stark.android",
+            "certificate_hash": "91ad31db8f522d4b5ce356fa0358e1997bf95e47"
+          }
+        },
+        {
+          "client_id": "875602571063-v223f9fbvjgkfhjdnq2e6ohn4co9k68h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.stark.android",
+            "certificate_hash": "660f64a4d729ef6569f2d76f1efa1e131f11542a"
+          }
+        },
+        {
+          "client_id": "875602571063-45u2grpf8ea28m80kjgogrfn7ec3o7rf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_NvhCQQPABh8UW49S_M8ZTvuagtO2pAo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "875602571063-45u2grpf8ea28m80kjgogrfn7ec3o7rf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "875602571063-o48nuvdldv94k1nd6akj5kabqkd6v9sv.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.stark.ios",
+                "app_store_id": "962194608"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

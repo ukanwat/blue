@@ -1,0 +1,23 @@
+{
+  "name": "blue",
+  "version": "1.0.0",
+  "description": "A new Flutter project.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@brecert/flakeid": "^2.0.1",
+    "firebase-functions": "^3.14.1",
+    "flake-idgen": "^1.4.0",
+    "flakeid": "^1.0.0",
+    "koid": "3.0.0",
+    "material-ui-player": "^0.2.5"
+  }
+}
