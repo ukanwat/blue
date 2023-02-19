@@ -1,0 +1,3 @@
+[submodule "stark-web"]
+	path = stark-web
+	url = https://github.com/ukanwat/stark-web
